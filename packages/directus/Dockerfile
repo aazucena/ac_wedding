@@ -1,5 +1,4 @@
 
-# syntax=docker/dockerfile:1
 # ── Stage 1: Build extensions ─────────────────────────────────────────────────
 # Use a full Node image where npm is available to install deps and build.
 FROM node:20-alpine AS builder
