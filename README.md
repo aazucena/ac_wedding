@@ -1,7 +1,17 @@
 # Catholic Wedding Planner
-**Aldrin & Christine — September 26, 2026**
+**Aldrin & Christine - September 26, 2026**
 
-A self-hosted wedding management system built on [Directus](https://directus.io), PostgreSQL, and Astro. Manages everything from guest RSVPs and entourage lineups to Parish music approval and canonical marriage requirements — all in one place.
+A self-hosted wedding management system built on [Directus](https://directus.io), PostgreSQL, and Astro. Manages everything from guest RSVPs and entourage lineups to Parish music approval and canonical marriage requirements - all in one place.
+
+---
+
+## Motivation
+
+Christine and I met through a friend of a friend. From the moment we started talking, I was drawn in. What stood out most wasn't just how funny she is (genuinely, catch-you-off-guard funny), but her commitment and hardwork in everything she does. She's the kind of person who makes you want to be better just by being around her.
+
+So when it came to our wedding, I wanted to contribute something meaningful to the day we'd both cherish. Planning a wedding is a lot to handle: vendors, guests, budgets, entourage, ceremony details. As someone who loves building things, I thought why not build something that makes all of that easier to manage and actually enjoyable to work on?
+
+This isn't just a project. It's my way of putting care into every detail of our day. From the RSVP experience our guests get, to the games and printouts, to knowing exactly where things stand at any moment. Built with love, managed with clarity, and honestly a lot of fun to make.
 
 ---
 
@@ -10,9 +20,9 @@ A self-hosted wedding management system built on [Directus](https://directus.io)
 | Service | Platform | Domain |
 |---|---|---|
 | Directus CMS | Railway | `planner.aazucena.com` |
-| Database | Railway PostgreSQL (built-in plugin) | — |
+| Database | Railway PostgreSQL (built-in plugin) | - |
 | RSVP / Wedding Site | Vercel (Astro 6 SSR) | `wedding.aazucena.com` |
-| Email | ImprovMX SMTP | — |
+| Email | ImprovMX SMTP | - |
 
 ---
 
@@ -47,7 +57,7 @@ wedding-planner/                         ← pnpm workspace root
 ├── .docker/
 │   └── compose.yaml                    ← PostgreSQL/PostGIS + Redis + Directus
 ├── apps/
-│   └── web/                            ← Astro 6 SSR (Vercel) — guest-facing site
+│   └── web/                            ← Astro 6 SSR (Vercel) - guest-facing site
 │       └── src/
 │           ├── lib/directus.ts         ← Directus HTTP client
 │           ├── lib/api/                ← domain-specific data fetchers
@@ -170,7 +180,7 @@ honeymoon             → Honeymoon planning details
 3. RSVP form submits to **Flow 03 webhook**
 4. Flow 03 updates the guest record and sends a confirmation email
 
-**Public Directus role must allow read on `guests`:** `id`, `first_name`, `status`, `plus_ones_allowed`, `rsvp_token` — no other fields.
+**Public Directus role must allow read on `guests`:** `id`, `first_name`, `status`, `plus_ones_allowed`, `rsvp_token` - no other fields.
 
 ---
 
