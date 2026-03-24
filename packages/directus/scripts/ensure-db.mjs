@@ -7,7 +7,9 @@
 //   42710 — role already exists (safe to ignore)
 //   42P04 — database already exists (safe to ignore)
 
-import pg from '/directus/node_modules/pg/lib/index.js';
+import { createRequire } from 'module';
+const require = createRequire('/directus/package.json');
+const pg = require('pg');
 
 const { Client } = pg;
 
