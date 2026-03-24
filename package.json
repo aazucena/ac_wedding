@@ -13,6 +13,7 @@
     "directus:build": "docker compose -f .docker/compose.yaml build directus",
     "sync:pull": "docker compose -f .docker/compose.yaml exec directus directus-sync pull",
     "sync:push": "docker compose -f .docker/compose.yaml exec directus directus-sync push",
+    "sync:push:prod": "npx directus-sync push --config-path packages/directus/directus-transfer.config.cjs",
     "seed": "pnpm --filter seed seed",
     "seed:settings": "pnpm --filter seed seed:settings",
     "seed:budget": "pnpm --filter seed seed:budget",
