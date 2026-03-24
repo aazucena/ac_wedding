@@ -1,0 +1,46 @@
+{
+  "collection": "honeymoon_transport",
+  "field": "to_location",
+  "type": "string",
+  "meta": {
+    "collection": "honeymoon_transport",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "to_location",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Destination of this transport leg. Should match the location of the next itinerary item.",
+    "options": {
+      "placeholder": "e.g. Banff, AB"
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 4,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "half"
+  },
+  "schema": {
+    "name": "to_location",
+    "table": "honeymoon_transport",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

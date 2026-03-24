@@ -1,0 +1,46 @@
+{
+  "collection": "reception_program",
+  "field": "emcee_script",
+  "type": "text",
+  "meta": {
+    "collection": "reception_program",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "emcee_script",
+    "group": null,
+    "hidden": false,
+    "interface": "input-rich-text-md",
+    "note": "Full emcee script for this item. Used to brief the emcee and as a printed reference on the day.",
+    "options": {
+      "placeholder": "The script the emcee will read to introduce or close this program item…"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 6,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "emcee_script",
+    "table": "reception_program",
+    "data_type": "text",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

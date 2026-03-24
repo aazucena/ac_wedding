@@ -1,0 +1,28 @@
+{
+  "collection": "reception_program",
+  "meta": {
+    "accountability": "all",
+    "archive_app_filter": true,
+    "archive_field": null,
+    "archive_value": null,
+    "collapse": "open",
+    "collection": "reception_program",
+    "color": null,
+    "display_template": "{{label}}",
+    "group": "reception",
+    "hidden": true,
+    "icon": "format_list_numbered",
+    "item_duplication_fields": null,
+    "note": "Reception programme items in order",
+    "preview_url": null,
+    "singleton": false,
+    "sort": 4,
+    "sort_field": null,
+    "translations": null,
+    "unarchive_value": null,
+    "versioning": false
+  },
+  "schema": {
+    "name": "reception_program"
+  }
+}

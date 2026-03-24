@@ -1,0 +1,30 @@
+{
+  "collection": "wedding_settings",
+  "field": "announcement",
+  "type": "alias",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "announcement",
+    "group": "accordion-5v4tn4",
+    "hidden": false,
+    "interface": "group-raw",
+    "note": null,
+    "options": null,
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 5,
+    "special": [
+      "alias",
+      "no-data",
+      "group"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

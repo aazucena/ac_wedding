@@ -1,0 +1,50 @@
+{
+  "collection": "budget_adjustments",
+  "field": "category",
+  "type": "uuid",
+  "meta": {
+    "collection": "budget_adjustments",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "category",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown-m2o",
+    "note": "The category being adjusted. Leave empty if this is a global budget adjustment affecting overall_budget in wedding_settings.",
+    "options": {
+      "enableCreate": false,
+      "enableLink": true,
+      "template": "{{name}}"
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 2,
+    "special": [
+      "m2o"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "category",
+    "table": "budget_adjustments",
+    "data_type": "uuid",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": "budget_categories",
+    "foreign_key_column": "id"
+  }
+}

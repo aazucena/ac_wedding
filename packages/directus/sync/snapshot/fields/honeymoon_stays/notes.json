@@ -1,0 +1,46 @@
+{
+  "collection": "honeymoon_stays",
+  "field": "notes",
+  "type": "text",
+  "meta": {
+    "collection": "honeymoon_stays",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "notes",
+    "group": null,
+    "hidden": false,
+    "interface": "input-multiline",
+    "note": "Stay-specific coordination notes. Separate from the itinerary-level notes on honeymoon_itinerary.",
+    "options": {
+      "placeholder": "Check-in instructions, parking, early check-in requests, room preferences…"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 7,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "notes",
+    "table": "honeymoon_stays",
+    "data_type": "text",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

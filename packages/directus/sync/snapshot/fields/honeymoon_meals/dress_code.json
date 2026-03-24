@@ -1,0 +1,82 @@
+{
+  "collection": "honeymoon_meals",
+  "field": "dress_code",
+  "type": "string",
+  "meta": {
+    "collection": "honeymoon_meals",
+    "conditions": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Casual",
+          "value": "casual"
+        },
+        {
+          "text": "Smart Casual",
+          "value": "smart_casual"
+        },
+        {
+          "text": "Semi-Formal",
+          "value": "semi_formal"
+        },
+        {
+          "text": "Formal",
+          "value": "formal"
+        }
+      ]
+    },
+    "field": "dress_code",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": "Dress requirement for this restaurant. Some Banff and Canmore fine dining venues enforce this.",
+    "options": {
+      "choices": [
+        {
+          "text": "Casual",
+          "value": "casual"
+        },
+        {
+          "text": "Smart Casual",
+          "value": "smart_casual"
+        },
+        {
+          "text": "Semi-Formal",
+          "value": "semi_formal"
+        },
+        {
+          "text": "Formal",
+          "value": "formal"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 3,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "dress_code",
+    "table": "honeymoon_meals",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

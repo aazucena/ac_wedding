@@ -1,0 +1,28 @@
+{
+  "collection": "sponsors",
+  "meta": {
+    "accountability": "all",
+    "archive_app_filter": true,
+    "archive_field": null,
+    "archive_value": null,
+    "collapse": "open",
+    "collection": "sponsors",
+    "color": null,
+    "display_template": null,
+    "group": "persons",
+    "hidden": false,
+    "icon": "soup_kitchen",
+    "item_duplication_fields": null,
+    "note": "Principal and secondary sponsors (Ninongs/Ninangs). Paired via self-referential partner field.",
+    "preview_url": null,
+    "singleton": false,
+    "sort": 1,
+    "sort_field": "sort",
+    "translations": null,
+    "unarchive_value": null,
+    "versioning": false
+  },
+  "schema": {
+    "name": "sponsors"
+  }
+}

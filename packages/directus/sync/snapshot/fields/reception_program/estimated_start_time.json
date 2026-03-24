@@ -1,0 +1,46 @@
+{
+  "collection": "reception_program",
+  "field": "estimated_start_time",
+  "type": "time",
+  "meta": {
+    "collection": "reception_program",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "estimated_start_time",
+    "group": null,
+    "hidden": false,
+    "interface": "datetime",
+    "note": "Planned start time for this item. Used to build the run-of-show timeline for the emcee and vendors.",
+    "options": {
+      "use24": false
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 11,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "estimated_start_time",
+    "table": "reception_program",
+    "data_type": "time without time zone",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

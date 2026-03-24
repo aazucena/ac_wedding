@@ -1,0 +1,46 @@
+{
+  "collection": "checklist_tasks",
+  "field": "notes",
+  "type": "text",
+  "meta": {
+    "collection": "checklist_tasks",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "notes",
+    "group": null,
+    "hidden": false,
+    "interface": "input-multiline",
+    "note": "Internal only. Not visible to vendors or guests.",
+    "options": {
+      "placeholder": "Internal notes, follow-up reminders, links…"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 11,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "notes",
+    "table": "checklist_tasks",
+    "data_type": "text",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

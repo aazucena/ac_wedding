@@ -1,0 +1,25 @@
+{
+  "collection": "wedding_settings",
+  "field": "accomodation",
+  "related_collection": "accomodations",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "wedding_settings",
+    "many_field": "accomodation",
+    "one_allowed_collections": null,
+    "one_collection": "accomodations",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": null,
+    "sort_field": null
+  },
+  "schema": {
+    "table": "wedding_settings",
+    "column": "accomodation",
+    "foreign_key_table": "accomodations",
+    "foreign_key_column": "id",
+    "constraint_name": "wedding_settings_accomodation_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "SET NULL"
+  }
+}

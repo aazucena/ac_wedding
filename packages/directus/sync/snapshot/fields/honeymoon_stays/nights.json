@@ -1,0 +1,46 @@
+{
+  "collection": "honeymoon_stays",
+  "field": "nights",
+  "type": "integer",
+  "meta": {
+    "collection": "honeymoon_stays",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "nights",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Auto-calculated from check_in_date and check_out_date via a Flow. Do not edit manually.",
+    "options": {
+      "min": 0
+    },
+    "readonly": true,
+    "required": false,
+    "searchable": true,
+    "sort": 4,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "nights",
+    "table": "honeymoon_stays",
+    "data_type": "integer",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": 32,
+    "numeric_scale": 0,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

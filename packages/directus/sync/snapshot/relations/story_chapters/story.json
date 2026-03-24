@@ -1,0 +1,25 @@
+{
+  "collection": "story_chapters",
+  "field": "story",
+  "related_collection": "stories",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "story_chapters",
+    "many_field": "story",
+    "one_allowed_collections": null,
+    "one_collection": "stories",
+    "one_collection_field": null,
+    "one_deselect_action": "delete",
+    "one_field": "chapters",
+    "sort_field": "story_sort"
+  },
+  "schema": {
+    "table": "story_chapters",
+    "column": "story",
+    "foreign_key_table": "stories",
+    "foreign_key_column": "id",
+    "constraint_name": "story_chapters_story_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "CASCADE"
+  }
+}

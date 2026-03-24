@@ -1,0 +1,40 @@
+{
+  "collection": "ceremonies",
+  "field": "programs",
+  "type": "alias",
+  "meta": {
+    "collection": "ceremonies",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "programs",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": null,
+    "options": {
+      "filter": {
+        "_and": [
+          {
+            "parent": {
+              "_null": true
+            }
+          }
+        ]
+      },
+      "sort": "order_sort",
+      "template": "{{label}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 10,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

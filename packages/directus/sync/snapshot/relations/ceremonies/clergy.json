@@ -1,0 +1,25 @@
+{
+  "collection": "ceremonies",
+  "field": "clergy",
+  "related_collection": "clergies",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "ceremonies",
+    "many_field": "clergy",
+    "one_allowed_collections": null,
+    "one_collection": "clergies",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": null,
+    "sort_field": null
+  },
+  "schema": {
+    "table": "ceremonies",
+    "column": "clergy",
+    "foreign_key_table": "clergies",
+    "foreign_key_column": "id",
+    "constraint_name": "ceremonies_clergy_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "SET NULL"
+  }
+}

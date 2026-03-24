@@ -1,0 +1,430 @@
+[
+  {
+    "collection": "accomodations",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "66e4ea35-945b-4cf8-a14c-03c63dce926c"
+  },
+  {
+    "collection": "ceremonies",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "6c4897c4-da68-484f-8cb9-cf7053fe99e8"
+  },
+  {
+    "collection": "ceremony_order",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "6a3ad0c9-a0e1-432b-8a21-54e91e35cd66"
+  },
+  {
+    "collection": "clergies",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "dfa03514-6fd3-428f-a0fc-d1f92e0c7f37"
+  },
+  {
+    "collection": "directus_files",
+    "action": "create",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "ba7d9a3f-77f7-4092-b571-d43446fc790f"
+  },
+  {
+    "collection": "directus_files",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "3bb2a696-3aac-4e2e-a775-35a57a3c97e6"
+  },
+  {
+    "collection": "directus_folders",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "bdf2177b-dbc7-4693-b7cd-6dc06b5286b7"
+  },
+  {
+    "collection": "entourage",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "7df205d3-46b0-48b8-9fba-e4d0381ee0da"
+  },
+  {
+    "collection": "events",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "e2ffbdf7-9bff-4919-8e45-77f71d85c93b"
+  },
+  {
+    "collection": "gallery",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "a34954e6-62cf-41ec-88a8-8c7ed0d62e23"
+  },
+  {
+    "collection": "groups",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "3fa1aa6f-1de8-47bf-8182-eae362864eac"
+  },
+  {
+    "collection": "guests",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "9b5a8ee3-575b-40e2-b229-9110248efc05"
+  },
+  {
+    "collection": "guests",
+    "action": "update",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "attending",
+      "attendance",
+      "meal_preference",
+      "dietary_restrictions"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "8e4acd7b-b352-44a2-b6e7-857ac4d4f943"
+  },
+  {
+    "collection": "liturgical_ministers",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "4a3a6560-a0ab-4494-a619-d6540d47c551"
+  },
+  {
+    "collection": "mass_music",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "6dd1eb21-a883-4a1f-8b7a-821033a1cce0"
+  },
+  {
+    "collection": "memories",
+    "action": "create",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "422eba53-8945-40a6-bd06-e79f625df3af"
+  },
+  {
+    "collection": "memories",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "b7155a56-6c19-4be4-9b1a-4b5bb3f0e879"
+  },
+  {
+    "collection": "memories",
+    "action": "update",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "approved"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "220dd782-e18c-44f9-9170-51f3b4fea83c"
+  },
+  {
+    "collection": "parties",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "c6dde6c2-7133-41f3-8b4c-5f6e2c6a9758"
+  },
+  {
+    "collection": "parties",
+    "action": "update",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "status",
+      "hotel",
+      "transportation",
+      "song_request",
+      "message_to_couple",
+      "date_rsvp_submitted"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "72056ff6-24be-4e1b-bfd4-ef37180140f5"
+  },
+  {
+    "collection": "persons",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "411026c2-3b5d-477f-b49b-d63a6fcf0872"
+  },
+  {
+    "collection": "petitions",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "d5b66320-97ea-424d-a718-f01430e20e84"
+  },
+  {
+    "collection": "readings",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "ef228455-f823-420a-ae48-dd83c608782e"
+  },
+  {
+    "collection": "reception_program",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "48780e20-3b4f-406f-bfae-24cfb8685526"
+  },
+  {
+    "collection": "reception_staff",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "b970e506-5b51-49af-84e5-31f379289f62"
+  },
+  {
+    "collection": "reception",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "ad71dad6-eba9-47d7-b2d1-d13ed4ecafa1"
+  },
+  {
+    "collection": "registries",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "e67ac8ff-4b69-4134-a562-3771de640b6d"
+  },
+  {
+    "collection": "sponsors",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "acd9d70e-e578-4640-983e-c91eca3f1351"
+  },
+  {
+    "collection": "stories",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "291489eb-825d-4ad4-9a2d-fc50a9c754d2"
+  },
+  {
+    "collection": "story_chapters",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "b1660886-a3c3-4baf-88cc-5bd6e9dbbfbe"
+  },
+  {
+    "collection": "tables",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "5bce5439-e72d-4bb4-a344-ab32b98e6827"
+  },
+  {
+    "collection": "vendors",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "4af9a3bf-c66b-4a42-8b93-4672b879c5d3"
+  },
+  {
+    "collection": "wedding_roles",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "7d9714f9-ee1c-4d71-9cfb-ce1b013af3ae"
+  },
+  {
+    "collection": "wedding_settings",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "50828606-91a3-4e5e-bd09-623ebe580b1c"
+  },
+  {
+    "collection": "directus_files",
+    "action": "read",
+    "permissions": null,
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "*"
+    ],
+    "policy": "1acbe9c5-5a2d-4257-ad63-c6b16d365d7d",
+    "_syncId": "2c8ed983-ae3a-4697-b9e0-f4e2507de0ba"
+  }
+]

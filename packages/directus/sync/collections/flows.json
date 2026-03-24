@@ -1,0 +1,128 @@
+[
+  {
+    "name": "Send Email Invitation",
+    "icon": "mail",
+    "color": "#2ECDA7",
+    "description": "Sends an HTML email invitation to a party using the invitation.liquid template and logs the send event to the invitations collection. Triggered manually per party or as a bulk action. Skips parties who already have invitation_sent = true. Email is sourced from parties.representative.email.",
+    "status": "active",
+    "trigger": "manual",
+    "accountability": "all",
+    "options": {
+      "collections": [
+        "parties"
+      ],
+      "location": "item"
+    },
+    "operation": "de40a93e-ec6c-4aa3-8c41-e159bfe4c20b",
+    "_syncId": "3b72c2eb-d428-4c56-a80e-ccf793f90740"
+  },
+  {
+    "name": "RSVP Form Submission",
+    "icon": "how_to_reg",
+    "color": "#2ECDA7",
+    "description": "SUPERSEDED — RSVP submissions are now handled by the Astro Actions server endpoint (submitRsvp), which patches the parties and guests collections directly via the Directus SDK. This flow is kept for reference but must remain inactive.",
+    "status": "inactive",
+    "trigger": "webhook",
+    "accountability": "all",
+    "options": {
+      "method": "POST"
+    },
+    "operation": "1451dee9-d112-40c8-beb1-d2ebbe83724e",
+    "_syncId": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1"
+  },
+  {
+    "name": "Budget Payment Sync",
+    "icon": "payments",
+    "color": "#F7C948",
+    "description": "Triggered when a vendor's status changes to 'paid'. Sums total_value across the vendor's contracts and adds that to the amount_paid field on the matching budget_categories record so you can track actual spend vs allocated.",
+    "status": "active",
+    "trigger": "event",
+    "accountability": "all",
+    "options": {
+      "type": "action",
+      "scope": [
+        "items.update"
+      ],
+      "collections": [
+        "vendors"
+      ]
+    },
+    "operation": "b8ae2817-5208-482e-b354-5ab25203499e",
+    "_syncId": "5499f98e-2875-4bc7-89b5-22e4871cedfb"
+  },
+  {
+    "name": "RSVP Token Generation",
+    "icon": "vpn_key",
+    "color": "#6644AA",
+    "description": "Auto-generates a unique RSVP token for every new party record. The token is used to build the personalised RSVP link sent in email invitations.",
+    "status": "active",
+    "trigger": "event",
+    "accountability": "all",
+    "options": {
+      "type": "action",
+      "scope": [
+        "items.create"
+      ],
+      "collections": [
+        "parties"
+      ]
+    },
+    "operation": "5891d591-64b1-477a-a83d-d186a3a5f015",
+    "_syncId": "9978a209-4a98-429c-b32e-d233ecef70b7"
+  },
+  {
+    "name": "RSVP Deadline: Mark Non-Responders",
+    "icon": "schedule",
+    "color": "#E35169",
+    "description": "Runs daily on a schedule. Reads the rsvp_deadline from wedding_settings, and if it has passed, batch-updates all parties that have not yet confirmed or declined to status = 'no_response'. Safe to run repeatedly — already-marked parties are excluded from the filter.",
+    "status": "active",
+    "trigger": "schedule",
+    "accountability": "all",
+    "options": {
+      "cron": "0 9 * * *"
+    },
+    "operation": "86775c11-c593-4874-b669-8b33fcb9a874",
+    "_syncId": "c1be7af0-4b8b-4d6c-bcd7-5a03826481e3"
+  },
+  {
+    "name": "Recessional Order Sync",
+    "icon": "swap_vert",
+    "color": "#6644AA",
+    "description": "Triggered whenever an entourage member's sequence_order (procession order) is created or updated. Recomputes all recessional_order values by inverting the procession sequence. The couple always exits first regardless of their sequence_order value.",
+    "status": "active",
+    "trigger": "event",
+    "accountability": "all",
+    "options": {
+      "type": "action",
+      "scope": [
+        "items.create",
+        "items.update"
+      ],
+      "collections": [
+        "entourage"
+      ]
+    },
+    "operation": "389d9a31-7fa5-4a14-ab3d-d2c00f107d64",
+    "_syncId": "d2de6d84-28bf-4827-93ae-33cf2af06c1a"
+  },
+  {
+    "name": "Budget Allocation on Vendor Booking",
+    "icon": "account_balance_wallet",
+    "color": "#F7C948",
+    "description": "Triggered when a vendor's status changes to 'booked'. Sums total_value across the vendor's contracts and allocates that amount to the matching budget_categories record, flagging is_over_budget if the effective ceiling (ceiling + contingency) is exceeded. Also handles the reverse when a vendor is cancelled.",
+    "status": "active",
+    "trigger": "event",
+    "accountability": "all",
+    "options": {
+      "type": "action",
+      "scope": [
+        "items.update"
+      ],
+      "collections": [
+        "vendors"
+      ]
+    },
+    "operation": "f204c9ef-9a5d-4a7f-a799-13dc7076ac79",
+    "_syncId": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f"
+  }
+]

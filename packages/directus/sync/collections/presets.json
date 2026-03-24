@@ -1,0 +1,163 @@
+[
+  {
+    "bookmark": null,
+    "role": null,
+    "collection": "ceremony_order",
+    "search": null,
+    "layout": "tabular",
+    "layout_query": {
+      "tabular": {
+        "page": 1
+      }
+    },
+    "layout_options": null,
+    "refresh_interval": null,
+    "filter": null,
+    "icon": "bookmark",
+    "color": null,
+    "_syncId": "22f19cf2-5a46-47be-b220-1c0baf0ba9e0"
+  },
+  {
+    "bookmark": null,
+    "role": null,
+    "collection": "mass_music",
+    "search": null,
+    "layout": null,
+    "layout_query": {
+      "tabular": {
+        "page": 1
+      }
+    },
+    "layout_options": null,
+    "refresh_interval": null,
+    "filter": null,
+    "icon": "bookmark",
+    "color": null,
+    "_syncId": "41b433ee-d15c-4e3b-a5f8-6ae87c91a38b"
+  },
+  {
+    "bookmark": null,
+    "role": null,
+    "collection": "checklist_tasks",
+    "search": null,
+    "layout": "kanban",
+    "layout_query": {
+      "tabular": {
+        "page": 1
+      }
+    },
+    "layout_options": {
+      "kanban": {
+        "groupOrder": {
+          "groupField": "status",
+          "sortMap": {
+            "todo": 0,
+            "in_progress": 1,
+            "done": 2,
+            "blocked": 3
+          }
+        }
+      }
+    },
+    "refresh_interval": null,
+    "filter": null,
+    "icon": "bookmark",
+    "color": null,
+    "_syncId": "4bd0e6ae-b6c2-42e3-a945-232a1d0b409d"
+  },
+  {
+    "bookmark": null,
+    "role": null,
+    "collection": "entourage",
+    "search": null,
+    "layout": "tabular",
+    "layout_query": null,
+    "layout_options": null,
+    "refresh_interval": null,
+    "filter": null,
+    "icon": "bookmark",
+    "color": null,
+    "_syncId": "86c3be8d-f30b-4c22-8f82-1bd4c0f902e3"
+  },
+  {
+    "bookmark": null,
+    "role": null,
+    "collection": "invitations",
+    "search": null,
+    "layout": "tabular",
+    "layout_query": {
+      "tabular": {
+        "page": 1
+      }
+    },
+    "layout_options": {
+      "kanban": {
+        "groupOrder": {
+          "groupField": "channel",
+          "sortMap": {
+            "email": 0
+          }
+        }
+      }
+    },
+    "refresh_interval": null,
+    "filter": null,
+    "icon": "bookmark",
+    "color": null,
+    "_syncId": "86f9fa1e-3d4d-4071-9543-6f0d9c6d5e2f"
+  },
+  {
+    "bookmark": null,
+    "role": null,
+    "collection": "budget_categories",
+    "search": null,
+    "layout": null,
+    "layout_query": {
+      "tabular": {
+        "fields": [
+          "category",
+          "ceiling_amount",
+          "contingency_percent",
+          "amount_allocated",
+          "amount_paid",
+          "is_over_budget"
+        ],
+        "sort": [
+          "category"
+        ],
+        "page": 1
+      }
+    },
+    "layout_options": {
+      "tabular": {
+        "widths": {
+          "category": 160,
+          "ceiling_amount": 216.6666259765625,
+          "contingency_percent": 204.33331298828125,
+          "amount_allocated": 173.3333740234375,
+          "amount_paid": 160,
+          "is_over_budget": 160
+        }
+      }
+    },
+    "refresh_interval": null,
+    "filter": null,
+    "icon": "bookmark",
+    "color": null,
+    "_syncId": "8d9458be-92d4-4b17-b0be-a88d6c50df18"
+  },
+  {
+    "bookmark": null,
+    "role": null,
+    "collection": "guests",
+    "search": null,
+    "layout": "directus-labs-spreadsheet-layout",
+    "layout_query": null,
+    "layout_options": null,
+    "refresh_interval": null,
+    "filter": null,
+    "icon": "bookmark",
+    "color": null,
+    "_syncId": "c43b520b-7a4d-41b5-a47b-e24730742841"
+  }
+]

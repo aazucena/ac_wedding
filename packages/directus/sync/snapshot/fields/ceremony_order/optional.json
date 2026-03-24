@@ -1,0 +1,49 @@
+{
+  "collection": "ceremony_order",
+  "field": "optional",
+  "type": "boolean",
+  "meta": {
+    "collection": "ceremony_order",
+    "conditions": null,
+    "display": "boolean",
+    "display_options": null,
+    "field": "optional",
+    "group": null,
+    "hidden": false,
+    "interface": null,
+    "note": "Mark as true for moments that may be skipped depending on the priest's preferences or time constraints.",
+    "options": null,
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 9,
+    "special": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Optional"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "optional",
+    "table": "ceremony_order",
+    "data_type": "boolean",
+    "default_value": false,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

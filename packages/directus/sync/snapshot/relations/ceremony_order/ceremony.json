@@ -1,0 +1,25 @@
+{
+  "collection": "ceremony_order",
+  "field": "ceremony",
+  "related_collection": "ceremonies",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "ceremony_order",
+    "many_field": "ceremony",
+    "one_allowed_collections": null,
+    "one_collection": "ceremonies",
+    "one_collection_field": null,
+    "one_deselect_action": "delete",
+    "one_field": "programs",
+    "sort_field": "order_sort"
+  },
+  "schema": {
+    "table": "ceremony_order",
+    "column": "ceremony",
+    "foreign_key_table": "ceremonies",
+    "foreign_key_column": "id",
+    "constraint_name": "ceremony_order_ceremony_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "CASCADE"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "collection": "guests",
+  "field": "table",
+  "related_collection": "tables",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "guests",
+    "many_field": "table",
+    "one_allowed_collections": null,
+    "one_collection": "tables",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": "guests",
+    "sort_field": null
+  },
+  "schema": {
+    "table": "guests",
+    "column": "table",
+    "foreign_key_table": "tables",
+    "foreign_key_column": "id",
+    "constraint_name": "guests_table_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "SET NULL"
+  }
+}

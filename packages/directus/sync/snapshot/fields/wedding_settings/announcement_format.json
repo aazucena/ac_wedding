@@ -1,0 +1,64 @@
+{
+  "collection": "wedding_settings",
+  "field": "announcement_format",
+  "type": "string",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "announcement_format",
+    "group": "announcement",
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": "How the closing announcement directing guests to the reception will be delivered.",
+    "options": {
+      "choices": [
+        {
+          "text": "Verbal only",
+          "value": "verbal"
+        },
+        {
+          "text": "Printed in booklet only",
+          "value": "printed"
+        },
+        {
+          "text": "Both verbal and printed",
+          "value": "both"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 1,
+    "special": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Format Type"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "announcement_format",
+    "table": "wedding_settings",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

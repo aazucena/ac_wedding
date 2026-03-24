@@ -1,0 +1,30 @@
+{
+  "collection": "ceremony_order",
+  "field": "children",
+  "type": "alias",
+  "meta": {
+    "collection": "ceremony_order",
+    "conditions": null,
+    "display": "related-values",
+    "display_options": null,
+    "field": "children",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m-tree-view",
+    "note": null,
+    "options": {
+      "displayTemplate": "{{label}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 8,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

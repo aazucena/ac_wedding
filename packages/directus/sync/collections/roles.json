@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Administrator",
+    "icon": "verified",
+    "description": "$t:admin_description",
+    "parent": null,
+    "_syncId": "_sync_default_admin_role"
+  },
+  {
+    "name": "Website",
+    "icon": "web",
+    "description": "Website role covers everything: reading wedding data, RSVP updates, photo uploads, and MC approve/decline.",
+    "parent": null,
+    "_syncId": "acea599b-4089-40c7-8ae5-52582b52b95c"
+  }
+]

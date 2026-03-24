@@ -1,0 +1,35 @@
+{
+  "collection": "honeymoon_activities",
+  "meta": {
+    "accountability": "all",
+    "archive_app_filter": true,
+    "archive_field": null,
+    "archive_value": null,
+    "collapse": "open",
+    "collection": "honeymoon_activities",
+    "color": null,
+    "display_template": "{{name}}",
+    "group": "honeymoon_itinerary",
+    "hidden": true,
+    "icon": "kayaking",
+    "item_duplication_fields": null,
+    "note": null,
+    "preview_url": null,
+    "singleton": false,
+    "sort": 1,
+    "sort_field": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "plural": "Activities",
+        "singular": "Activity",
+        "translation": "Activities"
+      }
+    ],
+    "unarchive_value": null,
+    "versioning": false
+  },
+  "schema": {
+    "name": "honeymoon_activities"
+  }
+}

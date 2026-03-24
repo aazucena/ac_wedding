@@ -1,0 +1,25 @@
+{
+  "collection": "entourage",
+  "field": "role",
+  "related_collection": "wedding_roles",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "entourage",
+    "many_field": "role",
+    "one_allowed_collections": null,
+    "one_collection": "wedding_roles",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": null,
+    "sort_field": null
+  },
+  "schema": {
+    "table": "entourage",
+    "column": "role",
+    "foreign_key_table": "wedding_roles",
+    "foreign_key_column": "id",
+    "constraint_name": "entourage_role_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "SET NULL"
+  }
+}

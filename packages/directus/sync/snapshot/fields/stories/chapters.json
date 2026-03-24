@@ -1,0 +1,34 @@
+{
+  "collection": "stories",
+  "field": "chapters",
+  "type": "alias",
+  "meta": {
+    "collection": "stories",
+    "conditions": null,
+    "display": "related-values",
+    "display_options": {
+      "template": "{{icon}} {{headline}}"
+    },
+    "field": "chapters",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": null,
+    "options": {
+      "enableSelect": false,
+      "sort": null,
+      "template": "{{icon}} {{headline}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 6,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

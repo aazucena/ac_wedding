@@ -1,0 +1,28 @@
+{
+  "collection": "parties",
+  "field": "members",
+  "type": "alias",
+  "meta": {
+    "collection": "parties",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "members",
+    "group": null,
+    "hidden": false,
+    "interface": "list-m2m",
+    "note": null,
+    "options": null,
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 4,
+    "special": [
+      "m2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

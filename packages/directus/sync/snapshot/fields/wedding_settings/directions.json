@@ -1,0 +1,106 @@
+{
+  "collection": "wedding_settings",
+  "field": "directions",
+  "type": "json",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": "formatted-json-value",
+    "display_options": {
+      "format": "{{ icon }} {{ title }}"
+    },
+    "field": "directions",
+    "group": null,
+    "hidden": false,
+    "interface": "list",
+    "note": null,
+    "options": {
+      "fields": [
+        {
+          "field": "title",
+          "meta": {
+            "field": "title",
+            "interface": "input",
+            "options": {
+              "placeholder": "e.g. \"By Air\""
+            },
+            "required": true,
+            "type": "string",
+            "width": "full"
+          },
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "field": "icon",
+          "meta": {
+            "display": "emoji-picker-display",
+            "field": "icon",
+            "interface": "emoji-picker-interface",
+            "options": {
+              "emojiOnly": true,
+              "placeholder": "Emoji or icon name (e.g. ✈️)"
+            },
+            "required": true,
+            "type": "string",
+            "width": "full"
+          },
+          "name": "icon",
+          "type": "string"
+        },
+        {
+          "field": "description",
+          "meta": {
+            "field": "description",
+            "interface": "input-rich-text-md",
+            "options": {
+              "toolbar": [
+                "bold",
+                "italic",
+                "strikethrough",
+                "empty",
+                "code",
+                "link"
+              ]
+            },
+            "required": true,
+            "type": "text",
+            "width": "full"
+          },
+          "name": "description",
+          "type": "text"
+        }
+      ],
+      "template": "{{ icon }} {{ title }}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 11,
+    "special": [
+      "cast-json"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "directions",
+    "table": "wedding_settings",
+    "data_type": "json",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

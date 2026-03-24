@@ -1,0 +1,31 @@
+{
+  "collection": "honeymoon",
+  "field": "itinerary",
+  "type": "alias",
+  "meta": {
+    "collection": "honeymoon",
+    "conditions": null,
+    "display": "related-values",
+    "display_options": null,
+    "field": "itinerary",
+    "group": null,
+    "hidden": false,
+    "interface": "list-m2a",
+    "note": null,
+    "options": {
+      "enableSelect": false,
+      "prefix": "{{title}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 8,
+    "special": [
+      "m2a"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

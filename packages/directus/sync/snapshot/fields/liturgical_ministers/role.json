@@ -1,0 +1,131 @@
+{
+  "collection": "liturgical_ministers",
+  "field": "role",
+  "type": "string",
+  "meta": {
+    "collection": "liturgical_ministers",
+    "conditions": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Altar Server",
+          "value": "altar_server"
+        },
+        {
+          "text": "Lector",
+          "value": "lector"
+        },
+        {
+          "text": "Extraordinary Minister of Holy Communion",
+          "value": "emhc"
+        },
+        {
+          "text": "Cantor",
+          "value": "cantor"
+        },
+        {
+          "text": "Organist",
+          "value": "organist"
+        },
+        {
+          "text": "Musician",
+          "value": "musician"
+        },
+        {
+          "text": "Master of Ceremonies",
+          "value": "liturgical_mc"
+        },
+        {
+          "text": "Cross Bearer",
+          "value": "cross_bearer"
+        },
+        {
+          "text": "Candle Bearer",
+          "value": "candle_bearer"
+        },
+        {
+          "text": "Gift Bearer",
+          "value": "gift_bearer"
+        }
+      ]
+    },
+    "field": "role",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": null,
+    "options": {
+      "allowOther": true,
+      "choices": [
+        {
+          "text": "Altar Server",
+          "value": "altar_server"
+        },
+        {
+          "text": "Lector",
+          "value": "lector"
+        },
+        {
+          "text": "Extraordinary Minister of Holy Communion",
+          "value": "emhc"
+        },
+        {
+          "text": "Cantor",
+          "value": "cantor"
+        },
+        {
+          "text": "Organist",
+          "value": "organist"
+        },
+        {
+          "text": "Musician",
+          "value": "musician"
+        },
+        {
+          "text": "Master of Ceremonies",
+          "value": "liturgical_mc"
+        },
+        {
+          "text": "Cross Bearer",
+          "value": "cross_bearer"
+        },
+        {
+          "text": "Candle Bearer",
+          "value": "candle_bearer"
+        },
+        {
+          "text": "Gift Bearer",
+          "value": "gift_bearer"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 3,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "role",
+    "table": "liturgical_ministers",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

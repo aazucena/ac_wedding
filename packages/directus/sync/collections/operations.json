@@ -1,0 +1,777 @@
+[
+  {
+    "name": "Allocate Budget",
+    "key": "allocate_budget",
+    "type": "exec",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data }) {\n  const budget = data.find_budget_category[0];\n  const vendor = data.read_vendor;\n\n  if (!budget) return { skipped: true, reason: 'No budget category found for: ' + vendor.category };\n\n  const contracts = vendor.contracts || [];\n  const totalCost = contracts.reduce((sum, c) => sum + (parseFloat(c.total_value) || 0), 0);\n\n  const currentAllocated = parseFloat(budget.amount_allocated) || 0;\n  const newAllocated = currentAllocated + totalCost;\n\n  const ceiling = parseFloat(budget.ceiling_amount) || 0;\n  const contingency = (budget.contingency_percent || 10) / 100;\n  const effectiveCeiling = ceiling * (1 + contingency);\n  const isOverBudget = newAllocated > effectiveCeiling;\n\n  return {\n    budget_id: budget.id,\n    new_allocated: newAllocated,\n    is_over_budget: isOverBudget,\n    effective_ceiling: effectiveCeiling,\n    vendor_cost: totalCost\n  };\n}"
+    },
+    "resolve": "ef670742-8d3c-481e-9ec9-76d335e2e117",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "e34f2f34-de6b-46c2-b718-b158b679d7b4"
+  },
+  {
+    "name": "Apply Recessional Orders",
+    "key": "apply_recessional_orders",
+    "type": "exec",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data, services, database, getSchema }) {\n  const { ItemsService } = services;\n  const schema = await getSchema();\n  const entourageService = new ItemsService('entourage', { database, schema });\n\n  const updates = data.compute_recessional.updates;\n  if (!updates || updates.length === 0) return { updated: 0 };\n\n  // Update each member's recessional_order individually\n  // (Directus updateMany sets the same value for all — we need per-item updates)\n  await Promise.all(\n    updates.map(({ id, recessional_order }) =>\n      entourageService.updateOne(id, { recessional_order })\n    )\n  );\n\n  return { updated: updates.length };\n}"
+    },
+    "resolve": "e6765ecd-5608-4f18-974b-576444575d5c",
+    "reject": null,
+    "flow": "d2de6d84-28bf-4827-93ae-33cf2af06c1a",
+    "_syncId": "86da0433-0e71-4b92-bb69-92acc14bbb81"
+  },
+  {
+    "name": "Check Already Sent",
+    "key": "check_already_sent",
+    "type": "condition",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "read_guest": {
+          "invitation_sent": {
+            "_eq": false
+          }
+        }
+      }
+    },
+    "resolve": "07e6a6e5-1538-4855-ae32-d8730a83473f",
+    "reject": "f121e487-4e65-4f4a-bd95-acab160b7b6b",
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "41526457-33fa-47d9-b43a-657741f9e156"
+  },
+  {
+    "name": "Check Deadline & Mark Non-Responders",
+    "key": "check_and_mark",
+    "type": "exec",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data, services, database, getSchema }) {\n  const { ItemsService } = services;\n  const schema = await getSchema();\n\n  // Read RSVP deadline from settings\n  const settingsService = new ItemsService('wedding_settings', { database, schema });\n  const settings = await settingsService.readOne(1, { fields: ['rsvp_deadline'] });\n\n  if (!settings?.rsvp_deadline) {\n    return { skipped: true, reason: 'No rsvp_deadline set in wedding_settings' };\n  }\n\n  const deadline = new Date(settings.rsvp_deadline);\n  const now = new Date();\n\n  if (now <= deadline) {\n    return { skipped: true, reason: 'Deadline has not passed yet', deadline: settings.rsvp_deadline };\n  }\n\n  // Batch-update all parties that have not responded\n  const partiesService = new ItemsService('parties', { database, schema });\n  const updated = await partiesService.updateByQuery(\n    {\n      filter: {\n        _and: [\n          { status: { _nin: ['confirmed', 'declined', 'no_response'] } }\n        ]\n      }\n    },\n    { status: 'no_response' }\n  );\n\n  return {\n    marked: Array.isArray(updated) ? updated.length : 0,\n    deadline: settings.rsvp_deadline,\n    ran_at: now.toISOString()\n  };\n}"
+    },
+    "resolve": "bcb61151-97c2-4c29-af32-42b4cdbe80b6",
+    "reject": "bcb61151-97c2-4c29-af32-42b4cdbe80b6",
+    "flow": "c1be7af0-4b8b-4d6c-bcd7-5a03826481e3",
+    "_syncId": "86775c11-c593-4874-b669-8b33fcb9a874"
+  },
+  {
+    "name": "Check Over Budget",
+    "key": "check_over_budget_alert",
+    "type": "condition",
+    "position_x": 109,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "allocate_budget.is_over_budget": {
+          "_eq": true
+        }
+      }
+    },
+    "resolve": "c3ecb221-fec7-4c8d-ab83-0737ec82a9b2",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "7631effe-598c-4b4e-ad7e-ceab0f4b5a86"
+  },
+  {
+    "name": "Check Status = Booked",
+    "key": "check_status_booked",
+    "type": "condition",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "read_vendor.status": {
+          "_eq": "booked"
+        }
+      }
+    },
+    "resolve": "3cf45c72-677d-49e4-aff3-389ee236f1e2",
+    "reject": "db3c4e55-03a5-4b16-bb98-e7d8fa996ae3",
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "df3aecf0-502a-46c3-99f1-568e21c1b25c"
+  },
+  {
+    "name": "Check Status = Cancelled",
+    "key": "check_status_cancelled",
+    "type": "condition",
+    "position_x": 37,
+    "position_y": 19,
+    "options": {
+      "filter": {
+        "read_vendor.status": {
+          "_eq": "cancelled"
+        }
+      }
+    },
+    "resolve": "926e4b42-fa2f-4f19-847e-621a354399b0",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "db3c4e55-03a5-4b16-bb98-e7d8fa996ae3"
+  },
+  {
+    "name": "Check Status = Paid",
+    "key": "check_status_paid",
+    "type": "condition",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "read_vendor.status": {
+          "_eq": "paid"
+        }
+      }
+    },
+    "resolve": "e31e26e4-dea6-4c8c-b477-61684e58492b",
+    "reject": null,
+    "flow": "5499f98e-2875-4bc7-89b5-22e4871cedfb",
+    "_syncId": "af1d883c-06bc-4bd5-a1ca-e4b2d7c91c1f"
+  },
+  {
+    "name": "Check Token Valid",
+    "key": "check_token_valid",
+    "type": "condition",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "find_guest[0]": {
+          "_nnull": true
+        }
+      }
+    },
+    "resolve": "7907fe95-75eb-46c8-9687-57352baa418e",
+    "reject": "fde7e417-0271-415c-a864-514b1d1a131c",
+    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
+    "_syncId": "077d9a6b-cc22-4c47-a06d-8d70cc6ce5b8"
+  },
+  {
+    "name": "Compute New Amount Paid",
+    "key": "compute_payment",
+    "type": "exec",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data }) {\n  const budget = data.find_budget_category[0];\n  const vendor = data.read_vendor;\n\n  if (!budget) return { skipped: true };\n\n  const contracts = vendor.contracts || [];\n  const totalCost = contracts.reduce((sum, c) => sum + (parseFloat(c.total_value) || 0), 0);\n\n  const currentPaid = parseFloat(budget.amount_paid) || 0;\n\n  return {\n    budget_id: budget.id,\n    new_amount_paid: currentPaid + totalCost\n  };\n}"
+    },
+    "resolve": "9e5b4753-b4c2-41f2-a025-992377a9d8f5",
+    "reject": null,
+    "flow": "5499f98e-2875-4bc7-89b5-22e4871cedfb",
+    "_syncId": "5863dd96-3cc5-4ea4-ad72-f548aa8fbc00"
+  },
+  {
+    "name": "Compute Recessional Orders",
+    "key": "compute_recessional",
+    "type": "exec",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data }) {\n  const members = data.fetch_all;\n  if (!members || members.length === 0) return { updates: [] };\n\n  // Couple roles always exit first (recessional_order = 1)\n  const COUPLE_ROLES = ['bride', 'groom'];\n\n  const withOrder = members.filter(m => m.sequence_order !== null);\n  const maxOrder = Math.max(...withOrder.map(m => m.sequence_order));\n\n  const updates = members.map(member => {\n    const isCouple = COUPLE_ROLES.includes(member.role);\n    const recessionalOrder = isCouple\n      ? 1\n      : (maxOrder + 1) - member.sequence_order;\n\n    return {\n      id: member.id,\n      recessional_order: recessionalOrder\n    };\n  });\n\n  return { updates, count: updates.length };\n}"
+    },
+    "resolve": "86da0433-0e71-4b92-bb69-92acc14bbb81",
+    "reject": null,
+    "flow": "d2de6d84-28bf-4827-93ae-33cf2af06c1a",
+    "_syncId": "108ce3dd-0aba-4e88-90cc-01051e8669df"
+  },
+  {
+    "name": "Expose Environment Constants",
+    "key": "constants",
+    "type": "exec",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ $trigger }) {\n  return {\n    public_url: process.env.PUBLIC_URL ?? 'https://wedding.aazucena.com',\n    directus_url: $trigger.headers.origin ?? 'https://planner.aazucena.com'\n  };\n}"
+    },
+    "resolve": "dd7fb5eb-77ae-4cc8-b39f-1317c934489d",
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "7bbcd639-4224-4d25-bdfb-46ac1f118506"
+  },
+  {
+    "name": "Create Failed Invitation Record",
+    "key": "create_failed_invitation_record",
+    "type": "item-create",
+    "position_x": 109,
+    "position_y": 19,
+    "options": {
+      "collection": "invitations",
+      "payload": {
+        "party": "{{read_guest.id}}",
+        "channel": "email",
+        "status": "failed",
+        "template_version": "v1",
+        "error_message": "SMTP send failed — check Directus email settings"
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "233bb294-3e54-4e69-bd27-d64385c4fd65"
+  },
+  {
+    "name": "Fetch All Entourage",
+    "key": "fetch_all",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "collection": "entourage",
+      "query": {
+        "limit": -1,
+        "fields": [
+          "id",
+          "role",
+          "sequence_order"
+        ],
+        "sort": [
+          "sequence_order"
+        ]
+      }
+    },
+    "resolve": "108ce3dd-0aba-4e88-90cc-01051e8669df",
+    "reject": null,
+    "flow": "d2de6d84-28bf-4827-93ae-33cf2af06c1a",
+    "_syncId": "389d9a31-7fa5-4a14-ab3d-d2c00f107d64"
+  },
+  {
+    "name": "Find Budget Category",
+    "key": "find_budget_category",
+    "type": "item-read",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "collection": "budget_categories",
+      "query": {
+        "filter": {
+          "name": {
+            "_eq": "{{read_vendor.category}}"
+          }
+        },
+        "limit": 1
+      }
+    },
+    "resolve": "5863dd96-3cc5-4ea4-ad72-f548aa8fbc00",
+    "reject": null,
+    "flow": "5499f98e-2875-4bc7-89b5-22e4871cedfb",
+    "_syncId": "e31e26e4-dea6-4c8c-b477-61684e58492b"
+  },
+  {
+    "name": "Find Budget Category",
+    "key": "find_budget_category",
+    "type": "item-read",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "collection": "budget_categories",
+      "query": {
+        "filter": {
+          "name": {
+            "_eq": "{{read_vendor.category}}"
+          }
+        },
+        "limit": 1
+      }
+    },
+    "resolve": "e34f2f34-de6b-46c2-b718-b158b679d7b4",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "3cf45c72-677d-49e4-aff3-389ee236f1e2"
+  },
+  {
+    "name": "Find Budget Category for Reversal",
+    "key": "find_budget_category_for_reversal",
+    "type": "item-read",
+    "position_x": 55,
+    "position_y": 19,
+    "options": {
+      "collection": "budget_categories",
+      "query": {
+        "filter": {
+          "name": {
+            "_eq": "{{read_vendor.category}}"
+          }
+        },
+        "limit": 1
+      }
+    },
+    "resolve": "6f9ba512-69be-4229-bb37-0994d52f49ad",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "926e4b42-fa2f-4f19-847e-621a354399b0"
+  },
+  {
+    "name": "Find Guest by Token",
+    "key": "find_guest",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "collection": "guests",
+      "query": {
+        "filter": {
+          "rsvp_token": {
+            "_eq": "{{$trigger.body.token}}"
+          }
+        },
+        "limit": 1
+      }
+    },
+    "resolve": "077d9a6b-cc22-4c47-a06d-8d70cc6ce5b8",
+    "reject": null,
+    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
+    "_syncId": "1451dee9-d112-40c8-beb1-d2ebbe83724e"
+  },
+  {
+    "name": "Generate UUID Token",
+    "key": "generate_token",
+    "type": "exec",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data }) {\n  const { randomUUID } = await import('crypto');\n  return { rsvp_token: randomUUID() };\n}"
+    },
+    "resolve": "6ad5491c-8edd-4f65-afc8-d93b9dcd46f0",
+    "reject": null,
+    "flow": "9978a209-4a98-429c-b32e-d233ecef70b7",
+    "_syncId": "5891d591-64b1-477a-a83d-d186a3a5f015"
+  },
+  {
+    "name": "Log Already Sent (skip)",
+    "key": "log_already_sent",
+    "type": "log",
+    "position_x": 37,
+    "position_y": 19,
+    "options": {
+      "message": "Invitation already sent to party '{{read_guest.name}}' — skipping."
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "f121e487-4e65-4f4a-bd95-acab160b7b6b"
+  },
+  {
+    "name": "Log Complete",
+    "key": "log_complete",
+    "type": "log",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "message": "Recessional order synced for {{apply_recessional_orders.updated}} entourage member(s)."
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "d2de6d84-28bf-4827-93ae-33cf2af06c1a",
+    "_syncId": "e6765ecd-5608-4f18-974b-576444575d5c"
+  },
+  {
+    "name": "Log Email Error",
+    "key": "log_email_error",
+    "type": "log",
+    "position_x": 91,
+    "position_y": 19,
+    "options": {
+      "message": "Failed to send email to party '{{read_guest.name}}' ({{read_guest.representative.email}})"
+    },
+    "resolve": "233bb294-3e54-4e69-bd27-d64385c4fd65",
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "0ba7cc00-e6b1-4d21-97a7-2d8c36ace7a5"
+  },
+  {
+    "name": "Create Invitation Log",
+    "key": "log_invitation",
+    "type": "item-create",
+    "position_x": 109,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "invitations",
+      "payload": {
+        "party": "{{read_guest.id}}",
+        "channel": "email",
+        "status": "sent",
+        "template_version": "v1"
+      }
+    },
+    "resolve": "9c4bcaf8-3e25-4e84-a25a-a501add45c23",
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "a00ac0fd-6e91-4344-be93-279332e1929b"
+  },
+  {
+    "name": "Log Result",
+    "key": "log_result",
+    "type": "log",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "message": "Flow 04 — skipped={{check_and_mark.skipped}} marked={{check_and_mark.marked}} reason={{check_and_mark.reason}}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "c1be7af0-4b8b-4d6c-bcd7-5a03826481e3",
+    "_syncId": "bcb61151-97c2-4c29-af32-42b4cdbe80b6"
+  },
+  {
+    "name": "Mark Party as Invited",
+    "key": "mark_party_invited",
+    "type": "item-update",
+    "position_x": 148,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "parties",
+      "key": "{{read_guest.id}}",
+      "payload": {
+        "invitation_sent": true,
+        "date_invitation_sent": "{{ today }}"
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "85a1d866-99a0-4249-a176-37524ba43067"
+  },
+  {
+    "name": "Read Party Record",
+    "key": "read_guest",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "collection": "parties",
+      "key": "{{$trigger.body.keys[0]}}",
+      "query": {
+        "fields": [
+          "*",
+          "representative.email",
+          "representative.first_name"
+        ]
+      }
+    },
+    "resolve": "41526457-33fa-47d9-b43a-657741f9e156",
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "de40a93e-ec6c-4aa3-8c41-e159bfe4c20b"
+  },
+  {
+    "name": "Read Updated Vendor",
+    "key": "read_vendor",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "collection": "vendors",
+      "key": "{{$trigger.key}}",
+      "query": {
+        "fields": [
+          "*",
+          "contracts.total_value"
+        ]
+      }
+    },
+    "resolve": "af1d883c-06bc-4bd5-a1ca-e4b2d7c91c1f",
+    "reject": null,
+    "flow": "5499f98e-2875-4bc7-89b5-22e4871cedfb",
+    "_syncId": "b8ae2817-5208-482e-b354-5ab25203499e"
+  },
+  {
+    "name": "Read Updated Vendor",
+    "key": "read_vendor",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "collection": "vendors",
+      "key": "{{$trigger.key}}",
+      "query": {
+        "fields": [
+          "*",
+          "contracts.total_value"
+        ]
+      }
+    },
+    "resolve": "df3aecf0-502a-46c3-99f1-568e21c1b25c",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "f204c9ef-9a5d-4a7f-a799-13dc7076ac79"
+  },
+  {
+    "name": "Read Wedding Settings",
+    "key": "read_wedding_settings",
+    "type": "item-read",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "wedding_settings",
+      "key": null,
+      "query": {
+        "fields": [
+          "hashtag",
+          "email",
+          "rsvp_deadline",
+          "color_primary",
+          "color_secondary",
+          "groom.first_name",
+          "bride.first_name",
+          "ceremony.start_time",
+          "ceremony.venue.name",
+          "ceremony.venue.address_line1",
+          "ceremony.venue.city",
+          "ceremony.venue.maps_url",
+          "reception.start_time",
+          "reception.venue.name",
+          "reception.venue.address_line1",
+          "reception.venue.city",
+          "accomodation.vendor.name",
+          "accomodation.booking_url",
+          "emblem",
+          "insignia"
+        ]
+      }
+    },
+    "resolve": "7bbcd639-4224-4d25-bdfb-46ac1f118506",
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "07e6a6e5-1538-4855-ae32-d8730a83473f"
+  },
+  {
+    "name": "Return Invalid Token",
+    "key": "return_invalid_token",
+    "type": "trigger",
+    "position_x": 37,
+    "position_y": 19,
+    "options": {
+      "response": {
+        "status": 404,
+        "body": {
+          "error": "Invalid or expired RSVP token."
+        }
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
+    "_syncId": "fde7e417-0271-415c-a864-514b1d1a131c"
+  },
+  {
+    "name": "Return Success",
+    "key": "return_success",
+    "type": "trigger",
+    "position_x": 91,
+    "position_y": 1,
+    "options": {
+      "response": {
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "RSVP received. Thank you!"
+        }
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
+    "_syncId": "aee09681-3e25-4ebb-b189-5e393c6e68aa"
+  },
+  {
+    "name": "Reverse Budget Allocation",
+    "key": "reverse_allocation",
+    "type": "exec",
+    "position_x": 73,
+    "position_y": 19,
+    "options": {
+      "code": "module.exports = async function({ data }) {\n  const budget = data.find_budget_category_for_reversal[0];\n  const vendor = data.read_vendor;\n\n  if (!budget) return { skipped: true };\n\n  const contracts = vendor.contracts || [];\n  const totalCost = contracts.reduce((sum, c) => sum + (parseFloat(c.total_value) || 0), 0);\n\n  const currentAllocated = parseFloat(budget.amount_allocated) || 0;\n  const newAllocated = Math.max(0, currentAllocated - totalCost);\n\n  const ceiling = parseFloat(budget.ceiling_amount) || 0;\n  const contingency = (budget.contingency_percent || 10) / 100;\n  const effectiveCeiling = ceiling * (1 + contingency);\n  const isOverBudget = newAllocated > effectiveCeiling;\n\n  return {\n    budget_id: budget.id,\n    new_allocated: newAllocated,\n    is_over_budget: isOverBudget\n  };\n}"
+    },
+    "resolve": "474bbc9f-5583-448b-949c-f44008550816",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "6f9ba512-69be-4229-bb37-0994d52f49ad"
+  },
+  {
+    "name": "Send Confirmation Email",
+    "key": "send_confirmation_email",
+    "type": "mail",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "to": [
+        "{{find_guest[0].email}}"
+      ],
+      "subject": "RSVP Confirmed — Aldrin & Christine, September 26, 2026",
+      "type": "html",
+      "body": "<!DOCTYPE html><html><head><meta charset='utf-8'><style>body{font-family:Georgia,serif;background:#faf7f2;margin:0;padding:0}.wrapper{max-width:600px;margin:0 auto;background:#fff}.header{background:#2c2c2c;padding:40px 32px;text-align:center}.header h1{color:#e8d5a3;font-size:28px;margin:0;letter-spacing:3px;font-weight:400}.body{padding:40px;text-align:center;color:#555}.body h2{color:#2c2c2c;font-weight:400}.body p{line-height:1.8}.footer{background:#f5f0e8;padding:24px;text-align:center;color:#999;font-size:12px}</style></head><body><div class='wrapper'><div class='header'><h1>Thank You, {{find_guest[0].first_name}}!</h1></div><div class='body'><h2>Your RSVP has been received.</h2><p>We're so glad you'll be joining us on September 26, 2026 to celebrate our wedding day.</p><p>We'll be in touch with more details as the day approaches.</p><p>With love,<br><strong>Aldrin &amp; Christine</strong></p></div><div class='footer'><p>Questions? Reach us at our wedding email.</p></div></div></body></html>"
+    },
+    "resolve": "aee09681-3e25-4ebb-b189-5e393c6e68aa",
+    "reject": "aee09681-3e25-4ebb-b189-5e393c6e68aa",
+    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
+    "_syncId": "6f564a03-b7a9-4cc7-acb5-415f85447e83"
+  },
+  {
+    "name": "Send HTML Email",
+    "key": "send_email",
+    "type": "mail",
+    "position_x": 91,
+    "position_y": 1,
+    "options": {
+      "type": "template",
+      "to": [
+        "{{read_guest.representative.email}}"
+      ],
+      "subject": "You're Invited! {{read_wedding_settings[0].groom.first_name}} & {{read_wedding_settings[0].bride.first_name}} — September 26, 2026",
+      "template": "invitation",
+      "data": {
+        "read_wedding_settings": "{{ read_wedding_settings[0] }}",
+        "read_guest": "{{ read_guest }}",
+        "constants": "{{ constants }}"
+      }
+    },
+    "resolve": "a00ac0fd-6e91-4344-be93-279332e1929b",
+    "reject": "0ba7cc00-e6b1-4d21-97a7-2d8c36ace7a5",
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "dd7fb5eb-77ae-4cc8-b39f-1317c934489d"
+  },
+  {
+    "name": "Send Over-Budget Alert",
+    "key": "send_over_budget_alert",
+    "type": "mail",
+    "position_x": 127,
+    "position_y": 1,
+    "options": {
+      "to": [
+        "{{$env.ADMIN_EMAIL}}"
+      ],
+      "subject": "⚠️ Budget Alert — {{read_vendor.category}} is over budget",
+      "type": "html",
+      "body": "<p>Hi,</p><p>The <strong>{{read_vendor.category}}</strong> budget category has exceeded its effective ceiling after booking <strong>{{read_vendor.name}}</strong>.</p><ul><li>Vendor contract total: {{allocate_budget.vendor_cost}}</li><li>Total allocated: {{allocate_budget.new_allocated}}</li><li>Effective ceiling (with contingency): {{allocate_budget.effective_ceiling}}</li></ul><p>Please review the budget in your wedding planner.</p>"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "c3ecb221-fec7-4c8d-ab83-0737ec82a9b2"
+  },
+  {
+    "name": "Today",
+    "key": "today",
+    "type": "exec",
+    "position_x": 127,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function(data) {\n\t// Do something...\n\treturn new Date().toISOString();\n}"
+    },
+    "resolve": "85a1d866-99a0-4249-a176-37524ba43067",
+    "reject": null,
+    "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
+    "_syncId": "9c4bcaf8-3e25-4e84-a25a-a501add45c23"
+  },
+  {
+    "name": "Update Amount Paid",
+    "key": "update_amount_paid",
+    "type": "item-update",
+    "position_x": 91,
+    "position_y": 1,
+    "options": {
+      "collection": "budget_categories",
+      "key": "{{compute_payment.budget_id}}",
+      "payload": {
+        "amount_paid": "{{compute_payment.new_amount_paid}}"
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "5499f98e-2875-4bc7-89b5-22e4871cedfb",
+    "_syncId": "9e5b4753-b4c2-41f2-a025-992377a9d8f5"
+  },
+  {
+    "name": "Update Budget Category",
+    "key": "update_budget_category",
+    "type": "item-update",
+    "position_x": 91,
+    "position_y": 1,
+    "options": {
+      "collection": "budget_categories",
+      "key": "{{allocate_budget.budget_id}}",
+      "payload": {
+        "amount_allocated": "{{allocate_budget.new_allocated}}",
+        "is_over_budget": "{{allocate_budget.is_over_budget}}"
+      }
+    },
+    "resolve": "7631effe-598c-4b4e-ad7e-ceab0f4b5a86",
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "ef670742-8d3c-481e-9ec9-76d335e2e117"
+  },
+  {
+    "name": "Update Budget on Cancel",
+    "key": "update_budget_on_cancel",
+    "type": "item-update",
+    "position_x": 91,
+    "position_y": 19,
+    "options": {
+      "collection": "budget_categories",
+      "key": "{{reverse_allocation.budget_id}}",
+      "payload": {
+        "amount_allocated": "{{reverse_allocation.new_allocated}}",
+        "is_over_budget": "{{reverse_allocation.is_over_budget}}"
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
+    "_syncId": "474bbc9f-5583-448b-949c-f44008550816"
+  },
+  {
+    "name": "Update Guest RSVP Fields",
+    "key": "update_guest_rsvp",
+    "type": "item-update",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "collection": "guests",
+      "key": "{{find_guest[0].id}}",
+      "payload": {
+        "status": "{{$trigger.body.attending == true ? 'confirmed' : 'declined'}}",
+        "plus_ones_confirmed": "{{$trigger.body.plus_ones_confirmed}}",
+        "meal_preference": "{{$trigger.body.meal_preference}}",
+        "dietary_restrictions": "{{$trigger.body.dietary_restrictions}}",
+        "hotel_required": "{{$trigger.body.hotel_required}}",
+        "transportation_required": "{{$trigger.body.transportation_required}}",
+        "song_request": "{{$trigger.body.song_request}}",
+        "message_to_couple": "{{$trigger.body.message_to_couple}}",
+        "rsvp_submitted_at": "{{$now}}"
+      }
+    },
+    "resolve": "6f564a03-b7a9-4cc7-acb5-415f85447e83",
+    "reject": null,
+    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
+    "_syncId": "7907fe95-75eb-46c8-9687-57352baa418e"
+  },
+  {
+    "name": "Write Token to Party",
+    "key": "update_party",
+    "type": "item-update",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "collection": "parties",
+      "key": "{{$trigger.key}}",
+      "payload": {
+        "rsvp_token": "{{generate_token.rsvp_token}}"
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "9978a209-4a98-429c-b32e-d233ecef70b7",
+    "_syncId": "6ad5491c-8edd-4f65-afc8-d93b9dcd46f0"
+  }
+]

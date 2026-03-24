@@ -1,0 +1,51 @@
+{
+  "collection": "wedding_settings",
+  "field": "return_address_region",
+  "type": "string",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "return_address_region",
+    "group": "return_address",
+    "hidden": false,
+    "interface": "input",
+    "note": null,
+    "options": {
+      "placeholder": "e.g. \"AB\""
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 3,
+    "special": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Province / State / Region"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "return_address_region",
+    "table": "wedding_settings",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

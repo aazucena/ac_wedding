@@ -1,0 +1,122 @@
+{
+  "collection": "vendors",
+  "field": "social_media",
+  "type": "json",
+  "meta": {
+    "collection": "vendors",
+    "conditions": null,
+    "display": "formatted-json-value",
+    "display_options": {
+      "format": "{{ platform }}"
+    },
+    "field": "social_media",
+    "group": null,
+    "hidden": false,
+    "interface": "list",
+    "note": null,
+    "options": {
+      "fields": [
+        {
+          "field": "platform",
+          "meta": {
+            "display": "labels",
+            "display_options": {
+              "choices": [
+                {
+                  "text": "Facebook",
+                  "value": "facebook"
+                },
+                {
+                  "text": "Instagram",
+                  "value": "instagram"
+                },
+                {
+                  "text": "Pinterest",
+                  "value": "pinterest"
+                },
+                {
+                  "text": "Twitter/X",
+                  "value": "twitter"
+                }
+              ]
+            },
+            "field": "platform",
+            "interface": "select-dropdown",
+            "options": {
+              "allowOther": true,
+              "choices": [
+                {
+                  "text": "Facebook",
+                  "value": "facebook"
+                },
+                {
+                  "text": "Instagram",
+                  "value": "instagram"
+                },
+                {
+                  "text": "Pinterest",
+                  "value": "pinterest"
+                },
+                {
+                  "text": "Twitter/X",
+                  "value": "twitter"
+                }
+              ]
+            },
+            "required": true,
+            "type": "string",
+            "width": "full"
+          },
+          "name": "platform",
+          "type": "string"
+        },
+        {
+          "field": "url",
+          "meta": {
+            "field": "url",
+            "interface": "extension-masked-input",
+            "options": {
+              "storeMasked": true,
+              "templateType": "url"
+            },
+            "required": true,
+            "type": "string",
+            "width": "full"
+          },
+          "name": "url",
+          "type": "string"
+        }
+      ],
+      "template": "{{ platform }}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 14,
+    "special": [
+      "cast-json"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "social_media",
+    "table": "vendors",
+    "data_type": "json",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

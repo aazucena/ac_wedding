@@ -1,0 +1,32 @@
+{
+  "collection": "reception",
+  "field": "memories",
+  "type": "alias",
+  "meta": {
+    "collection": "reception",
+    "conditions": null,
+    "display": "related-values",
+    "display_options": null,
+    "field": "memories",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": null,
+    "options": {
+      "enableLink": true,
+      "enableSelect": false,
+      "template": "{{title}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 11,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

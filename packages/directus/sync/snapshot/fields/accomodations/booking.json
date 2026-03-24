@@ -1,0 +1,30 @@
+{
+  "collection": "accomodations",
+  "field": "booking",
+  "type": "alias",
+  "meta": {
+    "collection": "accomodations",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "booking",
+    "group": "accordion",
+    "hidden": false,
+    "interface": "group-raw",
+    "note": null,
+    "options": null,
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 1,
+    "special": [
+      "alias",
+      "no-data",
+      "group"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

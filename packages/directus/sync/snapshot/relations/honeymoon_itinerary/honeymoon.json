@@ -1,0 +1,25 @@
+{
+  "collection": "honeymoon_itinerary",
+  "field": "honeymoon",
+  "related_collection": "honeymoon",
+  "meta": {
+    "junction_field": "item",
+    "many_collection": "honeymoon_itinerary",
+    "many_field": "honeymoon",
+    "one_allowed_collections": null,
+    "one_collection": "honeymoon",
+    "one_collection_field": null,
+    "one_deselect_action": "delete",
+    "one_field": "itinerary",
+    "sort_field": "sort"
+  },
+  "schema": {
+    "table": "honeymoon_itinerary",
+    "column": "honeymoon",
+    "foreign_key_table": "honeymoon",
+    "foreign_key_column": "id",
+    "constraint_name": "honeymoon_itinerary_honeymoon_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "NO ACTION"
+  }
+}

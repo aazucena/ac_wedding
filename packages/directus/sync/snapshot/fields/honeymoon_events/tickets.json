@@ -1,0 +1,129 @@
+{
+  "collection": "honeymoon_events",
+  "field": "tickets",
+  "type": "json",
+  "meta": {
+    "collection": "honeymoon_events",
+    "conditions": null,
+    "display": "formatted-json-value",
+    "display_options": {
+      "format": "{{ label }}"
+    },
+    "field": "tickets",
+    "group": null,
+    "hidden": false,
+    "interface": "list",
+    "note": null,
+    "options": {
+      "fields": [
+        {
+          "field": "label",
+          "meta": {
+            "field": "label",
+            "interface": "input",
+            "required": true,
+            "type": "string",
+            "width": "full"
+          },
+          "name": "label",
+          "type": "string"
+        },
+        {
+          "field": "url",
+          "meta": {
+            "field": "url",
+            "interface": "input",
+            "note": "URL to purchase tickets.",
+            "required": false,
+            "type": "string",
+            "width": "full"
+          },
+          "name": "url",
+          "type": "string"
+        },
+        {
+          "field": "quantity",
+          "meta": {
+            "field": "quantity",
+            "interface": "input",
+            "required": true,
+            "type": "integer",
+            "width": "full"
+          },
+          "name": "quantity",
+          "type": "integer"
+        },
+        {
+          "field": "price",
+          "meta": {
+            "field": "price",
+            "interface": "input",
+            "note": "Price per ticket",
+            "options": {
+              "placeholder": "0.00"
+            },
+            "required": true,
+            "type": "decimal",
+            "width": "full"
+          },
+          "name": "price",
+          "type": "decimal"
+        },
+        {
+          "field": "purchased",
+          "meta": {
+            "field": "purchased",
+            "interface": "boolean",
+            "required": false,
+            "type": "boolean",
+            "width": "full"
+          },
+          "name": "purchased",
+          "type": "boolean"
+        },
+        {
+          "field": "date_purchased",
+          "meta": {
+            "field": "date_purchased",
+            "interface": "datetime",
+            "required": false,
+            "type": "date",
+            "width": "full"
+          },
+          "name": "date_purchased",
+          "type": "date"
+        }
+      ],
+      "template": "{{ label }}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 3,
+    "special": [
+      "cast-json"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "tickets",
+    "table": "honeymoon_events",
+    "data_type": "json",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

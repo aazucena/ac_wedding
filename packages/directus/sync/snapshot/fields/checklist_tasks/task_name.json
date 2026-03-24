@@ -1,0 +1,51 @@
+{
+  "collection": "checklist_tasks",
+  "field": "task_name",
+  "type": "string",
+  "meta": {
+    "collection": "checklist_tasks",
+    "conditions": null,
+    "display": "formatted-value",
+    "display_options": null,
+    "field": "task_name",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Short, actionable task description.",
+    "options": {
+      "placeholder": "e.g. Book church walk-through, Send save-the-dates"
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 7,
+    "special": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Task"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "task_name",
+    "table": "checklist_tasks",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": false,
+    "is_unique": true,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

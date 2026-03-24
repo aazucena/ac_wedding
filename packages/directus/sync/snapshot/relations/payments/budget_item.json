@@ -1,0 +1,25 @@
+{
+  "collection": "payments",
+  "field": "budget_item",
+  "related_collection": "budget_items",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "payments",
+    "many_field": "budget_item",
+    "one_allowed_collections": null,
+    "one_collection": "budget_items",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": "payments",
+    "sort_field": null
+  },
+  "schema": {
+    "table": "payments",
+    "column": "budget_item",
+    "foreign_key_table": "budget_items",
+    "foreign_key_column": "id",
+    "constraint_name": "payments_budget_item_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "SET NULL"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "collection": "persons",
+  "field": "email",
+  "type": "string",
+  "meta": {
+    "collection": "persons",
+    "conditions": null,
+    "display": "extension-display-link",
+    "display_options": {
+      "kind": "email"
+    },
+    "field": "email",
+    "group": null,
+    "hidden": false,
+    "interface": "extension-masked-input",
+    "note": null,
+    "options": {
+      "storeMasked": true,
+      "templateType": "email"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 7,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "half"
+  },
+  "schema": {
+    "name": "email",
+    "table": "persons",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

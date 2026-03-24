@@ -1,0 +1,93 @@
+{
+  "collection": "wedding_settings",
+  "field": "faqs",
+  "type": "json",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": "formatted-json-value",
+    "display_options": {
+      "format": "{{ question }}"
+    },
+    "field": "faqs",
+    "group": null,
+    "hidden": false,
+    "interface": "list",
+    "note": null,
+    "options": {
+      "fields": [
+        {
+          "field": "question",
+          "meta": {
+            "field": "question",
+            "interface": "input",
+            "required": true,
+            "type": "string",
+            "width": "full"
+          },
+          "name": "question",
+          "type": "string"
+        },
+        {
+          "field": "answer",
+          "meta": {
+            "field": "answer",
+            "interface": "input-rich-text-md",
+            "options": {
+              "toolbar": [
+                "bold",
+                "italic",
+                "strikethrough",
+                "bullist",
+                "numlist",
+                "code",
+                "empty",
+                "link"
+              ]
+            },
+            "required": true,
+            "type": "text",
+            "width": "full"
+          },
+          "name": "answer",
+          "type": "text"
+        }
+      ],
+      "template": "{{ question }}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 19,
+    "special": [
+      "cast-json"
+    ],
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "FAQs"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "faqs",
+    "table": "wedding_settings",
+    "data_type": "json",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

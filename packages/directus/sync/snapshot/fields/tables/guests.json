@@ -1,0 +1,33 @@
+{
+  "collection": "tables",
+  "field": "guests",
+  "type": "alias",
+  "meta": {
+    "collection": "tables",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "guests",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": "Optional override for individual guests within a party who sit at a different table.  Covers edge cases like a large family split across two tables, or a guest with accessibility needs moved to a specific table.",
+    "options": {
+      "enableCreate": false,
+      "enableLink": true,
+      "sort": null,
+      "template": "{{person.first_name}} {{person.last_name}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 6,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

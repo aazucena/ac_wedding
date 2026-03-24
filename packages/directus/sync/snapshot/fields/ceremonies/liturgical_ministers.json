@@ -1,0 +1,31 @@
+{
+  "collection": "ceremonies",
+  "field": "liturgical_ministers",
+  "type": "alias",
+  "meta": {
+    "collection": "ceremonies",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "liturgical_ministers",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": null,
+    "options": {
+      "enableLink": true,
+      "template": "{{person.first_name}} {{person.last_name}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 11,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

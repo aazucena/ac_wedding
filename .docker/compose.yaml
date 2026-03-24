@@ -51,6 +51,7 @@ services:
       - ../packages/directus/extensions:/directus/extensions
       - ../packages/directus/schemas:/directus/schemas
       - ../packages/directus/templates:/directus/templates
+      - ../packages/directus/sync:/directus/sync
     depends_on:
       database:
         condition: service_healthy

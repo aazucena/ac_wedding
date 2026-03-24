@@ -1,0 +1,66 @@
+{
+  "collection": "persons",
+  "field": "gender",
+  "type": "string",
+  "meta": {
+    "collection": "persons",
+    "conditions": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Male",
+          "value": "male"
+        },
+        {
+          "text": "Female",
+          "value": "female"
+        }
+      ]
+    },
+    "field": "gender",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": "Required — used for processional pairing and printed materials",
+    "options": {
+      "choices": [
+        {
+          "text": "Male",
+          "value": "male"
+        },
+        {
+          "text": "Female",
+          "value": "female"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 6,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "gender",
+    "table": "persons",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

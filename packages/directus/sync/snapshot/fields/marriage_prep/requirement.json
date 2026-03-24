@@ -1,0 +1,46 @@
+{
+  "collection": "marriage_prep",
+  "field": "requirement",
+  "type": "string",
+  "meta": {
+    "collection": "marriage_prep",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "requirement",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Name of the canonical, civil, or sacramental requirement. This is the primary identifier for this record.",
+    "options": {
+      "placeholder": "e.g. Pre-Cana Certificate, Baptismal Certificate, Canonical Interview"
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 3,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "requirement",
+    "table": "marriage_prep",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": false,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

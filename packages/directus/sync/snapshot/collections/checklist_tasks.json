@@ -1,0 +1,35 @@
+{
+  "collection": "checklist_tasks",
+  "meta": {
+    "accountability": "all",
+    "archive_app_filter": true,
+    "archive_field": null,
+    "archive_value": null,
+    "collapse": "open",
+    "collection": "checklist_tasks",
+    "color": null,
+    "display_template": null,
+    "group": "wedding_settings",
+    "hidden": false,
+    "icon": "task_alt",
+    "item_duplication_fields": null,
+    "note": "Individual actionable tasks grouped by section",
+    "preview_url": null,
+    "singleton": false,
+    "sort": 6,
+    "sort_field": "sort",
+    "translations": [
+      {
+        "language": "en-US",
+        "plural": "Task",
+        "singular": "Tasks",
+        "translation": "Checklist"
+      }
+    ],
+    "unarchive_value": null,
+    "versioning": false
+  },
+  "schema": {
+    "name": "checklist_tasks"
+  }
+}

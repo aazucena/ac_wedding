@@ -1,0 +1,31 @@
+{
+  "collection": "contracts",
+  "field": "payments",
+  "type": "alias",
+  "meta": {
+    "collection": "contracts",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "payments",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": null,
+    "options": {
+      "enableLink": true,
+      "sort": null
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 8,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

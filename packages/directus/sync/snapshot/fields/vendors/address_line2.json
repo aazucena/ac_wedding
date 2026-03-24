@@ -1,0 +1,51 @@
+{
+  "collection": "vendors",
+  "field": "address_line2",
+  "type": "string",
+  "meta": {
+    "collection": "vendors",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "address_line2",
+    "group": "address",
+    "hidden": false,
+    "interface": "input",
+    "note": "Suite, unit, floor, or building name (optional)",
+    "options": {
+      "placeholder": "Suite 100, Unit 2B"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 2,
+    "special": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Address Line 2"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "address_line2",
+    "table": "vendors",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

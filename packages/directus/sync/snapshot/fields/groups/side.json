@@ -1,0 +1,59 @@
+{
+  "collection": "groups",
+  "field": "side",
+  "type": "string",
+  "meta": {
+    "collection": "groups",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "side",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": null,
+    "options": {
+      "choices": [
+        {
+          "text": "Bride",
+          "value": "bride"
+        },
+        {
+          "text": "Groom",
+          "value": "groom"
+        },
+        {
+          "text": "Both",
+          "value": "both"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 3,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "side",
+    "table": "groups",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

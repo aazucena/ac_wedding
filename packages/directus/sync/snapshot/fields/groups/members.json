@@ -1,0 +1,32 @@
+{
+  "collection": "groups",
+  "field": "members",
+  "type": "alias",
+  "meta": {
+    "collection": "groups",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "members",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": null,
+    "options": {
+      "enableLink": true,
+      "sort": null,
+      "template": "{{name}}"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 5,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

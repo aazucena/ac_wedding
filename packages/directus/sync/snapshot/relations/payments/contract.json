@@ -1,0 +1,25 @@
+{
+  "collection": "payments",
+  "field": "contract",
+  "related_collection": "contracts",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "payments",
+    "many_field": "contract",
+    "one_allowed_collections": null,
+    "one_collection": "contracts",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": "payments",
+    "sort_field": null
+  },
+  "schema": {
+    "table": "payments",
+    "column": "contract",
+    "foreign_key_table": "contracts",
+    "foreign_key_column": "id",
+    "constraint_name": "payments_contract_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "SET NULL"
+  }
+}

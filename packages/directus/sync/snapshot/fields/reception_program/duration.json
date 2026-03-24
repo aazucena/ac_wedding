@@ -1,0 +1,47 @@
+{
+  "collection": "reception_program",
+  "field": "duration",
+  "type": "integer",
+  "meta": {
+    "collection": "reception_program",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "duration",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Estimated duration in minutes. Helps calculate whether the full programme fits within reception_end_time.",
+    "options": {
+      "min": 0,
+      "placeholder": "e.g. 10"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 12,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "duration",
+    "table": "reception_program",
+    "data_type": "integer",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": 32,
+    "numeric_scale": 0,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

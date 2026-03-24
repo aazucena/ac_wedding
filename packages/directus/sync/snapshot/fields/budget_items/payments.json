@@ -1,0 +1,28 @@
+{
+  "collection": "budget_items",
+  "field": "payments",
+  "type": "alias",
+  "meta": {
+    "collection": "budget_items",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "payments",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m",
+    "note": null,
+    "options": null,
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 8,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

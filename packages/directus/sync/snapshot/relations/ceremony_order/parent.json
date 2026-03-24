@@ -1,0 +1,25 @@
+{
+  "collection": "ceremony_order",
+  "field": "parent",
+  "related_collection": "ceremony_order",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "ceremony_order",
+    "many_field": "parent",
+    "one_allowed_collections": null,
+    "one_collection": "ceremony_order",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": "children",
+    "sort_field": "items_sort"
+  },
+  "schema": {
+    "table": "ceremony_order",
+    "column": "parent",
+    "foreign_key_table": "ceremony_order",
+    "foreign_key_column": "id",
+    "constraint_name": "ceremony_order_parent_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "NO ACTION"
+  }
+}

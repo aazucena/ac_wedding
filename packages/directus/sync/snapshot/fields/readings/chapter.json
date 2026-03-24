@@ -1,0 +1,54 @@
+{
+  "collection": "readings",
+  "field": "chapter",
+  "type": "string",
+  "meta": {
+    "collection": "readings",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "chapter",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Chapter number as a string to allow formats like \"13\" or \"3-4\".",
+    "options": {
+      "placeholder": "e.g. 13"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 4,
+    "special": null,
+    "translations": null,
+    "validation": {
+      "_and": [
+        {
+          "chapter": {
+            "_regex": "^\\d+(-\\d+)?$"
+          }
+        }
+      ]
+    },
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "chapter",
+    "table": "readings",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

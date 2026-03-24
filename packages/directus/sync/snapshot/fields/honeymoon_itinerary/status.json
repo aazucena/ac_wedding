@@ -1,0 +1,90 @@
+{
+  "collection": "honeymoon_itinerary",
+  "field": "status",
+  "type": "string",
+  "meta": {
+    "collection": "honeymoon_itinerary",
+    "conditions": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Planned",
+          "value": "planned"
+        },
+        {
+          "text": "Booked",
+          "value": "booked"
+        },
+        {
+          "text": "Confirmed",
+          "value": "confirmed"
+        },
+        {
+          "text": "Completed",
+          "value": "completed"
+        },
+        {
+          "text": "Cancelled",
+          "value": "cancelled"
+        }
+      ]
+    },
+    "field": "status",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": "Current planning state of this itinerary item. Update as bookings are confirmed and items are completed.",
+    "options": {
+      "choices": [
+        {
+          "text": "Planned",
+          "value": "planned"
+        },
+        {
+          "text": "Booked",
+          "value": "booked"
+        },
+        {
+          "text": "Confirmed",
+          "value": "confirmed"
+        },
+        {
+          "text": "Completed",
+          "value": "completed"
+        },
+        {
+          "text": "Cancelled",
+          "value": "cancelled"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 2,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "status",
+    "table": "honeymoon_itinerary",
+    "data_type": "character varying",
+    "default_value": "planned",
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

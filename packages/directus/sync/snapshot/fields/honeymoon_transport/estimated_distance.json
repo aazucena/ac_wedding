@@ -1,0 +1,47 @@
+{
+  "collection": "honeymoon_transport",
+  "field": "estimated_distance",
+  "type": "integer",
+  "meta": {
+    "collection": "honeymoon_transport",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "estimated_distance",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Estimated driving distance in kilometres for this leg. Calgary to Banff is 128km, Banff to Jasper via Icefields Parkway is 288km. Used for fuel and timing planning.",
+    "options": {
+      "min": 0,
+      "placeholder": "e.g. 288"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 5,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "estimated_distance",
+    "table": "honeymoon_transport",
+    "data_type": "integer",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": 32,
+    "numeric_scale": 0,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

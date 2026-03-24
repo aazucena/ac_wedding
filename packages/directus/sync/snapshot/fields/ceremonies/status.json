@@ -1,0 +1,82 @@
+{
+  "collection": "ceremonies",
+  "field": "status",
+  "type": "string",
+  "meta": {
+    "collection": "ceremonies",
+    "conditions": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Planning",
+          "value": "planning"
+        },
+        {
+          "text": "Confirmed",
+          "value": "confirmed"
+        },
+        {
+          "text": "Reviewing",
+          "value": "reviewing"
+        },
+        {
+          "text": "Completed",
+          "value": "completed"
+        }
+      ]
+    },
+    "field": "status",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": null,
+    "options": {
+      "choices": [
+        {
+          "text": "Planning",
+          "value": "planning"
+        },
+        {
+          "text": "Confirmed",
+          "value": "confirmed"
+        },
+        {
+          "text": "Reviewing",
+          "value": "reviewing"
+        },
+        {
+          "text": "Completed",
+          "value": "completed"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 2,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "status",
+    "table": "ceremonies",
+    "data_type": "character varying",
+    "default_value": "planning",
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

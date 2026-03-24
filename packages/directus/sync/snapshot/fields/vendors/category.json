@@ -1,0 +1,215 @@
+{
+  "collection": "vendors",
+  "field": "category",
+  "type": "string",
+  "meta": {
+    "collection": "vendors",
+    "conditions": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Venue",
+          "value": "venue"
+        },
+        {
+          "text": "Catering",
+          "value": "catering"
+        },
+        {
+          "text": "Photographer",
+          "value": "photographer"
+        },
+        {
+          "text": "Videographer",
+          "value": "videographer"
+        },
+        {
+          "text": "DJ",
+          "value": "dj"
+        },
+        {
+          "text": "Band",
+          "value": "band"
+        },
+        {
+          "text": "Musician",
+          "value": "musician"
+        },
+        {
+          "text": "Dresses",
+          "value": "dresses"
+        },
+        {
+          "text": "Church",
+          "value": "church"
+        },
+        {
+          "text": "Cake",
+          "value": "cake"
+        },
+        {
+          "text": "Transportation",
+          "value": "transportation"
+        },
+        {
+          "text": "Accessories",
+          "value": "accessories"
+        },
+        {
+          "text": "Hair & Makeup",
+          "value": "hair_makeup"
+        },
+        {
+          "text": "Rentals",
+          "value": "rentals"
+        },
+        {
+          "text": "Gifts",
+          "value": "gifts"
+        },
+        {
+          "text": "Wedding Rings",
+          "value": "rings"
+        },
+        {
+          "text": "Marriage License",
+          "value": "marriage_license"
+        },
+        {
+          "text": "Honeymoon",
+          "value": "honeymoon"
+        },
+        {
+          "text": "Liquor",
+          "value": "liquor"
+        },
+        {
+          "text": "Hotel",
+          "value": "hotel"
+        }
+      ]
+    },
+    "field": "category",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": "Type of service this vendor provides. Drives budget category association and checklist section grouping.",
+    "options": {
+      "allowOther": true,
+      "choices": [
+        {
+          "text": "Venue",
+          "value": "venue"
+        },
+        {
+          "text": "Catering",
+          "value": "catering"
+        },
+        {
+          "text": "Photographer",
+          "value": "photographer"
+        },
+        {
+          "text": "Videographer",
+          "value": "videographer"
+        },
+        {
+          "text": "DJ",
+          "value": "dj"
+        },
+        {
+          "text": "Band",
+          "value": "band"
+        },
+        {
+          "text": "Musician",
+          "value": "musician"
+        },
+        {
+          "text": "Dresses",
+          "value": "dresses"
+        },
+        {
+          "text": "Church",
+          "value": "church"
+        },
+        {
+          "text": "Cake",
+          "value": "cake"
+        },
+        {
+          "text": "Transportation",
+          "value": "transportation"
+        },
+        {
+          "text": "Accessories",
+          "value": "accessories"
+        },
+        {
+          "text": "Hair & Makeup",
+          "value": "hair_makeup"
+        },
+        {
+          "text": "Rentals",
+          "value": "rentals"
+        },
+        {
+          "text": "Gifts",
+          "value": "gifts"
+        },
+        {
+          "text": "Wedding Rings",
+          "value": "rings"
+        },
+        {
+          "text": "Marriage License",
+          "value": "marriage_license"
+        },
+        {
+          "text": "Honeymoon",
+          "value": "honeymoon"
+        },
+        {
+          "text": "Liquor",
+          "value": "liquor"
+        },
+        {
+          "text": "Hotel",
+          "value": "hotel"
+        },
+        {
+          "text": "Emcee",
+          "value": "emcee"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 8,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "category",
+    "table": "vendors",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

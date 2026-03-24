@@ -1,0 +1,46 @@
+{
+  "collection": "mass_music",
+  "field": "title",
+  "type": "string",
+  "meta": {
+    "collection": "mass_music",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "title",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Title of the piece as it will appear in the mass booklet.",
+    "options": {
+      "placeholder": "e.g. Ave Maria, Panis Angelicus, Here I Am Lord"
+    },
+    "readonly": false,
+    "required": true,
+    "searchable": true,
+    "sort": 3,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "title",
+    "table": "mass_music",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": false,
+    "is_unique": true,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

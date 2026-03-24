@@ -1,0 +1,106 @@
+{
+  "collection": "directus_settings",
+  "field": "field_comments_settings",
+  "type": "json",
+  "meta": {
+    "collection": "directus_settings",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "field_comments_settings",
+    "group": null,
+    "hidden": false,
+    "interface": "list",
+    "note": "Specify which collections and fields to enable field comments.",
+    "options": {
+      "addLabel": "Add Collection",
+      "fields": [
+        {
+          "field": "collection",
+          "meta": {
+            "interface": "system-collection",
+            "note": "Select the collection where the fields reside.",
+            "options": {
+              "includeSingleton": false,
+              "includeSystem": true
+            },
+            "required": true,
+            "width": "half"
+          },
+          "name": "$t:collection",
+          "type": "string"
+        },
+        {
+          "field": "all_fields",
+          "meta": {
+            "interface": "toggle",
+            "width": "half"
+          },
+          "name": "Use All Fields",
+          "schema": {
+            "default_value": true
+          },
+          "type": "boolean"
+        },
+        {
+          "field": "fields",
+          "meta": {
+            "conditions": [
+              {
+                "hidden": true,
+                "rule": {
+                  "all_fields": {
+                    "_eq": true
+                  }
+                }
+              }
+            ],
+            "interface": "system-field",
+            "note": "Select the fields to enable comments.",
+            "options": {
+              "allowForeignKeys": true,
+              "allowNone": true,
+              "allowPrimaryKey": true,
+              "collectionField": "collection",
+              "multiple": true,
+              "placeholder": "Using All Fields"
+            },
+            "width": "half"
+          },
+          "name": "Fields for Comments",
+          "type": "json"
+        }
+      ],
+      "icon": "chat"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 1,
+    "special": [
+      "cast-json"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "field_comments_settings",
+    "table": "directus_settings",
+    "data_type": "json",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

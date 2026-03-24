@@ -1,0 +1,46 @@
+{
+  "collection": "wedding_roles",
+  "field": "attire_description",
+  "type": "text",
+  "meta": {
+    "collection": "wedding_roles",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "attire_description",
+    "group": null,
+    "hidden": false,
+    "interface": "input-multiline",
+    "note": "Standard attire for this role — per-person overrides go on entourage",
+    "options": {
+      "placeholder": "e.g. Lilac chiffon A-line dress, knee length, nude heels"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 5,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "attire_description",
+    "table": "wedding_roles",
+    "data_type": "text",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

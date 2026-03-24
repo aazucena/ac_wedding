@@ -1,0 +1,63 @@
+{
+  "collection": "honeymoon_activities",
+  "field": "difficulty_level",
+  "type": "string",
+  "meta": {
+    "collection": "honeymoon_activities",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "difficulty_level",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": "Physical difficulty of this activity. Important for planning realistic daily itineraries — do not schedule a hard hike the day after the wedding.",
+    "options": {
+      "choices": [
+        {
+          "text": "Easy",
+          "value": "easy"
+        },
+        {
+          "text": "Moderate",
+          "value": "moderate"
+        },
+        {
+          "text": "Hard",
+          "value": "hard"
+        },
+        {
+          "text": "Extreme",
+          "value": "extreme"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 3,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "difficulty_level",
+    "table": "honeymoon_activities",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

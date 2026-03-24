@@ -1,0 +1,58 @@
+{
+  "collection": "wedding_settings",
+  "field": "dress_code_description",
+  "type": "text",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "dress_code_description",
+    "group": "dress_code_group",
+    "hidden": false,
+    "interface": "input-rich-text-md",
+    "note": null,
+    "options": {
+      "toolbar": [
+        "bold",
+        "italic",
+        "strikethrough",
+        "empty",
+        "code",
+        "link"
+      ]
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 2,
+    "special": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Description"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "dress_code_description",
+    "table": "wedding_settings",
+    "data_type": "text",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

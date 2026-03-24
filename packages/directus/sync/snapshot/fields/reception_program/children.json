@@ -1,0 +1,31 @@
+{
+  "collection": "reception_program",
+  "field": "children",
+  "type": "alias",
+  "meta": {
+    "collection": "reception_program",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "children",
+    "group": null,
+    "hidden": false,
+    "interface": "list-o2m-tree-view",
+    "note": null,
+    "options": {
+      "displayTemplate": "{{label}}",
+      "enableSelect": false
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 15,
+    "special": [
+      "o2m"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

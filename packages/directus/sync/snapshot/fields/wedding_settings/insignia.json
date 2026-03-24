@@ -1,0 +1,54 @@
+{
+  "collection": "wedding_settings",
+  "field": "insignia",
+  "type": "uuid",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": "image",
+    "display_options": null,
+    "field": "insignia",
+    "group": "logos",
+    "hidden": false,
+    "interface": "file-image",
+    "note": "Compact Seal",
+    "options": {
+      "allowedMimeTypes": [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+        "image/svg+xml"
+      ],
+      "crop": false
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 2,
+    "special": [
+      "file"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "insignia",
+    "table": "wedding_settings",
+    "data_type": "uuid",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": "directus_files",
+    "foreign_key_column": "id"
+  }
+}

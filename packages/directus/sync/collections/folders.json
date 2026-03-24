@@ -1,0 +1,22 @@
+[
+  {
+    "name": "Gallery",
+    "parent": null,
+    "_syncId": "7225cfeb-696c-4234-ae52-de7354f7a88d"
+  },
+  {
+    "name": "Vendors",
+    "parent": null,
+    "_syncId": "724b2c04-793c-4c72-ae52-6ca7ae60fe9b"
+  },
+  {
+    "name": "Uploads",
+    "parent": null,
+    "_syncId": "9a50f4ff-c371-4e11-9ded-75271bf62d03"
+  },
+  {
+    "name": "Memories",
+    "parent": null,
+    "_syncId": "d114142d-e450-42ef-b674-c9b91ab3498c"
+  }
+]

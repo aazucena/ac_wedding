@@ -1,0 +1,51 @@
+{
+  "collection": "wedding_settings",
+  "field": "return_address_postal_code",
+  "type": "string",
+  "meta": {
+    "collection": "wedding_settings",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "return_address_postal_code",
+    "group": "return_address",
+    "hidden": false,
+    "interface": "input",
+    "note": null,
+    "options": {
+      "placeholder": "e.g. \"T1K 0A1\""
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 4,
+    "special": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Postal Code"
+      }
+    ],
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "return_address_postal_code",
+    "table": "wedding_settings",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "collection": "honeymoon_itinerary",
+  "field": "estimated_cost",
+  "type": "decimal",
+  "meta": {
+    "collection": "honeymoon_itinerary",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "estimated_cost",
+    "group": null,
+    "hidden": false,
+    "interface": "input",
+    "note": "Expected cost for both of you for this item. Used for honeymoon budget planning against estimated_budget.",
+    "options": {
+      "placeholder": "0.00"
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 12,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "estimated_cost",
+    "table": "honeymoon_itinerary",
+    "data_type": "numeric",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": 10,
+    "numeric_scale": 2,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

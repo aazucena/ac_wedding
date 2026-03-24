@@ -1,0 +1,25 @@
+{
+  "collection": "reception_staff",
+  "field": "reception",
+  "related_collection": "reception",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "reception_staff",
+    "many_field": "reception",
+    "one_allowed_collections": null,
+    "one_collection": "reception",
+    "one_collection_field": null,
+    "one_deselect_action": "nullify",
+    "one_field": "staff",
+    "sort_field": "reception_sort"
+  },
+  "schema": {
+    "table": "reception_staff",
+    "column": "reception",
+    "foreign_key_table": "reception",
+    "foreign_key_column": "id",
+    "constraint_name": "reception_staff_reception_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "NO ACTION"
+  }
+}
