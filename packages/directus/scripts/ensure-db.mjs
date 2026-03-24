@@ -7,7 +7,7 @@
 //   42710 — role already exists (safe to ignore)
 //   42P04 — database already exists (safe to ignore)
 
-import pg from 'pg';
+import pg from '/directus/node_modules/pg/lib/index.js';
 
 const { Client } = pg;
 
