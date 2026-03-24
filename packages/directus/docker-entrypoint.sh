@@ -9,7 +9,7 @@ DIRECTUS_PID=$!
 
 # Wait for Directus to be healthy
 echo "[entrypoint] Waiting for Directus to be ready..."
-until wget -qO- http://127.0.0.1:8055/server/health > /dev/null 2>&1; do
+until wget -qO- http://0.0.0.0:8055/server/health > /dev/null 2>&1; do
   sleep 2
 done
 
