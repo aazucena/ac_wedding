@@ -15,8 +15,11 @@ RUN for dir in extensions/*/; do \
     done
 
 # ── Stage 2: Runtime image ────────────────────────────────────────────────────
-# tractr/directus-sync already includes directus-sync CLI on top of Directus.
 FROM tractr/directus-sync:11.16.1
+
+USER root
+RUN npm install -g directus-sync
+USER node
 
 # Copy only the built artifacts (package.json + dist/) — not src/ or node_modules/
 RUN for dir in /directus/extensions/*/; do rm -rf "$dir"; done 2>/dev/null || true
@@ -24,3 +27,12 @@ COPY --from=builder /build/extensions/ /directus/extensions/
 
 # ── Email templates ───────────────────────────────────────────────────────────
 COPY templates/ /directus/templates/
+
+# ── directus-sync ─────────────────────────────────────────────────────────────
+COPY --chown=node:node sync/ /directus/sync/
+COPY --chown=node:node directus-sync.config.cjs /directus/directus-sync.config.cjs
+COPY --chown=node:node directus-transfer.config.cjs /directus/directus-transfer.config.cjs
+
+# ── Entrypoint ────────────────────────────────────────────────────────────────
+COPY --chmod=755 docker-entrypoint.sh /directus/docker-entrypoint.sh
+ENTRYPOINT ["/directus/docker-entrypoint.sh"]
