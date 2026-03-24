@@ -23,10 +23,10 @@ USER node
 
 # Copy only the built artifacts (package.json + dist/) — not src/ or node_modules/
 RUN for dir in /directus/extensions/*/; do rm -rf "$dir"; done 2>/dev/null || true
-COPY --from=builder /build/extensions/ /directus/extensions/
+COPY --chown=node:node --from=builder /build/extensions/ /directus/extensions/
 
 # ── Email templates ───────────────────────────────────────────────────────────
-COPY templates/ /directus/templates/
+COPY --chown=node:node templates/ /directus/templates/
 
 # ── directus-sync ─────────────────────────────────────────────────────────────
 COPY --chown=node:node sync/ /directus/sync/
