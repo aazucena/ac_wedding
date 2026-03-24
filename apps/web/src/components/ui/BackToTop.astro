@@ -1,0 +1,30 @@
+---
+// ui/BackToTop.astro — fixed back-to-top button, added globally via Layout.astro
+---
+
+<button
+  id="back-to-top"
+  aria-label="Back to top"
+  class="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-dark/80 text-ivory shadow-card flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 hover:bg-dark hover:shadow-hover"
+>
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M8 12V4M4 8l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>
+
+<script>
+  function initBackToTop() {
+    const btn = document.getElementById('back-to-top');
+    if (!btn) return;
+    const toggle = () => {
+      const visible = window.scrollY > 400;
+      btn.style.opacity = visible ? '1' : '0';
+      btn.style.pointerEvents = visible ? 'auto' : 'none';
+    };
+    window.addEventListener('scroll', toggle, { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    toggle();
+  }
+  initBackToTop();
+  document.addEventListener('astro:page-load', initBackToTop);
+</script>

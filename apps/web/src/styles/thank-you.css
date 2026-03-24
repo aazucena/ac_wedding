@@ -1,0 +1,130 @@
+@media print {
+  /* 5×7 native */
+  @page { size: 5in 7in portrait; margin: 0; }
+
+  /* Named pages for standard-paper + cut mode */
+  @page ty-letter { size: 8.5in 11in portrait; margin: 0; }
+  @page ty-a4     { size: 210mm 297mm portrait; margin: 0; }
+
+  /* Assign named pages and centre the card on the larger sheet */
+  body[data-paper="letter"] .face {
+    page: ty-letter;
+    width: 8.5in; min-height: 11in;
+    display: flex !important; align-items: center; justify-content: center;
+  }
+  body[data-paper="a4"] .face {
+    page: ty-a4;
+    width: 210mm; min-height: 297mm;
+    display: flex !important; align-items: center; justify-content: center;
+  }
+
+  /* Dashed cut guides around the card */
+  body[data-paper="letter"] .card,
+  body[data-paper="a4"]     .card {
+    outline: 0.5pt dashed rgba(130,130,130,0.8);
+    outline-offset: 8px;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  .photo-placeholder { border-color: #ccc; }
+  .photo-hint { display: none; }
+}
+
+/* ── Card shell ───────────────────────────────────────────── */
+.card {
+  width: 5in; height: 7in;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.accent-bar {
+  height: 5px; width: 100%; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--cp) 0%, var(--cs) 50%, var(--cp) 100%);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.accent-bar-bottom {
+  height: 5px; width: 100%; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--cs) 0%, var(--cp) 50%, var(--cs) 100%);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+/* ── FRONT ────────────────────────────────────────────────── */
+.photo-area {
+  flex: 1; position: relative; overflow: hidden; background: #f0ece6;
+}
+.photo-placeholder {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  border: 1.5px dashed rgba(197,184,224,0.6); margin: 16px; border-radius: 2px;
+}
+.photo-icon { width: 40px; height: 40px; opacity: 0.3; }
+.photo-hint {
+  font-family: var(--fb); font-size: 9px; font-weight: 500;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--muted); opacity: 0.7;
+}
+.photo-area::before, .photo-area::after {
+  content: '✦'; position: absolute; font-size: 8px; color: rgba(197,184,224,0.5); z-index: 1;
+}
+.photo-area::before { top: 10px; left: 12px; }
+.photo-area::after  { top: 10px; right: 12px; }
+
+.front-title {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+  padding: 18px 32px 14px; text-align: center; background: var(--ivory); gap: 4px;
+}
+.title-script {
+  font-family: var(--fd); font-size: 52px; font-weight: 300; font-style: italic;
+  color: var(--dark); line-height: 1; letter-spacing: -0.5px;
+}
+.title-rule { display: flex; align-items: center; gap: 10px; width: 100%; margin: 6px 0; }
+.title-rule-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.6), transparent);
+}
+.title-rule-gem { font-size: 7px; color: var(--cs); }
+.title-names {
+  font-family: var(--fb); font-size: 10px; font-weight: 500;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--dark);
+}
+.title-date { font-family: var(--fd); font-size: 12px; font-style: italic; color: var(--muted); margin-top: 2px; }
+
+/* ── BACK ─────────────────────────────────────────────────── */
+.back-body {
+  position: relative; z-index: 1; flex: 1;
+  display: flex; flex-direction: column; justify-content: center;
+  align-items: center; padding: 28px 40px 20px; text-align: center; gap: 0;
+}
+.back-accent {
+  width: 30px; height: 30px; opacity: 0.45; margin-bottom: 14px;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.back-title {
+  font-family: var(--fd); font-size: 60px; font-weight: 300; font-style: italic;
+  color: var(--dark); line-height: 1; letter-spacing: -0.5px; margin-bottom: 18px;
+}
+.letter-salutation {
+  font-family: var(--fd); font-size: 16px; font-style: italic; font-weight: 400;
+  color: var(--dark); line-height: 1.4; margin-bottom: 14px;
+}
+.letter-rule {
+  width: 40px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.7), transparent);
+  margin-bottom: 14px; flex-shrink: 0;
+}
+.letter-body {
+  font-family: var(--fd); font-size: 13.5px; font-weight: 400; line-height: 1.75;
+  color: #2c2c3e; max-width: 100%;
+}
+.letter-closing { margin-top: 36px; display: flex; flex-direction: column; align-items: center; gap: 0; }
+.closing-line { font-family: var(--fd); font-size: 14px; font-style: italic; color: var(--dark); line-height: 1.5; }
+.closing-names {
+  font-family: var(--fd); font-size: 36px; font-weight: 300; font-style: italic;
+  color: var(--dark); line-height: 1.1; margin-top: 4px; letter-spacing: -0.5px;
+}
+.closing-amp { font-size: 28px; color: var(--cs); margin: 0 4px; }
+
+.back-footer {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 9px 24px 11px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.footer-hashtag { font-family: var(--fd); font-size: 12px; font-style: italic; color: var(--muted); }
+.footer-logo { height: 16px; opacity: 0.45; width: auto; }

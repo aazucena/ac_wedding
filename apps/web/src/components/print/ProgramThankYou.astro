@@ -1,0 +1,62 @@
+---
+// ProgramThankYou.astro — Panel 4 (back of booklet, thank you + reception details)
+import AccentMark  from '@assets/accent_mark.png';
+import { Image } from 'astro:assets';
+import Hashtag     from '@components/Hashtag.astro';
+import QRCodeWidget from '@components/QRCode.astro';
+
+interface Props {
+  groomFirst: string;
+  brideFirst: string;
+  hashtag: string | null | undefined;
+  receptionVenueName: string;
+  receptionAddress: string;
+  receptionTime: string;
+  baseUrl: string;
+}
+
+const { groomFirst, brideFirst, hashtag, receptionVenueName, receptionAddress, receptionTime, baseUrl } = Astro.props;
+---
+
+<div class="panel p4">
+  <div class="accent-bar"></div>
+  <div class="panel-body ty-body">
+
+    <div class="ty-top">
+      <Image src={AccentMark} class="ty-accent" alt="" />
+      <p class="eyebrow">With Gratitude</p>
+      <h2 class="ty-heading">Thank You</h2>
+      <div class="gem-row">
+        <span class="gem-line"></span><span class="gem">◆</span><span class="gem-line"></span>
+      </div>
+      <p class="ty-message">
+        Your presence on our wedding day is the greatest gift of all.
+        Thank you for sharing in our joy and blessing our marriage with your love.
+      </p>
+      <p class="ty-signed">{groomFirst} &amp; {brideFirst}</p>
+      <Hashtag tag={hashtag} class="ty-hashtag" />
+    </div>
+
+    <!-- Reception block, compact -->
+    <div class="ty-reception">
+      <div class="reception-pill">
+        <p class="reception-pill-eyebrow">Following the Mass</p>
+        <p class="reception-pill-venue">{receptionVenueName}</p>
+        <p class="reception-pill-time">{receptionAddress}</p>
+        <p class="reception-pill-note">{receptionTime} · Cocktails · Dinner · Dancing</p>
+      </div>
+    </div>
+
+    <div class="ty-qr">
+      <div class="qr-row">
+        <QRCodeWidget url={`${baseUrl}/rsvp`} size={120} label="RSVP online" />
+        <div class="qr-text">
+          <p class="qr-url">{baseUrl}/rsvp</p>
+          <p class="qr-sub">Scan to respond</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <div class="accent-bar"></div>
+</div>

@@ -1,0 +1,22 @@
+---
+// Card.astro — base card with top gradient bar; used across all pages
+interface Props {
+  accent?: boolean;
+  hoverable?: boolean;
+  class?: string;
+  id?: string;
+}
+const { accent = true, hoverable = false, class: className, id } = Astro.props;
+---
+
+<div
+  id={id}
+  class:list={[
+    'relative bg-ivory/80 backdrop-blur-sm rounded-card shadow-card overflow-hidden',
+    accent && 'before:absolute before:inset-x-0 before:top-0 before:h-0.5 before:bg-gradient-to-r before:from-primary before:to-secondary',
+    hoverable && 'transition-all duration-300 hover:shadow-hover hover:-translate-y-0.5',
+    className,
+  ]}
+>
+  <slot />
+</div>

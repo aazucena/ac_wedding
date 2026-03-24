@@ -1,0 +1,118 @@
+---
+// apps/web/src/components/EventStrip.astro
+interface Props {
+  ceremonyVenue:  string;
+  ceremonyTime:   string;
+  receptionVenue: string;
+  receptionTime:  string;
+}
+
+const { ceremonyVenue, ceremonyTime, receptionVenue, receptionTime } = Astro.props;
+---
+
+<div class="event-container">
+  <div class="event-strip">
+    <div class="event-cell">
+      <span class="event-cell-icon">⛪</span>
+      <span class="event-cell-label">Ceremony</span>
+      <div class="event-cell-venue">{ceremonyVenue}</div>
+      <span class="event-cell-time">{ceremonyTime}</span>
+    </div>
+    <div class="event-cell reception">
+      <span class="event-cell-icon">🥂</span>
+      <span class="event-cell-label">Reception</span>
+      <div class="event-cell-venue">{receptionVenue}</div>
+      <span class="event-cell-time">{receptionTime}</span>
+    </div>
+  </div>
+</div>
+
+<style>
+.event-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.event-strip {
+  display: flex; gap: 12px;
+  width: 100%; max-width: 580px; margin-bottom: 24px;
+  opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards;
+}
+
+.event-cell {
+  flex: 1;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+  position: relative; overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.event-cell::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--cp) 12%, transparent) 0%,
+    transparent 60%
+  );
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.event-cell.reception::before {
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--cs) 12%, transparent) 0%,
+    transparent 60%
+  );
+}
+
+.event-cell:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.event-cell-icon {
+  font-size: 24px; margin-bottom: 10px; display: block;
+}
+
+.event-cell-label {
+  display: inline-block;
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--dark);
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 28%, white),
+    color-mix(in srgb, var(--cp) 16%, white)
+  );
+  border: 1px solid color-mix(in srgb, var(--cp) 30%, transparent);
+  border-radius: 999px;
+  padding: 4px 12px;
+  margin-bottom: 10px;
+}
+
+.reception .event-cell-label {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cs) 28%, white),
+    color-mix(in srgb, var(--cs) 16%, white)
+  );
+  border-color: color-mix(in srgb, var(--cs) 30%, transparent);
+}
+
+.event-cell-venue {
+  font-family: var(--fd); font-size: 18px; font-weight: 400;
+  color: var(--dark); line-height: 1.25; margin-bottom: 4px;
+}
+
+.event-cell-time {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted); display: block; letter-spacing: 0.5px;
+}
+
+@media (max-width: 440px) {
+  .event-strip { flex-direction: column; }
+}
+</style>

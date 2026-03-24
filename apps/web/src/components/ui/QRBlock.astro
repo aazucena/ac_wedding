@@ -1,0 +1,15 @@
+---
+// ui/QRBlock.astro — QR code + label wrapper (for print pages)
+import QRCode from '../QRCode.astro';
+interface Props {
+  url: string;
+  label: string;
+  size?: number;
+}
+const { url, label, size = 120 } = Astro.props;
+---
+
+<div class="flex flex-col items-center gap-2">
+  <QRCode url={url} size={size} />
+  <span class="font-body text-[9px] tracking-[2px] uppercase text-muted text-center">{label}</span>
+</div>

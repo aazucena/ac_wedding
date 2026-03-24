@@ -1,0 +1,98 @@
+@media print {
+  @page { size: letter portrait; margin: 0; }
+  body { background: white !important; padding: 0 !important; display: block !important; }
+  .no-print { display: none !important; }
+}
+
+/* ── Sheet grid ────────────────────────────────────────────── */
+.sheet {
+  display: grid;
+  grid-template-columns: repeat(3, 2in);
+  gap: 0.25in;
+  padding: 0.675in 1in;
+  width: 8.5in;
+  background: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Single circle sticker ─────────────────────────────────── */
+.sticker {
+  width: 2in;
+  height: 2in;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 3px;
+  padding: 0.18in 0.14in;
+  box-shadow: 0 4px 18px rgba(26,26,46,0.10);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+@media print {
+  .sticker { box-shadow: none; }
+}
+
+/* ── Sticker contents ──────────────────────────────────────── */
+.sticker-gem {
+  font-size: 6px;
+  color: var(--cs);
+  line-height: 1;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.sticker-names {
+  font-family: var(--fd);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--dark);
+  line-height: 1.1;
+  letter-spacing: -0.2px;
+}
+
+.sticker-rule {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 80%;
+  margin: 1px 0;
+}
+.sticker-rule-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.7), transparent);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.sticker-rule-gem {
+  font-size: 5px;
+  color: var(--cs);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.sticker-date {
+  font-family: var(--fd);
+  font-size: 9px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.2;
+}
+
+.sticker-hashtag {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic; color: #C5B8E0; margin-top: 4px; display: block;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 2px;
+}

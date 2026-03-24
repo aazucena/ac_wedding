@@ -1,0 +1,340 @@
+---
+// components/seating/SeatingSearchCard.astro — name search → full table assignment
+---
+
+<div class="seat-card" id="search-section">
+  <div class="card-header">
+    <span class="card-header-label">Seating Search</span>
+    <p class="card-header-title">What's your name?</p>
+  </div>
+  <div class="card-body">
+
+    <div class="error-banner" id="error-banner"></div>
+
+    <div class="field">
+      <label class="field-label" for="name-input">Your name</label>
+      <input
+        id="name-input"
+        type="text"
+        placeholder="e.g. Juan dela Cruz"
+        autocomplete="off"
+        autocorrect="off"
+      />
+    </div>
+
+    <button class="submit-btn" id="search-btn" onclick="handleSeatSearch()">
+      <span class="btn-text">Find My Seat</span>
+      <div class="btn-dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </button>
+
+    <div id="results-section" style="display:none;">
+      <p class="results-label" id="results-label"></p>
+      <div class="table-cards" id="results-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  import { actions } from 'astro:actions';
+
+  type SeatPerson = { id: string; person: { first_name: string; last_name: string; preferred_name?: string | null } };
+  type SeatResult = {
+    table:   { id: string; number: number; name?: string | null; section?: string | null };
+    matched: SeatPerson[];
+    others:  SeatPerson[];
+  };
+
+  declare global {
+    interface Window {
+      handleSeatSearch: () => Promise<void>;
+    }
+  }
+
+  function displayName(person: SeatPerson['person']) {
+    return `${person.preferred_name ?? person.first_name} ${person.last_name}`.trim();
+  }
+
+  function makeGuestRow(person: SeatPerson['person'], isMatch: boolean, showYouBadge: boolean) {
+    const li = document.createElement('li');
+    li.className = 'table-guest' + (isMatch ? ' table-guest--match' : '');
+
+    if (isMatch) {
+      const sym = document.createElement('span');
+      sym.className = 'match-symbol';
+      sym.textContent = '✦';
+      sym.setAttribute('aria-hidden', 'true');
+      li.appendChild(sym);
+    }
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'guest-name';
+    nameEl.textContent = displayName(person);
+    li.appendChild(nameEl);
+
+    if (isMatch && showYouBadge) {
+      const badge = document.createElement('span');
+      badge.className = 'you-badge';
+      badge.textContent = 'you';
+      li.appendChild(badge);
+    }
+
+    return li;
+  }
+
+  function renderTableCard(seat: SeatResult) {
+    const card = document.createElement('div');
+    card.className = 'table-card';
+
+    // ── Header ────────────────────────────────────────
+    const header = document.createElement('div');
+    header.className = 'table-card-header';
+
+    // Left: "TABLE" eyebrow + number
+    const numBlock = document.createElement('div');
+    numBlock.className = 'table-num-block';
+
+    const eyebrow = document.createElement('span');
+    eyebrow.className = 'table-eyebrow';
+    eyebrow.textContent = 'Table';
+
+    const num = document.createElement('span');
+    num.className = 'table-num';
+    num.textContent = String(seat.table.number);
+
+    numBlock.append(eyebrow, num);
+    header.appendChild(numBlock);
+
+    // Right: name + section pill
+    if (seat.table.name || seat.table.section) {
+      const infoBlock = document.createElement('div');
+      infoBlock.className = 'table-info-block';
+      if (seat.table.section) {
+        const pill = document.createElement('span');
+        pill.className = 'table-section-pill';
+        pill.textContent = seat.table.section;
+        infoBlock.appendChild(pill);
+      }
+
+      if (seat.table.name) {
+        const nameEl = document.createElement('span');
+        nameEl.className = 'table-name';
+        nameEl.textContent = seat.table.name ?? '';
+        infoBlock.appendChild(nameEl);
+      }
+
+      header.appendChild(infoBlock);
+    }
+
+    card.appendChild(header);
+
+    // ── Guest list ────────────────────────────────────
+    const list = document.createElement('ul');
+    list.className = 'table-guest-list';
+
+    // Show "you" badge only when exactly one person matched (unambiguous)
+    const showYouBadge = seat.matched.length === 1;
+
+    // Matched guests first (highlighted)
+    for (const m of seat.matched) {
+      list.appendChild(makeGuestRow(m.person, true, showYouBadge));
+    }
+
+    // Divider between matched and others if both exist
+    // if (seat.matched.length && seat.others.length) {
+    //   const div = document.createElement('li');
+    //   div.className = 'table-guest-divider';
+    //   div.setAttribute('aria-hidden', 'true');
+    //   list.appendChild(div);
+    // }
+
+    // Other guests at the table
+    for (const o of seat.others) {
+      list.appendChild(makeGuestRow(o.person, false, false));
+    }
+
+    card.appendChild(list);
+    return card;
+  }
+
+  function renderResults(seats: SeatResult[]) {
+    const list    = document.getElementById('results-list')!;
+    const section = document.getElementById('results-section')!;
+    const label   = document.getElementById('results-label')!;
+
+    list.replaceChildren();
+    label.textContent = seats.length === 1
+      ? "Here's your table assignment:"
+      : `Found ${seats.length} tables — find your name below:`;
+
+    seats.forEach(seat => list.appendChild(renderTableCard(seat)));
+    section.style.display = 'block';
+  }
+
+  window.handleSeatSearch = async function () {
+    const name    = (document.getElementById('name-input') as HTMLInputElement).value.trim();
+    const btn     = document.getElementById('search-btn')!;
+    const err     = document.getElementById('error-banner')!;
+    const section = document.getElementById('results-section')!;
+
+    err.textContent = '';
+    err.classList.remove('visible');
+    section.style.display = 'none';
+
+    if (!name) {
+      err.textContent = 'Please enter your name to search.';
+      err.classList.add('visible');
+      return;
+    }
+
+    btn.classList.add('loading');
+
+    try {
+      const { data, error } = await actions.findSeat({ name });
+
+      if (error || !data?.seats?.length) {
+        err.textContent = "We couldn't find your name in the seating chart. Try your first / last name only, or check with the couple.";
+        err.classList.add('visible');
+      } else {
+        renderResults(data.seats);
+      }
+    } catch {
+      err.textContent = 'Something went wrong. Please try again.';
+      err.classList.add('visible');
+    } finally {
+      btn.classList.remove('loading');
+    }
+  };
+  document.addEventListener('astro:page-load', () => {
+
+    document.getElementById('name-input')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') window.handleSeatSearch();
+    });
+  });
+</script>
+
+<style>
+.seat-card {
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  width: 100%; overflow: hidden;
+  opacity: 0; animation: fadeUp 0.8s 0.35s ease forwards;
+}
+
+.results-label {
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 12px;
+}
+</style>
+<style is:global>
+.table-cards {
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+/* ── Table card ─────────────────────────────────────────── */
+.table-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+/* Header */
+.table-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 14%, var(--ivory)),
+    color-mix(in srgb, var(--cs) 10%, var(--ivory)));
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.table-card-header::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+
+/* Left block: eyebrow + number */
+.table-num-block {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.table-eyebrow {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--muted);
+  line-height: 1;
+}
+.table-num {
+  /* Sans-serif bold for legibility — especially for roman numerals */
+  font-family: var(--fb); font-size: 32px; font-weight: 700;
+  color: var(--dark); line-height: 1; letter-spacing: -0.5px;
+}
+
+/* Right block: name + section pill */
+.table-info-block {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
+  text-align: right;
+}
+.table-name {
+  font-family: var(--fd); font-size: 18px; font-weight: 400; font-style: italic;
+  color: var(--dark); line-height: 1.2;
+}
+.table-section-pill {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--dark);
+  background: color-mix(in srgb, var(--cs) 18%, white);
+  border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
+  border-radius: 999px; padding: 3px 10px;
+}
+
+/* Guest list */
+.table-guest-list {
+  list-style: none; margin: 0;
+  background: var(--ivory);
+}
+
+.table-guest {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+}
+.table-guest:first-child { padding-top: 15px; }
+.table-guest:last-child { border-bottom: none; padding-bottom: 15px; }
+
+.table-guest--match {
+  background: color-mix(in srgb, var(--cp) 10%, var(--ivory));
+}
+
+.match-symbol {
+  font-family: var(--fd); font-size: 11px;
+  color: var(--cs); flex-shrink: 0;
+}
+
+.guest-name {
+  font-family: var(--fd); font-size: 19px; font-weight: 400;
+  color: var(--dark); flex: 1;
+}
+.table-guest--match .guest-name { font-weight: 500; }
+
+.you-badge {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--dark);
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 30%, white),
+    color-mix(in srgb, var(--cs) 22%, white));
+  border: 1px solid color-mix(in srgb, var(--cs) 28%, transparent);
+  border-radius: 999px; padding: 3px 10px; flex-shrink: 0;
+}
+
+.table-guest-divider {
+  height: 1px; margin: 4px 20px;
+  background: color-mix(in srgb, var(--border) 80%, transparent);
+  list-style: none;
+}
+</style>

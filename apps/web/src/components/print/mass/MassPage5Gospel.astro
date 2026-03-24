@@ -1,0 +1,76 @@
+---
+// MassPage5Gospel.astro — Page 5: Second Reading & Gospel
+import CardWatermark from '@components/CardWatermark.astro';
+import StackedImg    from '@assets/stacked.png';
+import { Image } from 'astro:assets';
+
+interface Props {
+  groomFirst: string;
+  brideFirst: string;
+  secondReadingRef: string | null;
+  secondReadingReader: string | null;
+  gospelRef: string;
+  gospelBook: string;
+}
+
+const { groomFirst, brideFirst, secondReadingRef, secondReadingReader, gospelRef, gospelBook } = Astro.props;
+---
+
+<div class="booklet-page" style="position:relative;">
+  <div class="accent-bar"></div>
+  <CardWatermark opacity={0.03} size={180} />
+
+  <div class="page-content">
+
+    {secondReadingRef && (
+      <>
+        <div class="reading-meta">
+          <span class="reading-type">Second Reading</span>
+          <span class="reading-ref">{secondReadingRef}</span>
+          {secondReadingReader && <span class="reading-reader">Read by {secondReadingReader}</span>}
+        </div>
+        <div class="reading-text">[Scripture text to be inserted — pending parish confirmation]</div>
+        <div class="reading-close">The word of the Lord.</div>
+        <div class="response-label">All</div>
+        <div class="response">Thanks be to God.</div>
+        <div class="content-rule">
+          <div class="content-rule-line"></div>
+          <span class="content-rule-gem">✦</span>
+          <div class="content-rule-line"></div>
+        </div>
+      </>
+    )}
+
+    <div class="rubric">Gospel Acclamation</div>
+    <div class="response-label">All</div>
+    <div class="response">Alleluia, alleluia, alleluia.</div>
+
+    <div class="reading-meta" style="margin-top: 14px;">
+      <span class="reading-type">Holy Gospel</span>
+      <span class="reading-ref">{gospelRef}</span>
+    </div>
+    <div class="priest-label">Priest</div>
+    <div class="priest">The Lord be with you.</div>
+    <div class="response-label">All</div>
+    <div class="response">And with your spirit.</div>
+    <div class="priest-label">Priest</div>
+    <div class="priest">A reading from the holy Gospel according to {gospelBook}.</div>
+    <div class="response-label">All</div>
+    <div class="response">Glory to you, O Lord.</div>
+
+    <div class="reading-text" style="margin-top: 10px;">[Gospel text to be inserted — pending parish confirmation]</div>
+    <div class="reading-close">The Gospel of the Lord.</div>
+    <div class="response-label">All</div>
+    <div class="response">Praise to you, Lord Jesus Christ.</div>
+
+    <div class="rubric">Homily</div>
+    <div class="priest">The priest reflects on the readings and the sacrament of Marriage.</div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <Image src={StackedImg} class="footer-logo" alt="" />
+    <span class="footer-page">5</span>
+  </div>
+  <div class="accent-bar-bottom"></div>
+</div>

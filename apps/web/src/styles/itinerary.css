@@ -1,0 +1,121 @@
+/* ── Timeline ────────────────────────────────────────── */
+.timeline {
+  display: flex; flex-direction: column;
+  width: 100%; max-width: 680px; margin: 0 auto;
+}
+
+.tl-item {
+  display: grid;
+  grid-template-columns: 56px 36px 1fr;
+  gap: 0 4px;
+}
+
+.tl-date {
+  display: flex; flex-direction: column; align-items: flex-end;
+  padding-top: 4px; padding-right: 4px;
+}
+
+.tl-month {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tl-day {
+  font-family: var(--fd); font-size: 26px; font-weight: 400;
+  color: var(--dark); line-height: 1;
+}
+
+.tl-track {
+  display: flex; flex-direction: column; align-items: center;
+}
+
+.tl-dot {
+  width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
+  margin-top: 7px;
+  background: color-mix(in srgb, var(--cp) 60%, white);
+  border: 2px solid color-mix(in srgb, var(--cp) 40%, white);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cp) 12%, transparent);
+}
+
+.tl-dot--featured {
+  width: 14px; height: 14px;
+  margin-top: 6px;
+  background: linear-gradient(135deg, var(--cp), var(--cs));
+  border: 2px solid white;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cs) 30%, transparent);
+}
+
+.tl-line {
+  width: 2px; flex: 1; min-height: 24px; margin-top: 6px;
+  background: linear-gradient(to bottom,
+    color-mix(in srgb, var(--cp) 25%, transparent),
+    color-mix(in srgb, var(--cs) 15%, transparent)
+  );
+}
+
+.tl-body {
+  padding: 0 0 32px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.tl-featured > .tl-body {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 7%, var(--ivory)),
+    color-mix(in srgb, var(--cs) 5%, var(--ivory))
+  );
+  border: 1px solid color-mix(in srgb, var(--cs) 22%, transparent);
+  border-radius: var(--radius);
+  padding: 20px 24px 20px 20px;
+  margin-bottom: 32px;
+  box-shadow: var(--shadow-card);
+}
+
+.tl-label {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted);
+}
+
+.tl-title {
+  font-family: var(--fd); font-size: 24px;
+  font-weight: 400; font-style: italic; color: var(--dark);
+  margin: 2px 0 4px;
+}
+
+.tl-featured .tl-title { font-size: 28px; }
+
+.tl-detail {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--dark); line-height: 1.8;
+}
+
+.tl-note {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted); line-height: 1.6; font-style: italic;
+  margin-top: 2px;
+}
+
+.tl-event-list {
+  list-style: none; padding: 0; margin: 4px 0 0;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+.tl-event-row {
+  display: flex; flex-direction: column; gap: 3px;
+  padding-left: 12px;
+  border-left: 2px solid color-mix(in srgb, var(--cp) 30%, transparent);
+}
+
+.tl-event-name {
+  font-family: var(--fd); font-size: 18px;
+  font-weight: 400; font-style: italic; color: var(--dark);
+}
+
+.tl-event-meta {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--dark); line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+  .tl-item { grid-template-columns: 48px 28px 1fr; }
+}

@@ -1,0 +1,44 @@
+---
+// apps/web/src/pages/print/return-label.astro
+// Return Address Label — Avery 5163 · 2×4 in · 10 per letter sheet (2 cols × 5 rows)
+// ?names=false  →  suppress couple names (for invitation envelope back-flap, formal etiquette)
+
+import { getSettings }     from '@lib/directus';
+import PrintLayout          from '@layouts/PrintLayout.astro';
+import '../../styles/return-label.css';
+
+const showNames  = Astro.url.searchParams.get('names') !== 'false';
+
+const settings   = await getSettings();
+const groomFirst = settings.groom?.first_name ?? 'Aldrin';
+const brideFirst = settings.bride?.first_name ?? 'Christine';
+
+const line1       = settings.return_address_line1       ?? 'Street Address';
+const city        = settings.return_address_city        ?? 'City';
+const region      = settings.return_address_region      ?? 'AB';
+const postalCode  = settings.return_address_postal_code ?? 'T1X 0A0';
+const cityLine    = `${city}, ${region}  ${postalCode}`;
+---
+
+<PrintLayout
+  title="Return Label — Print"
+  cardWidth="8.5in" cardHeight="11in"
+  toolbarHint="2 × 4 in · Avery 5163 · 10 per page · Letter portrait"
+>
+
+  <div class="return-sheet">
+    {Array.from({ length: 10 }).map(() => (
+      <div class="return-label">
+        <div class="rl-rule">
+          <div class="rl-rule-line"></div>
+          <span class="rl-rule-gem">✦</span>
+          <div class="rl-rule-line"></div>
+        </div>
+        {showNames && <div class="rl-names">{groomFirst} &amp; {brideFirst}</div>}
+        <div class="rl-address-line">{line1}</div>
+        <div class="rl-address-line">{cityLine}</div>
+      </div>
+    ))}
+  </div>
+
+</PrintLayout>

@@ -1,0 +1,19 @@
+---
+// ui/StatCell.astro — countdown cells, RSVP counter
+interface Props {
+  value: string | number;
+  label: string;
+  id?: string;
+}
+const { value, label, id } = Astro.props;
+---
+
+<div class="flex flex-col items-center px-4 md:px-6">
+  <span
+    id={id}
+    class="font-display text-4xl md:text-5xl font-light text-dark leading-none mb-1"
+  >{value}</span>
+  <span class="font-body text-[10px] font-medium tracking-[3px] uppercase text-muted">
+    {label}
+  </span>
+</div>

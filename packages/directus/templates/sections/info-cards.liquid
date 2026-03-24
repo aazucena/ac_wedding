@@ -1,0 +1,55 @@
+{% comment %} packages/directus/templates/sections/info-cards.liquid {% endcomment %}
+{% comment %} Two-column cards: Directions to ceremony + Accommodation block {% endcomment %}
+{% comment %} Card style mirrors website .card — accent bar top, ivory bg, subtle border + shadow {% endcomment %}
+
+<!-- ─── VENUE & ACCOMMODATION ─────────────────────── -->
+<tr>
+  <td class="info-section">
+    <!-- Section badge — mirrors .header-eyebrow pill -->
+    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto 24px;">
+      <tr><td><span class="section-badge">Getting There &amp; Staying Over</span></td></tr>
+    </table>
+
+    <table class="info-cards" cellpadding="0" cellspacing="8">
+      <tr>
+
+        <!-- Directions card — primary (mint) accent bar -->
+        <td class="info-card mint">
+          <div class="info-card-accent"></div>
+          <div class="info-card-body">
+            <span class="info-card-title">📍 Directions</span>
+            <p>
+              The ceremony will be held at<br>
+              <strong>{{ read_wedding_settings.ceremony.venue.name }}</strong>,<br>
+              {{ read_wedding_settings.ceremony.venue.address_line1 }}, {{ read_wedding_settings.ceremony.venue.city }}.<br><br>
+              {% if read_wedding_settings.ceremony.venue.maps_url %}
+                <a href="{{ read_wedding_settings.ceremony.venue.maps_url }}">View on Google Maps →</a>
+              {% endif %}
+            </p>
+          </div>
+        </td>
+
+        <!-- Accommodation card — secondary (lavender) accent bar -->
+        <td class="info-card">
+          <div class="info-card-accent"></div>
+          <div class="info-card-body">
+            <span class="info-card-title">🏨 Accommodation</span>
+            <p>
+              {% if read_wedding_settings.accomodation.vendor.name %}
+                A room block has been reserved at<br>
+                <strong>{{ read_wedding_settings.accomodation.vendor.name }}</strong>.<br><br>
+                Quote <em>"{{ read_wedding_settings.groom.first_name }} &amp; {{ read_wedding_settings.bride.first_name }} Wedding"</em> for the group rate.<br><br>
+                {% if read_wedding_settings.accomodation.booking_url %}
+                  <a href="{{ read_wedding_settings.accomodation.booking_url }}">Book your room →</a>
+                {% endif %}
+              {% else %}
+                Accommodation details will be shared on our wedding website.
+              {% endif %}
+            </p>
+          </div>
+        </td>
+
+      </tr>
+    </table>
+  </td>
+</tr>

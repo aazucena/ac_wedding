@@ -1,0 +1,9 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "packages/directus/extensions/*"
+  - "!packages/directus/extensions/.registry"
+
+onlyBuiltDependencies:
+  - sharp
+  - esbuild

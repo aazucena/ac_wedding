@@ -1,0 +1,17 @@
+---
+// ui/Badge.astro — eyebrow labels, section labels, category tags
+interface Props {
+  text: string;
+  variant?: 'primary' | 'secondary' | 'accent';
+}
+const { text, variant = 'primary' } = Astro.props;
+---
+
+<span class:list={[
+  'inline-flex items-center font-body text-[10px] font-medium tracking-[3.5px] uppercase text-dark border rounded-full px-4 py-1.5 mb-5',
+  variant === 'primary'   && 'bg-gradient-to-r from-[color-mix(in_srgb,var(--cp)_28%,white)] to-[color-mix(in_srgb,var(--cs)_22%,white)] border-[color-mix(in_srgb,var(--cs)_30%,transparent)]',
+  variant === 'secondary' && 'bg-[color-mix(in_srgb,var(--cs)_15%,white)] border-[color-mix(in_srgb,var(--cs)_25%,transparent)]',
+  variant === 'accent'    && 'bg-[color-mix(in_srgb,var(--cp)_15%,white)] border-[color-mix(in_srgb,var(--cp)_25%,transparent)]',
+]}>
+  {text}
+</span>

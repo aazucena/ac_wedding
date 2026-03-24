@@ -1,0 +1,28 @@
+{% comment %} packages/directus/templates/sections/dresscode.liquid {% endcomment %}
+{% comment %} Dress code guidance + dynamic colour palette swatches from wedding_settings {% endcomment %}
+
+<!-- ─── DRESS CODE ────────────────────────────────── -->
+<tr>
+  <td class="dresscode-section">
+    <span class="section-badge">Dress Code</span>
+    <p class="invite-verse" style="margin-bottom: 12px;">
+      <strong>Semi-Formal / Filipiniana</strong>
+    </p>
+
+    <!-- Dynamic swatches — table-based, no flex -->
+    <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 auto 12px;">
+      <tr>
+        <td style="padding:0 5px;"><div class="swatch" style="background:{{ read_wedding_settings.color_primary }};"></div></td>
+        <td style="padding:0 5px;"><div class="swatch" style="background:{{ read_wedding_settings.color_secondary }};"></div></td>
+        <td style="padding:0 5px;"><div class="swatch" style="background:#E8D5B8;"></div></td>
+        <td style="padding:0 5px;"><div class="swatch" style="background:#2d2248;"></div></td>
+        <td style="padding:0 5px;"><div class="swatch" style="background:#fdfaf7; border:1px solid #ccc;"></div></td>
+      </tr>
+    </table>
+
+    <p class="dresscode-note">
+      Attire in mint, lavender, champagne, midnight, or ivory is encouraged.<br>
+      Please avoid white and black.
+    </p>
+  </td>
+</tr>

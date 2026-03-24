@@ -1,0 +1,102 @@
+---
+// home/HashtagShare.astro — hashtag display + share/copy button
+import AppLight from '@assets/app_icon.png';
+import { Image } from 'astro:assets';
+import Hashtag from '../Hashtag.astro';
+interface Props {
+  hashtag:          string;
+  weddingDateLabel: string;
+}
+const { hashtag, weddingDateLabel } = Astro.props;
+---
+
+<div class="hashtag-block">
+  <Image src={AppLight} class="hashtag-app-badge" alt="" />
+  <p class="hashtag-eyebrow">Share the love</p>
+  <Hashtag as="p" tag={hashtag} class="hashtag-tag" id="hashtag-display" />
+  <p class="hashtag-sub">Use our hashtag to share your photos and memories.</p>
+  <button class="share-btn" id="share-btn">
+    <span class="share-btn-icon">🔗</span>
+    <span class="share-btn-text">Copy &amp; Share</span>
+  </button>
+  <p class="share-feedback" id="share-feedback"></p>
+</div>
+
+<script is:inline define:vars={{ hashtag, weddingDateLabel }}>
+  document.getElementById('share-btn').addEventListener('click', async () => {
+    const feedback = document.getElementById('share-feedback');
+    const btn      = document.getElementById('share-btn');
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Aldrin & Christine — ${weddingDateLabel}`,
+          text:  `Join us to celebrate! ${hashtag}`,
+          url:   window.location.origin,
+        });
+      } else {
+        await navigator.clipboard.writeText(`${hashtag} — ${window.location.origin}`);
+        feedback.textContent = 'Copied to clipboard!';
+        btn.classList.add('shared');
+        setTimeout(() => { feedback.textContent = ''; btn.classList.remove('shared'); }, 3000);
+      }
+    } catch {}
+    if (typeof window.__launchConfetti === 'function') window.__launchConfetti();
+  });
+</script>
+
+<style>
+.hashtag-block {
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  padding: 48px 40px; text-align: center;
+  position: relative; overflow: hidden; width: 100%;
+  opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards;
+}
+.hashtag-block::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+.hashtag-app-badge {
+  width: 52px; height: 52px;
+  object-fit: contain;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 16px rgba(26,26,46,0.10);
+}
+.hashtag-eyebrow {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 3.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+.hashtag-tag {
+  font-family: var(--fd); font-size: 36px; font-style: italic;
+  color: var(--cs); margin-bottom: 10px; line-height: 1;
+}
+.hashtag-sub {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--muted); margin-bottom: 24px; line-height: 1.6;
+}
+.share-btn {
+  display: inline-flex; align-items: center; gap: 10px; padding: 14px 32px;
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  color: color-mix(in srgb, var(--cp) 80%, white);
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase; cursor: pointer;
+  box-shadow: 0 8px 32px rgba(26,26,46,0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.share-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(26,26,46,0.28); }
+.share-btn.shared { background: linear-gradient(135deg, #3a5a42, #4a3a60); }
+.share-btn-icon { font-size: 16px; }
+.share-feedback {
+  font-family: var(--fb); font-size: 12px; color: var(--cp);
+  margin-top: 12px; min-height: 18px; letter-spacing: 0.5px;
+}
+
+@media (max-width: 640px) {
+  .hashtag-block { padding: 36px 24px; }
+  .hashtag-tag { font-size: 26px; }
+}
+</style>

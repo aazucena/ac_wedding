@@ -1,0 +1,131 @@
+---
+export const prerender = true;
+// apps/web/src/pages/print/menu.astro
+// Menu Card — 4×9 in flat portrait, single-sided
+// Prime Catering · Classic Buffet
+
+import { getSettings } from '@lib/directus';
+import { formatDate } from '@lib/utils/format';
+import PrintLayout     from '@layouts/PrintLayout.astro';
+import Hashtag         from '@components/Hashtag.astro';
+import CardWatermark   from '@components/CardWatermark.astro';
+import StackedImg      from '@assets/stacked.png';
+import AccentMark      from '@assets/accent_mark.png';
+import { Image } from 'astro:assets';
+import '../../styles/menu-card.css';
+
+const settings = await getSettings();
+
+const groomFirst = settings.groom?.first_name ?? 'Aldrin';
+const brideFirst = settings.bride?.first_name ?? 'Christine';
+
+const weddingDate = formatDate(settings.wedding_date ?? '2026-09-26', 'cccc, MMMM d, yyyy');
+
+const menu = {
+  salads: [
+    { name: 'Italian Table' },
+    { name: 'Caesar' },
+    { name: 'Country Potato' },
+    { name: 'Asian Noodle' },
+    { name: 'Greek Pasta' },
+  ],
+  sides: [
+    { name: 'Artisan Bread & Butter' },
+    { name: 'Roasted Vegetables' },
+    { name: 'Pickled Vegetable Tray' },
+    { name: 'Mashed Potato' },
+  ],
+  mains: [
+    { name: 'Chicken Parmigiana',         note: 'Red sauce, provolone, asiago, panko' },
+    { name: 'Chicken with Mushroom Sauce', note: 'Cream, portobello' },
+    { name: 'Roast Beef',                  note: 'With demi glaze' },
+  ],
+  desserts: [
+    { name: 'Cheesecake' },
+    { name: 'Assorted Desserts & Squares' },
+    { name: 'Seasonal Fresh Fruit' },
+    { name: 'Coffee & Tea' },
+  ],
+};
+---
+
+<PrintLayout
+  title="Menu Card — Print"
+  cardWidth="4in" cardHeight="9in"
+  toolbarHint="4 × 9 in · Portrait · Single-sided"
+>
+
+  <div class="card" style="position:relative;">
+    <div class="accent-bar"></div>
+
+    <CardWatermark opacity={0.035} size={160} />
+
+    <!-- Header -->
+    <div class="card-header">
+      <Image src={AccentMark} class="header-accent" alt="" />
+      <div class="header-eyebrow">Dinner Menu</div>
+      <div class="header-title">Ce soir</div>
+      <div class="header-names">
+        {groomFirst} <span class="header-amp">&amp;</span> {brideFirst}
+      </div>
+      <div class="header-date">{weddingDate}</div>
+      <div class="header-rule">
+        <div class="header-rule-line"></div>
+        <span class="header-rule-gem">✦</span>
+        <div class="header-rule-line"></div>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <div class="menu-body">
+
+      <div class="menu-section">
+        <div class="section-label">Gourmet Salads</div>
+        {menu.salads.map(m => (
+          <div class="menu-item">
+            <span class="item-name">{m.name}</span>
+          </div>
+        ))}
+      </div>
+
+      <div class="menu-section">
+        <div class="section-label">Accompaniments</div>
+        {menu.sides.map(m => (
+          <div class="menu-item">
+            <span class="item-name">{m.name}</span>
+          </div>
+        ))}
+      </div>
+
+      <div class="menu-section">
+        <div class="section-label">Main Entrées</div>
+        {menu.mains.map(m => (
+          <div class="menu-item">
+            <span class="item-name">{m.name}</span>
+            {m.note && <span class="item-note">{m.note}</span>}
+          </div>
+        ))}
+      </div>
+
+      <div class="menu-section">
+        <div class="section-label">Sweets &amp; Finish</div>
+        {menu.desserts.map(m => (
+          <div class="menu-item">
+            <span class="item-name">{m.name}</span>
+          </div>
+        ))}
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="card-footer">
+      <Image src={StackedImg} class="footer-logo" alt="" />
+      <span class="footer-gem">✦</span>
+      <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    </div>
+
+    <div class="accent-bar-bottom"></div>
+  </div>
+
+</PrintLayout>

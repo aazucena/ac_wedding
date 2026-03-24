@@ -1,0 +1,57 @@
+---
+// MassPage1Cover.astro — Page 1: Cover page of the Nuptial Mass booklet
+import CardWatermark from '@components/CardWatermark.astro';
+import StackedImg    from '@assets/stacked.png';
+import HeroEmblem    from '@assets/hero_emblem.png';
+import { Image } from 'astro:assets';
+
+interface Props {
+  groomFirst: string;
+  brideFirst: string;
+  groomFull: string;
+  brideFull: string;
+  weddingDate: string;
+  ceremonyTime: string;
+  venueN: string;
+  venueA: string;
+  venueC: string;
+  priestName: string;
+}
+
+const { groomFirst, brideFirst, groomFull, brideFull, weddingDate, ceremonyTime, venueN, venueA, venueC, priestName } = Astro.props;
+---
+
+<div class="booklet-page" style="position:relative;">
+  <div class="accent-bar"></div>
+  <CardWatermark opacity={0.03} size={200} />
+
+  <div class="cover-body">
+    <Image src={HeroEmblem} class="cover-emblem" alt="" />
+    <div class="cover-eyebrow">The Nuptial Mass</div>
+    <div class="cover-title">The Celebration of Holy Matrimony of</div>
+    <div class="cover-names">
+      {groomFull}
+      <span class="cover-amp">&amp;</span>
+      {brideFull}
+    </div>
+    <div class="cover-rule">
+      <div class="cover-rule-line"></div>
+      <span class="cover-rule-gem">✦</span>
+      <div class="cover-rule-line"></div>
+    </div>
+    <div class="cover-date">{weddingDate}</div>
+    <div class="cover-time">{ceremonyTime}</div>
+    <div class="cover-venue">
+      {venueN}<br />
+      {venueA}{venueC ? `, ${venueC}` : ''}
+    </div>
+    <div class="cover-officiant">Officiated by {priestName}</div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <Image src={StackedImg} class="footer-logo" alt="" />
+    <span class="footer-page"></span>
+  </div>
+  <div class="accent-bar-bottom"></div>
+</div>

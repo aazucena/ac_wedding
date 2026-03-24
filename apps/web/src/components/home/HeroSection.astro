@@ -1,0 +1,162 @@
+---
+// home/HeroSection.astro — hero + countdown
+import Stacked       from '@assets/stacked.png';
+import { Image } from 'astro:assets';
+import CountdownBar  from './CountdownBar.astro';
+
+interface Props {
+  groomFull: string;
+  brideFull: string;
+  weddingDateLabel: string;
+  weddingLocation: string;
+  weddingDate: string;
+}
+const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate } = Astro.props;
+---
+
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-bg-placeholder"></div>
+  </div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">{weddingDateLabel} · {weddingLocation}</p>
+    <div class="hero-emblem-wrap">
+      <Image src={Stacked} class="hero-emblem" alt={`${groomFull} & ${brideFull}`} />
+    </div>
+    <p class="hero-sub">Nuptial Mass &amp; Reception</p>
+
+    <CountdownBar weddingDate={weddingDate} />
+  </div>
+
+  <button
+    class="hero-scroll-cue"
+    aria-label="Scroll down"
+    onclick="document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' })"
+  >
+    <span class="hero-scroll-text">Scroll</span>
+    <span class="hero-scroll-arrow">↓</span>
+  </button>
+</section>
+
+<style>
+/* ── Hero ──────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  height: 100vh;
+  min-height: 560px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 72px;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.1s ease forwards;
+}
+.hero-bg {
+  position: absolute; inset: 0; top: 0;
+}
+.hero-bg-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(165deg,
+    color-mix(in srgb, var(--dark) 40%, var(--warm)) 0%,
+    color-mix(in srgb, var(--cs) 35%, var(--warm)) 45%,
+    color-mix(in srgb, var(--cp) 25%, var(--warm)) 100%
+  );
+}
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(26,26,46,0.08) 0%,
+    rgba(26,26,46,0.20) 40%,
+    rgba(26,26,46,0.65) 80%,
+    rgba(26,26,46,0.82) 100%
+  );
+}
+.hero-content {
+  position: relative; z-index: 1;
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 40px 24px;
+  text-align: center;
+}
+.hero-eyebrow {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: rgba(255,255,255,0.70); margin-bottom: 20px;
+}
+.hero-emblem-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0 4px;
+}
+.hero-emblem-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -100%;
+  background: radial-gradient(
+    ellipse 40% 30% at 50% 50%,
+    rgba(255,255,255,1.00)  0%,
+    rgba(255,255,255,1.00) 30%,
+    rgba(255,255,255,0.70) 50%,
+    rgba(255,255,255,0.30) 68%,
+    rgba(255,255,255,0.08) 82%,
+    rgba(255,255,255,0.00) 100%
+  );
+  pointer-events: none;
+  filter: blur(16px);
+}
+.hero-emblem {
+  position: relative;
+  width: clamp(240px, 55vw, 420px);
+  height: auto;
+  filter: drop-shadow(0 4px 32px rgba(0,0,0,0.30));
+}
+.hero-sub {
+  font-family: var(--fb); font-size: 10px; font-weight: 400;
+  letter-spacing: 3.5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.60); margin-top: 18px;
+}
+
+/* Scroll cue */
+.hero-scroll-cue {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column;
+  width: 100%;
+  align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  padding: 12px 20px;
+  color: rgba(255,255,255,0.50);
+  transition: color 0.2s ease;
+}
+.hero-scroll-cue:hover { color: rgba(255,255,255,0.90); }
+.hero-scroll-text {
+  font-family: var(--fb); font-size: 8px;
+  font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+}
+.hero-scroll-arrow {
+  font-size: 14px;
+  animation: scrollBounce 2s ease-in-out infinite;
+}
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-arrow { animation: none; }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero { min-height: 380px; }
+}
+
+/* Countdown margin when inside hero */
+:global(.hero-content .countdown-bar) { margin-top: 80px; }
+</style>
+

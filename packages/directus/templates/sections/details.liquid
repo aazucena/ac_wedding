@@ -1,0 +1,62 @@
+{% comment %} packages/directus/templates/sections/details.liquid {% endcomment %}
+{% comment %} Invite verse, Catholic cross ornament, ceremony + reception event cells (mirrors EventStrip) {% endcomment %}
+
+<!-- ─── BODY ──────────────────────────────────────── -->
+<tr>
+  <td class="body-section">
+
+    <!-- Section badge — mirrors website .header-eyebrow pill -->
+    <span class="section-badge">You are invited to celebrate</span>
+
+    <p class="invite-verse">
+      We joyfully request the honour of your presence<br>
+      as we are united in Holy Matrimony<br>
+      before God, our families, and our dearest friends.<br><br>
+      <strong>Join us for the Nuptial Mass</strong><br>
+      and an evening of celebration to follow.
+    </p>
+
+    <!-- Ornamental divider with cross motif (Catholic) -->
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 32px;">
+      <tr>
+        <td style="vertical-align:middle; padding-right:10px;">
+          <div style="height:1px; background:linear-gradient(90deg, transparent, {{ read_wedding_settings.color_secondary }});"></div>
+        </td>
+        <td style="white-space:nowrap; text-align:center; vertical-align:middle; padding:0 4px;">
+          <span class="ornament-symbol">✦</span>
+          <span class="ornament-symbol" style="font-size:13px; color:{{ read_wedding_settings.color_primary }}; margin:0 4px;">✝</span>
+          <span class="ornament-symbol">✦</span>
+        </td>
+        <td style="vertical-align:middle; padding-left:10px;">
+          <div style="height:1px; background:linear-gradient(90deg, {{ read_wedding_settings.color_secondary }}, transparent);"></div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- Ceremony + Reception event cells — mirrors website EventStrip -->
+    <table class="details-grid" cellpadding="0" cellspacing="0">
+      <tr>
+
+        <!-- Ceremony cell — primary (mint) accent -->
+        <td class="detail-cell" style="border-top: 4px solid {{ read_wedding_settings.color_primary }};">
+          <span class="detail-icon">⛪</span>
+          <span class="detail-label-badge">Nuptial Mass</span>
+          <div class="detail-value">{{ read_wedding_settings.ceremony.venue.name }}</div>
+          <span class="detail-sub">{{ "2000-01-01T" | append: read_wedding_settings.ceremony.start_time | date: "%I:%M %p" }}</span>
+          <span class="detail-sub" style="margin-top:6px; font-size:11px;">{{ read_wedding_settings.ceremony.venue.address_line1 }}, {{ read_wedding_settings.ceremony.venue.city }}</span>
+        </td>
+
+        <!-- Reception cell — secondary (lavender) accent -->
+        <td class="detail-cell" style="border-top: 4px solid {{ read_wedding_settings.color_secondary }};">
+          <span class="detail-icon">🥂</span>
+          <span class="detail-label-badge reception">Reception</span>
+          <div class="detail-value">{{ read_wedding_settings.reception.venue.name }}</div>
+          <span class="detail-sub">{{ "2000-01-01T" | append: read_wedding_settings.reception.start_time | date: "%I:%M %p" }}</span>
+          <span class="detail-sub" style="margin-top:6px; font-size:11px;">{{ read_wedding_settings.reception.venue.address_line1 }}, {{ read_wedding_settings.reception.venue.city }}</span>
+        </td>
+
+      </tr>
+    </table>
+
+  </td>
+</tr>

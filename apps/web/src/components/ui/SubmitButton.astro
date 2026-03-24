@@ -1,0 +1,29 @@
+---
+// ui/SubmitButton.astro — form submit button with optional loading state
+import LoadingDots from './LoadingDots.astro';
+interface Props {
+  label: string;
+  loadingLabel?: string;
+  id?: string;
+  type?: 'submit' | 'button';
+  class?: string;
+}
+const { label, loadingLabel, id, type = 'submit', class: className } = Astro.props;
+---
+
+<button
+  id={id}
+  type={type}
+  class:list={[
+    'submit-btn w-full flex items-center justify-center gap-2',
+    className,
+  ]}
+>
+  <span class="btn-label">{label}</span>
+  {loadingLabel && (
+    <span class="btn-loading hidden items-center gap-2">
+      <LoadingDots />
+      {loadingLabel}
+    </span>
+  )}
+</button>

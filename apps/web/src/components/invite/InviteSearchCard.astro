@@ -1,0 +1,214 @@
+---
+// invite/InviteSearchCard.astro — name search + token fallback form
+---
+
+<div class="invite-card" id="search-section">
+  <div class="card-header">
+    <span class="card-header-label">Find your invitation</span>
+    <p class="card-header-title">What's your name?</p>
+  </div>
+  <div class="card-body">
+
+    <div class="error-banner" id="error-banner"></div>
+
+    <div class="field">
+      <label class="field-label" for="name-input">Your name</label>
+      <input
+        id="name-input"
+        type="text"
+        placeholder="e.g. Juan dela Cruz"
+        autocomplete="off"
+        autocorrect="off"
+      />
+    </div>
+
+    <div id="results-section" style="display:none;">
+      <p class="results-label">We found the following parties — select yours:</p>
+      <div class="results-list" id="results-list"></div>
+    </div>
+
+    <button class="submit-btn" id="search-btn" onclick="handleSearch()">
+      <span class="btn-text">Find My Invitation</span>
+      <div class="btn-dots">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </button>
+
+    <div class="token-fallback">
+      <p class="token-fallback-label">Have an invitation code instead?</p>
+      <div class="token-row">
+        <div class="field" style="flex:1">
+          <input
+            id="token-input"
+            type="text"
+            placeholder="Enter your code"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+          />
+        </div>
+        <button class="token-btn" onclick="handleToken()">Go →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  import { actions } from 'astro:actions';
+
+  declare global {
+    interface Window {
+      handleSearch: () => Promise<void>;
+      handleToken:  () => void;
+    }
+  }
+
+  function renderResults(parties: Array<{ name: string; rsvp_token?: string }>) {
+    const list    = document.getElementById('results-list') as HTMLElement;
+    const section = document.getElementById('results-section') as HTMLElement;
+    list.replaceChildren();
+    parties.forEach(party => {
+      const btn = document.createElement('button');
+      btn.className   = 'result-item';
+      btn.textContent = party.name;
+      btn.onclick     = () => { window.location.href = `/rsvp/${party.rsvp_token}`; };
+      list.appendChild(btn);
+    });
+    section.style.display = 'block';
+  }
+  window.handleSearch = async function() {
+    const name           = (document.getElementById('name-input') as HTMLInputElement).value.trim();
+    const btn            = document.getElementById('search-btn') as HTMLElement;
+    const btnText        = btn.querySelector('.btn-text') as HTMLElement;
+    const err            = document.getElementById('error-banner') as HTMLElement;
+    const resultsSection = document.getElementById('results-section') as HTMLElement;
+
+    err.textContent = '';
+    err.classList.remove('visible');
+    resultsSection.style.display = 'none';
+
+    if (!name) {
+      err.textContent = 'Please enter your name to search.';
+      err.classList.add('visible');
+      return;
+    }
+
+    btn.classList.add('loading');
+    let navigating = false;
+
+    try {
+      const { data, error } = await actions.searchParties({ name });
+
+      // Only consider parties that have a valid rsvp_token — a missing token
+      // means the party was not properly set up; mask this as "not found".
+      const validParties = (data?.parties ?? []).filter(p => p.rsvp_token);
+
+      if (error || !validParties.length) {
+        err.textContent = "We couldn't find your name on the guest list. Try a different spelling, or use your invitation code below.";
+        err.classList.add('visible');
+      } else if (validParties.length === 1) {
+        navigating = true;
+        btnText.textContent = 'Opening your invitation…';
+        window.location.href = `/rsvp/${validParties[0]!.rsvp_token}`;
+      } else {
+        renderResults(validParties);
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    } catch {
+      err.textContent = 'Something went wrong. Please try again or use your invitation code.';
+      err.classList.add('visible');
+    } finally {
+      // Keep loading state if we're navigating — page will change before user notices
+      if (!navigating) btn.classList.remove('loading');
+    }
+  };
+
+  window.handleToken = function() {
+    const token   = (document.getElementById('token-input') as HTMLInputElement).value.trim();
+    const err     = document.getElementById('error-banner') as HTMLElement;
+    const goBtn   = document.querySelector('.token-btn') as HTMLButtonElement;
+
+    err.textContent = '';
+    err.classList.remove('visible');
+
+    if (!token) {
+      err.textContent = 'Please enter your invitation code.';
+      err.classList.add('visible');
+      return;
+    }
+
+    goBtn.disabled = true;
+    goBtn.textContent = '…';
+    window.location.href = `/rsvp/${token}`;
+  };
+
+  document.addEventListener('astro:page-load', () => {
+
+    document.getElementById('name-input')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') window.handleSearch();
+    });
+    document.getElementById('token-input')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') window.handleToken();
+    });
+  });
+</script>
+
+<style>
+.invite-card {
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  width: 100%; overflow: hidden;
+  opacity: 0; animation: fadeUp 0.8s 0.35s ease forwards;
+  margin-bottom: 16px;
+}
+
+.results-label {
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px;
+}
+
+.results-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 4px; }
+
+.result-item {
+  width: 100%; padding: 14px 18px;
+  background: color-mix(in srgb, var(--warm) 60%, white);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-xs);
+  font-family: var(--fd); font-size: 18px;
+  font-weight: 400; color: var(--dark); text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.result-item:hover {
+  border-color: color-mix(in srgb, var(--cp) 60%, transparent);
+  background: color-mix(in srgb, var(--cp) 8%, white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(26,26,46,0.07);
+}
+
+.token-fallback { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 8px; }
+
+.token-fallback-label {
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  color: var(--muted); margin-bottom: 10px; letter-spacing: 0.3px;
+}
+
+.token-row { display: flex; gap: 10px; align-items: flex-end; }
+
+.token-btn {
+  padding: 13px 20px;
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  color: color-mix(in srgb, var(--cp) 80%, white);
+  border: none; border-radius: var(--radius-xs);
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: opacity 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px rgba(26,26,46,0.18);
+}
+.token-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+</style>

@@ -1,0 +1,127 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ivory:  #fdfaf7;
+  --dark:   #1a1a2e;
+  --cp:     #A8D4B8;
+  --cs:     #C5B8E0;
+  --muted:  #6b7280;
+  --border: rgba(197,184,224,0.3);
+  --fd: 'Cormorant Garamond', Georgia, serif;
+  --fb: 'Jost', 'Helvetica Neue', sans-serif;
+}
+
+html, body {
+  background: #e8e4df;
+  font-family: var(--fb);
+  min-height: 100vh;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 24px 80px;
+  gap: 0;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.site-header {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; margin-bottom: 40px; gap: 6px;
+}
+.header-accent { width: 36px; height: 36px; opacity: 0.5; margin-bottom: 6px; }
+.header-eyebrow {
+  font-family: var(--fb); font-size: 7.5px; font-weight: 700;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--cs);
+}
+.header-title {
+  font-family: var(--fd); font-size: 42px; font-weight: 300;
+  font-style: italic; color: var(--dark); line-height: 1; letter-spacing: -0.5px;
+}
+.header-rule {
+  display: flex; align-items: center; gap: 10px; width: 280px; margin: 6px 0;
+}
+.header-rule-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.6), transparent);
+}
+.header-rule-gem { font-size: 7px; color: var(--cs); }
+.header-names {
+  font-family: var(--fb); font-size: 10px; font-weight: 500;
+  letter-spacing: 4px; text-transform: uppercase; color: var(--dark);
+}
+.header-date {
+  font-family: var(--fd); font-size: 13px; font-style: italic; color: var(--muted);
+}
+
+/* ── Main card ────────────────────────────────────────────── */
+.main-card {
+  width: 100%; max-width: 640px;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(26,26,46,0.10);
+  overflow: hidden;
+}
+
+/* ── Category section ─────────────────────────────────────── */
+.category { border-bottom: 1px solid var(--border); }
+.category:last-child { border-bottom: none; }
+.category-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 28px 10px; border-bottom: 1px solid var(--border);
+}
+.category-label {
+  font-family: var(--fb); font-size: 7px; font-weight: 700;
+  letter-spacing: 3.5px; text-transform: uppercase; color: var(--cs); flex-shrink: 0;
+}
+.category-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, rgba(197,184,224,0.4), transparent);
+}
+
+/* ── Print page row ───────────────────────────────────────── */
+.print-row {
+  display: flex; align-items: center;
+  padding: 14px 28px; border-bottom: 1px solid var(--border);
+  text-decoration: none; transition: background 0.12s; gap: 16px;
+}
+.print-row:last-child { border-bottom: none; }
+.print-row:hover { background: rgba(197,184,224,0.08); }
+.row-icon {
+  width: 36px; height: 36px;
+  background: rgba(197,184,224,0.15);
+  border: 1px solid rgba(197,184,224,0.35);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; color: var(--cs); transition: background 0.12s;
+}
+.print-row:hover .row-icon { background: rgba(197,184,224,0.28); }
+.row-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.row-title {
+  font-family: var(--fd); font-size: 17px; font-weight: 400;
+  color: var(--dark); line-height: 1.2;
+}
+.row-desc {
+  font-family: var(--fb); font-size: 8px; font-weight: 400;
+  color: var(--muted); letter-spacing: 0.3px;
+}
+.row-warning {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--fb); font-size: 7px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase; color: #9a7fc0; margin-top: 2px;
+}
+.row-arrow {
+  color: rgba(197,184,224,0.6); transition: transform 0.12s, color 0.12s; flex-shrink: 0;
+}
+.print-row:hover .row-arrow { transform: translateX(3px); color: var(--cs); }
+
+/* ── Footer ───────────────────────────────────────────────── */
+.page-footer {
+  display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 32px;
+}
+.footer-logo { height: 20px; opacity: 0.35; width: auto; }
+.footer-gem  { font-size: 6px; color: var(--cs); }
+.footer-hashtag {
+  font-family: var(--fd); font-size: 13px; font-style: italic; color: var(--muted);
+}

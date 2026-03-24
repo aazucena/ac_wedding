@@ -1,0 +1,150 @@
+---
+// apps/web/src/pages/guestbook.astro — messages from confirmed guests to the couple
+import Layout          from '../layouts/Layout.astro';
+import PageHeader      from '../components/PageHeader.astro';
+import Hashtag         from '~/components/Hashtag.astro';
+import { getSettings, getGuestMessages } from '../lib/directus';
+import { formatDate }  from '../lib/utils/format';
+
+const [settings, messages] = await Promise.all([getSettings(), getGuestMessages()]);
+
+const groom            = settings.groom?.first_name ?? 'Aldrin';
+const bride            = settings.bride?.first_name ?? 'Christine';
+const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+
+function shortDate(iso?: string): string {
+  if (!iso) return '';
+  return formatDate(iso, 'MMM d, yyyy');
+}
+---
+
+<Layout
+  title={`Guestbook — ${groom} & ${bride}`}
+  colorPrimary={settings.color_primary}
+  colorSecondary={settings.color_secondary}
+  activeNav="guestbook"
+>
+
+  <div class="page-narrow guestbook-page">
+
+    <PageHeader
+      groomName={groom}
+      brideName={bride}
+      eyebrow="Messages to the couple"
+      date={`${weddingDateLabel} · Lethbridge, Alberta`}
+    />
+
+    {messages.length === 0 ? (
+      <div class="empty-state">
+        <p class="empty-text">Messages will appear here once guests RSVP.</p>
+      </div>
+    ) : (
+      <div class="letters">
+        {messages.map((msg, i) => (
+          <article class="letter" style={`animation-delay: ${0.1 + i * 0.06}s`}>
+            <header class="letter-header">
+              <div class="letter-from">
+                <span class="letter-symbol" aria-hidden="true">✦</span>
+                <span class="letter-name">{msg.name}</span>
+              </div>
+              {msg.date_rsvp_submitted && (
+                <time class="letter-date" datetime={msg.date_rsvp_submitted}>
+                  {shortDate(msg.date_rsvp_submitted)}
+                </time>
+              )}
+            </header>
+            <div class="letter-rule" aria-hidden="true"></div>
+            <blockquote class="letter-message">
+              "{msg.message_to_couple}"
+            </blockquote>
+          </article>
+        ))}
+      </div>
+    )}
+
+  </div>
+
+  <Fragment slot="footer-extra">
+    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+  </Fragment>
+
+</Layout>
+
+<style>
+.guestbook-page {
+  display: flex; flex-direction: column; align-items: stretch;
+}
+
+/* ── Empty ─────────────────────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 56px 32px;
+}
+.empty-text {
+  font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--muted);
+}
+
+/* ── Letter stack ──────────────────────────────────────── */
+.letters {
+  display: flex; flex-direction: column; gap: 20px;
+  width: 100%;
+}
+
+/* ── Individual letter ─────────────────────────────────── */
+.letter {
+  background: color-mix(in srgb, var(--cp) 5%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 22%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--cp) 55%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 24px 28px 26px;
+  opacity: 0; animation: fadeUp 0.65s ease forwards;
+}
+
+/* ── Header row ────────────────────────────────────────── */
+.letter-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; margin-bottom: 14px;
+}
+
+.letter-from {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+
+.letter-symbol {
+  font-family: var(--fd); font-size: 13px;
+  color: var(--cs); flex-shrink: 0;
+}
+
+.letter-name {
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase; color: var(--dark);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.letter-date {
+  font-family: var(--fb); font-size: 10px; font-weight: 300;
+  color: var(--muted); letter-spacing: 0.5px; flex-shrink: 0;
+}
+
+/* ── Divider ───────────────────────────────────────────── */
+.letter-rule {
+  height: 1px;
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--cp) 40%, transparent),
+    color-mix(in srgb, var(--cs) 20%, transparent) 60%,
+    transparent);
+  margin-bottom: 18px;
+}
+
+/* ── Message body ──────────────────────────────────────── */
+.letter-message {
+  font-family: var(--fd); font-size: 21px; font-weight: 300; font-style: italic;
+  color: var(--dark); line-height: 1.7;
+  margin: 0;
+}
+
+@media (max-width: 520px) {
+  .letter { padding: 20px 20px 22px; }
+  .letter-message { font-size: 18px; }
+}
+</style>

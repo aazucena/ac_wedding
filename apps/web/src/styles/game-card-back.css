@@ -1,0 +1,150 @@
+/* ── BACK ────────────────────────────────────────────────── */
+.b-header {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 18px 9px;
+  border-bottom: 1px solid var(--border);
+  background: #f2f8f5;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-header-accent-wrap {
+  width: 20px; height: 20px; overflow: hidden; flex-shrink: 0; opacity: 0.4;
+}
+.b-header-accent-wrap svg { width: 100%; height: 100%; display: block; }
+.b-header-body { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.b-header-title {
+  font-size: 8px; font-weight: 600; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--dark);
+}
+.b-header-rule { font-size: 7.5px; font-weight: 300; color: var(--muted); }
+.b-header-name {
+  display: flex; align-items: flex-end; gap: 6px; flex-shrink: 0; min-width: 1.8in;
+}
+.b-header-name-lbl {
+  font-size: 7px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--cs); white-space: nowrap; flex-shrink: 0;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-header-name-line { flex: 1; border-bottom: 1px solid rgba(197,184,224,0.7); }
+.b-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  border-left: 1.5px solid var(--border);
+  border-top: 1.5px solid var(--border);
+}
+.b-cell {
+  position: relative;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--ivory);
+  padding: 10px 12px 8px;
+  min-height: 0; overflow: hidden;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.b-cell:nth-child(5n)   { border-right: 1.5px solid var(--border); }
+.b-cell:nth-child(n+11) { border-bottom: 1.5px solid var(--border); }
+.b-pos-1  { background: var(--cp-tint); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.b-pos-5  { background: var(--cs-tint); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.b-pos-11 { background: var(--cs-tint); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.b-pos-15 { background: var(--cp-tint); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.b-star::after {
+  content: '✦'; position: absolute; top: 6px; right: 8px;
+  font-size: 8px; color: var(--cp);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-num {
+  font-size: 7px; font-weight: 600; line-height: 1;
+  color: rgba(197,184,224,0.75); letter-spacing: 0.3px;
+}
+.b-prompt {
+  font-family: var(--fd); font-size: 13.5px; font-weight: 400;
+  color: var(--dark); line-height: 1.3; flex: 1;
+}
+.b-hint {
+  font-size: 7.5px; font-weight: 300; font-style: italic;
+  color: var(--muted); line-height: 1.3;
+}
+.b-sig { display: flex; align-items: center; gap: 5px; margin-top: 6px; }
+.b-sig-lbl {
+  font-size: 6px; font-weight: 600; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--cs); flex-shrink: 0;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-sig-line { flex: 1; border-bottom: 1px dotted rgba(197,184,224,0.6); }
+.b-tb {
+  flex-shrink: 0;
+  display: flex; align-items: center; gap: 32px;
+  padding: 14px 28px; border-top: 1.5px solid var(--border);
+  background: #f6f3fb;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-tb-left { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.b-tb-label {
+  font-size: 8px; font-weight: 600; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--cs);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-tb-q {
+  font-family: var(--fd); font-size: 16px; font-weight: 400;
+  color: var(--dark); line-height: 1.45; max-width: 4.5in;
+}
+.b-tb-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+.b-tb-box {
+  width: 3in; height: 0.72in;
+  border: 1.5px dashed rgba(197,184,224,0.65); border-radius: 6px;
+  position: relative;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-tb-box-lbl {
+  position: absolute; top: 6px; left: 9px;
+  font-size: 6px; font-weight: 600; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--cs);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.b-tb-deadline {
+  font-size: 7px; font-weight: 400; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* ── Toolbar ─────────────────────────────────────────────── */
+.toolbar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 10px 20px; padding: 14px 24px 16px;
+  background: rgba(253,250,247,0.96); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--border); z-index: 100;
+}
+.t-group { display: flex; align-items: center; gap: 10px; }
+.t-hint { width: 100%; text-align: center; font-size: 10px; color: var(--muted); font-style: italic; }
+.btn-print {
+  padding: 8px 20px; background: var(--dark); color: var(--cp);
+  border: none; border-radius: 999px; cursor: pointer;
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+}
+.btn-link { font-size: 11px; color: var(--muted); text-decoration: none; }
+.btn-link:hover { color: var(--dark); }
+.seg {
+  display: flex; border: 1px solid rgba(197,184,224,0.7);
+  border-radius: 8px; overflow: hidden;
+}
+.seg-btn {
+  padding: 6px 14px; border: none; cursor: pointer; background: var(--ivory);
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  color: var(--muted); transition: background 0.15s, color 0.15s;
+}
+.seg-btn.active { background: var(--dark); color: var(--cp); }
+
+/* ── Print ───────────────────────────────────────────────── */
+@media print {
+  @page { size: 11in 8.5in landscape; margin: 0; }
+  body { background: white; padding: 0 !important; display: block; }
+  .no-print { display: none !important; }
+  .flip-container { display: block !important; width: auto !important; height: auto !important; cursor: default; }
+  .flipper { transform: none !important; transform-style: flat; position: static; width: auto; height: auto; }
+  .face { position: static !important; transform: none !important; backface-visibility: visible; -webkit-backface-visibility: visible; width: auto; min-height: auto; }
+  .face.front { break-after: page; page-break-after: always; }
+  .card { box-shadow: none; break-inside: avoid; width: 11in; min-height: 8.5in; }
+}

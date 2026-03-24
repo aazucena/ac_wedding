@@ -1,0 +1,52 @@
+# Environment — never commit secrets
+.env
+.env.local
+.env.production
+.env*.local
+
+# Railway env reference (placeholders but keep out of git to be safe)
+.env.railway
+
+# Node
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+
+# Directus uploads and database (local only)
+packages/directus/uploads/
+packages/directus/database.db
+
+# Schema snapshot replaced by directus-sync
+packages/directus/schemas/
+
+# Directus marketplace extension cache (downloaded at runtime)
+packages/directus/extensions/.registry/
+
+# Seed collection data — contains real guest/personal data, local only
+packages/seed/src/collections/
+
+# Directus flow exports — import/export manually via Directus UI
+flows/
+
+# Docker local env and data (real credentials + DB files)
+.docker/.env
+.docker/data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Build output
+dist/
+.next/
+out/
+*.tsbuildinfo
+.astro/
+
+# Temp files
+tmp/
+public/tmp/

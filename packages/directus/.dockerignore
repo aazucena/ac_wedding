@@ -1,0 +1,12 @@
+# Extension build artifacts — rebuilt inside Docker
+extensions/*/dist/
+extensions/*/node_modules/
+
+# Registry (marketplace cache, not custom extensions)
+extensions/.registry/
+
+# Local data
+uploads/
+database.db
+schemas/
+migrations/

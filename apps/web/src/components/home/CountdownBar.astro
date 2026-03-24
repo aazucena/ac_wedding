@@ -1,0 +1,110 @@
+---
+// home/CountdownBar.astro — live countdown timer to the wedding date
+interface Props {
+  weddingDate: string; // "YYYY-MM-DD"
+}
+const { weddingDate } = Astro.props;
+---
+
+<div class="countdown-bar" id="countdown">
+  <div class="cd-cell">
+    <span class="cd-num" id="cd-days">—</span>
+    <span class="cd-lbl">Days</span>
+  </div>
+  <div class="cd-sep">✦</div>
+  <div class="cd-cell">
+    <span class="cd-num" id="cd-hours">—</span>
+    <span class="cd-lbl">Hours</span>
+  </div>
+  <div class="cd-sep">✦</div>
+  <div class="cd-cell">
+    <span class="cd-num" id="cd-minutes">—</span>
+    <span class="cd-lbl">Minutes</span>
+  </div>
+  <div class="cd-sep">✦</div>
+  <div class="cd-cell">
+    <span class="cd-num" id="cd-seconds">—</span>
+    <span class="cd-lbl">Seconds</span>
+  </div>
+</div>
+
+<script is:inline define:vars={{ weddingDate }}>
+  function tickCountdown() {
+    const parts = weddingDate.split('-').map(Number);
+    const target = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0);
+    const diff = target - Date.now();
+    if (diff <= 0) {
+      const bar = document.getElementById('countdown');
+      if (bar) {
+        bar.textContent = '';
+        const msg = document.createElement('p');
+        msg.className = 'cd-married';
+        msg.textContent = "We're married! ✦";
+        bar.appendChild(msg);
+      }
+      if (typeof window.__launchConfetti === 'function') window.__launchConfetti();
+      return;
+    }
+    const pad = n => String(n).padStart(2, '0');
+    const elDays    = document.getElementById('cd-days');
+    const elHours   = document.getElementById('cd-hours');
+    const elMinutes = document.getElementById('cd-minutes');
+    const elSeconds = document.getElementById('cd-seconds');
+    if (elDays)    elDays.textContent    = pad(Math.floor(diff / 86400000));
+    if (elHours)   elHours.textContent   = pad(Math.floor((diff % 86400000) / 3600000));
+    if (elMinutes) elMinutes.textContent = pad(Math.floor((diff % 3600000) / 60000));
+    if (elSeconds) elSeconds.textContent = pad(Math.floor((diff % 60000) / 1000));
+  }
+  tickCountdown();
+  setInterval(tickCountdown, 1000);
+</script>
+
+<style>
+.countdown-bar {
+  position: relative; z-index: 1;
+  display: flex; align-items: stretch; justify-content: center;
+  background: rgba(26,26,46,0.52);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255,255,255,0.12);
+  flex-wrap: nowrap;
+  border-radius: var(--radius-sm);
+  padding: 20px 40px;
+}
+.cd-cell {
+  flex: 1; max-width: 120px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px 12px 18px;
+  border-right: 1px solid rgba(255,255,255,0.08);
+}
+.cd-cell:last-child { border-right: none; }
+.cd-num {
+  font-family: var(--fd);
+  font-size: clamp(30px, 5vw, 46px);
+  font-weight: 300; color: #fff; line-height: 1; letter-spacing: -1px;
+}
+.cd-lbl {
+  font-family: var(--fb); font-size: 8px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(255,255,255,0.50); margin-top: 6px;
+}
+.cd-sep {
+  font-size: 12px; color: color-mix(in srgb, var(--cp) 70%, white);
+  align-self: center; opacity: 0.5; padding: 0 4px; flex-shrink: 0;
+}
+.cd-married {
+  font-family: var(--fd); font-size: 24px;
+  font-style: italic; color: color-mix(in srgb, var(--cp) 80%, white);
+  padding: 22px;
+}
+
+@media (max-width: 768px) {
+  .countdown-bar { padding: 16px 24px; }
+}
+@media (max-width: 480px) {
+  .countdown-bar { padding: 12px 12px; gap: 4px; }
+  .cd-cell { padding: 12px 8px 10px; }
+  .cd-lbl { font-size: 7px; letter-spacing: 2px; }
+  .cd-sep { display: none; }
+}
+</style>

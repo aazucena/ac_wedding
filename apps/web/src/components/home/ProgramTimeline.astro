@@ -1,0 +1,277 @@
+---
+// home/ProgramTimeline.astro — day-of program ordered list
+import type { Ceremonies, Reception } from '../../lib/types';
+import { formatTime } from '../../lib/utils/format';
+import { durationFromMinutes } from '../../lib/date';
+import { DateTime } from 'luxon';
+
+interface Props {
+  ceremony: Ceremonies;
+  reception: Reception;
+}
+const { ceremony, reception } = Astro.props;
+
+function ft(t: string | null | undefined, fallback = 'TBD'): string {
+  if (!t) return fallback;
+  return formatTime(t);
+}
+
+const programIconMap: Record<string, string> = {
+  entrance: '🚪', dance: '💃', speech: '🎤', remarks: '🎤',
+  prayer: '🙏', dinner: '🍽️', cake: '🎂', toast: '🥂', bouquet: '💐', garter: '📿',
+  money: '💵', game: '🎮', video: '🎥', celebration: '🎉',
+};
+
+const ceremonyTime   = ft(ceremony.start_time);
+const ceremonyVenue  = ceremony.venue?.name ?? 'Venue TBD';
+const receptionVenue = reception.venue?.name ?? 'Venue TBD';
+const receptionTime  = ft(reception.start_time);
+
+const ceremonyEnd = ceremony.estimated_duration && ceremony.start_time
+  ? (() => {
+      const start = DateTime.fromISO(`2000-01-01T${ceremony.start_time}`, { zone: 'America/Edmonton' });
+      const end   = start.plus(durationFromMinutes(ceremony.estimated_duration));
+      return ft(end.toFormat('HH:mm:ss'));
+    })()
+  : null;
+
+const openingItems = [
+  { time: ceremonyTime,              icon: '⛪', label: 'Ceremony begins',       note: ceremonyVenue },
+  { time: ceremonyEnd ?? '~3:30 PM', icon: '🕊️', label: 'Recessional & photos', note: 'Grounds' },
+  { time: ft(reception.cocktail_hour_time, '5:00 PM'), icon: '🥂', label: 'Cocktail hour', note: 'Pre-reception' },
+];
+
+const receptionItems = (reception.programs ?? [])
+  .filter(p => !p.parent)
+  .sort((a, b) => (a.estimated_start_time ?? '').localeCompare(b.estimated_start_time ?? ''))
+  .map(p => ({
+    time:  ft(p.estimated_start_time),
+    icon:  (p.type ? programIconMap[p.type] : null) ?? '✦',
+    label: p.label,
+    note:  p.notes ?? '',
+  }));
+
+const fallbackItems = [
+  { time: receptionTime, icon: '🚪', label: 'Reception starts',      note: receptionVenue },
+  { time: '7:00 PM',     icon: '💃', label: 'First dance & program', note: 'Dinner & celebrations' },
+  { time: '10:00 PM',    icon: '🎉', label: 'Last dance',            note: 'End of evening' },
+];
+
+const items = [...openingItems, ...(receptionItems.length > 0 ? receptionItems : fallbackItems)];
+
+// Mobile phase data
+const receptionPhaseItems = receptionItems.length > 0 ? receptionItems : fallbackItems;
+const lastReceptionItem = receptionPhaseItems[receptionPhaseItems.length - 1];
+
+const ceremonyPhaseItems = openingItems.slice(0, 2); // ceremony begins + recessional
+const receptionPhaseWithCocktail = [openingItems[2]!, ...receptionPhaseItems]; // cocktail hour first
+
+const phases = [
+  {
+    icon: '⛪',
+    name: 'Ceremony',
+    timeRange: `${ceremonyPhaseItems[0]?.time ?? 'TBD'} – ${ceremonyPhaseItems.at(-1)?.time ?? 'TBD'}`,
+    items: ceremonyPhaseItems,
+    open: true,
+  },
+  {
+    icon: '🎉',
+    name: 'Reception',
+    timeRange: `${receptionPhaseWithCocktail[0]?.time ?? 'TBD'} – ${lastReceptionItem?.time ?? 'TBD'}`,
+    items: receptionPhaseWithCocktail,
+    open: false,
+  },
+];
+---
+
+<!-- Desktop: full flat timeline -->
+<div class="program-timeline timeline-desktop">
+  {items.map((item, i) => (
+    <div class="program-item">
+      <div class="program-time">{item.time}</div>
+      <div class="program-dot-col">
+        <div class="program-dot">{item.icon}</div>
+        {i < items.length - 1 && <div class="program-line"></div>}
+      </div>
+      <div class="program-content">
+        <p class="program-label">{item.label}</p>
+        <p class="program-note">{item.note}</p>
+      </div>
+    </div>
+  ))}
+</div>
+
+<!-- Mobile: collapsible phases -->
+<div class="timeline-phases">
+  {phases.map((phase) => (
+    <details class="phase" open={phase.open || undefined}>
+      <summary class="phase-summary">
+        <span class="phase-icon-wrap">{phase.icon}</span>
+        <div class="phase-info">
+          <span class="phase-name">{phase.name}</span>
+          <span class="phase-meta">{phase.timeRange} · {phase.items.length} events</span>
+        </div>
+        <span class="phase-chevron">›</span>
+      </summary>
+      <div class="phase-items-wrap">
+        <div class="phase-items">
+          {phase.items.map((item, i) => (
+            <div class="program-item">
+              <div class="program-time">{item.time}</div>
+              <div class="program-dot-col">
+                <div class="program-dot">{item.icon}</div>
+                {i < phase.items.length - 1 && <div class="program-line"></div>}
+              </div>
+              <div class="program-content">
+                <p class="program-label">{item.label}</p>
+                <p class="program-note">{item.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </details>
+  ))}
+</div>
+
+<style>
+/* ── Shared item styles ── */
+.program-item {
+  display: grid;
+  grid-template-columns: 80px 48px 1fr;
+  gap: 0 12px; align-items: start;
+}
+.program-item:last-child .program-line { display: none; }
+.program-time {
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  color: var(--muted); padding-top: 4px; text-align: right;
+}
+.program-dot-col { display: flex; flex-direction: column; align-items: center; }
+.program-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 25%, white),
+    color-mix(in srgb, var(--cs) 20%, white)
+  );
+  border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0;
+}
+.program-line {
+  width: 2px; flex: 1; min-height: 28px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cs) 30%, transparent), transparent);
+  margin: 4px 0;
+}
+.program-content { padding: 4px 0 28px; }
+.program-label {
+  font-family: var(--fd); font-size: 19px; font-weight: 400;
+  color: var(--dark); line-height: 1.2; margin-bottom: 2px;
+}
+.program-note {
+  font-family: var(--fb); font-size: 12px; font-weight: 300; color: var(--muted);
+}
+
+/* ── Desktop flat timeline ── */
+.timeline-desktop {
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  padding: 36px 40px;
+  position: relative; overflow: hidden;
+}
+.timeline-desktop::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+
+/* ── Mobile phase accordion (hidden on desktop) ── */
+.timeline-phases { display: none; }
+
+/* ── Phase card ── */
+.phase {
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  position: relative;
+}
+.phase::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+.phase + .phase { margin-top: 12px; }
+
+/* ── Summary row ── */
+.phase-summary {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 20px;
+  cursor: pointer; list-style: none;
+  user-select: none;
+}
+.phase-summary::-webkit-details-marker { display: none; }
+.phase-icon-wrap {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 25%, white),
+    color-mix(in srgb, var(--cs) 20%, white)
+  );
+  border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+.phase-info { flex: 1; min-width: 0; }
+.phase-name {
+  display: block;
+  font-family: var(--fd); font-size: 20px; font-weight: 400;
+  color: var(--dark); line-height: 1.2;
+}
+.phase-meta {
+  display: block;
+  font-family: var(--fb); font-size: 11px; font-weight: 300; color: var(--muted);
+  margin-top: 2px;
+}
+.phase-chevron {
+  font-size: 22px; color: var(--muted); line-height: 1;
+  transition: transform 0.3s ease;
+  transform: rotate(0deg);
+}
+details[open] .phase-chevron { transform: rotate(90deg); }
+
+/* ── Animated expand/collapse ── */
+.phase-items-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+details[open] .phase-items-wrap {
+  grid-template-rows: 1fr;
+}
+.phase-items {
+  overflow: hidden;
+  padding: 0 20px;
+}
+details[open] .phase-items {
+  padding: 4px 20px 8px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .timeline-desktop { display: none; }
+  .timeline-phases { display: block; }
+  .program-label { font-size: 17px; }
+}
+@media (max-width: 480px) {
+  .program-item { grid-template-columns: 56px 36px 1fr; gap: 0 8px; }
+  .program-dot { width: 30px; height: 30px; font-size: 13px; }
+  .program-time { font-size: 10px; padding-top: 6px; }
+  .program-label { font-size: 15px; }
+  .program-note { font-size: 11px; }
+  .program-content { padding-bottom: 20px; }
+  .phase-summary { padding: 16px; gap: 10px; }
+  .phase-name { font-size: 18px; }
+  .phase-items { padding: 0 16px; }
+  details[open] .phase-items { padding: 4px 16px 8px; }
+}
+</style>

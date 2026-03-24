@@ -1,0 +1,175 @@
+---
+export const prerender = true;
+// apps/web/src/pages/index.astro
+import Layout          from '../layouts/Layout.astro';
+import EventStrip      from '../components/EventStrip.astro';
+import CalendarExport  from '../components/CalendarExport.astro';
+import Hashtag         from '~/components/Hashtag.astro';
+import AccentMark      from '@assets/accent_mark.png';
+import { Image } from 'astro:assets';
+import HeroSection     from '../components/home/HeroSection.astro';
+import ProgramTimeline from '../components/home/ProgramTimeline.astro';
+import DressCodeCard   from '../components/home/DressCodeCard.astro';
+import RegistrySection from '../components/home/RegistrySection.astro';
+import VendorsGrid     from '../components/home/VendorsGrid.astro';
+import GalleryPreview  from '../components/home/GalleryPreview.astro';
+import StoryPreviewCard from '../components/home/StoryPreviewCard.astro';
+import RsvpZone        from '../components/home/RsvpZone.astro';
+import HashtagShare    from '../components/home/HashtagShare.astro';
+import { getSettings, getVendors, getCeremony, getReception, getGalleryPhotos, getRsvpCount, getRegistries } from '../lib/directus';
+import { DIRECTUS_URL } from 'astro:env/server';
+import { formatTime, formatDate } from '../lib/utils/format';
+
+const [settings, vendors, ceremony, reception, photos, rsvpCount, registries] = await Promise.all([
+  getSettings(), getVendors(), getCeremony(), getReception(), getGalleryPhotos(), getRsvpCount(), getRegistries(),
+]);
+
+const groom           = settings.groom?.first_name ?? 'Aldrin';
+const bride           = settings.bride?.first_name ?? 'Christine';
+const groomFull       = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Azucena'}`;
+const brideFull       = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
+const hashtag         = settings.hashtag ?? '#AldrinAndChristine2026';
+const weddingDate     = settings.wedding_date ?? '2026-09-26';
+const weddingDateLabel = formatDate(weddingDate);
+const weddingLocation = settings.location ?? 'Lethbridge, Alberta';
+const ceremonyTime    = ceremony.start_time ? formatTime(ceremony.start_time) : 'TBD';
+const receptionTime   = reception.start_time ? formatTime(reception.start_time) : 'TBD';
+const ceremonyVenue   = ceremony.venue?.name  ?? 'Venue TBD';
+const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
+---
+
+<Layout
+  title={`${groom} & ${bride} — ${weddingDateLabel}`}
+  colorPrimary={settings.color_primary}
+  colorSecondary={settings.color_secondary}
+  activeNav="home"
+  toc={true}
+  tocShowAfter="#main-content"
+>
+
+  <HeroSection
+    groomFull={groomFull}
+    brideFull={brideFull}
+    weddingDateLabel={weddingDateLabel}
+    weddingLocation={weddingLocation}
+    weddingDate={weddingDate}
+  />
+
+  <div id="main-content"></div>
+
+  <section class="page-wide section-block">
+    <div class="section-header" id="venue">
+      <p class="section-eyebrow">Mark Your Calendar</p>
+      <h2 class="section-title">When &amp; Where</h2>
+    </div>
+    <EventStrip
+      ceremonyVenue={ceremonyVenue}
+      ceremonyTime={ceremonyTime}
+      receptionVenue={receptionVenue}
+      receptionTime={receptionTime}
+    />
+    {settings.rsvp_enabled && (
+      <RsvpZone count={rsvpCount.confirmed} deadline={settings.rsvp_deadline} />
+    )}
+  </section>
+  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+
+  <section class="page-wide section-block">
+    <div class="section-header">
+      <p class="section-eyebrow">A Love Story</p>
+      <h2 class="section-title" id="about-us">About Us</h2>
+    </div>
+    <StoryPreviewCard story={settings.story} />
+  </section>
+  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+
+  <section class="page-wide section-block">
+    <div class="section-header">
+      <p class="section-eyebrow">The Big Day</p>
+      <h2 class="section-title" id="program">Program</h2>
+    </div>
+    <ProgramTimeline ceremony={ceremony} reception={reception} />
+  </section>
+  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+
+  <section class="page-wide section-block">
+    <div class="section-header">
+      <p class="section-eyebrow">What to Wear</p>
+      <h2 class="section-title" id="dress-code">Dress Code</h2>
+    </div>
+    <DressCodeCard
+      dressCode={settings.dress_code ?? ceremony.dress_code ?? 'Formal Attire'}
+      description={(settings.dress_code_description ?? ceremony.dress_code_description)
+        ? (settings.dress_code_description ?? ceremony.dress_code_description ?? null)
+        : null}
+    />
+  </section>
+  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+
+  {registries.length > 0 && (
+    <>
+      <section class="page-wide section-block">
+        <div class="section-header">
+          <p class="section-eyebrow">For Those Who Wish to Give</p>
+          <h2 class="section-title" id="registry">Gift Registry</h2>
+          <p class="registry-intro">Your presence is the greatest gift.</p>
+        </div>
+        <RegistrySection registries={registries} />
+      </section>
+      <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+    </>
+  )}
+
+  {vendors.length > 0 && (
+    <>
+      <section class="page-wide section-block">
+        <div class="section-header">
+          <p class="section-eyebrow">With Gratitude</p>
+          <h2 class="section-title" id="partners">Our Partners</h2>
+        </div>
+        <VendorsGrid vendors={vendors} />
+      </section>
+      <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+    </>
+  )}
+
+  <section class="page-wide section-block">
+    <div class="section-header">
+      <p class="section-eyebrow">Memories</p>
+      <h2 class="section-title" id="gallery">Gallery</h2>
+    </div>
+    <GalleryPreview photos={photos} directusUrl={DIRECTUS_URL} />
+  </section>
+  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+
+  <section class="page-wide section-block">
+    <CalendarExport groomName={groom} brideName={bride} />
+  </section>
+  <div class="section-divider" aria-hidden="true"><span>✦</span></div>
+
+  <div class="page-narrow">
+    <HashtagShare hashtag={hashtag} weddingDateLabel={weddingDateLabel} />
+  </div>
+
+  <Fragment slot="footer-extra">
+    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+  </Fragment>
+
+</Layout>
+
+<!-- Confetti — separate module script, never mixed with define:vars -->
+<script>
+  import confetti from 'canvas-confetti';
+  function launchConfetti() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    confetti({
+      particleCount: 160,
+      spread: 90,
+      origin: { y: 0.4 },
+      colors: ['#A8D4B8', '#C5B8E0', '#fdfaf7', '#f4c2c2', '#fde68a'],
+    });
+  }
+  window.addEventListener('astro:page-load', () => setTimeout(() => launchConfetti(), 600));
+  (window as any).__launchConfetti = launchConfetti;
+</script>

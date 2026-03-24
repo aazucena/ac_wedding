@@ -1,0 +1,25 @@
+---
+// ui/ErrorBanner.astro — inline error message
+interface Props {
+  message?: string;
+  id?: string;
+}
+const { message, id } = Astro.props;
+---
+
+{message && (
+  <div
+    id={id}
+    role="alert"
+    class="w-full rounded-xs bg-red-50 border border-red-200 text-red-700 font-body text-sm px-4 py-3 text-center"
+  >
+    {message}
+  </div>
+)}
+{!message && id && (
+  <div
+    id={id}
+    role="alert"
+    class="w-full rounded-xs bg-red-50 border border-red-200 text-red-700 font-body text-sm px-4 py-3 text-center hidden"
+  ></div>
+)}

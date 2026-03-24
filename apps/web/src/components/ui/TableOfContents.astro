@@ -1,0 +1,401 @@
+---
+// ui/TableOfContents.astro
+// Desktop: compact card expanding upward from the bottom-right FAB
+// Mobile:  MUI-style bottom sheet with scrim + drag handle
+interface Props {
+  title?: string;
+  minItems?: number;   // hide if fewer than N sections found (default: 2)
+  showAfter?: string;  // CSS selector — stay hidden until this element enters/passes viewport
+  class?: string;
+}
+const { title = 'Contents', minItems = 2, showAfter, class: className } = Astro.props;
+---
+
+<nav
+  id="toc-nav"
+  aria-label="Table of contents"
+  class:list={['toc-nav', className]}
+  data-min-items={minItems}
+  data-show-after={showAfter}
+  hidden
+>
+  <!-- Scrim — mobile only -->
+  <div id="toc-backdrop" class="toc-backdrop" aria-hidden="true"></div>
+
+  <!-- Expandable list -->
+  <div class="toc-panel">
+    <div class="toc-panel-inner">
+      <!-- Drag handle — mobile only -->
+      <div class="toc-handle" aria-hidden="true"></div>
+      <p class="toc-title">{title}</p>
+      <ol id="toc-list" class="toc-list"></ol>
+    </div>
+  </div>
+
+  <!-- FAB toggle -->
+  <button id="toc-toggle" class="toc-toggle" aria-expanded="false" aria-controls="toc-list" aria-label="Table of contents">
+    <svg class="toc-icon-open" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <path d="M2 4h11M2 7.5h8M2 11h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <svg class="toc-icon-close" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </button>
+</nav>
+
+<style>
+/* ── Container ──────────────────────────────────────────────────────────── */
+.toc-nav {
+  position: fixed;
+  bottom: 1.5rem;   /* default: same slot as BackToTop when it's not visible */
+  right: 1.5rem;
+  z-index: 40;
+  opacity: 0;
+  transition: opacity 0.3s ease, bottom 0.3s ease;
+}
+/* Shift up when BackToTop is visible (mirrors its 400px scroll threshold) */
+.toc-nav.toc-shifted {
+  bottom: 4.5rem;
+}
+.toc-nav.toc-visible { opacity: 1; }
+
+/* ── FAB toggle ─────────────────────────────────────────────────────────── */
+.toc-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--dark, #1a1a2e) 80%, transparent);
+  color: var(--ivory, #faf8f4);
+  border: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-card, 0 2px 12px rgba(0,0,0,.08));
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  margin-left: auto;
+}
+.toc-toggle:hover,
+.toc-nav.toc-open .toc-toggle {
+  background: var(--dark, #1a1a2e);
+  box-shadow: var(--shadow-hover, 0 4px 20px rgba(0,0,0,.15));
+}
+
+.toc-icon-close { display: none; }
+.toc-nav.toc-open .toc-icon-open  { display: none; }
+.toc-nav.toc-open .toc-icon-close { display: block; }
+
+/* ── Desktop panel — grows upward via grid-rows ─────────────────────────── */
+.toc-backdrop { display: none; }
+.toc-handle   { display: none; }
+
+.toc-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 0.25s ease, margin-bottom 0.25s ease;
+  margin-bottom: 0;
+}
+.toc-nav:not(.toc-open) .toc-panel { display: none; }
+.toc-nav.toc-open .toc-panel {
+  grid-template-rows: 1fr;
+  overflow: visible;
+  margin-bottom: 8px;
+}
+
+.toc-panel-inner {
+  min-height: 0;
+  background: var(--ivory, #faf8f4);
+  border: 1px solid var(--border, #e8e0d4);
+  border-radius: var(--radius-sm, 10px);
+  box-shadow: var(--shadow-hover, 0 4px 20px rgba(0,0,0,.12));
+  padding: 20px 14px;
+  width: 180px;
+}
+
+.toc-title {
+  font-family: var(--fb, sans-serif);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--muted, #8a8499);
+  margin: 0 0 8px;
+}
+
+/* ── List — JS-created, must use :global() ──────────────────────────────── */
+.toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+:global(.toc-list li) {
+  --indent: 0px;
+  padding-left: var(--indent);
+}
+:global(.toc-list a) {
+  display: block;
+  font-family: var(--fb, sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--muted, #8a8499);
+  text-decoration: none;
+  padding: 3px 6px;
+  border-radius: 4px;
+  border-left: 2px solid transparent;
+  transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+:global(.toc-list a::after) {
+  content: attr(data-text);
+  display: block;
+  font-weight: 500;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+:global(.toc-list a:hover) {
+  color: var(--dark, #1a1a2e);
+  background: color-mix(in srgb, var(--cp, #A8D4B8) 12%, transparent);
+}
+:global(.toc-list a.toc-active) {
+  color: var(--dark, #1a1a2e);
+  border-left-color: var(--cp, #A8D4B8);
+  background: color-mix(in srgb, var(--cp, #A8D4B8) 8%, transparent);
+  font-weight: 500;
+}
+
+/* ── Mobile: bottom sheet ───────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  /* Raise above BackToTop (z-50) when the sheet is open so the scrim
+     and panel cover everything, including the BackToTop button */
+  .toc-nav.toc-open { z-index: 60; }
+
+  /* Scrim */
+  .toc-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: -1;   /* behind panel + button, but above page (within z-index:40 context) */
+  }
+  .toc-nav.toc-open .toc-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Drag handle */
+  .toc-handle {
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border, #e8e0d4);
+    margin: 0 auto 16px;
+    flex-shrink: 0;
+  }
+
+  /* Panel overrides — slides up from bottom edge */
+  .toc-nav:not(.toc-open) .toc-panel {
+    display: block !important;    /* override the display:none so transition runs */
+    transform: translateY(100%);
+    visibility: hidden;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s 0.35s;
+  }
+  .toc-panel {
+    position: fixed;
+    inset: auto 0 0 0;            /* full-width, pinned to bottom */
+    display: block;
+    grid-template-rows: unset;
+    overflow: visible;
+    margin-bottom: 0 !important;
+    transform: translateY(0);
+    visibility: visible;
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s;
+  }
+  .toc-panel-inner {
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+    box-shadow: 0 -4px 32px rgba(0, 0, 0, 0.12);
+    max-height: 65vh;
+    overflow-y: auto;
+    padding: 8px 20px calc(20px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Larger tap targets + readable font on mobile */
+  :global(.toc-list a) {
+    font-size: 14px;
+    padding: 10px 8px;
+    white-space: normal;          /* allow wrapping on narrow screens */
+  }
+}
+</style>
+
+<script is:inline>
+  function initTOC() {
+    const nav      = document.getElementById('toc-nav');
+    const list     = document.getElementById('toc-list');
+    const toggle   = document.getElementById('toc-toggle');
+    const backdrop = document.getElementById('toc-backdrop');
+    if (!nav || !list || !toggle) return;
+
+    const minItems  = parseInt(nav.getAttribute('data-min-items') ?? '2', 10);
+    const showAfter = nav.getAttribute('data-show-after') || null;
+    let activeObserver   = null;
+    let sentinelObserver = null;
+
+    // ── Stack position: shift up when BackToTop becomes visible ─────────────
+    function updateStack() {
+      nav.classList.toggle('toc-shifted', window.scrollY > 400);
+    }
+    window.addEventListener('scroll', updateStack, { passive: true });
+    updateStack();
+
+    // ── Toggle ───────────────────────────────────────────────────────────────
+    function setOpen(open) {
+      nav.classList.toggle('toc-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+      // Prevent page scroll while sheet is open on mobile
+      document.body.style.overflow = open && window.innerWidth < 1024 ? 'hidden' : '';
+    }
+
+    toggle.addEventListener('click', e => {
+      e.stopPropagation();
+      setOpen(!nav.classList.contains('toc-open'));
+    });
+
+    // Close on backdrop tap (mobile scrim) or outside click (desktop)
+    if (backdrop) {
+      backdrop.addEventListener('click', () => setOpen(false));
+    }
+    document.addEventListener('click', e => {
+      if (!nav.contains(e.target)) setOpen(false);
+    });
+
+    // ── Build ────────────────────────────────────────────────────────────────
+    function buildFromAnchorable() {
+      list.replaceChildren();
+      setOpen(false);
+
+      const sections = Array.from(
+        document.querySelectorAll('[data-anchorable][id][data-toc-level]')
+      );
+
+      if (sections.length < minItems) {
+        nav.hidden = true;
+        nav.classList.remove('toc-visible');
+        return;
+      }
+
+      const levels   = sections.map(s => parseInt(s.getAttribute('data-toc-level') ?? '2', 10));
+      const minLevel = Math.min(...levels);
+
+      sections.forEach(section => {
+        const id    = section.id;
+        const level = parseInt(section.getAttribute('data-toc-level') ?? '2', 10);
+
+        const heading = section.matches('h2,h3,h4,h5,h6')
+          ? section
+          : section.querySelector('h2,h3,h4,h5,h6');
+        if (!heading) return;
+
+        const label = Array.from(heading.childNodes)
+          .filter(n => n.nodeType === Node.TEXT_NODE)
+          .map(n => n.textContent ?? '')
+          .join('')
+          .trim() || heading.textContent?.trim() || id;
+
+        const li = document.createElement('li');
+        li.style.setProperty('--indent', `${(level - minLevel) * 12}px`);
+
+        const a = document.createElement('a');
+        a.href = '#' + id;
+        a.textContent = label;
+        a.setAttribute('data-toc-id', id);
+        a.setAttribute('data-text', label);
+
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          setOpen(false);
+          document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        li.appendChild(a);
+        list.appendChild(li);
+      });
+
+      nav.hidden = false;
+
+      if (sentinelObserver) sentinelObserver.disconnect();
+
+      if (!showAfter) {
+        requestAnimationFrame(() => nav.classList.add('toc-visible'));
+      } else {
+        const sentinel = document.querySelector(showAfter);
+        if (!sentinel) {
+          requestAnimationFrame(() => nav.classList.add('toc-visible'));
+        } else {
+          nav.classList.remove('toc-visible');
+          sentinelObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+              const passed = entry.isIntersecting || entry.boundingClientRect.top < 0;
+              nav.classList.toggle('toc-visible', passed);
+            });
+          });
+          sentinelObserver.observe(sentinel);
+        }
+      }
+
+      observeSections(sections);
+    }
+
+    // ── Scroll-spy ──────────────────────────────────────────────────────────
+    function observeSections(sections) {
+      if (activeObserver) activeObserver.disconnect();
+
+      const visible = new Map(sections.map(s => [s.id, false]));
+
+      function setActive(id) {
+        list.querySelectorAll('a[data-toc-id]').forEach(a => {
+          a.classList.toggle('toc-active', a.getAttribute('data-toc-id') === id);
+        });
+      }
+
+      activeObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => visible.set(entry.target.id, entry.isIntersecting));
+
+        const topmost = sections.find(s => visible.get(s.id));
+        if (topmost) { setActive(topmost.id); return; }
+
+        const mid = window.innerHeight * 0.5;
+        let fallback = null;
+        for (const s of sections) {
+          if (s.getBoundingClientRect().top <= mid) fallback = s;
+          else break;
+        }
+        if (fallback) setActive(fallback.id);
+      }, { rootMargin: '0px 0px -60% 0px', threshold: 0 });
+
+      sections.forEach(s => activeObserver.observe(s));
+    }
+
+    document.addEventListener('anchor:ready', buildFromAnchorable);
+  }
+
+  document.addEventListener('astro:page-load', initTOC);
+</script>

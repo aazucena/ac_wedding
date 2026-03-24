@@ -1,0 +1,34 @@
+{% comment %} packages/directus/templates/sections/footer.liquid {% endcomment %}
+{% comment %} Email footer — insignia seal, hashtag, couple names + email, fine print, bottom band {% endcomment %}
+
+<!-- ─── FOOTER ────────────────────────────────────── -->
+<tr>
+  <td class="footer">
+    <!-- Insignia seal — mirrors website footer seal -->
+    <img
+      src="{{ constants.directus_url }}/assets/{{ read_wedding_settings.insignia }}"
+      alt="Monogram"
+      width="56"
+      style="display:block; margin:0 auto 16px; width:56px; opacity:0.55;"
+    >
+
+    {% assign hashtag_first = read_wedding_settings.hashtag | slice: 0 %}
+    {% if hashtag_first == '#' %}
+    <div class="footer-hashtag">{{ read_wedding_settings.hashtag }}</div>
+    {% else %}
+    <div class="footer-hashtag">#{{ read_wedding_settings.hashtag }}</div>
+    {% endif %}
+
+    <p class="footer-couple">
+      With love, <strong>{{ read_wedding_settings.groom.first_name }} &amp; {{ read_wedding_settings.bride.first_name }}</strong><br>
+      <a href="mailto:{{ read_wedding_settings.email }}">{{ read_wedding_settings.email }}</a>
+    </p>
+    <p class="footer-fine">
+      You are receiving this invitation because you are on our wedding guest list.<br>
+      This email was sent personally — no unsubscribe needed.
+    </p>
+  </td>
+</tr>
+
+<!-- Bottom decorative band -->
+<tr><td class="band-bottom"></td></tr>

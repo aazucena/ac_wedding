@@ -1,0 +1,74 @@
+---
+// MassPage2Order.astro — Page 2: Order of Mass overview
+import CardWatermark from '@components/CardWatermark.astro';
+import StackedImg    from '@assets/stacked.png';
+import { Image } from 'astro:assets';
+
+interface Props {
+  groomFirst: string;
+  brideFirst: string;
+  firstReadingRef: string;
+  psalmRef: string;
+  secondReadingRef: string | null;
+  gospelRef: string;
+}
+
+const { groomFirst, brideFirst, firstReadingRef, psalmRef, secondReadingRef, gospelRef } = Astro.props;
+---
+
+<div class="booklet-page" style="position:relative;">
+  <div class="accent-bar"></div>
+  <CardWatermark opacity={0.03} size={180} />
+
+  <div class="page-content">
+    <div class="section-header">
+      <div class="section-eyebrow">Guide</div>
+      <div class="section-title">Order of Mass</div>
+      <div class="section-rule">
+        <div class="section-rule-line"></div>
+        <span class="section-rule-gem">✦</span>
+        <div class="section-rule-line"></div>
+      </div>
+    </div>
+
+    <div class="rubric">Introductory Rites</div>
+    <div class="priest">Entrance Procession &amp; Opening Hymn</div>
+    <div class="priest">Greeting &amp; Penitential Act</div>
+    <div class="priest">Gloria</div>
+    <div class="priest">Opening Prayer (Collect)</div>
+
+    <div class="rubric">Liturgy of the Word</div>
+    <div class="priest">First Reading — {firstReadingRef}</div>
+    <div class="priest">Responsorial Psalm — {psalmRef}</div>
+    {secondReadingRef && <div class="priest">Second Reading — {secondReadingRef}</div>}
+    <div class="priest">Gospel Acclamation (Alleluia)</div>
+    <div class="priest">Gospel — {gospelRef}</div>
+    <div class="priest">Homily</div>
+
+    <div class="rubric">Rite of Marriage</div>
+    <div class="priest">Address &amp; Questions Before Consent</div>
+    <div class="priest">Exchange of Vows</div>
+    <div class="priest">Blessing &amp; Exchange of Rings</div>
+    <div class="priest">Universal Prayer (Petitions)</div>
+
+    <div class="rubric">Liturgy of the Eucharist</div>
+    <div class="priest">Preparation of the Altar &amp; Gifts</div>
+    <div class="priest">Eucharistic Prayer</div>
+    <div class="priest">Our Father</div>
+    <div class="priest">Nuptial Blessing</div>
+    <div class="priest">Sign of Peace &amp; Lamb of God</div>
+    <div class="priest">Communion</div>
+    <div class="priest">Prayer After Communion</div>
+
+    <div class="rubric">Concluding Rites</div>
+    <div class="priest">Solemn Blessing &amp; Dismissal</div>
+    <div class="priest">Recessional</div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <Image src={StackedImg} class="footer-logo" alt="" />
+    <span class="footer-page">2</span>
+  </div>
+  <div class="accent-bar-bottom"></div>
+</div>

@@ -1,0 +1,131 @@
+---
+// info/ItinerarySection.astro — weekend itinerary timeline
+import '../../styles/itinerary.css';
+
+interface Event {
+  name?: string;
+  date?: string;
+  start_time?: string;
+  end_time?: string;
+  notes?: string;
+  venue?: { name?: string } | null;
+}
+
+interface DayEntry {
+  date: string;
+  isWeddingDay: boolean;
+  events: Event[];
+}
+
+interface Props {
+  itinerary: DayEntry[];
+  ceremonyStartTime: string;
+  receptionStartTime: string;
+  ceremonyVenue: string | null;
+  receptionVenue: string | null;
+}
+
+const { itinerary, ceremonyStartTime, receptionStartTime, ceremonyVenue, receptionVenue } = Astro.props;
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+function parseDateParts(dateStr: string) {
+  const parts = dateStr.split('-').map(Number);
+  const y = parts[0]!, m = parts[1]!, d = parts[2]!;
+  return {
+    month:  MONTHS[m - 1]!,
+    dayNum: String(d),
+    label:  DAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]!,
+  };
+}
+
+function formatTime(time?: string): string {
+  if (!time) return 'TBD';
+  const [h, m] = time.split(':').map(Number);
+  const period = h! >= 12 ? 'PM' : 'AM';
+  const hour = h! % 12 || 12;
+  return m === 0 ? `${hour}:00 ${period}` : `${hour}:${String(m).padStart(2, '0')} ${period}`;
+}
+---
+
+<section class="info-section" id="itinerary">
+  <div class="section-header">
+    <p class="section-eyebrow">The Weekend</p>
+    <h2 class="section-title">Itinerary</h2>
+  </div>
+  <div class="timeline">
+
+    {itinerary.map((day, i) => {
+      const isLast = i === itinerary.length - 1;
+      const { month, dayNum, label } = parseDateParts(day.date);
+
+      if (day.isWeddingDay) {
+        return (
+          <div class="tl-item tl-featured">
+            <div class="tl-date">
+              <span class="tl-month">{month}</span>
+              <span class="tl-day">{dayNum}</span>
+            </div>
+            <div class="tl-track">
+              <div class="tl-dot tl-dot--featured"></div>
+              {!isLast && <div class="tl-line"></div>}
+            </div>
+            <div class="tl-body">
+              <span class="tl-label">The Big Day</span>
+              <h3 class="tl-title">Wedding Day</h3>
+              <p class="tl-detail">⛪ Ceremony at {formatTime(ceremonyStartTime)}{ceremonyVenue ? ` · ${ceremonyVenue}` : ''}</p>
+              <p class="tl-detail">🥂 Reception at {formatTime(receptionStartTime)}{receptionVenue ? ` · ${receptionVenue}` : ''}</p>
+              {day.events.map(e => (
+                <p class="tl-detail">📌 {e.name}{e.start_time ? ` at ${formatTime(e.start_time)}` : ''}{e.venue?.name ? ` · ${e.venue.name}` : ''}</p>
+              ))}
+              <p class="tl-note">See the full program on the homepage.</p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div class="tl-item">
+          <div class="tl-date">
+            <span class="tl-month">{month}</span>
+            <span class="tl-day">{dayNum}</span>
+          </div>
+          <div class="tl-track">
+            <div class="tl-dot"></div>
+            {!isLast && <div class="tl-line"></div>}
+          </div>
+          <div class="tl-body">
+            <span class="tl-label">{label}</span>
+            {day.events.length === 1 ? (
+              <>
+                <h3 class="tl-title">{day.events[0]!.name}</h3>
+                {day.events[0]!.start_time && (
+                  <p class="tl-detail">🕐 {formatTime(day.events[0]!.start_time)}{day.events[0]!.end_time ? ` – ${formatTime(day.events[0]!.end_time)}` : ''}</p>
+                )}
+                {day.events[0]!.venue?.name && (
+                  <p class="tl-detail">📍 {day.events[0]!.venue.name}</p>
+                )}
+                {day.events[0]!.notes && <p class="tl-note">{day.events[0]!.notes}</p>}
+              </>
+            ) : (
+              <ul class="tl-event-list">
+                {day.events.map(e => (
+                  <li class="tl-event-row">
+                    <span class="tl-event-name">{e.name}</span>
+                    {e.start_time && <span class="tl-event-meta">🕐 {formatTime(e.start_time)}{e.end_time ? ` – ${formatTime(e.end_time)}` : ''}</span>}
+                    {e.venue?.name && <span class="tl-event-meta">📍 {e.venue.name}</span>}
+                    {e.notes && <span class="tl-note">{e.notes}</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      );
+    })}
+
+  </div>
+</section>
+
+

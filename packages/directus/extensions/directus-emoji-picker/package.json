@@ -1,0 +1,85 @@
+{
+  "name": "directus-extension-emoji-picker",
+  "version": "1.0.0",
+  "description": "Directus bundle extension adding an emoji picker interface and display to string fields — powered by emoji-mart v5 and emojilib",
+  "icon": "mood",
+  "author": {
+    "name": "Aldrin Aazucena",
+    "url": "https://aazucena.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/aazucena/directus-extension-emoji-picker#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aazucena/directus-extension-emoji-picker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aazucena/directus-extension-emoji-picker/issues"
+  },
+  "keywords": [
+    "directus",
+    "directus-extension",
+    "directus-extension-bundle",
+    "emoji",
+    "emoji-picker",
+    "emoji-mart",
+    "interface",
+    "display"
+  ],
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "directus:extension": {
+    "type": "bundle",
+    "path": {
+      "app": "dist/app.js",
+      "api": "dist/api.js"
+    },
+    "entries": [
+      {
+        "type": "interface",
+        "name": "interface",
+        "source": "src/interface/index.ts"
+      },
+      {
+        "type": "display",
+        "name": "display",
+        "source": "src/display/index.ts"
+      }
+    ],
+    "host": "^11.0.0"
+  },
+  "scripts": {
+    "build": "directus-extension build",
+    "dev": "directus-extension build -w --no-minify",
+    "lint": "eslint src",
+    "format": "prettier --write src",
+    "link": "directus-extension link",
+    "validate": "directus-extension validate",
+    "add": "directus-extension add"
+  },
+  "dependencies": {
+    "@emoji-mart/data": "^1.2.1",
+    "emoji-mart": "^5.6.0",
+    "emojilib": "^4.0.2"
+  },
+  "devDependencies": {
+    "@directus/extensions-sdk": "17.0.11",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.8.0",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.1",
+    "vue": "^3.5.30"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

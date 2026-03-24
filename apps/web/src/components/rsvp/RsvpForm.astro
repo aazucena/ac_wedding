@@ -1,0 +1,431 @@
+---
+// rsvp/RsvpForm.astro — RSVP form: header, guest accordion, shared fields, submit, success state
+// Rendered by RsvpCard when the party has not yet responded.
+
+import type { Parties } from '@lib/types';
+import RsvpGuestRow     from './RsvpGuestRow.astro';
+import RsvpMemoryUpload from './RsvpMemoryUpload.astro';
+import Hashtag from '../Hashtag.astro';
+
+interface Props {
+  party:        Parties;
+  groomName:    string;
+  brideName:    string;
+  hashtag:      string;
+  rsvpDeadline: string;
+}
+
+const { party, groomName, brideName, hashtag, rsvpDeadline } = Astro.props;
+
+const guests = (party.members ?? []).map((g) => ({
+  id:      g.id,
+  name:    g.person?.preferred_name ?? g.person?.first_name ?? '',
+  meal:    g.meal_preference ?? 'standard',
+  dietary: g.dietary_restrictions ?? '',
+}));
+---
+
+<div class="card-header">
+  <span class="card-header-label">Kindly Reply</span>
+  <p class="card-header-greeting">
+    Dear <span class="guest-name">{party.name}</span>
+  </p>
+  <p class="card-header-sub">Please respond for each member of your party.</p>
+</div>
+
+<div class="card-body">
+  <form id="rsvp-form" novalidate>
+
+    <div class="guest-list" id="guest-list">
+      {guests.map((g) => (
+        <RsvpGuestRow
+          guestId={g.id}
+          name={g.name}
+          meal={g.meal}
+          dietary={g.dietary}
+        />
+      ))}
+    </div>
+    
+    <div class="shared-fields" id="shared-fields">
+      <p class="shared-fields-heading">A few more details</p>
+      <div class="field">
+        <label class="field-label">Do you need any of the following?</label>
+        <div class="card-option-list">
+          <label class="card-option card-option--check">
+            <input type="checkbox" id="hotel" />
+            <span class="card-option-icon">🏨</span>
+            <span class="card-option-body">
+              <span class="card-option-title">Hotel Room</span>
+              <span class="card-option-desc">We can help arrange accommodation nearby</span>
+            </span>
+            <span class="card-option-check">✓</span>
+          </label>
+          <label class="card-option card-option--check">
+            <input type="checkbox" id="transport" />
+            <span class="card-option-icon">🚌</span>
+            <span class="card-option-body">
+              <span class="card-option-title">Transportation</span>
+              <span class="card-option-desc">Shuttle between venues and hotel</span>
+            </span>
+            <span class="card-option-check">✓</span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="song">
+          Song Request <span class="optional">optional</span>
+        </label>
+        <input type="text" id="song" placeholder="Song title & artist — we'll try to fit it in!" autocomplete="off" />
+        <p class="field-hint">Suggest a song you'd love to hear at the reception.</p>
+      </div>
+      <div class="field">
+        <label class="field-label" for="message">
+          Message to the Couple <span class="optional">optional</span>
+        </label>
+        <textarea id="message" rows="3" placeholder={`Share your wishes for ${groomName} & ${brideName}…`}></textarea>
+      </div>
+    </div>
+
+    <div class="error-banner" id="form-error"></div>
+
+    <div class="declined-msg" id="declined-msg">
+      <p>We'll miss you dearly.<br />Feel free to leave a note below.</p>
+      <div class="field">
+        <label class="field-label" for="message-declined">
+          Message to the Couple <span class="optional">optional</span>
+        </label>
+        <textarea id="message-declined" rows="3" placeholder={`Share your wishes for ${groomName} & ${brideName}…`}></textarea>
+      </div>
+    </div>
+
+    <div class="submit-wrap" id="submit-wrap">
+      <button type="submit" class="submit-btn" id="submit-btn">
+        <span class="btn-text">Send RSVP</span>
+        <span class="btn-dots">
+          <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        </span>
+      </button>
+      <p class="submit-deadline">Please respond by {rsvpDeadline}</p>
+    </div>
+
+  </form>
+
+  <div class="success-state" id="state-success">
+    <div class="success-icon">💌</div>
+    <h2 class="success-title">Thank you!</h2>
+    <p class="success-sub" id="success-message">
+      Your RSVP has been received.<br />We can't wait to celebrate with you.
+    </p>
+    <Hashtag as="span" class="success-hashtag" tag={hashtag} />
+  </div>
+
+  <RsvpMemoryUpload
+    sectionId="upload-section"
+    dzId="dz-new"
+    thumbGridId="thumb-grid-new"
+    submitBtnId="upload-submit-new"
+    statusId="upload-status-new"
+  />
+
+</div>
+
+<Fragment set:html={`
+<script type="application/json" id="rsvp-data">
+  ${JSON.stringify({ partyId: party.id, guestList: guests, rsvpToken: party.rsvp_token })}
+</script>
+`}/>
+
+<script>
+  import { actions } from 'astro:actions';
+
+  declare global {
+    interface Window {
+      toggleAccordion:  (guestId: string) => void;
+      onResponseChange: (guestId: string, value: string) => void;
+      initDropzone:     (id: string, token: string) => void;
+    }
+  }
+
+  // State
+  var guestResponse: Record<string, string | null> = {};
+  
+  function anyAttending() { return Object.values(guestResponse).some(function (v) { return v === 'attending'; }); }
+  function allResponded()  { return Object.values(guestResponse).every(function (v) { return v !== null; }); }
+
+  function refreshSharedSection() {
+    if (!allResponded()) return;
+    document.getElementById('submit-wrap')!.classList.add('visible');
+    if (anyAttending()) {
+      document.getElementById('shared-fields')!.classList.add('visible');
+      document.getElementById('declined-msg')!.classList.remove('visible');
+    } else {
+      document.getElementById('shared-fields')!.classList.remove('visible');
+      document.getElementById('declined-msg')!.classList.add('visible');
+    }
+  }
+
+  // Accordion — on window so inline onclick="toggleAccordion(...)" in RsvpGuestRow can call it
+  window.toggleAccordion = function (guestId) {
+    var panel   = document.getElementById('panel-'   + guestId);
+    var trigger = document.getElementById('trigger-' + guestId);
+    var chevron = document.getElementById('chevron-' + guestId);
+    if (!panel) return;
+    var isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    trigger!.setAttribute('aria-expanded', String(!isOpen));
+    chevron!.classList.toggle('rotated', !isOpen);
+  };
+  // Response dropdown — on window so inline onchange="onResponseChange(...)" in RsvpGuestRow can call it
+  window.onResponseChange = function (guestId, value) {
+    guestResponse[guestId] = value;
+    document.getElementById('attending-fields-' + guestId)!
+      .classList.toggle('visible', value === 'attending');
+    var statusEl = document.getElementById('status-' + guestId) as HTMLElement;
+    if (value === 'attending') {
+      statusEl.textContent = 'Attending ✓';
+      statusEl.className   = 'accordion-status status-yes';
+    } else {
+      statusEl.textContent = 'Not attending';
+      statusEl.className   = 'accordion-status status-no';
+    }
+    document.getElementById('form-error')!.classList.remove('visible');
+    refreshSharedSection();
+  };
+  document.addEventListener('astro:page-load', () => {
+    const dataEl = document.getElementById('rsvp-data');
+    if (!dataEl) return;
+    const { partyId, guestList, rsvpToken } = JSON.parse(dataEl.textContent!) as {
+      partyId:   string;
+      guestList: Array<{ id: string; name: string }>;
+      rsvpToken: string;
+    };
+
+    guestList.forEach(function (g) { guestResponse[g.id] = null; });
+
+    // Auto-open first guest on load
+    if (guestList.length > 0) {
+      setTimeout(function () { window.toggleAccordion(guestList[0]!.id); }, 200);
+    }
+
+    // Card option visual state
+    document.querySelectorAll<HTMLInputElement>('.card-option input[type="radio"]').forEach(function (radio) {
+      radio.addEventListener('change', function () {
+        var list = radio.closest('.card-option-list');
+        list?.querySelectorAll('.card-option').forEach(function (o) { o.classList.remove('selected'); });
+        radio.closest('.card-option')?.classList.add('selected');
+      });
+      if (radio.checked) radio.closest('.card-option')?.classList.add('selected');
+    });
+    document.querySelectorAll<HTMLInputElement>('.card-option input[type="checkbox"]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        cb.closest('.card-option')?.classList.toggle('selected', cb.checked);
+      });
+    });
+
+    // Submit
+    document.getElementById('rsvp-form')?.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      var errorBanner = document.getElementById('form-error');
+      var submitBtn   = document.getElementById('submit-btn');
+
+      if (!allResponded()) {
+        errorBanner!.textContent = 'Please select a response for each guest.';
+        errorBanner!.classList.add('visible');
+        var unanswered = guestList.find(function (g) { return guestResponse[g.id] === null; });
+        if (unanswered) window.toggleAccordion(unanswered.id);
+        return;
+      }
+
+      submitBtn!.classList.add('loading');
+      (submitBtn as HTMLButtonElement).disabled = true;
+      errorBanner!.classList.remove('visible');
+
+      var messageVal = anyAttending()
+        ? (document.getElementById('message') as HTMLInputElement | null)?.value
+        : (document.getElementById('message-declined') as HTMLInputElement | null)?.value;
+
+      var guestPayloads = guestList.map(function (g) {
+        var isAttending    = guestResponse[g.id] === 'attending';
+        var attendanceType = isAttending
+          ? document.querySelector<HTMLInputElement>('input[name="attendance_type_' + g.id + '"]:checked')?.value ?? 'both'
+          : '';
+        var attendance = [
+          ...(['ceremony', 'both'].includes(attendanceType) ? ['ceremony'] : []),
+          ...(['reception', 'both'].includes(attendanceType) ? ['reception'] : []),
+        ]
+        return {
+          id:                   g.id,
+          attending:            isAttending,
+          attendance:           attendance as ('ceremony' | 'reception')[],
+          meal_preference:      isAttending ? (document.getElementById('meal-' + g.id) as HTMLInputElement | null)?.value ?? null : null,
+          dietary_restrictions: isAttending ? (document.getElementById('dietary-' + g.id) as HTMLInputElement | null)?.value || null : null,
+        };
+      });
+
+      try {
+        const { error: rsvpError } = await actions.submitRsvp({
+          token:  rsvpToken,
+          partyId,
+          partyPayload: {
+            status:              anyAttending() ? 'confirmed' : 'declined',
+            hotel:               (document.getElementById('hotel') as HTMLInputElement | null)?.checked ?? false,
+            transportation:      (document.getElementById('transport') as HTMLInputElement | null)?.checked ?? false,
+            song_request:        (document.getElementById('song') as HTMLInputElement | null)?.value || null,
+            message_to_couple:   messageVal || null,
+            date_rsvp_submitted: new Date().toISOString(),
+          },
+          guestPayloads,
+        });
+        if (rsvpError) throw new Error(rsvpError.message ?? 'RSVP failed');
+
+        document.getElementById('rsvp-form')!.style.display = 'none';
+        document.getElementById('state-success')!.classList.add('visible');
+
+        if (!anyAttending()) {
+          document.getElementById('success-message')!.textContent =
+            "We'll miss you dearly.\nThank you for letting us know.";
+        } else {
+          var uploadSection = document.getElementById('upload-section');
+          if (uploadSection) {
+            uploadSection.classList.add('visible');
+            window.initDropzone('dz-new', rsvpToken);
+          }
+        }
+      } catch (err) {
+        console.error('RSVP submit error:', err);
+        submitBtn!.classList.remove('loading');
+        (submitBtn as HTMLButtonElement).disabled = false;
+        errorBanner!.textContent = 'Something went wrong. Please try again or reach out to us directly.';
+        errorBanner!.classList.add('visible');
+      }
+    });
+  });
+</script>
+
+<style is:global>
+/* ── Guest accordion ──────────────────────────────────────── */
+#rsvp-card .card-header-sub {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted); margin-top: 6px; line-height: 1.5;
+}
+#rsvp-card .guest-list {
+  display: flex; flex-direction: column;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); overflow: clip;
+}
+#rsvp-card .guest-accordion { border-bottom: 1px solid var(--border); }
+#rsvp-card .guest-accordion:last-child { border-bottom: none; }
+#rsvp-card .accordion-trigger {
+  width: 100%; display: flex; align-items: center;
+  justify-content: space-between; gap: 12px;
+  padding: 15px 18px;
+  background: color-mix(in srgb, var(--warm) 60%, white);
+  border: none; cursor: pointer; text-align: left;
+  transition: background 0.18s ease;
+}
+#rsvp-card .accordion-trigger:hover { background: color-mix(in srgb, var(--cp) 6%, white); }
+#rsvp-card .accordion-trigger[aria-expanded="true"] {
+  background: color-mix(in srgb, var(--cp) 8%, white);
+  border-bottom: 1px solid color-mix(in srgb, var(--cp) 20%, transparent);
+}
+#rsvp-card .accordion-left { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+#rsvp-card .accordion-name {
+  font-family: var(--fd); font-size: 18px;
+  font-weight: 400; font-style: italic; color: var(--dark); line-height: 1.2;
+}
+#rsvp-card .accordion-status {
+  font-family: var(--fb); font-size: 10px; font-weight: 500;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+}
+#rsvp-card .accordion-status.status-yes { color: color-mix(in srgb, var(--cp) 70%, #2a6e4a); }
+#rsvp-card .accordion-status.status-no  { color: #b06060; }
+#rsvp-card .accordion-chevron {
+  width: 24px; height: 24px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; color: var(--muted); font-weight: 300;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+#rsvp-card .accordion-chevron.rotated    { transform: rotate(90deg); }
+#rsvp-card .accordion-panel             { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1); }
+#rsvp-card .accordion-panel.open        { grid-template-rows: 1fr !important; }
+#rsvp-card .accordion-content           { overflow: hidden; min-height: 0; }
+#rsvp-card .accordion-inner             { display: flex; flex-direction: column; gap: 16px; padding: 18px 18px 20px; }
+#rsvp-card .attending-fields            { display: none; flex-direction: column; gap: 16px; }
+#rsvp-card .attending-fields.visible    { display: flex !important; }
+
+/* ── Card option list ─────────────────────────────────────── */
+#rsvp-card .card-option-list {
+  display: flex; flex-direction: column;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden;
+}
+#rsvp-card .card-option {
+  display: flex; align-items: center; gap: 14px;
+  padding: 13px 16px;
+  background: color-mix(in srgb, var(--warm) 40%, white);
+  cursor: pointer; position: relative;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.18s ease; user-select: none;
+}
+#rsvp-card .card-option:last-child { border-bottom: none; }
+#rsvp-card .card-option:hover { background: color-mix(in srgb, var(--cp) 6%, white); }
+#rsvp-card .card-option input[type="radio"],
+#rsvp-card .card-option input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+#rsvp-card .card-option-icon  { font-size: 17px; flex-shrink: 0; width: 26px; text-align: center; line-height: 1; }
+#rsvp-card .card-option-body  { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+#rsvp-card .card-option-title { font-family: var(--fb); font-size: 13px; font-weight: 500; color: var(--dark); }
+#rsvp-card .card-option-desc  { font-family: var(--fb); font-size: 11px; font-weight: 300; color: var(--muted); }
+#rsvp-card .card-option-check {
+  width: 20px; height: 20px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: transparent;
+  border: 1.5px solid var(--border); border-radius: 4px;
+  background: color-mix(in srgb, var(--warm) 60%, white);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+#rsvp-card .card-option:has(input[type="radio"]) .card-option-check { border-radius: 50%; }
+#rsvp-card .card-option.selected {
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 12%, white),
+    color-mix(in srgb, var(--cs) 7%, white)) !important;
+  border-bottom-color: color-mix(in srgb, var(--cp) 18%, transparent) !important;
+}
+#rsvp-card .card-option.selected .card-option-check { background: var(--cp) !important; border-color: var(--cp) !important; color: white !important; }
+#rsvp-card .card-option.selected .card-option-title { color: var(--dark); }
+
+/* ── Shared fields ────────────────────────────────────────── */
+#rsvp-card .shared-fields {
+  display: none; flex-direction: column; gap: 18px;
+  border-top: 1px solid var(--border); padding-top: 28px; margin-top: 12px;
+}
+#rsvp-card .shared-fields.visible        { display: flex !important; }
+#rsvp-card .shared-fields-heading {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase; color: var(--muted); text-align: center;
+}
+
+/* ── Declined ─────────────────────────────────────────────── */
+#rsvp-card .declined-msg {
+  display: none; flex-direction: column; gap: 14px;
+  border-top: 1px solid var(--border); padding-top: 24px; margin-top: 8px; text-align: center;
+}
+#rsvp-card .declined-msg.visible  { display: flex !important; }
+#rsvp-card .declined-msg > p      { font-family: var(--fd); font-size: 18px; font-style: italic; color: var(--muted); line-height: 1.7; }
+#rsvp-card .declined-msg .field   { text-align: left; }
+
+/* ── Submit ───────────────────────────────────────────────── */
+#rsvp-card .submit-wrap          { display: none; flex-direction: column; gap: 10px; margin-top: 16px; }
+#rsvp-card .submit-wrap.visible  { display: flex !important; margin-top: 24px; }
+#rsvp-card .submit-deadline      { text-align: center; font-size: 11px; color: var(--muted); font-family: var(--fb); }
+#rsvp-card .field-hint           { font-family: var(--fb); font-size: 11px; font-weight: 300; color: var(--muted); font-style: italic; }
+
+/* ── Success ──────────────────────────────────────────────── */
+#rsvp-card .success-state        { display: none; text-align: center; padding: 44px 32px; }
+#rsvp-card .success-state.visible { display: block !important; }
+#rsvp-card .success-icon         { font-size: 46px; margin-bottom: 18px; animation: rsvp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+@keyframes rsvp-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+#rsvp-card .success-title        { font-family: var(--fd); font-size: 34px; font-weight: 300; font-style: italic; color: var(--dark); margin-bottom: 10px; }
+#rsvp-card .success-sub          { font-family: var(--fb); font-size: 14px; font-weight: 300; color: var(--muted); line-height: 1.8; white-space: pre-line; }
+#rsvp-card .success-hashtag      { display: inline-block; margin-top: 20px; font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--cs); }
+</style>

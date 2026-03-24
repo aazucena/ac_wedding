@@ -1,0 +1,52 @@
+---
+// MassPageBackCover.astro — Back cover: Thank you page
+import CardWatermark from '@components/CardWatermark.astro';
+import StackedImg    from '@assets/stacked.png';
+import { Image } from 'astro:assets';
+
+interface Props {
+  groomFirst: string;
+  brideFirst: string;
+  weddingDate: string;
+  venueN: string;
+}
+
+const { groomFirst, brideFirst, weddingDate, venueN } = Astro.props;
+---
+
+<div class="booklet-page" style="position:relative;">
+  <div class="accent-bar"></div>
+  <CardWatermark opacity={0.03} size={200} />
+
+  <div class="cover-body">
+    <Image src={StackedImg} alt="" />
+    <div class="cover-eyebrow">With Gratitude</div>
+    <div class="cover-names" style="font-size: 36px;">
+      {groomFirst}
+      <span class="cover-amp" style="font-size: 28px;">&amp;</span>
+      {brideFirst}
+    </div>
+    <div class="cover-rule">
+      <div class="cover-rule-line"></div>
+      <span class="cover-rule-gem">✦</span>
+      <div class="cover-rule-line"></div>
+    </div>
+    <div class="cover-title" style="max-width: 3.5in; font-style: italic; font-family: var(--fd); font-size: 14px; text-transform: none; letter-spacing: 0; line-height: 1.7;">
+      Thank you for joining us on this sacred day and for witnessing the beginning of our forever.
+    </div>
+    <div class="cover-rule" style="margin-top: 8px;">
+      <div class="cover-rule-line"></div>
+      <span class="cover-rule-gem">✦</span>
+      <div class="cover-rule-line"></div>
+    </div>
+    <div class="cover-date" style="font-size: 13px;">{weddingDate}</div>
+    <div class="cover-venue" style="margin-top: 4px;">{venueN}</div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <Image src={StackedImg} class="footer-logo" alt="" />
+    <span class="footer-page"></span>
+  </div>
+  <div class="accent-bar-bottom"></div>
+</div>

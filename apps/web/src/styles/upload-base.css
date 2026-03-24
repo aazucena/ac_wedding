@@ -1,0 +1,154 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cp:     #A8D4B8;
+  --cs:     #C5B8E0;
+  --dark:   #1a1a2e;
+  --ivory:  #fdfaf7;
+  --muted:  #8a8499;
+  --border: rgba(197,184,224,0.45);
+  --fd: 'Cormorant Garamond', Georgia, serif;
+  --fb: 'Jost', Arial, sans-serif;
+}
+
+body {
+  font-family: var(--fb);
+  background: var(--ivory);
+  color: var(--dark);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+.hidden { display: none !important; }
+
+/* ── Accent bars ────────────────────────────────────────── */
+.accent-bar {
+  width: 100%; height: 5px; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--cp), var(--cs), var(--cp));
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.page-header {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; padding: 40px 24px 0; text-align: center;
+}
+.page-eyebrow {
+  font-size: 9px; font-weight: 600; letter-spacing: 5px;
+  text-transform: uppercase; color: var(--muted);
+}
+.page-title-wrap { display: flex; align-items: center; gap: 14px; }
+.title-accent-l, .title-accent-r { width: 28px; height: 28px; opacity: 0.48; flex-shrink: 0; }
+.title-accent-r { transform: scaleX(-1); }
+.page-title {
+  font-family: var(--fd); font-size: 48px; font-weight: 300; font-style: italic;
+  color: var(--dark); line-height: 1; letter-spacing: -0.5px;
+}
+.page-sub {
+  font-size: 10px; font-weight: 400; letter-spacing: 3px;
+  text-transform: uppercase; color: var(--muted);
+}
+
+/* ── Form wrapper ───────────────────────────────────────── */
+.form-wrapper { width: 100%; max-width: 480px; padding: 40px 16px; display: flex; flex-direction: column; }
+.form-wrapper form { display: flex; flex-direction: column; gap: 1.5rem; }
+.form-card {
+  border: 1px solid var(--border); border-radius: 14px;
+  padding: 36px 32px; background: white;
+  box-shadow: 0 4px 24px rgba(26,26,46,0.08);
+  display: flex; flex-direction: column; gap: 32px;
+}
+
+/* ── Fields ─────────────────────────────────────────────── */
+.field { display: flex; flex-direction: column; gap: 10px; }
+.field-label { font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dark); }
+.field-hint { font-size: 12px; font-weight: 300; color: var(--muted); margin-top: -4px; }
+.field-input {
+  padding: 13px 16px; border: 1px solid var(--border);
+  border-radius: 8px; font-family: var(--fb); font-size: 15px;
+  color: var(--dark); background: var(--ivory);
+  outline: none; transition: border-color 0.15s;
+}
+.field-input:focus { border-color: var(--cs); }
+.field-divider { height: 1px; background: var(--border); margin: -8px 0; }
+
+/* ── Squares grid ───────────────────────────────────────── */
+.squares-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.sq-btn {
+  position: relative;
+  aspect-ratio: 1; border: 1.5px solid var(--border); border-radius: 8px;
+  background: var(--ivory); font-family: var(--fb); font-size: 15px;
+  font-weight: 500; color: var(--muted); cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.sq-btn:hover { border-color: var(--cs); color: var(--dark); }
+.sq-btn.done {
+  border-color: var(--cp);
+  background: color-mix(in srgb, var(--cp) 16%, var(--ivory));
+  color: var(--dark); font-weight: 600;
+}
+.sq-btn.done::after {
+  content: '✓'; position: absolute; top: 3px; right: 5px;
+  font-size: 8px; font-weight: 700; color: var(--cp);
+}
+.sq-btn.submitted {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--muted) 8%, var(--ivory));
+  color: var(--muted); font-weight: 400;
+  cursor: not-allowed; opacity: 0.55;
+}
+.sq-btn.submitted::after {
+  content: '✦'; position: absolute; top: 3px; right: 5px;
+  font-size: 7px; font-weight: 700; color: var(--muted);
+}
+
+/* ── Error ──────────────────────────────────────────────── */
+.error-text {
+  font-size: 13px; color: #c0392b;
+  padding: 12px 16px; background: rgba(192,57,43,0.06);
+  border-radius: 8px; border: 1px solid rgba(192,57,43,0.2);
+}
+
+/* ── Submit button ──────────────────────────────────────── */
+.submit-btn {
+  width: 100%; padding: 16px; border: none; border-radius: 999px; cursor: pointer;
+  background: var(--dark); color: var(--cp);
+  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase; transition: opacity 0.15s;
+}
+.submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── Closed / deadline state ────────────────────────────── */
+.closed-card {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 56px 32px; text-align: center;
+}
+.closed-icon { font-size: 32px; color: var(--muted); line-height: 1; opacity: 0.5; }
+.closed-title { font-family: var(--fd); font-size: 36px; font-weight: 300; font-style: italic; color: var(--dark); }
+.closed-body { font-size: 14px; font-weight: 300; color: var(--muted); line-height: 1.7; max-width: 300px; }
+
+/* ── Success panel ──────────────────────────────────────── */
+.success-panel {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 16px; padding: 56px 24px; text-align: center;
+}
+.success-icon { font-size: 52px; color: var(--cp); line-height: 1; }
+.success-title { font-family: var(--fd); font-size: 40px; font-weight: 300; font-style: italic; color: var(--dark); }
+.success-sub { font-size: 14px; font-weight: 300; color: var(--muted); max-width: 280px; }
+.reset-btn {
+  margin-top: 4px; padding: 11px 28px; border: 1px solid var(--border);
+  border-radius: 999px; cursor: pointer; background: transparent;
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase;
+  transition: border-color 0.15s, color 0.15s;
+}
+.reset-btn:hover { border-color: var(--cs); color: var(--dark); }
+
+/* ── Confirm squares ────────────────────────────────────── */
+.confirm-squares { display: flex; flex-wrap: wrap; gap: 8px; }
+.confirm-badge {
+  padding: 6px 14px; border: 1px solid var(--border);
+  border-radius: 999px; background: var(--ivory);
+  font-family: var(--fb); font-size: 12px; font-weight: 500;
+  color: var(--dark); letter-spacing: 0.5px;
+}

@@ -1,0 +1,19 @@
+---
+// src/components/Hashtag.astro
+// Renders a normalized hashtag, always ensuring a leading '#'.
+// Use instead of rendering settings.hashtag directly.
+
+export interface Props {
+  tag?: string | null;
+  as?: string;
+  class?: string;
+}
+
+const { as = 'span', tag, class: className, ...attributes } = Astro.props;
+const Element = as;
+const normalized = tag
+  ? (tag.startsWith('#') ? tag : '#' + tag)
+  : null;
+---
+
+{normalized && <Element {...attributes} class:list={[className]}>{normalized}</Element>}

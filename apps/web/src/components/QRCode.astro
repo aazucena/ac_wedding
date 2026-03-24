@@ -1,0 +1,46 @@
+---
+// src/components/QRCode.astro
+// Server-side QR code generator. Uses the `qrcode` npm package to produce
+// a base-64 PNG data URL rendered as an <img> tag.
+
+interface Props {
+  url: string;
+  size?: number;   // px — default 120
+  label?: string;  // optional caption below the QR image
+  class?: string;
+}
+
+import QRCodeLib from 'qrcode';
+
+const { url, size = 120, label, class: className } = Astro.props;
+
+const src = await QRCodeLib.toDataURL(url, {
+  width: size,
+  margin: 1,
+  color: { dark: '#1a1a2e', light: '#fdfaf7' },
+  errorCorrectionLevel: 'H',
+});
+---
+
+<div class:list={['qr-wrap', className]}>
+  <img src={src} width={size} height={size} alt={label ?? 'QR code'} />
+  {label && <p class="qr-label">{label}</p>}
+</div>
+
+<style>
+  .qr-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .qr-label {
+    font-family: 'Jost', Arial, sans-serif;
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a8499;
+    text-align: center;
+  }
+</style>

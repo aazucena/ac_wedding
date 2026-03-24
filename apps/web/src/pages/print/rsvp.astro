@@ -1,0 +1,163 @@
+---
+export const prerender = true;
+// apps/web/src/pages/print/rsvp.astro
+// RSVP Card — 6×4 horizontal, double-sided flip card
+// Front: name, attending, meal preference per guest, dietary, song request
+// Back:  QR code linking to RSVP website
+
+import { getSettings } from '@lib/directus';
+import { formatDate } from '@lib/utils/format';
+import PrintLayout      from '@layouts/PrintLayout.astro';
+import Hashtag          from '@components/Hashtag.astro';
+import CardWatermark    from '@components/CardWatermark.astro';
+import QRCodeWidget     from '@components/QRCode.astro';
+import AccentMark       from '@assets/accent_mark.png';
+import { Image } from 'astro:assets';
+import '../../styles/print-rsvp.css';
+
+const settings = await getSettings();
+
+const groomFirst = settings.groom?.first_name ?? 'Aldrin';
+const brideFirst = settings.bride?.first_name ?? 'Christine';
+
+const rsvpDeadline = formatDate(settings.rsvp_deadline ?? '2026-06-01');
+
+const BASE_URL = import.meta.env.SITE?.replace(/\/$/, '') ?? '';
+const websiteUrl = BASE_URL || 'yourweddingsite.com';
+
+const weddingDate = formatDate(settings.wedding_date ?? '2026-09-26');
+---
+
+<PrintLayout
+  title="RSVP Card — Print"
+  cardWidth="6in" cardHeight="4in"
+  toolbarHint="6 × 4 in · Landscape · Double-sided"
+>
+
+  <div class="toolbar-controls" slot="toolbar-controls">
+    <div class="seg-control">
+      <button class="seg-btn active" id="btnFront" onclick="showFace('front')">Front</button>
+      <button class="seg-btn"        id="btnBack"  onclick="showFace('back')">Back</button>
+    </div>
+  </div>
+
+  <div class="flip-container" id="flipContainer" onclick="toggleFlip()">
+    <div class="flipper" id="flipper">
+
+      <!-- ████ FRONT ████ -->
+      <div class="face front">
+        <div class="card">
+          <div class="accent-bar"></div>
+
+          <div class="card-body">
+
+            <!-- ── Left: header ── -->
+            <div class="header-col">
+              <Image src={AccentMark} class="header-accent" alt="" />
+              <div class="header-eyebrow">Kindly Reply</div>
+              <div class="header-script">RSVP</div>
+              <div class="header-rule">
+                <div class="header-rule-line"></div>
+                <span class="header-rule-gem">✦</span>
+                <div class="header-rule-line"></div>
+              </div>
+              <div class="header-names">
+                {groomFirst} <span class="header-amp">&amp;</span><br/>{brideFirst}
+              </div>
+              <div class="header-date">{weddingDate}</div>
+            </div>
+
+            <!-- ── Right: fields ── -->
+            <div class="fields-col">
+
+              <!-- Attending -->
+              <div class="attend-row">
+                <span class="attend-label">Attendance</span>
+                <div class="attend-options">
+                  <div class="check-opt">
+                    <div class="check-box"></div>
+                    <span class="check-label">Joyfully accepts</span>
+                  </div>
+                  <div class="check-opt">
+                    <div class="check-box"></div>
+                    <span class="check-label">Regretfully declines</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field-divider"></div>
+
+              <!-- Guest meal rows -->
+              <div class="guests-section">
+                <div class="guests-label">Guest Name &amp; Meal Selection</div>
+
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <div class="guest-row">
+                    <div class="guest-name-line">
+                      <span class="guest-num">{n}.</span>
+                      <div class="write-line"></div>
+                    </div>
+                    <div class="meal-opts">
+                      {['Chicken', 'Beef', 'Fish', 'Vegetarian'].map((m) => (
+                        <div class="meal-opt">
+                          <div class="meal-box"></div>
+                          <span class="meal-label">{m}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div class="field-divider"></div>
+
+              <!-- Dietary restrictions -->
+              <div class="field-row">
+                <span class="field-label">Dietary needs</span>
+                <div class="write-line"></div>
+              </div>
+
+              <!-- Song request -->
+              <div class="field-row">
+                <span class="field-label">Song request</span>
+                <div class="write-line"></div>
+              </div>
+
+              <span class="footer-deadline">
+                Reply by <strong>{rsvpDeadline}</strong>
+              </span>
+            </div>
+          </div>
+
+          <div class="accent-bar-bottom"></div>
+        </div>
+      </div><!-- /face.front -->
+
+      <!-- ████ BACK ████ -->
+      <div class="face back">
+        <div class="back-card" style="position:relative;">
+          <div class="accent-bar"></div>
+
+          <CardWatermark opacity={0.04} size={100} />
+
+          <div class="qr-wrapper">
+            <QRCodeWidget url={BASE_URL || 'https://yourweddingsite.com'} size={134} label="RSVP Online" />
+            <div class="qr-rule">
+              <div class="qr-rule-line"></div>
+              <span class="qr-rule-gem">✦</span>
+              <div class="qr-rule-line"></div>
+            </div>
+            <div class="qr-url">{websiteUrl}</div>
+            <Hashtag tag={settings.hashtag} class="qr-hashtag" />
+          </div>
+
+          <div class="accent-bar-bottom"></div>
+        </div>
+      </div><!-- /face.back -->
+
+    </div><!-- /flipper -->
+  </div><!-- /flip-container -->
+
+</PrintLayout>
+
+<script is:inline src="/scripts/rsvp-preview.js"></script>

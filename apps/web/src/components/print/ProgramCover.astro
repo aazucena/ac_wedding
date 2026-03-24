@@ -1,0 +1,95 @@
+---
+// ProgramCover.astro — Panel 1 (front of booklet)
+import HeroEmblem from '@assets/hero_emblem.png';
+import { Image } from 'astro:assets';
+
+interface Props {
+  groomFull:       string;
+  brideFull:       string;
+  ceremonyTime:    string;
+  venueName:       string;
+  weddingDateLabel: string;
+}
+
+const { groomFull, brideFull, ceremonyTime, venueName, weddingDateLabel } = Astro.props;
+---
+
+<div class="panel p1">
+  <div class="accent-bar"></div>
+  <div class="panel-body cover-body">
+
+    <div class="cover-top">
+      <div class="orn-row">
+        <span class="orn-rule"></span>
+        <span class="orn">✦ ✦ ✦</span>
+        <span class="orn-rule"></span>
+      </div>
+      <p class="eyebrow">The Celebration of Holy Matrimony</p>
+    </div>
+
+    <div class="cover-crest-wrap">
+      <Image src={HeroEmblem} class="cover-crest" alt="" />
+
+      <div class="cover-names">
+        <h1 class="cover-name">{groomFull}</h1>
+        <div class="cover-amp-row">
+          <span class="cover-line"></span>
+          <span class="cover-amp">&amp;</span>
+          <span class="cover-line"></span>
+        </div>
+        <h1 class="cover-name">{brideFull}</h1>
+      </div>
+    </div>
+
+    <div class="cover-foot">
+      <p class="cover-date">{weddingDateLabel}</p>
+      <p class="cover-detail">
+        {ceremonyTime}&ensp;·&ensp;{venueName}
+      </p>
+    </div>
+
+  </div>
+  <div class="accent-bar"></div>
+</div>
+
+<style>
+  /* ── Cover body layout ───────────────────────────────────── */
+  :global(.cover-body) {
+    padding: 32px 44px 36px;
+    justify-content: flex-start; align-items: center;
+    text-align: center; gap: 18px;
+  }
+  :global(.cover-top) { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  :global(.orn-row) { display: flex; align-items: center; gap: 10px; width: 72%; }
+  :global(.orn-rule) {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+  :global(.orn) {
+    font-family: var(--fd); font-size: 10px; color: var(--cs); letter-spacing: 8px; flex-shrink: 0;
+  }
+  :global(.cover-crest-wrap) {
+    flex: 1; display: flex; flex-direction: column; gap: 16px; align-items: center; justify-content: center; padding: 8px 0;
+  }
+  :global(.cover-crest) {
+    width: clamp(180px, 68%, 260px); height: auto;
+    filter: drop-shadow(0 6px 24px rgba(168,212,184,0.22));
+  }
+  :global(.cover-names) { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+  :global(.cover-name) {
+    font-family: var(--fd); font-size: 34px; font-weight: 300; font-style: italic;
+    color: var(--dark); line-height: 1.05; letter-spacing: -0.3px;
+  }
+  :global(.cover-amp-row) { display: flex; align-items: center; gap: 12px; width: 65%; }
+  :global(.cover-line) {
+    flex: 1; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cs), transparent);
+  }
+  :global(.cover-amp) { font-family: var(--fd); font-size: 22px; font-weight: 300; color: var(--cs); }
+  :global(.cover-foot) { display: flex; flex-direction: column; gap: 5px; align-items: center; }
+  :global(.cover-date) { font-family: var(--fd); font-size: 16px; font-style: italic; color: var(--dark); }
+  :global(.cover-detail) {
+    font-family: var(--fb); font-size: 8.5px; font-weight: 600;
+    letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted);
+  }
+</style>

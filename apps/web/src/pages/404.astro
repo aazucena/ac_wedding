@@ -1,0 +1,147 @@
+---
+export const prerender = true;
+// apps/web/src/pages/404.astro
+import Hashtag from '~/components/Hashtag.astro';
+import Layout from '../layouts/Layout.astro';
+import { getSettings } from '../lib/directus';
+import { formatDate } from '../lib/utils/format';
+
+const settings = await getSettings();
+const groom = settings.groom?.first_name ?? 'Aldrin';
+const bride = settings.bride?.first_name ?? 'Christine';
+const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+---
+
+<Layout
+  title={`Page Not Found — ${groom} & ${bride}`}
+  colorPrimary={settings.color_primary}
+  colorSecondary={settings.color_secondary}
+>
+  <div class="page-narrow not-found-page">
+
+    <div class="not-found-card">
+      <span class="not-found-ornament">✦</span>
+      <h1 class="not-found-title">Page Not Found</h1>
+      <p class="not-found-sub">
+        This page seems to have wandered off. Let us help you find your way back.
+      </p>
+      <div class="not-found-links">
+        <a href="/" class="not-found-btn primary">Go Home</a>
+        <a href="/invite" class="not-found-btn secondary">Find Your Invitation</a>
+      </div>
+    </div>
+
+  </div>
+
+  <Fragment slot="footer-extra">
+    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+  </Fragment>
+
+</Layout>
+
+<style>
+.not-found-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.not-found-card {
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  padding: 64px 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s ease forwards;
+}
+
+.not-found-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+
+.not-found-ornament {
+  font-size: 32px;
+  color: color-mix(in srgb, var(--cs) 60%, transparent);
+  animation: spin 18s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.not-found-title {
+  font-family: var(--fd);
+  font-size: 48px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--dark);
+  margin: 0;
+}
+
+.not-found-sub {
+  font-family: var(--fb);
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 360px;
+  margin: 0;
+}
+
+.not-found-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.not-found-btn {
+  display: inline-block;
+  padding: 13px 32px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  font-family: var(--fb);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.not-found-btn.primary {
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  color: color-mix(in srgb, var(--cp) 80%, white);
+  box-shadow: 0 6px 24px rgba(26,26,46,0.18);
+}
+
+.not-found-btn.secondary {
+  background: color-mix(in srgb, var(--cp) 15%, white);
+  color: var(--dark);
+  border: 1px solid color-mix(in srgb, var(--cp) 40%, transparent);
+}
+
+.not-found-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 36px rgba(26,26,46,0.22);
+}
+
+@media (max-width: 480px) {
+  .not-found-card { padding: 48px 28px; }
+  .not-found-title { font-size: 36px; }
+}
+</style>

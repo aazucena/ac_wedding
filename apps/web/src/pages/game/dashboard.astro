@@ -1,0 +1,530 @@
+---
+// apps/web/src/pages/game/dashboard.astro — MC dashboard for the Find a Guest game
+import { getSettings, getGameProofFiles } from '../../lib/directus';
+import type { GameSubmission } from '../../lib/directus';
+import { formatDate, formatTime } from '../../lib/utils/format';
+import { GAME_SQUARES } from '../../lib/constants/game';
+import { DateTime } from 'luxon';
+
+const settings = await getSettings();
+
+const groom = settings.groom?.first_name ?? 'Aldrin';
+const bride = settings.bride?.first_name ?? 'Christine';
+const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+
+const TZ = 'America/Edmonton';
+const deadlineLabel = settings.game_deadline
+  ? DateTime.fromISO(`${settings.wedding_date ?? '2026-09-26'}T${settings.game_deadline}`, { zone: TZ }).toFormat('h:mm a')
+  : null;
+
+type Submission = GameSubmission;
+const submissions: Submission[] = await getGameProofFiles();
+
+// Exclude anything manually flagged by the couple in Directus
+const visible = submissions.filter(s => s.approved !== false);
+
+const totalSubmissions = visible.length;
+const uniqueGuests     = new Set(visible.map(s => s.guestName)).size;
+const squaresWithProof = new Set(visible.map(s => s.squareNumber)).size;
+
+// Grid: first upload per square
+const firstBySquare = new Map<number, Submission>();
+[...visible].reverse().forEach(s => {
+  if (!firstBySquare.has(s.squareNumber)) firstBySquare.set(s.squareNumber, s);
+});
+const grid = Array.from({ length: 15 }, (_, i) => firstBySquare.get(i + 1) ?? null);
+
+// By-guest: all visible submissions grouped, sorted alphabetically
+const byGuest = visible.reduce<Record<string, Submission[]>>((acc, s) => {
+  (acc[s.guestName] ??= []).push(s);
+  return acc;
+}, {});
+
+// Leaderboard: guests ranked by unique squares uploaded — MC checks these cards first
+const leaderboard = Object.entries(byGuest)
+  .map(([name, photos]) => ({ name, squares: new Set(photos.map(p => p.squareNumber)).size }))
+  .sort((a, b) => b.squares - a.squares)
+  .slice(0, 5);
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>MC Dashboard — {groom} & {bride}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+</head>
+<body>
+
+  <!-- Passcode modal -->
+  <div id="auth-overlay" class="auth-overlay">
+    <div class="auth-card">
+      <p class="auth-eyebrow">MC Dashboard</p>
+      <h1 class="auth-title">Enter Passcode</h1>
+      <p class="auth-desc">This page is for the emcee only.</p>
+      <div class="auth-field">
+        <input
+          id="auth-input"
+          type="password"
+          placeholder="Passcode"
+          class="auth-input"
+          autocomplete="off"
+          autofocus
+        />
+      </div>
+      <p id="auth-error" class="auth-error hidden">Incorrect passcode. Try again.</p>
+      <button id="auth-submit" class="auth-btn">Continue</button>
+    </div>
+  </div>
+
+  <div id="dashboard" hidden>
+  <div class="accent-bar"></div>
+
+  <div class="page">
+
+    <!-- Header -->
+    <header class="page-header">
+      <p class="eyebrow">MC Dashboard · {groom} & {bride} · {weddingDateLabel}{deadlineLabel && <> · Deadline <strong>{deadlineLabel}</strong></>}</p>
+      <h1 class="page-title">Find a Guest</h1>
+      <p class="page-subtitle">Reception Icebreaker</p>
+    </header>
+
+    <!-- Stats -->
+    <div class="stat-bar">
+      <div class="stat">
+        <span class="stat-value">{totalSubmissions}</span>
+        <span class="stat-label">Total Uploads</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">{uniqueGuests}</span>
+        <span class="stat-label">Unique Guests</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">{squaresWithProof}<span class="stat-denom">/15</span></span>
+        <span class="stat-label">Squares with Proof</span>
+      </div>
+    </div>
+
+    <!-- Live refresh -->
+    <div class="refresh-bar">
+      <span class="refresh-status">Updated <span id="refresh-ts">just now</span></span>
+      <div class="refresh-actions">
+        <button class="refresh-btn" id="refresh-btn">Refresh</button>
+        <span class="refresh-divider">·</span>
+        <button class="refresh-btn" onclick="window.print()">Print</button>
+      </div>
+    </div>
+
+    <div class="content-layout">
+
+      <!-- Main column -->
+      <div class="main-col">
+
+        <!-- 15-Square Grid -->
+        <section class="section">
+          <h2 class="section-title">15-Square Grid</h2>
+          <div class="grid">
+            {grid.map((slot, i) => (
+              <div class:list={['square', slot ? 'square--filled' : 'square--empty']}>
+                {slot ? (
+                  <>
+                    <img src={slot.fileUrl} alt={`Square ${i + 1} — ${slot.guestName}`} loading="lazy" class="square-img" />
+                    <div class="square-overlay">
+                      <span class="square-num">#{i + 1}</span>
+                      <span class="square-guest">{slot.guestName}</span>
+                    </div>
+                  </>
+                ) : (
+                  <span class="square-empty-num">#{i + 1}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <!-- By Guest -->
+        <section class="section">
+          <h2 class="section-title" id="by-guest-section">By Guest</h2>
+
+          <input id="guest-search" type="search" placeholder="Search guest…" class="guest-search" autocomplete="off" />
+
+          {visible.length === 0 && (
+            <p class="empty-note">No submissions yet.</p>
+          )}
+
+          <div class="guest-list" id="guest-list">
+            {Object.entries(byGuest).sort(([a], [b]) => a.localeCompare(b)).map(([name, photos]) => {
+              const uploadedSquares = new Set(photos.map(p => p.squareNumber));
+              return (
+              <div class="guest-card">
+                <div class="guest-card-header" role="button" tabindex="0" aria-expanded="false">
+                  <span class="guest-name">{name}</span>
+                  <div class="sq-minigrid">
+                    {Array.from({ length: 15 }, (_, i) => i + 1).map(n => (
+                      <span class:list={['sq-cell', uploadedSquares.has(n) ? 'sq-cell--uploaded' : 'sq-cell--empty']} data-sq={n}>{n}</span>
+                    ))}
+                  </div>
+                  <svg class="card-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 6L8 11L13 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="guest-card-photos" hidden>
+                  {photos.sort((a, b) => a.squareNumber - b.squareNumber).map(p => (
+                    <div class="photo-row">
+                      <a href={p.fileUrl} target="_blank" rel="noopener" class="photo-thumb-link">
+                        <img src={p.fileUrl} alt={`Square ${p.squareNumber} — ${name}`} loading="lazy" class="photo-thumb" />
+                      </a>
+                      <div class="photo-info">
+                        <div class="photo-meta-top">
+                          <span class="photo-meta-square">Square #{p.squareNumber}</span>
+                          <span class="photo-meta-time">{formatTime(p.uploadedAt)}</span>
+                        </div>
+                        {p.title && <span class="photo-meta-title">{p.title}</span>}
+                        {p.description && <p class="photo-meta-desc">{p.description}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              );
+            })}
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="sidebar-sticky">
+
+          <!-- Leaderboard -->
+          <div class="sidebar-card">
+            <h2 class="sidebar-title">Check First</h2>
+            {leaderboard.length === 0 ? (
+              <p class="sidebar-empty">No uploads yet.</p>
+            ) : (
+              <div class="leaderboard">
+                {leaderboard.map((g, i) => (
+                  <div class="lb-row">
+                    <span class="lb-rank">#{i + 1}</span>
+                    <div class="lb-body">
+                      <span class="lb-name">{g.name}</span>
+                      <span class="lb-count">{g.squares}<span class="lb-denom">/15</span></span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <!-- Square Reference -->
+          <div class="sidebar-card">
+            <h2 class="sidebar-title">Square Reference</h2>
+            <div class="ref-grid">
+              {GAME_SQUARES.map((sq, i) => (
+                <div class:list={['ref-row', sq.star && 'ref-row--star']}>
+                  <span class="ref-num">{String(i + 1).padStart(2, '0')}</span>
+                  <span class="ref-prompt">{sq.prompt}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+  </div> <!-- /dashboard -->
+
+</body>
+</html>
+
+<script>
+  // ── Auth ──────────────────────────────────────────────────
+  const SK = 'mc_auth';
+  const overlay   = document.getElementById('auth-overlay')!;
+  const dashboard = document.getElementById('dashboard')!;
+  const authInput = document.getElementById('auth-input') as HTMLInputElement;
+  const authBtn   = document.getElementById('auth-submit')!;
+  const authError = document.getElementById('auth-error')!;
+
+  function unlock() {
+    overlay.remove();
+    dashboard.removeAttribute('hidden');
+  }
+
+  // Already authed in this tab?
+  if (sessionStorage.getItem(SK)) {
+    unlock();
+  }
+
+  authBtn.addEventListener('click', attemptAuth);
+  authInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') attemptAuth(); });
+
+  async function attemptAuth() {
+    const passcode = authInput.value.trim();
+    if (!passcode) return;
+
+    authBtn.setAttribute('disabled', '');
+    authBtn.textContent = '…';
+    authError.classList.add('hidden');
+
+    try {
+      const res  = await fetch('/api/mc/auth', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ passcode }),
+      });
+      const data = await res.json() as { ok: boolean };
+
+      if (data.ok) {
+        sessionStorage.setItem(SK, '1');
+        unlock();
+      } else {
+        authError.classList.remove('hidden');
+        authInput.value = '';
+        authInput.focus();
+      }
+    } catch {
+      authError.textContent = 'Something went wrong. Try again.';
+      authError.classList.remove('hidden');
+    } finally {
+      authBtn.removeAttribute('disabled');
+      authBtn.textContent = 'Continue';
+    }
+  }
+
+  // ── Guest card collapse ───────────────────────────────────
+  document.getElementById('guest-list')?.addEventListener('click', (e) => {
+    const header = (e.target as HTMLElement).closest<HTMLElement>('.guest-card-header');
+    if (!header) return;
+    const photos  = header.nextElementSibling as HTMLElement;
+    const open    = header.getAttribute('aria-expanded') === 'true';
+    header.setAttribute('aria-expanded', String(!open));
+    photos.hidden = open;
+  });
+  document.getElementById('guest-list')?.addEventListener('keydown', (e) => {
+    if ((e as KeyboardEvent).key !== 'Enter') return;
+    const header = (e.target as HTMLElement).closest<HTMLElement>('.guest-card-header');
+    if (header) header.click();
+  });
+
+  // ── Guest name search ─────────────────────────────────────
+  document.getElementById('guest-search')?.addEventListener('input', (e) => {
+    const q = (e.target as HTMLInputElement).value.trim().toLowerCase();
+    document.querySelectorAll<HTMLElement>('.guest-card').forEach(card => {
+      const name = card.querySelector('.guest-name')?.textContent?.toLowerCase() ?? '';
+      card.hidden = q.length > 0 && !name.includes(q);
+    });
+  });
+
+  // ── Auto-refresh ──────────────────────────────────────────
+  const tsEl      = document.getElementById('refresh-ts')!;
+  const refreshBtn = document.getElementById('refresh-btn')!;
+  const INTERVAL  = 30_000;
+  let lastReload  = Date.now();
+
+  function formatAge(ms: number) {
+    const s = Math.round(ms / 1000);
+    if (s < 10)  return 'just now';
+    if (s < 60)  return `${s}s ago`;
+    return `${Math.floor(s / 60)}m ago`;
+  }
+
+  // Tick the timestamp label every 10 s without reloading
+  setInterval(() => {
+    tsEl.textContent = formatAge(Date.now() - lastReload);
+  }, 10_000);
+
+  // Full page reload every 30 s (preserves auth via sessionStorage)
+  setInterval(() => { location.reload(); }, INTERVAL);
+
+  // Reload immediately when MC returns to the tab
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') location.reload();
+  });
+
+  refreshBtn.addEventListener('click', () => { location.reload(); });
+
+</script>
+
+<style is:global>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .hidden { display: none !important; }
+
+  :root {
+    --cp:     #A8D4B8;
+    --cs:     #C5B8E0;
+    --dark:   #1a1a2e;
+    --ivory:  #fdfaf7;
+    --muted:  #8a8499;
+    --border: rgba(197,184,224,0.45);
+    --fd: 'Cormorant Garamond', Georgia, serif;
+    --fb: 'Jost', Arial, sans-serif;
+    --radius: 14px;
+    --shadow: 0 4px 24px rgba(26,26,46,0.07);
+  }
+
+  body { font-family: var(--fb); background: var(--ivory); color: var(--dark); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+  /* ── Auth modal ───────────────────────────────────────── */
+  .auth-overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--ivory);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .auth-card {
+    background: white; border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 40px 36px; width: 100%; max-width: 380px;
+    display: flex; flex-direction: column; gap: 12px; text-align: center;
+  }
+  .auth-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); }
+  .auth-title { font-family: var(--fd); font-size: 36px; font-weight: 300; font-style: italic; line-height: 1; }
+  .auth-desc { font-size: 13px; font-weight: 300; color: var(--muted); }
+  .auth-field { margin-top: 4px; }
+  .auth-input {
+    width: 100%; padding: 12px 16px; border: 1.5px solid var(--border);
+    border-radius: 8px; background: var(--ivory);
+    font-family: var(--fb); font-size: 15px; font-weight: 400;
+    color: var(--dark); text-align: center; letter-spacing: 3px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .auth-input:focus { border-color: var(--cs); }
+  .auth-error { font-size: 12px; font-weight: 500; color: #c0392b; }
+  .auth-btn {
+    margin-top: 4px; padding: 13px; border: none; border-radius: 999px;
+    background: var(--dark); color: var(--cp);
+    font-family: var(--fb); font-size: 11px; font-weight: 600;
+    letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .auth-btn:hover:not(:disabled) { opacity: 0.85; }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .accent-bar { height: 5px; background: linear-gradient(90deg, var(--cp), var(--cs), var(--cp)); }
+  .page { max-width: 960px; margin: 0 auto; padding: 40px 24px 64px; }
+
+  /* ── Header ───────────────────────────────────────────── */
+  .page-header { text-align: center; margin-bottom: 40px; }
+  .eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .page-title { font-family: var(--fd); font-size: clamp(40px, 6vw, 64px); font-weight: 300; font-style: italic; line-height: 1; margin-bottom: 8px; }
+  .page-subtitle { font-size: 12px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+
+  /* ── Stats ────────────────────────────────────────────── */
+  .stat-bar { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 52px; }
+  .stat { background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 32px; text-align: center; flex: 1; min-width: 130px; max-width: 200px; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .stat-value { font-family: var(--fb); font-size: 52px; font-weight: 300; line-height: 1; }
+  .stat-denom { font-size: 28px; color: var(--muted); }
+  .stat-label { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted); }
+
+  /* ── Section ──────────────────────────────────────────── */
+  .section { margin-bottom: 52px; }
+  .section-title { font-family: var(--fd); font-size: 28px; font-weight: 300; font-style: italic; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+
+  /* ── Refresh bar ──────────────────────────────────────── */
+  .refresh-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 8px 16px; background: white; border: 1px solid var(--border); border-radius: 999px; box-shadow: var(--shadow); }
+  .refresh-status { font-size: 11px; font-weight: 400; color: var(--muted); }
+  .refresh-actions { display: flex; align-items: center; gap: 4px; }
+  .refresh-divider { font-size: 11px; color: var(--border); }
+  .refresh-btn { font-family: var(--fb); font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dark); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 999px; transition: background 0.15s; }
+  .refresh-btn:hover { background: color-mix(in srgb, var(--cs) 12%, transparent); }
+
+  /* ── Two-column layout ────────────────────────────────── */
+  .content-layout { display: grid; grid-template-columns: 1fr 260px; gap: 32px; align-items: start; }
+  .main-col { min-width: 0; }
+  .sidebar { min-width: 0; }
+  .sidebar-sticky { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .sidebar-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+  .sidebar-title { font-family: var(--fd); font-size: 20px; font-weight: 300; font-style: italic; padding: 14px 16px 12px; border-bottom: 1px solid var(--border); }
+  .sidebar-empty { font-size: 12px; font-weight: 300; font-style: italic; color: var(--muted); padding: 12px 16px; }
+
+  /* ── Leaderboard ──────────────────────────────────────── */
+  .leaderboard { display: flex; flex-direction: column; }
+  .lb-row { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent); }
+  .lb-row:last-child { border-bottom: none; }
+  .lb-row:first-child { background: color-mix(in srgb, var(--cp) 8%, white); }
+  .lb-rank { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: var(--muted); width: 20px; flex-shrink: 0; }
+  .lb-row:first-child .lb-rank { color: color-mix(in srgb, var(--cp) 30%, var(--dark)); }
+  .lb-body { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+  .lb-name { font-family: var(--fd); font-size: 17px; font-weight: 400; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lb-count { font-size: 11px; font-weight: 600; color: var(--muted); }
+  .lb-denom { font-weight: 400; }
+
+  /* ── Square reference (sidebar) ───────────────────────── */
+  .ref-grid { padding: 4px 0; }
+  .ref-row { display: grid; grid-template-columns: 28px 1fr; align-items: baseline; gap: 6px; padding: 7px 16px; border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent); }
+  .ref-row:last-child { border-bottom: none; }
+  .ref-row--star { background: color-mix(in srgb, var(--cp) 5%, white); }
+  .ref-num { font-size: 9px; font-weight: 700; color: var(--muted); letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+  .ref-prompt { font-size: 12px; font-weight: 400; color: var(--dark); line-height: 1.4; }
+
+  /* ── Grid ─────────────────────────────────────────────── */
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .square { border-radius: 10px; aspect-ratio: 1; overflow: hidden; position: relative; }
+  .square--empty { background: color-mix(in srgb, var(--cs) 12%, var(--ivory)); border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; }
+  .square--filled { background: #e8e3de; }
+  .square-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .square-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,26,46,0.72) 0%, transparent 55%); display: flex; flex-direction: column; justify-content: flex-end; padding: 7px 8px; gap: 2px; }
+  .square-num { font-size: 9px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: rgba(255,255,255,0.7); line-height: 1; }
+  .square-guest { font-family: var(--fd); font-size: 14px; font-weight: 400; font-style: italic; color: white; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .square-empty-num { font-family: var(--fb); font-size: 20px; font-weight: 500; color: var(--muted); }
+
+  /* ── Guest search ─────────────────────────────────────── */
+  .guest-search {
+    width: 100%; padding: 10px 14px; margin-bottom: 12px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    background: var(--ivory); font-family: var(--fb); font-size: 14px;
+    color: var(--dark); outline: none; transition: border-color 0.15s;
+  }
+  .guest-search:focus { border-color: var(--cs); }
+  .guest-card-header { cursor: pointer; user-select: none; }
+  .guest-card-header:hover { background: color-mix(in srgb, var(--cs) 4%, white); }
+  .card-chevron { flex-shrink: 0; color: var(--muted); transition: transform 0.2s; }
+  .guest-card-header[aria-expanded="true"] .card-chevron { transform: rotate(180deg); }
+
+  /* ── Guest list ───────────────────────────────────────── */
+  .empty-note { font-size: 14px; font-weight: 300; font-style: italic; color: var(--muted); }
+  .guest-list { display: flex; flex-direction: column; gap: 10px; }
+  .guest-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .guest-card-header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 20px; }
+  .guest-name { font-family: var(--fd); font-size: 22px; font-weight: 400; font-style: italic; flex: 1; min-width: 120px; }
+  .sq-minigrid { display: grid; grid-template-columns: repeat(5, 18px); gap: 2px; flex-shrink: 0; }
+  .sq-cell { width: 18px; height: 18px; border-radius: 3px; font-size: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .sq-cell--empty    { background: color-mix(in srgb, var(--border) 40%, transparent); color: transparent; }
+  .sq-cell--uploaded { background: color-mix(in srgb, var(--cp) 50%, white); color: var(--dark); }
+
+  /* ── Photo rows ───────────────────────────────────────── */
+  .guest-card-photos { border-top: 1px solid var(--border); padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+  .guest-card-photos[hidden] { display: none; }
+  .photo-row { display: flex; gap: 16px; align-items: flex-start; padding: 10px; border-radius: 10px; background: color-mix(in srgb, var(--cs) 4%, white); border: 1px solid var(--border); }
+  .photo-thumb-link { flex-shrink: 0; display: block; }
+  .photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; display: block; border: 1px solid var(--border); }
+  .photo-info { display: flex; flex-direction: column; gap: 4px; padding-top: 2px; flex: 1; }
+  .photo-meta-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .photo-meta-square { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+  .photo-meta-time { font-size: 9px; font-weight: 400; color: var(--muted); letter-spacing: 0.5px; }
+  .photo-meta-title { font-family: var(--fd); font-size: 18px; font-weight: 400; font-style: italic; line-height: 1.2; }
+  .photo-meta-desc { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.5; }
+
+  /* ── Print / misc ─────────────────────────────────────── */
+  @media print {
+    .print-btn, .accent-bar, .auth-overlay, .refresh-bar, .sidebar { display: none; }
+    .content-layout { display: block; }
+    #by-guest-section, #by-guest-section ~ * { display: none; }
+    .guest-search { display: none; }
+    body { background: white; }
+    .page { padding: 20px; }
+    .grid { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .square { break-inside: avoid; }
+  }
+  @media (max-width: 720px) { .content-layout { grid-template-columns: 1fr; } .sidebar-sticky { position: static; } }
+  @media (max-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } .stat { padding: 16px 20px; } .stat-value { font-size: 40px; } }
+</style>

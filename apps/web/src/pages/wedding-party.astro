@@ -1,0 +1,264 @@
+---
+export const prerender = true;
+// apps/web/src/pages/wedding-party.astro
+import Layout from '../layouts/Layout.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { getSettings, getEntourage } from '../lib/directus';
+import { formatDate } from '../lib/utils/format';
+import { groupBy } from '../lib/utils/group';
+import type { Entourage } from '../lib/types';
+import Hashtag from '~/components/Hashtag.astro';
+
+const [settings, entourage] = await Promise.all([getSettings(), getEntourage()]);
+
+const groom = settings.groom?.first_name ?? 'Aldrin';
+const bride = settings.bride?.first_name ?? 'Christine';
+const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+
+// Procession walk-pairs: bride's side (left col) → groom's side (right col)
+const WALK_PAIRS: Record<string, string> = {
+  'Maid of Honour': 'Best Man',
+  'Bridesmaid':     'Groomsman',
+  'Bridesmaids':    'Groomsmen',
+};
+const BRIDE_SIDE_ROLES = new Set(Object.keys(WALK_PAIRS));
+
+// Roles grouped into a combined section (shown as a flat grid with role subtitle)
+const GROUPED_SECTIONS = [
+  { title: 'Parents of the Groom', roles: ['Father of the Groom', 'Mother of the Groom'] },
+  { title: 'Parents of the Bride',  roles: ['Father of the Bride',  'Mother of the Bride']  },
+  { title: 'Bearers',               roles: ['Ring Bearer', 'Bible Bearer', 'Coin Bearer']   },
+  { title: 'Flower Girls',          roles: ['Flower Girl']                                  },
+] as const;
+const GROUPED_ROLE_NAMES = new Set(GROUPED_SECTIONS.flatMap(g => [...g.roles]));
+
+// Plural display labels — role names in the DB stay singular
+const PLURAL_LABELS: Record<string, string> = {
+  'Bridesmaid': 'Bridesmaids',
+  'Groomsman':  'Groomsmen',
+};
+function sectionTitle(role: string, count: number): string {
+  return (count !== 1 && PLURAL_LABELS[role]) ? PLURAL_LABELS[role] : role;
+}
+
+// Display order for regular (non-grouped) roles
+const ROLE_ORDER = [
+  'Best Man', 'Maid of Honour',
+  'Groomsmen', 'Bridesmaids', 'Groomsman', 'Bridesmaid',
+];
+
+// Sort by pair_group first (explicit walk-pair), then sequence_order
+function memberSort(a: Entourage, b: Entourage) {
+  const pg = (a.pair_group ?? Infinity) - (b.pair_group ?? Infinity);
+  return pg !== 0 ? pg : (a.sequence_order ?? 0) - (b.sequence_order ?? 0);
+}
+
+function displayName(person: { first_name?: string; last_name?: string; preferred_name?: string | null } | undefined | null): string {
+  if (!person) return '';
+  return `${person.preferred_name ?? person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
+}
+
+// Build grouped sections (parents, bearers, etc.)
+const groupedSections = GROUPED_SECTIONS
+  .map(g => ({
+    title: g.title,
+    members: entourage.filter(m => (g.roles as readonly string[]).includes(m.role?.name ?? '')),
+    roles: g.roles,
+  }))
+  .filter(s => s.members.length > 0);
+
+// Group remaining (non-grouped) members by role
+const byRole = groupBy(
+  entourage.filter(m => !(GROUPED_ROLE_NAMES as Set<string>).has(m.role?.name ?? '')),
+  'role.name'
+);
+
+const sortedRoles = Object.keys(byRole).sort((a, b) => {
+  const ai = ROLE_ORDER.indexOf(a);
+  const bi = ROLE_ORDER.indexOf(b);
+  if (ai === -1 && bi === -1) return a.localeCompare(b);
+  if (ai === -1) return 1;
+  if (bi === -1) return -1;
+  return ai - bi;
+});
+---
+
+<Layout
+  title={`Wedding Party — ${groom} & ${bride}`}
+  colorPrimary={settings.color_primary}
+  colorSecondary={settings.color_secondary}
+  activeNav="wedding-party"
+  toc={true}
+>
+  <div class="page-wide">
+    <PageHeader
+      groomName={groom}
+      brideName={bride}
+      eyebrow="Our Entourage"
+      date={`Wedding Party · ${weddingDateLabel}`}
+    />
+
+    {sortedRoles.map((role) => {
+      const members = [...(byRole[role] ?? [])].sort(memberSort);
+      const pairRole = WALK_PAIRS[role];
+      const pairMembers = pairRole ? [...(byRole[pairRole] ?? [])].sort(memberSort) : [];
+      const isPaired = !!pairRole && pairMembers.length > 0;
+
+      // Skip the right side of a walk-pair — rendered alongside its left side
+      const isRightOfPair = Object.values(WALK_PAIRS).includes(role)
+        && Object.keys(WALK_PAIRS).some(k => WALK_PAIRS[k] === role && (byRole[k] ?? []).length > 0);
+      if (isRightOfPair) return null;
+
+      const isBrideSide = BRIDE_SIDE_ROLES.has(role);
+
+      return (
+        <section class="role-section" id={role.toLowerCase().replace(/\s+/g, '-')}>
+          <h2 class="role-title">
+            {isPaired
+              ? `${sectionTitle(role, members.length)} & ${sectionTitle(pairRole, pairMembers.length)}`
+              : sectionTitle(role, members.length)}
+          </h2>
+
+          {isPaired ? (
+            <div class="paired-grid">
+              {members.map((m, i) => (
+                <>
+                  <div class="paired-col">
+                      <div class={`member-card ${isBrideSide ? 'member-card--bride' : 'member-card--groom'}`}>
+                        <div class="member-name">{displayName(m.person)}</div>
+                        <div class="member-side">{isBrideSide ? bride : groom}'s side</div>
+                      </div>
+                  </div>
+                  <div class="paired-divider" aria-hidden="true">✦</div>
+                  {pairMembers[i] && (
+                  <div class="paired-col">
+                      <div class={`member-card ${isBrideSide ? 'member-card--groom' : 'member-card--bride'}`}>
+                        <div class="member-name">{displayName(pairMembers[i]!.person)}</div>
+                        <div class="member-side">{isBrideSide ? groom : bride}'s side</div>
+                      </div>
+                  </div>
+                  )}
+                </>
+              ))}
+            </div>
+          ) : (
+            <div class="single-grid">
+              {members.map((m) => (
+                <div class="member-card">
+                  <div class="member-name">{displayName(m.person)}</div>
+                  <div class="member-side">{m.role?.name}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      );
+    })}
+
+    {groupedSections.map(({ title, members, roles }) => (
+      <section class="role-section" id={title.toLowerCase().replace(/\s+/g, '-')}>
+        <h2 class="role-title">{title}</h2>
+        <div class="grouped-grid" data-count={members.length}>
+          {members.map((m, i) => (
+            <>
+              {(i > 0 && i <= members.length) && <div class="paired-divider" aria-hidden="true">✦</div>}
+              <div class="paired-col">
+                <div class="member-card">
+                  <div class="member-name">{displayName(m.person)}</div>
+                  {roles.length > 1 && <div class="member-side">{m.role?.name}</div>}
+                </div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    {entourage.length === 0 && (
+      <div class="card page-narrow" style="text-align:center; padding: 48px;">
+        <p style="font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--muted);">
+          Wedding party details coming soon.
+        </p>
+      </div>
+    )}
+  </div>
+
+  <Fragment slot="footer-extra">
+    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+  </Fragment>
+</Layout>
+
+<style>
+.role-section {
+  margin-bottom: 52px; width: 100%;
+  opacity: 0; animation: fadeUp 0.8s 0.2s ease forwards;
+}
+.role-title {
+  font-family: var(--fd); font-size: 28px; font-weight: 300; font-style: italic;
+  color: var(--dark); text-align: center; margin-bottom: 20px;
+}
+.paired-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px 24px;
+  align-items: start;
+}
+.paired-divider {
+  font-family: var(--fd); font-size: 16px; color: var(--cs); opacity: 0.6;
+  padding-top: 12px; text-align: center;
+}
+.paired-col { display: flex; flex-direction: column; gap: 10px; }
+.single-grid {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+.member-card {
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-card);
+  padding: 16px 20px;
+  text-align: center;
+  position: relative; overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.member-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+.member-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.member-card--bride {
+  background: color-mix(in srgb, #d4a0b0 10%, var(--ivory));
+  border-color: rgba(212, 160, 176, 0.4);
+}
+.member-card--bride::before {
+  background: linear-gradient(90deg, #d4a0b0, #e0b8c8);
+}
+.member-card--groom {
+  background: color-mix(in srgb, #9ab4d4 10%, var(--ivory));
+  border-color: rgba(154, 180, 212, 0.4);
+}
+.member-card--groom::before {
+  background: linear-gradient(90deg, #9ab4d4, #b4c8e0);
+}
+.member-name {
+  font-family: var(--fd); font-size: 18px; font-weight: 400; color: var(--dark);
+}
+.member-side {
+  font-family: var(--fb); font-size: 10px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+  margin-top: 4px;
+}
+.grouped-grid { display: grid; gap: 16px 24px; align-items: start; }
+.grouped-grid[data-count="1"] { grid-template-columns: 1fr; }
+.grouped-grid[data-count="2"] { grid-template-columns: 1fr auto 1fr; }
+.grouped-grid[data-count="3"] { grid-template-columns: 1fr auto 1fr auto 1fr; }
+.grouped-grid[data-count="4"] { grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; }
+
+@media (max-width: 600px) {
+  .paired-grid  { grid-template-columns: 1fr; }
+  .grouped-grid { grid-template-columns: 1fr !important; }
+  .paired-divider { display: none; }
+}
+</style>

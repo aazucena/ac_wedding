@@ -1,0 +1,65 @@
+---
+// invite/NotInvitedCard.astro — "not on the list yet" fallback card
+interface Props {
+  email:       string;
+  groom:       string;
+  bride:       string;
+  weddingDate: string;
+}
+const { email, groom, bride, weddingDate } = Astro.props;
+const mailtoHref = `mailto:${email}?subject=Wedding Invitation Request&body=Hi ${groom} and ${bride},%0A%0AI would love to attend your wedding on ${weddingDate}.%0A%0AMy name is: %0A%0ALooking forward to hearing from you!`;
+---
+
+<div class="not-invited-card">
+  <span class="not-invited-icon">💌</span>
+  <h3 class="not-invited-title">Not on the list yet?</h3>
+  <p class="not-invited-body">
+    If you'd like to attend and haven't received an invitation, feel free to reach out to us directly.
+    We'd love to hear from you.
+  </p>
+  <a href={mailtoHref} class="not-invited-btn">Send us an email</a>
+</div>
+
+<style>
+.not-invited-card {
+  width: 100%;
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  padding: 36px 32px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  position: relative; overflow: hidden;
+  opacity: 0; animation: fadeUp 0.8s 0.5s ease forwards;
+}
+
+.not-invited-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cs), var(--cp));
+}
+
+.not-invited-icon { font-size: 32px; }
+
+.not-invited-title {
+  font-family: var(--fd); font-size: 24px;
+  font-weight: 300; font-style: italic; color: var(--dark);
+}
+
+.not-invited-body {
+  font-family: var(--fb); font-size: 14px; font-weight: 300;
+  color: var(--muted); line-height: 1.8; max-width: 420px;
+}
+
+.not-invited-btn {
+  display: inline-block; margin-top: 4px; padding: 13px 32px;
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  color: color-mix(in srgb, var(--cp) 80%, white);
+  border-radius: var(--radius-sm); text-decoration: none;
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  box-shadow: 0 6px 24px rgba(26,26,46,0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.not-invited-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(26,26,46,0.26); }
+</style>

@@ -1,0 +1,105 @@
+---
+// apps/web/src/pages/rsvp/[token].astro
+import Layout     from '../../layouts/Layout.astro';
+import PageHeader from '../../components/PageHeader.astro';
+import RsvpCard   from '../../components/RsvpCard.astro';
+import ClosedCard from '../../components/ClosedCard.astro';
+import { getSettings, getPartyByToken } from '../../lib/directus';
+import { formatDate } from '../../lib/utils/format';
+import Hashtag from '~/components/Hashtag.astro';
+
+const { token } = Astro.params;
+
+// Reject empty, literal "null", or literal "undefined" tokens — these are
+// signs that client-side code navigated with an unresolved value.
+const INVALID_TOKENS = new Set(['', 'null', 'undefined']);
+if (!token || INVALID_TOKENS.has(token)) {
+  return Astro.redirect('/invite', 307);
+}
+
+const [settings, party] = await Promise.all([
+  getSettings(),
+  getPartyByToken(token),
+]);
+
+const groom = settings.groom?.first_name ?? 'Aldrin';
+const bride = settings.bride?.first_name ?? 'Christine';
+const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+
+const rsvpDeadline = formatDate(settings.rsvp_deadline ?? '2026-08-26');
+const deadlinePassed = new Date() > new Date((settings.rsvp_deadline ?? '2026-08-26') + 'T23:59:59');
+const weddingPassed = new Date() > new Date((settings.wedding_date ?? '2026-09-26') + 'T23:59:59');
+const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
+---
+
+<Layout
+  title={`RSVP — ${groom} & ${bride}`}
+  colorPrimary={settings.color_primary}
+  colorSecondary={settings.color_secondary}
+  activeNav="rsvp"
+  envelope={false}
+>
+
+  {isClosed ? (
+    <div class="page-narrow rsvp-closed">
+      <ClosedCard
+        groomName={groom}
+        brideName={bride}
+        hashtag={settings.hashtag ?? '#AldrinAndChristine2026'}
+        weddingDate={weddingDateLabel}
+      />
+    </div>
+  ) : party ? (
+    <div class="page-wide">
+      <PageHeader groomName={groom} brideName={bride} date={`${weddingDateLabel} · Nuptial Mass & Reception`} />
+      <RsvpCard
+        party={party}
+        groomName={groom}
+        brideName={bride}
+        hashtag={settings.hashtag ?? '#AldrinAndChristine2026'}
+        rsvpDeadline={rsvpDeadline}
+      />
+    </div>
+  ) : (
+    <div class="page-narrow">
+      <PageHeader groomName={groom} brideName={bride} date={`${weddingDateLabel} · Nuptial Mass & Reception`} />
+      <div class="card">
+        <div class="token-error">
+          <div class="token-error-icon">💌</div>
+          <h2>We couldn't find your invitation</h2>
+          <p>
+            This link may be invalid or expired. Please check the link in your
+            invitation email or <a href="/invite">search by name</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <Fragment slot="footer-extra">
+    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+  </Fragment>
+
+</Layout>
+
+<style>
+.rsvp-closed {
+  display: flex; justify-content: center;
+  padding-top: 48px; padding-bottom: 48px;
+}
+.token-error {
+  text-align: center; padding: 56px 32px;
+}
+.token-error-icon { font-size: 40px; margin-bottom: 20px; }
+.token-error h2 {
+  font-family: var(--fd); font-size: 28px;
+  font-weight: 300; font-style: italic;
+  color: var(--dark); margin-bottom: 12px;
+}
+.token-error p {
+  font-family: var(--fb); font-size: 14px;
+  font-weight: 300; color: var(--muted); line-height: 1.8;
+}
+.token-error a { color: var(--cp); }
+</style>

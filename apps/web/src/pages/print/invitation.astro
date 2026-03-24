@@ -1,0 +1,161 @@
+---
+export const prerender = true;
+// src/pages/print/invitation.astro
+// Two-sided duplex invitation card
+//   Front — names + date (cover-style)
+//   Back  — ceremony venue + reception venue + RSVP QR + hashtag
+
+import { getSettings, getCeremony, getReception, getPartyByToken } from '@lib/directus';
+import { formatTime } from '@lib/print';
+import PrintLayout          from '@layouts/PrintLayout.astro';
+import Hashtag              from '@components/Hashtag.astro';
+import CardWatermark        from '@components/CardWatermark.astro';
+import QRCodeWidget         from '@components/QRCode.astro';
+import '../../styles/invitation.css';
+
+const token = Astro.url.searchParams.get('token') ?? undefined;
+
+const [settings, ceremony, reception, party] = await Promise.all([
+  getSettings(), getCeremony(), getReception(),
+  token ? getPartyByToken(token) : Promise.resolve(null),
+]);
+
+const groom   = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
+const bride   = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
+const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://yourdomain.com';
+const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
+---
+
+<PrintLayout
+  title={`Invitation — ${groom} & ${bride}`}
+  cardWidth="5in" cardHeight="7in"
+  toolbarHint="Click the card to flip · print sends both sides"
+>
+
+  <div class="toolbar-controls" slot="toolbar-controls">
+    <div class="seg-control">
+      <button id="btn-5x7" class="seg-btn active" onclick="setSize('5x7')">5×7 in</button>
+      <button id="btn-a4"  class="seg-btn"        onclick="setSize('a4')">A4</button>
+    </div>
+    <div class="seg-control">
+      <button id="btn-front" class="seg-btn active" onclick="showFace('front')">Front</button>
+      <button id="btn-back"  class="seg-btn"        onclick="showFace('back')">Back</button>
+    </div>
+  </div>
+
+  <div class="flip-container size-5x7" id="flip-container">
+    <div class="flipper" id="flipper">
+
+      <!-- ══ FRONT — Names + Date ═════════════════════════════ -->
+      <div class="card face front">
+        <div class="card-accent"></div>
+
+        <div class="front-inner">
+          {party
+            ? <p class="party-name">{party.name}</p>
+            : <p class="together-note">Together with their families</p>
+          }
+
+          <div class="names-block">
+            <h1 class="inv-name">{groom}</h1>
+            <div class="name-divider">
+              <span class="rule-r"></span>
+              <span class="inv-and">and</span>
+              <span class="rule-l"></span>
+            </div>
+            <h1 class="inv-name">{bride}</h1>
+          </div>
+
+          <p class="request-copy">
+            request the honour of your presence<br />
+            at the celebration of their Holy Matrimony
+          </p>
+
+          <div class="date-block">
+            <p class="ornament">✦</p>
+            <p class="day-label">Saturday</p>
+            <p class="date-long">the Twenty-Sixth of September</p>
+            <p class="year-long">Two Thousand and Twenty-Six</p>
+            <p class="time-label">at {formatTime(ceremony.start_time)}</p>
+          </div>
+
+          <div class="front-hr">
+            <span class="rule-r long"></span>
+            <span class="ornament-sm">❧</span>
+            <span class="rule-l long"></span>
+          </div>
+
+          <p class="dress-code">{ceremony.dress_code ?? 'Formal Attire'}</p>
+        </div>
+
+        <div class="card-accent-bottom"></div>
+      </div>
+
+      <!-- ══ BACK — Venues + RSVP ══════════════════════════════ -->
+      <div class="card face back" style="position:relative;">
+        <div class="card-accent"></div>
+
+        <CardWatermark opacity={0.04} size={160} />
+
+        <div class="back-inner">
+
+          <!-- Ceremony -->
+          <section class="venue-section">
+            <p class="section-eye">Ceremony</p>
+            <p class="venue-name">{ceremony.venue?.name ?? 'Venue TBD'}</p>
+            <p class="venue-addr">
+              {ceremony.venue?.address_line1
+                ? `${ceremony.venue.address_line1}, ${ceremony.venue.city ?? 'Lethbridge'}, Alberta`
+                : 'Lethbridge, Alberta, Canada'}
+            </p>
+            <p class="venue-time">{formatTime(ceremony.start_time)}</p>
+          </section>
+
+          <div class="hr">
+            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
+          </div>
+
+          <!-- Reception -->
+          <section class="venue-section">
+            <p class="section-eye">Reception</p>
+            <p class="venue-name">{reception.venue?.name ?? 'Venue TBD'}</p>
+            {reception.venue?.address_line1 && (
+              <p class="venue-addr">
+                {reception.venue.address_line1}, {reception.venue.city ?? 'Lethbridge'}, Alberta
+              </p>
+            )}
+            <p class="venue-time">{formatTime(reception.start_time)}</p>
+            {reception.cocktail_hour_time && (
+              <p class="cocktail-note">Cocktail hour at {formatTime(reception.cocktail_hour_time)}</p>
+            )}
+          </section>
+
+          <div class="hr">
+            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
+          </div>
+
+          <!-- RSVP QR -->
+          <section class="rsvp-section">
+            <div class="rsvp-card">
+              <QRCodeWidget url={rsvpUrl} size={130} />
+              <div class="rsvp-text">
+                <p class="rsvp-heading">Kindly Reply</p>
+                <p class="rsvp-deadline">by August 26, 2026</p>
+                <p class="rsvp-note">Scan to RSVP or visit:</p>
+                <p class="rsvp-url">{rsvpUrl}</p>
+                <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        <div class="card-accent-bottom"></div>
+      </div>
+
+    </div><!-- /.flipper -->
+  </div><!-- /.flip-container -->
+
+</PrintLayout>
+
+<script is:inline src="/scripts/invitation-preview.js"></script>

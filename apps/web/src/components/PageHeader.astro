@@ -1,0 +1,31 @@
+---
+// apps/web/src/components/PageHeader.astro
+interface Props {
+  groomName: string;
+  brideName: string;
+  eyebrow?:  string;
+  date?:     string;
+}
+
+const {
+  groomName,
+  brideName,
+  eyebrow = 'You are invited to celebrate',
+  date    = 'Nuptial Mass & Reception',
+} = Astro.props;
+---
+
+<header class="header">
+  <p class="header-eyebrow">{eyebrow}</p>
+  <h1 class="header-names">
+    {groomName}
+    <span class="amp">&amp;</span>
+    {brideName}
+  </h1>
+  <div class="header-divider">
+    <span class="rule"></span>
+    <span class="header-divider-symbol">✦</span>
+    <span class="rule r"></span>
+  </div>
+  <p class="header-date">{date}</p>
+</header>

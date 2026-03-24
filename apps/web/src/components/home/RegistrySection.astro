@@ -1,0 +1,74 @@
+---
+// home/RegistrySection.astro — gift registry links
+interface Registry {
+  id: string;
+  name: string;
+  url?: string | null;
+  notes?: string | null;
+}
+interface Props {
+  registries: Registry[];
+}
+const { registries } = Astro.props;
+---
+
+<style>
+.registry-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+.registry-card {
+  width: 260px; flex-shrink: 0;
+  background: var(--ivory); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--shadow-card);
+  padding: 36px 28px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  position: relative; overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.registry-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+.registry-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+.registry-icon { font-size: 32px; }
+.registry-name {
+  font-family: var(--fd); font-size: 24px;
+  font-weight: 400; font-style: italic; color: var(--dark);
+}
+.registry-notes {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--muted); line-height: 1.7;
+}
+.registry-btn {
+  margin-top: 8px; padding: 10px 24px;
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  color: color-mix(in srgb, var(--cp) 80%, white);
+  border-radius: var(--radius-sm); text-decoration: none;
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(26,26,46,0.15);
+}
+.registry-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(26,26,46,0.22); }
+.registry-btn--soon {
+  background: var(--warm); color: var(--muted);
+  border: 1px solid var(--border); box-shadow: none; pointer-events: none;
+}
+</style>
+
+<div class="registry-grid">
+  {registries.map((r) => (
+    <div class="registry-card">
+      <span class="registry-icon">🎁</span>
+      <p class="registry-name">{r.name}</p>
+      {r.notes && <p class="registry-notes">{r.notes}</p>}
+      {r.url
+        ? <a href={r.url} target="_blank" rel="noopener noreferrer" class="registry-btn">View Registry →</a>
+        : <span class="registry-btn registry-btn--soon">Coming Soon</span>
+      }
+    </div>
+  ))}
+</div>

@@ -1,0 +1,51 @@
+{% comment %} packages/directus/templates/sections/hero.liquid {% endcomment %}
+{% comment %} Top decorative band + hero with stacked logo emblem (matches website HeroSection) {% endcomment %}
+{% comment %} SWAP: replace div.hero-placeholder with <img src="YOUR_PHOTO_URL" class="hero-image"> when engagement photo is ready {% endcomment %}
+
+<!-- Top decorative band -->
+<tr><td class="band-top"></td></tr>
+
+<!-- ─── HERO ─────────────────────────────────────── -->
+<tr>
+  <td class="hero">
+    <!--
+      SWAP THIS: Replace the div.hero-placeholder below with:
+      <img src="YOUR_ENGAGEMENT_PHOTO_URL" alt="{{ read_wedding_settings.groom.first_name }} & {{ read_wedding_settings.bride.first_name }}" class="hero-image">
+      Recommended: 1200 × 680px, hosted on CDN or Railway uploads
+    -->
+    <div class="hero-placeholder">
+      <!-- Stacked logo emblem — mirrors website HeroSection hero-emblem -->
+      <img
+        src="{{ constants.directus_url }}/assets/{{ read_wedding_settings.emblem }}"
+        alt="{{ read_wedding_settings.groom.first_name }} &amp; {{ read_wedding_settings.bride.first_name }}"
+        width="220"
+        style="display:block; margin:60px auto 0; width:220px; max-width:55%; filter:drop-shadow(0 4px 32px rgba(0,0,0,0.30));"
+      >
+    </div>
+
+    <div class="hero-overlay">
+      <p class="hero-eyebrow">Together with their families</p>
+      <div class="hero-names">
+        {{ read_wedding_settings.groom.first_name }} <span class="ampersand">&amp;</span> {{ read_wedding_settings.bride.first_name }}
+      </div>
+
+      <!-- Header divider — mirrors website PageHeader .header-divider -->
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin:16px 0 14px;">
+        <tr>
+          <td style="width:50%; text-align:right; padding-right:14px; vertical-align:middle;">
+            <div style="height:1px; background:linear-gradient(90deg, transparent, {{ read_wedding_settings.color_secondary }}); width:56px; display:inline-block;"></div>
+          </td>
+          <td style="white-space:nowrap; text-align:center; vertical-align:middle;">
+            <span class="hero-divider-symbol">✦</span>
+          </td>
+          <td style="width:50%; text-align:left; padding-left:14px; vertical-align:middle;">
+            <div style="height:1px; background:linear-gradient(90deg, {{ read_wedding_settings.color_secondary }}, transparent); width:56px; display:inline-block;"></div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Date — mirrors website .header-date -->
+      <p class="hero-date">September 26, 2026 &nbsp;·&nbsp; Nuptial Mass &amp; Reception</p>
+    </div>
+  </td>
+</tr>

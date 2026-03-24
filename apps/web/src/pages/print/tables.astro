@@ -1,0 +1,96 @@
+---
+export const prerender = true;
+// apps/web/src/pages/print/tables.astro
+// Table Number Cards — tall tent card, 4×6 sheet folds to 4×3 standing tent
+// Content: large table number + table name, readable from both sides when folded
+// Layout: 2 cards per printed 8.5×11 page
+// Data: all active tables from Directus, sorted by reception_sort then number
+
+import { getSettings, getTables } from '@lib/directus';
+import PrintLayout      from '@layouts/PrintLayout.astro';
+import CardWatermark    from '@components/CardWatermark.astro';
+import FoldLine         from '@components/FoldLine.astro';
+import '../../styles/table-card.css';
+
+const [settings, tables] = await Promise.all([
+  getSettings(), getTables(),
+]);
+
+const groomFirst = settings.groom?.first_name ?? 'Aldrin';
+const brideFirst = settings.bride?.first_name ?? 'Christine';
+
+if (tables.length <= 0) tables.push({ id: '', number: 1, name: "Guest Family" });
+
+// Pad to multiple of 2 for clean grid
+const padded = [...tables];
+if (padded.length % 2 !== 0) padded.push(null as any);
+
+const pageCount = Math.ceil(tables.length / 2);
+---
+
+<PrintLayout
+  title="Table Number Cards — Print"
+  cardWidth="8.5in" cardHeight="11in"
+  toolbarHint={`8.5 × 11 in · 2 per page · Fold on dashed line · Stands on table · ${tables.length} table${tables.length !== 1 ? 's' : ''} · ${pageCount} page${pageCount !== 1 ? 's' : ''}`}
+>
+
+  <!-- ── Render sheets of 2 ── -->
+  {Array.from({ length: Math.ceil(padded.length / 2) }, (_, pageIdx) => (
+    <div class="sheet">
+      {padded.slice(pageIdx * 2, pageIdx * 2 + 2).map((table) =>
+        table ? (
+          <div class="card-slot">
+            <div class="tent-card">
+
+              <!-- Top half (upside-down = back when folded) -->
+              <div class="tent-top">
+                <div class="tent-bar-bottom"></div>
+                <CardWatermark opacity={0.04} size={80} />
+                <div class="face-content">
+                  <div class="face-eyebrow">Table</div>
+                  <div class="face-number">{table.number}</div>
+                  <div class="face-rule">
+                    <div class="face-rule-line"></div>
+                    <span class="face-rule-gem">✦</span>
+                    <div class="face-rule-line"></div>
+                  </div>
+                  {table.name && <div class="face-name">{table.name}</div>}
+                </div>
+                <div class="tent-bar"></div>
+              </div>
+
+              <!-- Score / fold line -->
+              <FoldLine />
+
+              <!-- Bottom half (front face) -->
+              <div class="tent-bottom">
+                <div class="tent-bar"></div>
+                <CardWatermark opacity={0.04} size={80} />
+                <div class="face-content">
+                  <div class="face-eyebrow">Table</div>
+                  <div class="face-number">{table.number}</div>
+                  <div class="face-rule">
+                    <div class="face-rule-line"></div>
+                    <span class="face-rule-gem">✦</span>
+                    <div class="face-rule-line"></div>
+                  </div>
+                  {table.name && <div class="face-name">{table.name}</div>}
+                </div>
+                <div class="face-footer">
+                  <span class="face-footer-names">
+                    {groomFirst} <span class="face-footer-amp">&amp;</span> {brideFirst}
+                  </span>
+                </div>
+                <div class="tent-bar-bottom"></div>
+              </div>
+
+            </div>
+          </div>
+        ) : (
+          <div class="card-slot empty"></div>
+        )
+      )}
+    </div>
+  ))}
+
+</PrintLayout>

@@ -1,0 +1,309 @@
+---
+export const prerender = true;
+// apps/web/src/pages/events.astro — public wedding weekend events
+import Layout         from '../layouts/Layout.astro';
+import PageHeader     from '../components/PageHeader.astro';
+import Hashtag        from '~/components/Hashtag.astro';
+import EventsCalendar  from '../components/EventsCalendar.astro';
+import EventsTimeline  from '../components/EventsTimeline.astro';
+import { getSettings, getEvents } from '../lib/directus';
+import { formatDate } from '../lib/utils/format';
+
+const [settings, events] = await Promise.all([getSettings(), getEvents()]);
+
+const groom            = settings.groom?.first_name ?? 'Aldrin';
+const bride            = settings.bride?.first_name ?? 'Christine';
+const weddingDate      = settings.wedding_date ?? '2026-09-26';
+const weddingDateLabel = formatDate(weddingDate);
+
+// Build synthetic timeline entries from ceremony / reception settings
+type TimelineEvent = (typeof events)[number] & { icsKey?: string };
+
+function addMins(time: string, mins: number): string {
+  const [h = 0, m = 0] = time.slice(0, 5).split(':').map(Number);
+  const total  = h * 60 + m + mins;
+  return `${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}:00`;
+}
+
+const settingsTimelineEvents: TimelineEvent[] = [];
+
+if (settings.ceremony?.start_time) {
+  const dur = settings.ceremony.estimated_duration;
+  settingsTimelineEvents.push({
+    id:         '__ceremony',
+    status:     'published',
+    name:       'Wedding Ceremony',
+    date:       weddingDate,
+    start_time: settings.ceremony.start_time,
+    end_time:   dur ? addMins(settings.ceremony.start_time, dur) : undefined,
+    venue:      settings.ceremony.venue ?? undefined,
+    public:     true,
+    icsKey:     'ceremony',
+  });
+}
+
+if (settings.reception?.cocktail_hour_time) {
+  settingsTimelineEvents.push({
+    id:         '__cocktail',
+    status:     'published',
+    name:       'Cocktail Hour',
+    date:       weddingDate,
+    start_time: settings.reception.cocktail_hour_time,
+    end_time:   settings.reception.start_time ?? undefined,
+    venue:      settings.reception.venue ?? undefined,
+    public:     true,
+  });
+}
+
+if (settings.reception?.start_time) {
+  settingsTimelineEvents.push({
+    id:         '__reception',
+    status:     'published',
+    name:       'Wedding Reception',
+    date:       weddingDate,
+    start_time: settings.reception.start_time,
+    end_time:   settings.reception.end_time ?? undefined,
+    venue:      settings.reception.venue ?? undefined,
+    public:     true,
+    icsKey:     'reception',
+  });
+}
+
+// Group events by date (for timeline view) — settings events first
+const allTimelineEvents = [...settingsTimelineEvents, ...events];
+const byDate = new Map<string, typeof allTimelineEvents>();
+for (const ev of allTimelineEvents) {
+  const d = ev.date ?? weddingDate;
+  if (!byDate.has(d)) byDate.set(d, []);
+  byDate.get(d)!.push(ev);
+}
+
+const groupedDates = [...byDate.keys()]
+  .sort()
+  .map(date => ({
+    date,
+    label: formatDate(date, 'EEEE, MMMM d'),
+    isWeddingDay: date === weddingDate,
+    events: (byDate.get(date) ?? []).sort((a, b) =>
+      (a.start_time ?? '').localeCompare(b.start_time ?? '')
+    ),
+  }));
+
+// ── Calendar events ──────────────────────────────────────────────────────────
+
+function toCalendarTime(date: string, time?: string | null): string {
+  const t = time ? time.slice(0, 5) : '00:00';
+  return `${date} ${t}`;
+}
+
+function defaultEnd(date: string, start?: string | null, end?: string | null): string {
+  if (end) return toCalendarTime(date, end);
+  if (!start) return `${date} 01:00`;
+  const [h = 0, m = 0] = start.slice(0, 5).split(':').map(Number);
+  const endH   = String((h + 1) % 24).padStart(2, '0');
+  return `${date} ${endH}:${String(m).padStart(2, '0')}`;
+}
+
+const calendarEvents = events
+  .filter(ev => ev.date)
+  .map((ev, i) => ({
+    id:         String(i + 1),
+    title:      ev.name,
+    start:      toCalendarTime(ev.date!, ev.start_time),
+    end:        defaultEnd(ev.date!, ev.start_time, ev.end_time),
+    ...(ev.venue?.name ? { location: ev.venue.name } : {}),
+    calendarId: 'wedding',
+  }));
+
+// Prepend ceremony & reception from settings as fixed wedding-day events
+const settingsEvents: typeof calendarEvents = [];
+
+if (settings.ceremony?.start_time) {
+  const dur = settings.ceremony.estimated_duration;
+  settingsEvents.push({
+    id:    'ceremony',
+    title: 'Wedding Ceremony',
+    start: toCalendarTime(weddingDate, settings.ceremony.start_time),
+    end:   dur
+      ? (() => {
+          const [h = 0, m = 0] = settings.ceremony.start_time!.slice(0, 5).split(':').map(Number);
+          const total  = h * 60 + m + dur;
+          return `${weddingDate} ${String(Math.floor(total / 60) % 24).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+        })()
+      : defaultEnd(weddingDate, settings.ceremony.start_time, null),
+    ...(settings.ceremony.venue?.name ? { location: settings.ceremony.venue.name } : {}),
+    calendarId: 'wedding',
+  });
+}
+
+if (settings.reception?.cocktail_hour_time) {
+  settingsEvents.push({
+    id:         'cocktail',
+    title:      'Cocktail Hour',
+    start:      toCalendarTime(weddingDate, settings.reception.cocktail_hour_time),
+    end:        defaultEnd(weddingDate, settings.reception.cocktail_hour_time, settings.reception.start_time),
+    ...(settings.reception.venue?.name ? { location: settings.reception.venue.name } : {}),
+    calendarId: 'wedding',
+  });
+}
+
+if (settings.reception?.start_time) {
+  settingsEvents.push({
+    id:         'reception',
+    title:      'Wedding Reception',
+    start:      toCalendarTime(weddingDate, settings.reception.start_time),
+    end:        defaultEnd(weddingDate, settings.reception.start_time, settings.reception.end_time),
+    ...(settings.reception.venue?.name ? { location: settings.reception.venue.name } : {}),
+    calendarId: 'wedding',
+  });
+}
+
+const allCalendarEvents = [...settingsEvents, ...calendarEvents];
+---
+
+<Layout
+  title={`Events — ${groom} & ${bride}`}
+  colorPrimary={settings.color_primary}
+  colorSecondary={settings.color_secondary}
+  activeNav="events"
+>
+
+  <div class="page-wide events-page">
+
+    <PageHeader
+      groomName={groom}
+      brideName={bride}
+      eyebrow="Wedding Weekend"
+      date={`${weddingDateLabel} · Lethbridge, Alberta`}
+    />
+
+    {events.length === 0 ? (
+      <div class="card" style="max-width:480px; text-align:center; padding:56px 32px;">
+        <p style="font-family:var(--fd); font-size:20px; font-style:italic; color:var(--muted);">
+          Event details coming soon.
+        </p>
+      </div>
+    ) : (
+      <>
+        {/* View toggle */}
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button class="toggle-btn active" id="btn-calendar" aria-pressed="true">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
+              <line x1="1" y1="5.5" x2="13" y2="5.5" stroke="currentColor" stroke-width="1.5"/>
+              <rect x="3.5" y="0.5" width="1.5" height="3" rx="0.75" fill="currentColor"/>
+              <rect x="9" y="0.5" width="1.5" height="3" rx="0.75" fill="currentColor"/>
+              <rect x="3" y="8" width="2" height="2" rx="0.5" fill="currentColor"/>
+              <rect x="6.5" y="8" width="2" height="2" rx="0.5" fill="currentColor"/>
+              <rect x="10" y="8" width="1" height="2" rx="0.5" fill="currentColor"/>
+            </svg>
+            Calendar
+          </button>
+          <button class="toggle-btn" id="btn-timeline" aria-pressed="false">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <rect x="0" y="1" width="4" height="4" rx="1" fill="currentColor"/>
+              <rect x="6" y="1" width="8" height="1.5" rx="0.75" fill="currentColor"/>
+              <rect x="6" y="3.5" width="5" height="1.5" rx="0.75" fill="currentColor"/>
+              <rect x="0" y="7" width="4" height="4" rx="1" fill="currentColor"/>
+              <rect x="6" y="7" width="8" height="1.5" rx="0.75" fill="currentColor"/>
+              <rect x="6" y="9.5" width="5" height="1.5" rx="0.75" fill="currentColor"/>
+            </svg>
+            Timeline
+          </button>
+        </div>
+
+        {/* Calendar view — visible by default so skeleton shows immediately */}
+        <div id="view-calendar">
+          <EventsCalendar events={allCalendarEvents} weddingDate={weddingDate} />
+        </div>
+        {/* Timeline view — hidden until toggled */}
+        <div id="view-timeline" class="hidden">
+          <EventsTimeline groupedDates={groupedDates} />
+        </div>
+
+      </>
+    )}
+
+  </div>
+
+  <Fragment slot="footer-extra">
+    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+  </Fragment>
+
+</Layout>
+
+<script>
+  const STORAGE_KEY = 'events-view';
+  let ctrl: AbortController | null = null;
+
+  function init() {
+    const btnTimeline  = document.getElementById('btn-timeline');
+    const btnCalendar  = document.getElementById('btn-calendar');
+    const viewTimeline = document.getElementById('view-timeline');
+    const viewCalendar = document.getElementById('view-calendar');
+    if (!btnTimeline || !btnCalendar || !viewTimeline || !viewCalendar) return;
+
+    ctrl?.abort();
+    ctrl = new AbortController();
+    const { signal } = ctrl;
+
+    function setView(view: 'timeline' | 'calendar') {
+      const isCalendar = view === 'calendar';
+      btnTimeline!.classList.toggle('active', !isCalendar);
+      btnCalendar!.classList.toggle('active', isCalendar);
+      btnTimeline!.setAttribute('aria-pressed', String(!isCalendar));
+      btnCalendar!.setAttribute('aria-pressed', String(isCalendar));
+      viewTimeline!.classList.toggle('hidden', isCalendar);
+      viewCalendar!.classList.toggle('hidden', !isCalendar);
+      try { localStorage.setItem(STORAGE_KEY, view); } catch {}
+    }
+
+    btnTimeline.addEventListener('click', () => setView('timeline'), { signal });
+    btnCalendar.addEventListener('click', () => setView('calendar'), { signal });
+
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as 'timeline' | 'calendar' | null;
+      setView(saved === 'timeline' ? 'timeline' : 'calendar');
+    } catch {
+      setView('calendar');
+    }
+  }
+
+  document.addEventListener('astro:page-load', init);
+</script>
+
+<style>
+.events-page { display: flex; flex-direction: column; align-items: center; }
+
+/* ── Toggle ── */
+.view-toggle {
+  display: flex; gap: 4px; margin-bottom: 36px;
+  background: var(--ivory); border: 1px solid var(--border);
+  border-radius: 999px; padding: 4px;
+  box-shadow: var(--shadow-card);
+}
+
+.toggle-btn {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--fb); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--muted); background: transparent;
+  border: none; border-radius: 999px;
+  padding: 8px 18px; cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.toggle-btn.active {
+  background: linear-gradient(135deg, var(--cp), var(--cs));
+  color: white;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--cp) 40%, transparent);
+}
+.toggle-btn:not(.active):hover { color: var(--dark); }
+
+.hidden, .hidden > * { display: none !important; }
+
+#view-timeline,
+#view-calendar {
+  width: 100%;
+}
+</style>

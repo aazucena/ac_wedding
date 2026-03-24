@@ -1,0 +1,12 @@
+{% comment %} packages/directus/templates/sections/website.liquid {% endcomment %}
+{% comment %} Wedding website link — strips https:// for display using LiquidJS remove filter {% endcomment %}
+
+<!-- ─── WEDDING WEBSITE ───────────────────────────── -->
+<tr>
+  <td class="website-section">
+    <p>Find updates, our story, and more at</p>
+    <a href="{{ constants.public_url }}" class="website-link">
+      {{ constants.public_url | remove: "https://" }}
+    </a>
+  </td>
+</tr>

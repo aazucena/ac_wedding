@@ -1,0 +1,128 @@
+@media print {
+  body.size-5x7 { @page { size: 5in 7in portrait; margin: 0; } }
+  body.size-a4  { @page { size: A4 portrait; margin: 0; } }
+
+  .size-5x7 .card { width: 5in;   min-height: 7in;   }
+  .size-a4  .card { width: 210mm; min-height: 297mm; }
+}
+
+/* ── Size-dependent flip-container widths ─────────────────── */
+.flip-container.size-5x7 { width: 5in;   min-height: 7in;   }
+.flip-container.size-a4  { width: 210mm; min-height: 297mm; }
+
+/* ── Card ───────────────────────────────────────────────── */
+.card {
+  background: #fdfaf7; border: 1px solid rgba(197,184,224,0.45);
+  display: flex; flex-direction: column;
+  box-shadow: 0 6px 32px rgba(26,26,46,0.12);
+  width: 100%; height: 100%;
+}
+.card-accent {
+  height: 5px; flex-shrink: 0;
+  background: linear-gradient(90deg, #A8D4B8, #C5B8E0, #A8D4B8);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.card-accent-bottom {
+  height: 5px; margin-top: auto;
+  background: linear-gradient(90deg, #A8D4B8, #C5B8E0, #A8D4B8);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+/* ── HR ornament ────────────────────────────────────────── */
+.hr { display: flex; align-items: center; gap: 10px; padding: 0 44px; }
+.hr-rule {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.5), transparent);
+}
+.hr-diamond { font-size: 7px; color: #C5B8E0; }
+
+/* ── FRONT ──────────────────────────────────────────────── */
+.front-inner {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 16px; padding: 36px 52px; text-align: center;
+}
+.together-note {
+  font-size: 9px; font-weight: 600; letter-spacing: 3px;
+  text-transform: uppercase; color: #8a8499;
+}
+.party-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 400; font-style: italic;
+  color: #1a1a2e; letter-spacing: 0.3px;
+}
+.flip-container.size-a4 .party-name { font-size: 22px; }
+.names-block { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+.inv-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 38px; font-weight: 300; font-style: italic;
+  color: #1a1a2e; line-height: 1;
+}
+.flip-container.size-a4 .inv-name { font-size: 48px; }
+.name-divider { display: flex; align-items: center; gap: 12px; width: 72%; }
+.rule-r { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #C5B8E0); }
+.rule-l { flex: 1; height: 1px; background: linear-gradient(90deg, #C5B8E0, transparent); }
+.rule-r.long { flex: none; width: 38%; }
+.rule-l.long { flex: none; width: 38%; }
+.inv-and { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-style: italic; color: #C5B8E0; }
+.request-copy {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px; font-style: italic; color: #5a5470; line-height: 1.75;
+}
+.flip-container.size-a4 .request-copy { font-size: 19px; }
+.date-block { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.ornament { font-family: 'Cormorant Garamond', serif; font-size: 14px; color: #C5B8E0; letter-spacing: 6px; margin-bottom: 4px; }
+.day-label { font-size: 9px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #8a8499; }
+.date-long { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; color: #1a1a2e; }
+.flip-container.size-a4 .date-long { font-size: 24px; }
+.year-long { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: #5a5470; }
+.time-label { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #8a8499; margin-top: 3px; }
+.front-hr { display: flex; align-items: center; gap: 12px; width: 72%; }
+.ornament-sm { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: #C5B8E0; }
+.dress-code { font-size: 9.5px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #8a8499; }
+
+/* ── BACK ───────────────────────────────────────────────── */
+.back-inner {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; gap: 16px; padding: 28px 0;
+  position: relative; z-index: 1;
+}
+.venue-section {
+  padding: 0 48px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.section-eye {
+  font-size: 9px; font-weight: 600; letter-spacing: 3.5px;
+  text-transform: uppercase; color: #C5B8E0; margin-bottom: 2px;
+}
+.venue-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px; font-weight: 400; color: #1a1a2e;
+}
+.flip-container.size-a4 .venue-name { font-size: 26px; }
+.venue-addr { font-size: 9px; letter-spacing: 0.5px; color: #8a8499; }
+.venue-time { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #8a8499; margin-top: 2px; }
+.cocktail-note { font-size: 10px; font-style: italic; color: #8a8499; }
+
+/* ── RSVP card ──────────────────────────────────────────── */
+.rsvp-section { padding: 0 44px; }
+.rsvp-card {
+  display: flex; align-items: center; gap: 22px; padding: 16px 20px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, #A8D4B8 10%, #fdfaf7),
+    color-mix(in srgb, #C5B8E0  8%, #fdfaf7));
+  border: 1px solid rgba(197,184,224,0.4); border-radius: 10px;
+}
+.rsvp-text { display: flex; flex-direction: column; gap: 4px; }
+.rsvp-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px; font-weight: 300; font-style: italic; color: #1a1a2e;
+}
+.flip-container.size-a4 .rsvp-heading { font-size: 28px; }
+.rsvp-deadline { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #8a8499; }
+.rsvp-note { font-size: 10px; color: #5a5470; margin-top: 4px; line-height: 1.5; }
+.rsvp-url { font-size: 10px; color: #8a8499; }
+.rsvp-hashtag {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-style: italic; color: #C5B8E0; margin-top: 4px; display: block;
+}

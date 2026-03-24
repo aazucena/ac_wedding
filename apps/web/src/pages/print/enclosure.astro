@@ -1,0 +1,176 @@
+---
+export const prerender = true;
+// apps/web/src/pages/print/enclosure.astro
+// Enclosure Card — two-sided 5×3.5 in landscape card
+// Front: ceremony + reception details
+// Back:  dress code + hotel + RSVP deadline + website
+
+import { getSettings, getCeremony, getReception } from '@lib/directus';
+import { formatDate, formatTime } from '@lib/utils/format';
+import PrintLayout         from '@layouts/PrintLayout.astro';
+import Hashtag             from '@components/Hashtag.astro';
+import CardWatermark       from '@components/CardWatermark.astro';
+import QRCodeWidget        from '@components/QRCode.astro';
+import StackedImg          from '@assets/stacked.png';
+import { Image } from 'astro:assets';
+// import AccentMark          from '@assets/accent_mark.png';
+import '../../styles/enclosure.css';
+
+const [settings, ceremony, reception] = await Promise.all([
+  getSettings(), getCeremony(), getReception(),
+]);
+
+const rsvpDeadline  = formatDate(settings.rsvp_deadline ?? '2026-06-01');
+
+const BASE_URL = import.meta.env.BASE_URL?.replace(/\/$/, '') || Astro.url.origin;
+const websiteUrl = `${BASE_URL}/`.replace(/\/\/$/, '/');
+
+const ceremonyVenue  = ceremony.venue;
+const receptionVenue = reception.venue;
+
+const weddingDate   = formatDate(settings.wedding_date ?? '2026-09-26', 'cccc, MMMM d, yyyy');
+const ceremonyTime  = ceremony.start_time ? formatTime(ceremony.start_time) : '2:00 PM';
+const receptionTime = (reception.cocktail_hour_time ?? reception.start_time)
+  ? formatTime((reception.cocktail_hour_time ?? reception.start_time)!)
+  : '5:00 PM';
+
+const hotel     = settings.accomodation?.vendor;
+const dressCode = ceremony.dress_code ?? 'Formal';
+---
+
+<PrintLayout
+  title="Enclosure Card — Print"
+  cardWidth="5in" cardHeight="3.5in"
+  toolbarHint="5 × 3.5 in · Landscape · Double-sided"
+>
+
+  <div class="toolbar-controls" slot="toolbar-controls">
+    <div class="seg-control">
+      <button class="seg-btn active" id="btnFront" onclick="showFace('front')">Front</button>
+      <button class="seg-btn"        id="btnBack"  onclick="showFace('back')">Back</button>
+    </div>
+  </div>
+
+  <!-- ── Flip container ── -->
+  <div class="flip-container" id="flipContainer" onclick="toggleFlip()">
+    <div class="flipper" id="flipper">
+
+      <!-- ████ FRONT ████ -->
+      <div class="face front">
+        <div class="card">
+          <div class="accent-bar"></div>
+
+          <div class="front-body">
+
+            <!-- Ceremony column -->
+            <div class="front-col">
+              <div class="col-eyebrow">Ceremony</div>
+              <div class="col-venue-name">{ceremonyVenue?.name ?? 'Ceremony Venue'}</div>
+              <div class="col-time">{ceremonyTime}</div>
+              {ceremonyVenue?.address_line1 && (
+                <div class="col-addr">
+                  {ceremonyVenue.address_line1}<br/>
+                  {ceremonyVenue.city}
+                </div>
+              )}
+              {ceremonyVenue?.maps_url && (
+                <a class="col-maps no-print" href={ceremonyVenue.maps_url} target="_blank">↗ Directions</a>
+              )}
+            </div>
+
+            <div class="col-divider"></div>
+
+            <!-- Reception column -->
+            <div class="front-col">
+              <div class="col-eyebrow">Reception</div>
+              <div class="col-venue-name">{receptionVenue?.name ?? 'Reception Venue'}</div>
+              <div class="col-time">Cocktails {receptionTime}</div>
+              {receptionVenue?.address_line1 && (
+                <div class="col-addr">
+                  {receptionVenue.address_line1}<br/>
+                  {receptionVenue.city}
+                </div>
+              )}
+              {receptionVenue?.maps_url && (
+                <a class="col-maps no-print" href={receptionVenue.maps_url} target="_blank">↗ Directions</a>
+              )}
+            </div>
+
+          </div>
+
+          <div class="front-footer">
+            <Image src={StackedImg} class="footer-logo" alt="" />
+            <span class="footer-dot">✦</span>
+            <span class="footer-date">{weddingDate}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ████ BACK ████ -->
+      <div class="face back">
+        <div class="card" style="position:relative;">
+          <div class="accent-bar"></div>
+
+          <CardWatermark opacity={0.04} size={110} />
+
+          <div class="back-body">
+
+            <!-- Left column: Dress Code + Hotel -->
+            <div class="back-col">
+              <div class="back-section">
+                <div class="back-label">Dress Code</div>
+                <div class="back-value">{dressCode}</div>
+              </div>
+
+              {hotel && (
+                <div class="back-section">
+                  <div class="back-label">Accommodation</div>
+                  <div class="back-value">{hotel.name}</div>
+                  {(hotel.address_line1 || hotel.city) && (
+                    <div class="back-sub">
+                      {hotel.address_line1}{hotel.city ? `, ${hotel.city}` : ''}
+                    </div>
+                  )}
+                  {hotel.website && (
+                    <a class="back-link no-print" href={hotel.website} target="_blank">{hotel.website.replace(/^https?:\/\//, '')}</a>
+                  )}
+                  {hotel.website && (
+                    <div class="back-sub print-only">{hotel.website.replace(/^https?:\/\//, '')}</div>
+                  )}
+                </div>
+              )}
+              <div class="back-section">
+                <div class="back-label">RSVP By</div>
+                <div class="back-value">{rsvpDeadline}</div>
+              </div>
+            </div>
+
+            <div class="col-divider"></div>
+
+            <!-- Right column: RSVP + Website -->
+            <div class="back-col">
+              <div class="qr-row">
+                <QRCodeWidget url={BASE_URL} size={90} label="Visit Our Website" />
+                <div class="qr-text">
+                  <p class="back-label qr-label">Wedding Website</p>
+                  <a class="back-link qr-url no-print" href={websiteUrl} target="_blank">{websiteUrl}</a>
+                  <span class="back-sub print-only">{websiteUrl}</span>
+                  <p class="back-sub qr-sub">RSVP online or by mail</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="back-footer">
+            <Hashtag tag={settings.hashtag} class="back-hashtag" />
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /flipper -->
+  </div><!-- /flip-container -->
+
+</PrintLayout>
+
+<script is:inline src="/scripts/enclosure-preview.js"></script>

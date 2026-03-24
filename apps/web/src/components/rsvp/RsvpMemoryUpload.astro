@@ -1,0 +1,313 @@
+---
+// rsvp/RsvpMemoryUpload.astro — photo/memory upload dropzone UI + lightbox + JS init
+
+interface Props {
+  /** The id given to the .dz-area element — e.g. "dz-new" or "dz-existing" */
+  dzId:        string;
+  /** The id given to the thumb grid element */
+  thumbGridId: string;
+  /** The id given to the upload submit button */
+  submitBtnId: string;
+  /** The id given to the upload status <p> */
+  statusId:    string;
+  /** The id given to the wrapping .memory-upload-section div */
+  sectionId:   string;
+  /** Whether the section starts visible */
+  visible?:    boolean;
+  /** RSVP token — required when visible=true (already-confirmed auto-init) */
+  token?:      string;
+}
+
+const {
+  dzId,
+  thumbGridId,
+  submitBtnId,
+  statusId,
+  sectionId,
+  visible = false,
+  token   = '',
+} = Astro.props;
+---
+
+<div class:list={['memory-upload-section', { visible }]} id={sectionId}>
+  <div class="memory-upload-header">
+    <span class="memory-upload-eyebrow">Share a Memory</span>
+    <p class="memory-upload-desc">
+      Drop your photos here and we'll add them to the gallery after the wedding.
+      Up to 10 photos — drag &amp; drop, click to browse, or paste.
+    </p>
+  </div>
+  <div class="dz-area" id={dzId}>
+    <span class="dz-msg-icon">📷</span>
+    <span class="dz-msg-main">Drag &amp; drop photos here</span>
+    <span class="dz-msg-sub">or <u>browse</u> · paste from clipboard</span>
+  </div>
+  <div class="thumb-grid" id={thumbGridId}></div>
+  <div class="memory-upload-actions">
+    <button class="submit-btn" id={submitBtnId} type="button">
+      <span class="btn-text">Upload Photos</span>
+      <span class="btn-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>
+    </button>
+    <p class="upload-status" id={statusId}></p>
+  </div>
+</div>
+
+<!-- Upload lightbox — shared state, one dialog per page -->
+<dialog class="ulb" id="upload-lightbox" aria-label="Photo viewer">
+  <div class="ulb-shell">
+    <button class="ulb-close" id="ulb-close" aria-label="Close">✕</button>
+    <button class="ulb-prev"  id="ulb-prev"  aria-label="Previous">‹</button>
+    <button class="ulb-next"  id="ulb-next"  aria-label="Next">›</button>
+    <div class="ulb-content">
+      <img class="ulb-img" id="ulb-img" src="" alt="" />
+      <div class="ulb-meta">
+        <p class="ulb-name"    id="ulb-name"></p>
+        <p class="ulb-counter" id="ulb-counter"></p>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script is:inline define:vars={{ dzId, token, initVisible: visible }}>
+  var _uploadAbort = null;
+
+  document.addEventListener('astro:page-load', function () {
+    if (_uploadAbort) _uploadAbort.abort();
+    _uploadAbort = new AbortController();
+    var sig = { signal: _uploadAbort.signal };
+
+    // ── Lightbox ────────────────────────────────────────────
+    var lbFiles   = [];
+    var lbCurrent = 0;
+
+    function openUploadLightbox(files, index) {
+      lbFiles   = files;
+      lbCurrent = index;
+      renderLightboxSlide();
+      document.getElementById('upload-lightbox').showModal();
+    }
+    function closeUploadLightbox() {
+      document.getElementById('upload-lightbox').close();
+    }
+    function renderLightboxSlide() {
+      var slide = lbFiles[lbCurrent];
+      var img   = document.getElementById('ulb-img');
+      img.src   = slide.objectUrl;
+      img.alt   = slide.name;
+      document.getElementById('ulb-name').textContent    = slide.name;
+      document.getElementById('ulb-counter').textContent = (lbCurrent + 1) + ' / ' + lbFiles.length;
+      img.style.opacity = '0';
+      requestAnimationFrame(function () {
+        img.style.transition = 'opacity 0.2s ease';
+        img.style.opacity    = '1';
+      });
+    }
+
+    document.getElementById('ulb-close')?.addEventListener('click', closeUploadLightbox, sig);
+    document.getElementById('ulb-prev')?.addEventListener('click', function () {
+      lbCurrent = (lbCurrent - 1 + lbFiles.length) % lbFiles.length;
+      renderLightboxSlide();
+    }, sig);
+    document.getElementById('ulb-next')?.addEventListener('click', function () {
+      lbCurrent = (lbCurrent + 1) % lbFiles.length;
+      renderLightboxSlide();
+    }, sig);
+    document.getElementById('upload-lightbox')?.addEventListener('click', function (e) {
+      if (e.target === document.getElementById('upload-lightbox')) closeUploadLightbox();
+    }, sig);
+    document.getElementById('upload-lightbox')?.addEventListener('close', function () {
+      document.body.style.overflow = '';
+    }, sig);
+    document.addEventListener('keydown', function (e) {
+      var lb = document.getElementById('upload-lightbox');
+      if (!lb?.open) return;
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); lbCurrent = (lbCurrent - 1 + lbFiles.length) % lbFiles.length; renderLightboxSlide(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); lbCurrent = (lbCurrent + 1) % lbFiles.length; renderLightboxSlide(); }
+    }, sig);
+
+    // ── Dropzone init — exposed globally so RsvpCard can call it after submit ──
+    window.initDropzone = async function (containerId, tok) {
+      var mod      = await import('/node_modules/dropzone/dist/dropzone.mjs');
+      var Dropzone = mod.default;
+      Dropzone.autoDiscover = false;
+
+      var el = document.getElementById(containerId);
+      if (!el || el._dz) return;
+
+      var thumbGridId = containerId === 'dz-existing' ? 'thumb-grid-existing' : 'thumb-grid-new';
+      var submitBtnId = containerId === 'dz-existing' ? 'upload-submit-existing' : 'upload-submit-new';
+      var statusId    = containerId === 'dz-existing' ? 'upload-status-existing'  : 'upload-status-new';
+      var thumbGrid   = document.getElementById(thumbGridId);
+      var submitBtn   = document.getElementById(submitBtnId);
+      var statusEl    = document.getElementById(statusId);
+      var fileMap     = new Map();
+
+      function makeThumbItem(file, meta, index) {
+        var btn       = document.createElement('button');
+        btn.type      = 'button';
+        btn.className = 'thumb-item' + (meta.status === 'success' ? ' thumb-success' : meta.status === 'error' ? ' thumb-error' : '');
+        btn.title     = file.name;
+
+        var img = document.createElement('img');
+        img.src = meta.objectUrl; img.alt = file.name;
+        btn.appendChild(img);
+
+        var overlay  = document.createElement('div');
+        overlay.className = 'thumb-overlay';
+        var fname    = document.createElement('span');
+        fname.className   = 'thumb-filename';
+        fname.textContent = file.name.length > 16 ? file.name.slice(0, 13) + '\u2026' : file.name;
+        overlay.appendChild(fname);
+        btn.appendChild(overlay);
+
+        if (meta.status === 'success') {
+          var ok = document.createElement('span');
+          ok.className = 'thumb-badge thumb-badge--ok'; ok.textContent = '✓';
+          btn.appendChild(ok);
+        }
+        if (meta.status === 'error') {
+          var err = document.createElement('span');
+          err.className = 'thumb-badge thumb-badge--err'; err.textContent = '!';
+          btn.appendChild(err);
+        }
+
+        var rmv = document.createElement('button');
+        rmv.type = 'button'; rmv.className = 'thumb-remove';
+        rmv.setAttribute('aria-label', 'Remove ' + file.name);
+        rmv.textContent = '✕';
+        btn.appendChild(rmv);
+
+        btn.addEventListener('click', function (e) {
+          if (e.target.classList.contains('thumb-remove') || e.target.closest('.thumb-remove')) return;
+          var allEntries = Array.from(fileMap.entries());
+          openUploadLightbox(allEntries.map(function ([f, m]) { return { objectUrl: m.objectUrl, name: f.name }; }), index);
+        });
+        rmv.addEventListener('click', function (e) {
+          e.stopPropagation();
+          URL.revokeObjectURL(meta.objectUrl);
+          fileMap.delete(file);
+          dz.removeFile(file);
+          rebuildGrid();
+        });
+        return btn;
+      }
+
+      function rebuildGrid() {
+        while (thumbGrid.firstChild) thumbGrid.removeChild(thumbGrid.firstChild);
+        Array.from(fileMap.entries()).forEach(function ([file, meta], index) {
+          thumbGrid.appendChild(makeThumbItem(file, meta, index));
+        });
+        thumbGrid.style.display = fileMap.size > 0 ? 'grid' : 'none';
+      }
+
+      var dz = new Dropzone(el, {
+        url: '/api/photo/upload', autoProcessQueue: false, uploadMultiple: false,
+        maxFiles: 10, maxFilesize: 10, acceptedFiles: 'image/jpeg,image/png,image/heic,image/webp',
+        clickable: true, createImageThumbnails: false, previewsContainer: false,
+        hiddenInputContainer: document.body,
+        dictFileTooBig:       'Too large ({{filesize}}MB). Max 10MB.',
+        dictInvalidFileType:  'Only JPEG, PNG, HEIC or WebP.',
+        dictMaxFilesExceeded: 'Maximum 10 photos.',
+      });
+      el._dz = dz;
+
+      dz.on('addedfile', function (file) {
+        fileMap.set(file, { objectUrl: URL.createObjectURL(file), status: 'queued' });
+        rebuildGrid();
+      });
+
+      document.addEventListener('paste', function (e) {
+        var section = el.closest('.memory-upload-section');
+        if (!section?.classList.contains('visible')) return;
+        Array.from(e.clipboardData?.items ?? []).forEach(function (item) {
+          if (item.type.startsWith('image/')) { var f = item.getAsFile(); if (f) dz.addFile(f); }
+        });
+      });
+
+      submitBtn?.addEventListener('click', async function () {
+        var pending = Array.from(fileMap.entries()).filter(function ([, m]) { return m.status !== 'success'; });
+        if (!pending.length) { statusEl.textContent = 'Please add at least one photo.'; statusEl.className = 'upload-status error'; return; }
+        submitBtn.classList.add('loading');
+        statusEl.textContent = ''; statusEl.className = 'upload-status';
+        var uploaded = 0, failed = 0;
+        await Promise.all(pending.map(async function ([file, meta]) {
+          var fd = new FormData(); fd.append('file', file); fd.append('token', tok);
+          try {
+            var res  = await fetch('/api/photo/upload', { method: 'POST', body: fd });
+            var data = await res.json();
+            if (data.success) { uploaded++; meta.status = 'success'; }
+            else              { failed++;   meta.status = 'error';   }
+          } catch { failed++; meta.status = 'error'; }
+          rebuildGrid();
+        }));
+        submitBtn.classList.remove('loading');
+        if (failed === 0) {
+          submitBtn.style.display = 'none';
+          statusEl.textContent = uploaded + ' photo' + (uploaded !== 1 ? 's' : '') + ' submitted! They\'ll appear in the gallery after approval.';
+          statusEl.className   = 'upload-status success';
+          if (typeof showToast === 'function') showToast(uploaded + ' photo' + (uploaded !== 1 ? 's' : '') + ' uploaded!');
+        } else {
+          statusEl.textContent = uploaded + ' uploaded, ' + failed + ' failed — remove the errored ones and retry.';
+          statusEl.className   = 'upload-status error';
+        }
+      });
+    };
+
+    // Auto-init for already-confirmed guests (visible=true + token provided)
+    if (initVisible && token) {
+      window.initDropzone(dzId, token);
+    }
+  });
+</script>
+
+<style>
+/* ══ MEMORY UPLOAD SECTION ════════════════════════════════ */
+.memory-upload-section {
+  display: none; flex-direction: column; gap: 20px;
+  padding: 28px 32px 32px;
+}
+.memory-upload-section.visible { display: flex; }
+
+.memory-upload-header { display: flex; flex-direction: column; gap: 8px; }
+.memory-upload-eyebrow {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 3.5px; text-transform: uppercase; color: var(--cs);
+}
+.memory-upload-desc {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--muted); line-height: 1.7;
+}
+
+.memory-upload-actions {
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.upload-status {
+  font-family: var(--fb); font-size: 12px; font-weight: 400;
+  text-align: center; min-height: 18px;
+  color: var(--muted);
+}
+.upload-status.success { color: color-mix(in srgb, var(--cp) 70%, #2a6e4a); }
+.upload-status.error   { color: #c0392b; }
+
+/* ══ DROPZONE DROP ZONE ═══════════════════════════════════ */
+.dz-area {
+  border: 2px dashed color-mix(in srgb, var(--cs) 38%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--cs) 4%, var(--warm));
+  min-height: 300px;
+  padding: 24px 20px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+  cursor: pointer; text-align: center;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.dz-area:hover,
+.dz-area.dz-drag-hover {
+  border-color: var(--cs);
+  background: color-mix(in srgb, var(--cs) 10%, var(--warm));
+}
+.dz-msg-icon  { font-size: 26px; opacity: 0.5; line-height: 1; }
+.dz-msg-main  { font-family: var(--fb); font-size: 14px; font-weight: 500; color: var(--dark); }
+.dz-msg-sub   { font-family: var(--fb); font-size: 11px; font-weight: 300; color: var(--muted); }
+.dz-msg-sub u { color: var(--cs); text-underline-offset: 2px; font-weight: 500; }
+</style>

@@ -1,0 +1,64 @@
+---
+export const prerender = true;
+// apps/web/src/pages/gallery.astro
+import Layout          from '../layouts/Layout.astro';
+import PageHeader      from '../components/PageHeader.astro';
+import GalleryGrid     from '../components/gallery/GalleryGrid.astro';
+import GalleryLightbox from '../components/gallery/GalleryLightbox.astro';
+import { getSettings, getGalleryPhotos } from '../lib/directus';
+import { formatDate } from '../lib/utils/format';
+import Hashtag from '~/components/Hashtag.astro';
+
+const [settings, photos] = await Promise.all([getSettings(), getGalleryPhotos()]);
+const groom = settings.groom?.first_name ?? 'Aldrin';
+const bride  = settings.bride?.first_name ?? 'Christine';
+const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+
+const placeholders = Array.from({ length: 9 }, (_, i) => ({
+  id: `placeholder-${i}`, title: null, description: null, image: null, sort: i,
+}));
+
+const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders : []);
+---
+
+<Layout
+  title={`Gallery — ${groom} & ${bride}`}
+  colorPrimary={settings.color_primary}
+  colorSecondary={settings.color_secondary}
+  activeNav="gallery"
+>
+
+  <div class="page-wide gallery-page" id="photos">
+
+    <PageHeader
+      groomName={groom}
+      brideName={bride}
+      eyebrow="Memories together"
+      date={`Our Gallery · ${weddingDateLabel}`}
+    />
+
+    {items.length > 0 && <GalleryGrid items={items} />}
+
+    {photos.length === 0 && (
+      <p class="gallery-empty">Photos will be added soon. Check back after the wedding!</p>
+    )}
+
+  </div>
+
+  <Fragment slot="footer-extra">
+    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+  </Fragment>
+
+  <GalleryLightbox slot="overlay" />
+
+</Layout>
+
+<style>
+.gallery-page { display: flex; flex-direction: column; align-items: center; }
+.gallery-empty {
+  font-family: var(--fb); font-size: 14px; font-weight: 300;
+  color: var(--muted); text-align: center; margin-top: 16px;
+  font-style: italic;
+}
+</style>

@@ -1,0 +1,120 @@
+---
+// rsvp/RsvpGuestRow.astro — single guest accordion row with meal & dietary fields
+
+interface Props {
+  guestId:  string;
+  name:     string;
+  meal:     string;   // current meal_preference value
+  dietary:  string;   // current dietary_restrictions value
+}
+
+const { guestId, name, meal, dietary } = Astro.props;
+---
+
+<div class="guest-accordion" id={`accordion-${guestId}`} data-guest-id={guestId}>
+
+  <button
+    type="button"
+    class="accordion-trigger"
+    id={`trigger-${guestId}`}
+    aria-expanded="false"
+    aria-controls={`panel-${guestId}`}
+    onclick={`toggleAccordion('${guestId}')`}
+  >
+    <div class="accordion-left">
+      <span class="accordion-name">{name}</span>
+      <span class="accordion-status" id={`status-${guestId}`}>Awaiting response</span>
+    </div>
+    <span class="accordion-chevron" id={`chevron-${guestId}`}>›</span>
+  </button>
+
+  <div class="accordion-panel" id={`panel-${guestId}`} role="region" aria-labelledby={`trigger-${guestId}`}>
+    <div class="accordion-content">
+      <div class="accordion-inner">
+
+        <!-- Response dropdown -->
+        <div class="field">
+          <label class="field-label" for={`response-${guestId}`}>Response</label>
+          <div class="field-select-wrap">
+            <select id={`response-${guestId}`} onchange={`onResponseChange('${guestId}', this.value)`}>
+              <option value="" disabled selected>Select a response…</option>
+              <option value="attending">Joyfully accepts</option>
+              <option value="declined">Regretfully declines</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Attending-only fields -->
+        <div class="attending-fields" id={`attending-fields-${guestId}`}>
+
+          <!-- Attendance type -->
+          <div class="field">
+            <label class="field-label">Attending</label>
+            <div class="card-option-list">
+              <label class="card-option selected">
+                <input type="radio" name={`attendance_type_${guestId}`} value="both" checked />
+                <span class="card-option-icon">⛪ 🥂</span>
+                <span class="card-option-body">
+                  <span class="card-option-title">Ceremony & Reception</span>
+                  <span class="card-option-desc">Joining us for the full celebration</span>
+                </span>
+                <span class="card-option-check">✓</span>
+              </label>
+              <label class="card-option">
+                <input type="radio" name={`attendance_type_${guestId}`} value="ceremony" />
+                <span class="card-option-icon">⛪</span>
+                <span class="card-option-body">
+                  <span class="card-option-title">Ceremony Only</span>
+                  <span class="card-option-desc">The Nuptial Mass at 2:00 PM</span>
+                </span>
+                <span class="card-option-check">✓</span>
+              </label>
+              <label class="card-option">
+                <input type="radio" name={`attendance_type_${guestId}`} value="reception" />
+                <span class="card-option-icon">🥂</span>
+                <span class="card-option-body">
+                  <span class="card-option-title">Reception Only</span>
+                  <span class="card-option-desc">Evening dinner &amp; dancing</span>
+                </span>
+                <span class="card-option-check">✓</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Meal preference -->
+          <div class="field">
+            <label class="field-label" for={`meal-${guestId}`}>Meal Preference</label>
+            <div class="field-select-wrap">
+              <select id={`meal-${guestId}`}>
+                <option value="standard"   selected={meal === 'standard'}>🍽 Standard</option>
+                <option value="vegetarian" selected={meal === 'vegetarian'}>🥦 Vegetarian</option>
+                <option value="vegan"      selected={meal === 'vegan'}>🌱 Vegan</option>
+                <option value="halal"      selected={meal === 'halal'}>☪️ Halal</option>
+                <option value="kids_meal"  selected={meal === 'kids_meal'}>🧒 Kids Meal</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Dietary restrictions -->
+          <div class="field">
+            <label class="field-label" for={`dietary-${guestId}`}>
+              Dietary Restrictions <span class="optional">optional</span>
+            </label>
+            <input
+              type="text"
+              id={`dietary-${guestId}`}
+              placeholder="e.g. nut allergy, gluten free…"
+              value={dietary}
+              autocomplete="off"
+            />
+          </div>
+
+        </div>
+        <!-- /attending-fields -->
+
+      </div><!-- /accordion-inner -->
+    </div>
+  </div>
+  <!-- /accordion-panel -->
+
+</div>

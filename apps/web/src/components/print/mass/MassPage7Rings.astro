@@ -1,0 +1,70 @@
+---
+// MassPage7Rings.astro — Page 7: Blessing & Exchange of Rings + Eucharist intro
+import CardWatermark from '@components/CardWatermark.astro';
+import StackedImg    from '@assets/stacked.png';
+import { Image } from 'astro:assets';
+
+interface Props {
+  groomFirst: string;
+  brideFirst: string;
+}
+
+const { groomFirst, brideFirst } = Astro.props;
+---
+
+<div class="booklet-page" style="position:relative;">
+  <div class="accent-bar"></div>
+  <CardWatermark opacity={0.03} size={180} />
+
+  <div class="page-content">
+
+    <div class="rubric">Blessing &amp; Exchange of Rings</div>
+    <div class="priest-label">Priest</div>
+    <div class="blessing-text">Bless, O Lord, these rings which we are blessing in your name, so that those who wear them, keeping faith with each other, may remain faithful in peace and in your will, and may live always in mutual charity. Through Christ our Lord.</div>
+    <div class="response-label">All</div>
+    <div class="response">Amen.</div>
+
+    <div class="vow-block" style="margin-top: 12px;">
+      <div class="vow-speaker">{groomFirst}</div>
+      <div class="vow-text">{brideFirst}, receive this ring as a sign of my love and fidelity. In the name of the Father, and of the Son, and of the Holy Spirit.</div>
+    </div>
+    <div class="vow-block">
+      <div class="vow-speaker">{brideFirst}</div>
+      <div class="vow-text">{groomFirst}, receive this ring as a sign of my love and fidelity. In the name of the Father, and of the Son, and of the Holy Spirit.</div>
+    </div>
+
+    <div class="content-rule">
+      <div class="content-rule-line"></div>
+      <span class="content-rule-gem">✦</span>
+      <div class="content-rule-line"></div>
+    </div>
+
+    <div class="rubric">Unity Candle</div>
+    <div class="priest">The couple lights the Unity Candle, symbolizing the joining of two families and lives into one.</div>
+
+    <div class="rubric">Universal Prayer</div>
+    <div class="priest">The faithful are invited to respond to the petitions for {groomFirst} and {brideFirst}, their families, and all gathered here.</div>
+    <div class="response-label">Response</div>
+    <div class="response">Lord, hear our prayer.</div>
+
+    <div class="content-rule">
+      <div class="content-rule-line"></div>
+      <span class="content-rule-gem">✦</span>
+      <div class="content-rule-line"></div>
+    </div>
+
+    <div class="rubric">Liturgy of the Eucharist</div>
+    <div class="priest">The Liturgy of the Eucharist follows with the Preparation of Gifts, the Eucharistic Prayer, the Lord's Prayer, and Holy Communion.</div>
+    <div class="priest-label">Priest</div>
+    <div class="priest">Pray, brothers and sisters, that my sacrifice and yours may be acceptable to God, the almighty Father.</div>
+    <div class="response-label">All</div>
+    <div class="response">May the Lord accept the sacrifice at your hands for the praise and glory of his name, for our good and the good of all his holy Church.</div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <Image src={StackedImg} class="footer-logo" alt="" />
+    <span class="footer-page">7</span>
+  </div>
+  <div class="accent-bar-bottom"></div>
+</div>

@@ -1,0 +1,106 @@
+---
+import type { DirectusFiles } from '../../lib/types';
+import { assetUrl } from '../../lib/utils/format';
+
+interface GalleryItem {
+  id: string;
+  title?: string | null;
+  description?: string | null;
+  image?: DirectusFiles | null;
+  sort?: number | null;
+}
+interface Props {
+  items: GalleryItem[];
+}
+const { items } = Astro.props;
+---
+
+<div class="gallery-grid" id="gallery-grid">
+  {items.map((photo, i) => (
+    <button
+      class="gallery-item"
+      data-index={i}
+      data-src={photo.image ? assetUrl(photo.image) : null}
+      data-title={photo.title}
+      data-desc={photo.description}
+      onclick="openLightbox(this)"
+      aria-label={photo.title ?? `Photo ${i + 1}`}
+    >
+      {photo.image ? (
+        <img
+          src={assetUrl(photo.image, { width: 600, height: 600, fit: 'cover' })}
+          alt={photo.title ?? `Photo ${i + 1}`}
+          loading="lazy"
+          decoding="async"
+        />
+      ) : (
+        <div class="gallery-placeholder">
+          <span class="gallery-placeholder-icon">📷</span>
+        </div>
+      )}
+      <div class="gallery-overlay">
+        {photo.title && <p class="gallery-item-title">{photo.title}</p>}
+      </div>
+    </button>
+  ))}
+</div>
+
+<style>
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px; width: 100%;
+  opacity: 0; animation: fadeUp 0.8s 0.2s ease forwards;
+}
+
+.gallery-item {
+  position: relative; aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden; cursor: pointer;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  background: none; padding: 0;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.gallery-item:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-hover);
+  z-index: 1;
+}
+
+.gallery-item img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; transition: transform 0.4s ease;
+}
+
+.gallery-item:hover img { transform: scale(1.05); }
+
+.gallery-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 18%, var(--warm)),
+    color-mix(in srgb, var(--cs) 14%, var(--warm))
+  );
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; opacity: 0.5;
+}
+
+.gallery-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(26,26,46,0.6) 100%);
+  display: flex; align-items: flex-end; padding: 12px;
+  opacity: 0; transition: opacity 0.25s ease;
+}
+
+.gallery-item:hover .gallery-overlay { opacity: 1; }
+
+.gallery-item-title {
+  font-family: var(--fd); font-size: 14px; font-style: italic;
+  color: #fff; line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+</style>

@@ -1,0 +1,38 @@
+{
+  "name": "ac_wedding",
+  "version": "1.0.0",
+  "description": "Catholic Wedding Planner — Aldrin & Christine, September 26, 2026",
+  "private": true,
+  "scripts": {
+    "directus:start": "docker compose -f .docker/compose.yaml up -d",
+    "directus:stop": "docker compose -f .docker/compose.yaml down",
+    "directus:logs": "docker compose -f .docker/compose.yaml logs",
+    "directus:cli": "docker compose -f .docker/compose.yaml exec -it directus /bin/sh",
+    "db:exec": "docker compose -f .docker/compose.yaml exec -it database psql",
+    "directus:reset": "docker compose -f .docker/compose.yaml down -v",
+    "directus:build": "docker compose -f .docker/compose.yaml build directus",
+    "sync:pull": "docker compose -f .docker/compose.yaml exec directus directus-sync pull",
+    "sync:push": "docker compose -f .docker/compose.yaml exec directus directus-sync push",
+    "seed": "pnpm --filter seed seed",
+    "seed:settings": "pnpm --filter seed seed:settings",
+    "seed:budget": "pnpm --filter seed seed:budget",
+    "seed:checklist": "pnpm --filter seed seed:checklist",
+    "seed:ceremony": "pnpm --filter seed seed:ceremony",
+    "seed:prep": "pnpm --filter seed seed:prep",
+    "rsvp:dev": "pnpm --filter rsvp dev",
+    "rsvp:build": "pnpm --filter rsvp build",
+    "emoji:build": "pnpm --filter directus-extension-emoji-picker build",
+    "emoji:dev": "pnpm --filter directus-extension-emoji-picker dev",
+    "emoji:lint": "pnpm --filter directus-extension-emoji-picker lint",
+    "emoji:format": "pnpm --filter directus-extension-emoji-picker format",
+    "email:preview": "bash scripts/preview-email.sh",
+    "test": "pnpm --filter rsvp test",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.32.1"
+}

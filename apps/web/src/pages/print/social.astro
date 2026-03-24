@@ -1,0 +1,276 @@
+---
+export const prerender = false;
+// src/pages/print/social.astro
+// Preview + download hub for social-media cards.
+// Actual images served from /api/social/[format].png
+
+import PrintLayout from '@layouts/PrintLayout.astro';
+import { getGallery } from '@lib/directus';
+import '../../styles/social.css';
+
+const gallery = await getGallery();
+// Only items that have an image attached
+const photos = gallery.filter(g => g.image?.id);
+
+const initialPhotoId = Astro.url.searchParams.get('photo') ?? '';
+const initialTheme   = Astro.url.searchParams.get('theme') === 'dark' ? 'dark' : 'light';
+const initialVariant = Astro.url.searchParams.get('variant') ?? 'save-the-date';
+
+// Square-format compositions (all 1080×1080) — shown in one grid.
+// The first one ('square') responds to the Card variant selector.
+const squareCards = [
+  {
+    format: 'square',
+    label:    'Centered',
+    meta:     '1080 × 1080 px',
+    platform: 'Instagram · Facebook Feed',
+    previewW: 360,
+    previewH: 360,
+    variantAware: true,
+  },
+  {
+    format: 'split',
+    label:    'Split Panel',
+    meta:     '1080 × 1080 px',
+    platform: 'Instagram · Facebook Feed',
+    previewW: 360,
+    previewH: 360,
+    variantAware: false,
+  },
+  {
+    format: 'vignette',
+    label:    'Vignette',
+    meta:     '1080 × 1080 px',
+    platform: 'Instagram · Facebook Feed',
+    previewW: 360,
+    previewH: 360,
+    variantAware: false,
+  },
+  {
+    format: 'bordered',
+    label:    'Bordered',
+    meta:     '1080 × 1080 px',
+    platform: 'Instagram · Facebook Feed',
+    previewW: 360,
+    previewH: 360,
+    variantAware: false,
+  },
+] as const;
+
+// Special-format cards — different aspect ratios / platform targets.
+const specialCards = [
+  {
+    format: 'dm',
+    label:    'DM Card',
+    meta:     '1200 × 630 px',
+    platform: 'Facebook · WhatsApp · iMessage',
+    previewW: 400,
+    previewH: 210,
+    variantAware: false,
+  },
+  {
+    format: 'story',
+    label:    'Story',
+    meta:     '1080 × 1920 px',
+    platform: 'Instagram · Facebook Stories',
+    previewW: 360,
+    previewH: 640,
+    variantAware: false,
+  },
+] as const;
+
+// Content variants — determines what the card says (square only).
+const variants = [
+  { value: 'save-the-date',  label: 'Save the Date'   },
+  { value: 'engagement',     label: 'Engagement'       },
+  { value: 'rsvp-reminder',  label: 'RSVP Reminder'   },
+  { value: 'countdown',      label: 'Countdown'        },
+  { value: 'wedding-morning',label: 'Wedding Morning'  },
+  { value: 'thank-you',      label: 'Thank You'        },
+] as const;
+
+function cardSrc(format: string, photoId: string, theme: string, variant: string) {
+  const params = new URLSearchParams();
+  if (photoId) params.set('photo', photoId);
+  if (theme === 'dark') params.set('theme', 'dark');
+  if (variant !== 'save-the-date') params.set('variant', variant);
+  const qs = params.toString();
+  return `/api/social/${format}.png${qs ? `?${qs}` : ''}`;
+}
+---
+
+<PrintLayout
+  title="Social Cards — Aldrin & Christine"
+  toolbarHint="Right-click → Save image · or use the Download button"
+>
+
+  <!-- Toolbar controls: theme toggle + variant picker + photo picker -->
+  <div class="toolbar-controls" slot="toolbar-controls">
+    <div class="seg-control">
+      <button class="seg-btn" class:list={[{ active: initialTheme === 'light' }]} id="btn-light" onclick="setTheme('light')">Light</button>
+      <button class="seg-btn" class:list={[{ active: initialTheme === 'dark'  }]} id="btn-dark"  onclick="setTheme('dark')">Dark</button>
+    </div>
+
+    <div class="photo-picker-wrap">
+      <label class="photo-picker-label" for="variant-select">Card</label>
+      <select id="variant-select" class="photo-select">
+        {variants.map(v => (
+          <option value={v.value} selected={v.value === initialVariant || undefined}>
+            {v.label}
+          </option>
+        ))}
+      </select>
+    </div>
+
+    <div class="photo-picker-wrap">
+      <label class="photo-picker-label" for="photo-select">Photo</label>
+      <div class="photo-picker-row">
+        <select id="photo-select" class="photo-select">
+          <option value="">None (gradient)</option>
+          {photos.map(g => (
+            <option
+              value={g.image!.id}
+              selected={g.image!.id === initialPhotoId || undefined}
+            >
+              {g.title ?? 'Untitled'}
+            </option>
+          ))}
+        </select>
+        {initialPhotoId && (
+          <img
+            id="photo-thumb"
+            class="photo-thumb"
+            src={`/api/cms/assets/${initialPhotoId}?width=48&height=48&fit=cover`}
+            width="24"
+            height="24"
+            alt=""
+          />
+        )}
+        {!initialPhotoId && <div id="photo-thumb" class="photo-thumb-empty" />}
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:40px; width:100%; padding-bottom:40px;">
+
+    {photos.length === 0 && (
+      <p class="photo-note">
+        <strong>No photos in gallery yet.</strong> Once you have prenup photos, upload them to
+        Directus → Gallery and they will appear in the picker above.
+      </p>
+    )}
+
+    <!-- Square-format compositions (4 layouts, all 1080×1080) -->
+    <div>
+      <p class="section-label">Square Compositions · 1080 × 1080</p>
+      <div class="social-grid social-grid--4">
+        {squareCards.map(card => (
+          <div class="social-tile" data-variant-aware={card.variantAware ? 'true' : undefined}>
+            <p class="social-tile-label">{card.label}</p>
+            <img
+              class="social-preview"
+              data-format={card.format}
+              data-variant-aware={card.variantAware ? 'true' : undefined}
+              src={cardSrc(card.format, initialPhotoId, initialTheme, card.variantAware ? initialVariant : 'save-the-date')}
+              width={card.previewW}
+              height={card.previewH}
+              alt={`${card.label} preview`}
+              loading="lazy"
+            />
+            <p class="social-meta">{card.platform}</p>
+            <div class="social-actions">
+              <a
+                class="btn-download"
+                data-format={card.format}
+                data-variant-aware={card.variantAware ? 'true' : undefined}
+                href={cardSrc(card.format, initialPhotoId, initialTheme, card.variantAware ? initialVariant : 'save-the-date')}
+                download
+              >Download</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <!-- Special formats (DM + Story) -->
+    <div>
+      <p class="section-label">Other Formats</p>
+      <div class="social-grid social-grid--3">
+        {specialCards.map(card => (
+          <div class="social-tile">
+            <p class="social-tile-label">{card.label}</p>
+            <img
+              class="social-preview"
+              data-format={card.format}
+              src={cardSrc(card.format, initialPhotoId, initialTheme, 'save-the-date')}
+              width={card.previewW}
+              height={card.previewH}
+              alt={`${card.label} preview`}
+              loading="lazy"
+            />
+            <p class="social-meta">{card.meta} · {card.platform}</p>
+            <div class="social-actions">
+              <a
+                class="btn-download"
+                data-format={card.format}
+                href={cardSrc(card.format, initialPhotoId, initialTheme, 'save-the-date')}
+                download
+              >Download</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+  </div>
+
+</PrintLayout>
+
+<script is:inline>
+  const photoSelect   = document.getElementById('photo-select');
+  const variantSelect = document.getElementById('variant-select');
+  const thumb         = document.getElementById('photo-thumb');
+  const previews      = document.querySelectorAll('img[data-format]');
+  const links         = document.querySelectorAll('a[data-format]');
+
+  let currentTheme = document.getElementById('btn-light').classList.contains('active') ? 'light' : 'dark';
+
+  function cardSrc(fmt, variantAware) {
+    const params = new URLSearchParams();
+    if (photoSelect.value) params.set('photo', photoSelect.value);
+    if (currentTheme === 'dark') params.set('theme', 'dark');
+    if (variantAware && variantSelect.value !== 'save-the-date') {
+      params.set('variant', variantSelect.value);
+    }
+    const qs = params.toString();
+    return `/api/social/${fmt}.png${qs ? `?${qs}` : ''}`;
+  }
+
+  function updateCards() {
+    previews.forEach(img => {
+      img.src = cardSrc(img.dataset.format, img.dataset.variantAware === 'true');
+    });
+    links.forEach(a => {
+      a.href = cardSrc(a.dataset.format, a.dataset.variantAware === 'true');
+    });
+    if (thumb) {
+      if (photoSelect.value) {
+        thumb.src = `/api/cms/assets/${photoSelect.value}?width=48&height=48&fit=cover`;
+        thumb.style.display = 'block';
+      } else {
+        thumb.style.display = 'none';
+      }
+    }
+  }
+
+  function setTheme(theme) {
+    currentTheme = theme;
+    document.getElementById('btn-light').classList.toggle('active', theme === 'light');
+    document.getElementById('btn-dark').classList.toggle('active',  theme === 'dark');
+    updateCards();
+  }
+  window.setTheme = setTheme;
+
+  photoSelect.addEventListener('change', updateCards);
+  variantSelect.addEventListener('change', updateCards);
+</script>

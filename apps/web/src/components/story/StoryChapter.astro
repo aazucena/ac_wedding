@@ -1,0 +1,111 @@
+---
+export interface Props {
+  headline: string;
+  icon: string;
+  title: string;
+  content: string;
+  imageUrl?: string;
+  reverse?: boolean;
+  animationDelay?: string;
+}
+
+const { headline, icon, title, content, imageUrl, reverse = false, animationDelay = '0.2s' } = Astro.props;
+---
+
+<div class={`chapter ${reverse ? 'chapter-reverse' : ''}`} style={`animation-delay: ${animationDelay}`}>
+  <div class="chapter-photo-placeholder">
+    {imageUrl
+      ? <img src={imageUrl} alt={title} class="chapter-photo" />
+      : <span>📷</span>
+    }
+  </div>
+  <div class="chapter-content">
+    <div class="chapter-badge">
+      <span class="chapter-icon">{icon}</span>
+      <span class="chapter-headline">{headline}</span>
+    </div>
+    <h2 class="chapter-title">{title}</h2>
+    <p class="chapter-body">{content}</p>
+  </div>
+</div>
+
+<style>
+.chapter {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  background: var(--ivory);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  position: relative;
+  opacity: 0; animation: fadeUp 0.8s ease forwards;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.chapter::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+
+.chapter:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+.chapter-photo-placeholder {
+  min-height: 260px;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--cp) 22%, var(--warm)),
+    color-mix(in srgb, var(--cs) 16%, var(--warm))
+  );
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; opacity: 0.45;
+  order: 0;
+}
+
+.chapter-photo {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; opacity: 1;
+}
+
+.chapter-reverse .chapter-photo-placeholder { order: 1; }
+.chapter-reverse .chapter-content          { order: 0; }
+
+.chapter-content {
+  padding: 44px 40px;
+  display: flex; flex-direction: column; justify-content: center; gap: 16px;
+}
+
+.chapter-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 28%, white),
+    color-mix(in srgb, var(--cs) 22%, white)
+  );
+  border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
+  border-radius: 999px; padding: 6px 16px;
+  align-self: flex-start;
+}
+
+.chapter-icon { font-size: 14px; }
+
+.chapter-headline {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase; color: var(--dark);
+}
+
+.chapter-title {
+  font-family: var(--fd); font-size: 30px;
+  font-weight: 300; font-style: italic; color: var(--dark); line-height: 1.1;
+}
+
+.chapter-body {
+  font-family: var(--fb); font-size: 15px; font-weight: 300;
+  color: var(--muted); line-height: 1.9;
+}
+
+@media (max-width: 700px) {
+  .chapter { grid-template-columns: 1fr; }
+  .chapter-photo-placeholder { min-height: 180px; order: 0 !important; }
+  .chapter-reverse .chapter-content { order: 1 !important; }
+  .chapter-content { padding: 28px 24px; }
+}
+</style>

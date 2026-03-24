@@ -1,0 +1,151 @@
+---
+// src/pages/game/upload.astro
+// Tokenless selfie upload page for reception guests playing "Find a Guest".
+// Tap a square → modal opens for that square's photo upload.
+// All collected photos are submitted together on the main form submit.
+
+import { getSettings, getPartyByToken } from '@lib/directus';
+import { makeGuestToken } from '@lib/game-token';
+import { formatDate } from '@lib/utils/format';
+import { DateTime } from 'luxon';
+import AccentMark from '@assets/accent_mark.png';
+import Lettermark from '@assets/lettermark.png';
+import { Image } from 'astro:assets';
+import Hashtag from '@components/Hashtag.astro';
+import SquareGrid from '@components/game/SquareGrid.astro';
+import IdentityModal from '@components/game/IdentityModal.astro';
+import UploadModal from '@components/game/UploadModal.astro';
+import '../../styles/upload-base.css';
+import '../../styles/upload-card.css';
+
+const settings   = await getSettings();
+const groomFirst = settings.groom?.first_name ?? 'Aldrin';
+const brideFirst = settings.bride?.first_name ?? 'Christine';
+const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+
+// Deadline check — compare current time against game_deadline (HH:mm) in the local timezone
+const TZ = 'America/Edmonton';
+const gameDeadline = settings.game_deadline ?? null;
+let deadlinePassed = false;
+let deadlineLabel  = '';
+if (gameDeadline) {
+  const now          = DateTime.now().setZone(TZ);
+  const weddingDate  = settings.wedding_date ?? '2026-09-26';
+  const deadlineTime = DateTime.fromISO(`${weddingDate}T${gameDeadline}`, { zone: TZ });
+  deadlinePassed = deadlineTime.isValid && now >= deadlineTime;
+  deadlineLabel  = deadlineTime.isValid ? deadlineTime.toFormat('h:mm a') : '';
+}
+
+const token        = Astro.url.searchParams.get('token');
+const party        = token ? await getPartyByToken(token) : null;
+const partyMembers = (party?.members ?? []).map(m => ({
+  id:    m.id,
+  name:  [m.person?.preferred_name || m.person?.first_name || null, m.person?.last_name].join(' '),
+  token: makeGuestToken(m.id),
+})).filter(m => m.name);
+---
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Proof — Find a Guest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+</head>
+<body>
+
+  <header class="page-header">
+    <p class="page-eyebrow">Find a Guest · Reception Icebreaker</p>
+    <div class="page-title-wrap">
+      <Image src={AccentMark} class="title-accent-l" alt="" />
+      <h1 class="page-title">Upload Your Proof</h1>
+      <Image src={AccentMark} class="title-accent-r" alt="" />
+    </div>
+    <p class="page-sub">{groomFirst} &amp; {brideFirst} · {weddingDateLabel}</p>
+  </header>
+
+  <main class="form-wrapper">
+    {deadlinePassed ? (
+      <div class="form-card closed-card">
+        <span class="closed-icon">✦</span>
+        <h2 class="closed-title">Submissions Closed</h2>
+        <p class="closed-body">
+          Photo uploads closed at {deadlineLabel}.<br />
+          Thank you for playing — stay tuned for the results!
+        </p>
+      </div>
+    ) : (
+      <>
+        <div class="form-card" id="form-card">
+          <form id="upload-form" novalidate>
+
+            <!-- Name — required -->
+            <div class="field">
+              <label class="field-label" for="name-input">Your name</label>
+              <div id="name-confirmed" class="name-confirmed hidden">
+                <span id="name-confirmed-text"></span>
+                <button type="button" id="name-change-btn" class="name-change-btn">Change</button>
+              </div>
+              <input id="name-input" name="name" type="text" placeholder="e.g. Maria Santos"
+                class="field-input" autocomplete="off" required />
+              <div id="name-suggestions" class="name-suggestions hidden" role="listbox" aria-label="Guest matches"></div>
+              <div id="table-verify" class="table-verify hidden" aria-live="polite">
+                <p class="table-verify-label">Confirming as <strong id="pending-name-display"></strong></p>
+                <input id="table-number-input" class="field-input table-number-input"
+                  type="number" min="1" max="99" placeholder="Your table number" autocomplete="off"
+                  inputmode="numeric" />
+                <div class="table-verify-actions">
+                  <button type="button" id="table-verify-btn" class="table-verify-confirm-btn">Confirm</button>
+                  <button type="button" id="table-verify-cancel" class="table-verify-cancel-btn">Cancel</button>
+                </div>
+                <p id="table-verify-error" class="table-verify-error hidden"></p>
+              </div>
+            </div>
+
+            <div class="field-divider"></div>
+
+            <!-- Square selector -->
+            <div class="field">
+              <label class="field-label">Which squares did you complete?</label>
+              <p class="field-hint">Tap a number to upload your proof photo for that square.</p>
+              <SquareGrid />
+            </div>
+
+            <p id="error-text" class="error-text hidden"></p>
+
+            <button type="submit" class="submit-btn" id="submit-btn" disabled>
+              <span id="submit-label">Tap a square to get started</span>
+            </button>
+
+          </form>
+        </div>
+
+        <!-- Success panel -->
+        <div id="success-panel" class="success-panel hidden">
+          <span class="success-icon">✦</span>
+          <h2 class="success-title">Photos submitted!</h2>
+          <p class="success-sub" id="success-count"></p>
+          <button class="reset-btn" onclick="resetForm()">Upload more</button>
+        </div>
+      </>
+    )}
+  </main>
+
+  <footer class="page-footer">
+    <Image src={Lettermark} class="footer-mark" alt="" />
+    <Hashtag tag={settings.hashtag} class="footer-tag" />
+    <p class="footer-privacy">Photos are shared with the couple and will appear in our post-wedding memories page. They are not used for any other purpose.</p>
+  </footer>
+
+  {!deadlinePassed && <IdentityModal members={partyMembers} />}
+  {!deadlinePassed && <UploadModal />}
+
+</body>
+</html>
+
+{!deadlinePassed && <script is:inline src="/scripts/upload-init.js"></script>}
+{!deadlinePassed && <script is:inline src="/scripts/upload-handlers.js"></script>}

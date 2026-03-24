@@ -1,0 +1,78 @@
+@media print {
+  @page { size: letter portrait; margin: 0; }
+  body { background: white !important; padding: 0 !important; display: block !important; }
+  .no-print { display: none !important; }
+}
+
+/* ── Sheet grid ─────────────────────────────────────────────
+   Avery 5163: 2 cols × 5 rows, 4×2 in labels
+   Left margin: 0.15625in (≈ 0.156in), gap: 0.19in
+   Top margin: 0.5in, gap: 0.25in
+─────────────────────────────────────────────────────────── */
+.return-sheet {
+  display: grid;
+  grid-template-columns: repeat(2, 4in);
+  gap: 0.25in 0.19in;
+  padding: 0.5in 0.15625in;
+  width: 8.5in;
+  background: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Single label ──────────────────────────────────────────── */
+.return-label {
+  width: 4in;
+  height: 2in;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 4px;
+  padding: 0.22in 0.3in;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Label contents ─────────────────────────────────────────── */
+.rl-rule {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 65%;
+  margin-bottom: 2px;
+}
+.rl-rule-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.8), transparent);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.rl-rule-gem {
+  font-size: 6px;
+  color: var(--cs);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.rl-names {
+  font-family: var(--fd);
+  font-size: 17px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--dark);
+  line-height: 1.1;
+  letter-spacing: -0.2px;
+}
+
+.rl-address-line {
+  font-family: var(--fb);
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--dark);
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+}
