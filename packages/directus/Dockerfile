@@ -24,6 +24,3 @@ COPY --from=builder /build/extensions/ /directus/extensions/
 
 # ── Email templates ───────────────────────────────────────────────────────────
 COPY templates/ /directus/templates/
-
-# ── Scripts ───────────────────────────────────────────────────────────────────
-COPY scripts/ /directus/scripts/
