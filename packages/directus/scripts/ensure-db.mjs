@@ -21,6 +21,10 @@ const {
   DB_DATABASE,
 } = process.env;
 
+const missing = ['DB_HOST', 'DB_PORT', 'DB_ADMIN_USER', 'DB_ADMIN_PASSWORD', 'DB_USER', 'DB_PASSWORD', 'DB_DATABASE']
+  .filter(k => !process.env[k]);
+if (missing.length) throw new Error(`Missing required env vars: ${missing.join(', ')}`);
+
 const client = new Client({
   host: DB_HOST,
   port: Number(DB_PORT),
