@@ -25,6 +25,8 @@ const missing = ['DB_HOST', 'DB_PORT', 'DB_ADMIN_USER', 'DB_ADMIN_PASSWORD', 'DB
   .filter(k => !process.env[k]);
 if (missing.length) throw new Error(`Missing required env vars: ${missing.join(', ')}`);
 
+console.log(`DB_USER="${DB_USER}" DB_PASSWORD length=${DB_PASSWORD.length} DB_DATABASE="${DB_DATABASE}`);
+
 async function run() {
   const client = new Client({
     host: DB_HOST,
