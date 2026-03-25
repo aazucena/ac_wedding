@@ -1,6 +1,6 @@
 [
   {
-    "project_name": "Directus",
+    "project_name": "Wedding Planner",
     "project_color": "#A8D4B8",
     "public_note": null,
     "auth_login_attempts": 25,
@@ -62,7 +62,7 @@
         "enabled": true
       }
     ],
-    "project_descriptor": null,
+    "project_descriptor": "Aldrin & Christine · September 26, 2026",
     "default_language": "en-US",
     "custom_aspect_ratios": null,
     "default_appearance": "auto",

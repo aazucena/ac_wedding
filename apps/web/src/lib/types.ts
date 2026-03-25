@@ -467,11 +467,9 @@ export interface Readings {
   id: string;
   type?: string;
   book?: string;
-  chapter?: string;
-  verse_start?: string;
-  verse_end?: string;
   translation?: string;
   reader_confirmed?: boolean;
+  approved?: boolean;
   notes?: string;
   label?: string;
   scripture?: string;

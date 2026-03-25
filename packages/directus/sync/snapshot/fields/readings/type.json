@@ -27,6 +27,10 @@
         {
           "text": "Petitions",
           "value": "petitions"
+        },
+        {
+          "text": "Prayers of the Faithful",
+          "value": "prayers_of_the_faithful"
         }
       ]
     },
@@ -56,6 +60,10 @@
         {
           "text": "Petitions",
           "value": "petitions"
+        },
+        {
+          "text": "Prayers of the Faithful",
+          "value": "prayers_of_the_faithful"
         }
       ]
     },

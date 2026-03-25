@@ -115,10 +115,6 @@ type Query {
   petitions_by_id(id: ID!, version: String): petitions
   petitions_aggregated(groupBy: [String], filter: petitions_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [petitions_aggregated!]!
   petitions_by_version(version: String!, id: ID!): version_petitions
-  readings(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [readings!]!
-  readings_by_id(id: ID!, version: String): readings
-  readings_aggregated(groupBy: [String], filter: readings_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [readings_aggregated!]!
-  readings_by_version(version: String!, id: ID!): version_readings
   honeymoon_events(filter: honeymoon_events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [honeymoon_events!]!
   honeymoon_events_by_id(id: ID!, version: String): honeymoon_events
   honeymoon_events_aggregated(groupBy: [String], filter: honeymoon_events_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [honeymoon_events_aggregated!]!
@@ -127,6 +123,10 @@ type Query {
   reception_program_by_id(id: ID!, version: String): reception_program
   reception_program_aggregated(groupBy: [String], filter: reception_program_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [reception_program_aggregated!]!
   reception_program_by_version(version: String!, id: ID!): version_reception_program
+  readings(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [readings!]!
+  readings_by_id(id: ID!, version: String): readings
+  readings_aggregated(groupBy: [String], filter: readings_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [readings_aggregated!]!
+  readings_by_version(version: String!, id: ID!): version_readings
   reception_staff(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [reception_staff!]!
   reception_staff_by_id(id: ID!, version: String): reception_staff
   reception_staff_aggregated(groupBy: [String], filter: reception_staff_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [reception_staff_aggregated!]!
@@ -234,12 +234,12 @@ type Mutation {
   create_honeymoon_activities_item(data: create_honeymoon_activities_input!): honeymoon_activities
   create_petitions_items(filter: petitions_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_petitions_input!]): [petitions!]!
   create_petitions_item(data: create_petitions_input!): petitions
-  create_readings_items(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_readings_input!]): [readings!]!
-  create_readings_item(data: create_readings_input!): readings
   create_honeymoon_events_items(filter: honeymoon_events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_honeymoon_events_input!]): [honeymoon_events!]!
   create_honeymoon_events_item(data: create_honeymoon_events_input!): honeymoon_events
   create_reception_program_items(filter: reception_program_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_reception_program_input!]): [reception_program!]!
   create_reception_program_item(data: create_reception_program_input!): reception_program
+  create_readings_items(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_readings_input!]): [readings!]!
+  create_readings_item(data: create_readings_input!): readings
   create_reception_staff_items(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_reception_staff_input!]): [reception_staff!]!
   create_reception_staff_item(data: create_reception_staff_input!): reception_staff
   create_tables_items(filter: tables_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_tables_input!]): [tables!]!
@@ -349,15 +349,15 @@ type Mutation {
   update_petitions_items(filter: petitions_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_petitions_input!): [petitions!]!
   update_petitions_batch(filter: petitions_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_petitions_input!]): [petitions!]!
   update_petitions_item(id: ID!, data: update_petitions_input!): petitions
-  update_readings_items(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_readings_input!): [readings!]!
-  update_readings_batch(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_readings_input!]): [readings!]!
-  update_readings_item(id: ID!, data: update_readings_input!): readings
   update_honeymoon_events_items(filter: honeymoon_events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_honeymoon_events_input!): [honeymoon_events!]!
   update_honeymoon_events_batch(filter: honeymoon_events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_honeymoon_events_input!]): [honeymoon_events!]!
   update_honeymoon_events_item(id: ID!, data: update_honeymoon_events_input!): honeymoon_events
   update_reception_program_items(filter: reception_program_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_reception_program_input!): [reception_program!]!
   update_reception_program_batch(filter: reception_program_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_reception_program_input!]): [reception_program!]!
   update_reception_program_item(id: ID!, data: update_reception_program_input!): reception_program
+  update_readings_items(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_readings_input!): [readings!]!
+  update_readings_batch(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_readings_input!]): [readings!]!
+  update_readings_item(id: ID!, data: update_readings_input!): readings
   update_reception_staff_items(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_reception_staff_input!): [reception_staff!]!
   update_reception_staff_batch(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_reception_staff_input!]): [reception_staff!]!
   update_reception_staff_item(id: ID!, data: update_reception_staff_input!): reception_staff
@@ -450,12 +450,12 @@ type Mutation {
   delete_honeymoon_activities_item(id: ID!): delete_one
   delete_petitions_items(ids: [ID]!): delete_many
   delete_petitions_item(id: ID!): delete_one
-  delete_readings_items(ids: [ID]!): delete_many
-  delete_readings_item(id: ID!): delete_one
   delete_honeymoon_events_items(ids: [ID]!): delete_many
   delete_honeymoon_events_item(id: ID!): delete_one
   delete_reception_program_items(ids: [ID]!): delete_many
   delete_reception_program_item(id: ID!): delete_one
+  delete_readings_items(ids: [ID]!): delete_many
+  delete_readings_item(id: ID!): delete_one
   delete_reception_staff_items(ids: [ID]!): delete_many
   delete_reception_staff_item(id: ID!): delete_one
   delete_tables_items(ids: [ID]!): delete_many
@@ -533,9 +533,9 @@ type Subscription {
   honeymoon_transport_mutated(event: EventEnum): honeymoon_transport_mutated
   honeymoon_activities_mutated(event: EventEnum): honeymoon_activities_mutated
   petitions_mutated(event: EventEnum): petitions_mutated
-  readings_mutated(event: EventEnum): readings_mutated
   honeymoon_events_mutated(event: EventEnum): honeymoon_events_mutated
   reception_program_mutated(event: EventEnum): reception_program_mutated
+  readings_mutated(event: EventEnum): readings_mutated
   reception_staff_mutated(event: EventEnum): reception_staff_mutated
   tables_mutated(event: EventEnum): tables_mutated
   sponsors_mutated(event: EventEnum): sponsors_mutated
@@ -990,10 +990,10 @@ type ceremonies {
   estimated_duration: Int
   liturgical_ministers(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [liturgical_ministers]
   liturgical_ministers_func: count_functions
-  programs(filter: ceremony_order_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [ceremony_order]
-  programs_func: count_functions
   entourage(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [entourage]
   entourage_func: count_functions
+  programs(filter: ceremony_order_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [ceremony_order]
+  programs_func: count_functions
 }
 
 type ceremonies_aggregated {
@@ -1027,8 +1027,8 @@ type ceremonies_aggregated_count {
   dress_code_description: Int
   estimated_duration: Int
   liturgical_ministers: Int
-  programs: Int
   entourage: Int
+  programs: Int
 }
 
 type ceremonies_aggregated_fields {
@@ -3688,15 +3688,6 @@ type readings {
   Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.
   """
   book: String
-
-  """Chapter number as a string to allow formats like "13" or "3-4"."""
-  chapter: String
-
-  """Opening verse number."""
-  verse_start: String
-
-  """Closing verse number. Leave empty for single-verse readings."""
-  verse_end: String
   translation: String
   reader_confirmed: Boolean
   notes: String
@@ -3707,6 +3698,9 @@ type readings {
   label: String
   scripture: String
   reader(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): persons
+
+  """Must be approved by the parish before going forward with it"""
+  approved: Boolean
   petitions(filter: petitions_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [petitions]
   petitions_func: count_functions
 }
@@ -3726,15 +3720,6 @@ type readings_aggregated_count {
   Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.
   """
   book: Int
-
-  """Chapter number as a string to allow formats like "13" or "3-4"."""
-  chapter: Int
-
-  """Opening verse number."""
-  verse_start: Int
-
-  """Closing verse number. Leave empty for single-verse readings."""
-  verse_end: Int
   translation: Int
   reader_confirmed: Int
   notes: Int
@@ -3745,6 +3730,9 @@ type readings_aggregated_count {
   label: Int
   scripture: Int
   reader: Int
+
+  """Must be approved by the parish before going forward with it"""
+  approved: Int
   petitions: Int
 }
 
@@ -4584,8 +4572,8 @@ type version_ceremonies {
   dress_code_description: String
   estimated_duration: Int
   liturgical_ministers: JSON
-  programs: JSON
   entourage: JSON
+  programs: JSON
 }
 
 """"""
@@ -5312,15 +5300,6 @@ type version_readings {
   Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.
   """
   book: String
-
-  """Chapter number as a string to allow formats like "13" or "3-4"."""
-  chapter: String
-
-  """Opening verse number."""
-  verse_start: String
-
-  """Closing verse number. Leave empty for single-verse readings."""
-  verse_end: String
   translation: String
   reader_confirmed: Boolean
   notes: String
@@ -5331,6 +5310,9 @@ type version_readings {
   label: String
   scripture: String
   reader: JSON
+
+  """Must be approved by the parish before going forward with it"""
+  approved: Boolean
   petitions: JSON
 }
 
@@ -5886,10 +5868,10 @@ input ceremonies_filter {
   estimated_duration: number_filter_operators
   liturgical_ministers: liturgical_ministers_quantifier_filter
   liturgical_ministers_func: count_function_filter_operators
-  programs: ceremony_order_quantifier_filter
-  programs_func: count_function_filter_operators
   entourage: entourage_quantifier_filter
   entourage_func: count_function_filter_operators
+  programs: ceremony_order_quantifier_filter
+  programs_func: count_function_filter_operators
   _and: [ceremonies_filter]
   _or: [ceremonies_filter]
 }
@@ -6195,8 +6177,8 @@ input create_ceremonies_input {
   dress_code_description: String
   estimated_duration: Int
   liturgical_ministers: [create_liturgical_ministers_input]
-  programs: [create_ceremony_order_input]
   entourage: [create_entourage_input]
+  programs: [create_ceremony_order_input]
 }
 
 input create_ceremony_order_input {
@@ -7008,15 +6990,6 @@ input create_readings_input {
   Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.
   """
   book: String
-
-  """Chapter number as a string to allow formats like "13" or "3-4"."""
-  chapter: String
-
-  """Opening verse number."""
-  verse_start: String
-
-  """Closing verse number. Leave empty for single-verse readings."""
-  verse_end: String
   translation: String
   reader_confirmed: Boolean
   notes: String
@@ -7027,6 +7000,9 @@ input create_readings_input {
   label: String
   scripture: String
   reader: create_persons_input
+
+  """Must be approved by the parish before going forward with it"""
+  approved: Boolean
   petitions: [create_petitions_input]
 }
 
@@ -8535,15 +8511,13 @@ input readings_filter {
   id: id_filter_operators
   type: string_filter_operators
   book: string_filter_operators
-  chapter: string_filter_operators
-  verse_start: string_filter_operators
-  verse_end: string_filter_operators
   translation: string_filter_operators
   reader_confirmed: boolean_filter_operators
   notes: string_filter_operators
   label: string_filter_operators
   scripture: string_filter_operators
   reader: persons_filter
+  approved: boolean_filter_operators
   petitions: petitions_quantifier_filter
   petitions_func: count_function_filter_operators
   _and: [readings_filter]
@@ -8976,8 +8950,8 @@ input update_ceremonies_input {
   dress_code_description: String
   estimated_duration: Int
   liturgical_ministers: [update_liturgical_ministers_input]
-  programs: [update_ceremony_order_input]
   entourage: [update_entourage_input]
+  programs: [update_ceremony_order_input]
 }
 
 input update_ceremony_order_input {
@@ -9789,15 +9763,6 @@ input update_readings_input {
   Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.
   """
   book: String
-
-  """Chapter number as a string to allow formats like "13" or "3-4"."""
-  chapter: String
-
-  """Opening verse number."""
-  verse_start: String
-
-  """Closing verse number. Leave empty for single-verse readings."""
-  verse_end: String
   translation: String
   reader_confirmed: Boolean
   notes: String
@@ -9808,6 +9773,9 @@ input update_readings_input {
   label: String
   scripture: String
   reader: update_persons_input
+
+  """Must be approved by the parish before going forward with it"""
+  approved: Boolean
   petitions: [update_petitions_input]
 }
 

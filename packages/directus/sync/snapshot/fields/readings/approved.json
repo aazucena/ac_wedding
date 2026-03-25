@@ -1,44 +1,36 @@
 {
   "collection": "readings",
-  "field": "chapter",
-  "type": "string",
+  "field": "approved",
+  "type": "boolean",
   "meta": {
     "collection": "readings",
     "conditions": null,
     "display": null,
     "display_options": null,
-    "field": "chapter",
+    "field": "approved",
     "group": null,
     "hidden": false,
-    "interface": "input",
-    "note": "Chapter number as a string to allow formats like \"13\" or \"3-4\".",
-    "options": {
-      "placeholder": "e.g. 13"
-    },
+    "interface": "boolean",
+    "note": "Must be approved by the parish before going forward with it",
+    "options": null,
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 4,
-    "special": null,
+    "sort": 11,
+    "special": [
+      "cast-boolean"
+    ],
     "translations": null,
-    "validation": {
-      "_and": [
-        {
-          "chapter": {
-            "_regex": "^\\d+(-\\d+)?$"
-          }
-        }
-      ]
-    },
+    "validation": null,
     "validation_message": null,
     "width": "full"
   },
   "schema": {
-    "name": "chapter",
+    "name": "approved",
     "table": "readings",
-    "data_type": "character varying",
-    "default_value": null,
-    "max_length": 255,
+    "data_type": "boolean",
+    "default_value": false,
+    "max_length": null,
     "numeric_precision": null,
     "numeric_scale": null,
     "is_nullable": true,

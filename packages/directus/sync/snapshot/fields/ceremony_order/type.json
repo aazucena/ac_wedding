@@ -37,8 +37,8 @@
           "value": "sacrament"
         },
         {
-          "text": "Other",
-          "value": "other"
+          "text": "Program",
+          "value": "program"
         }
       ]
     },
@@ -78,8 +78,8 @@
           "value": "sacrament"
         },
         {
-          "text": "Other",
-          "value": "other"
+          "text": "Program",
+          "value": "program"
         }
       ]
     },

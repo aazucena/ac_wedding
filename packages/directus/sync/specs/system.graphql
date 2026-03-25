@@ -314,9 +314,9 @@ type Subscription {
   honeymoon_transport_mutated(event: EventEnum): honeymoon_transport_mutated
   honeymoon_activities_mutated(event: EventEnum): honeymoon_activities_mutated
   petitions_mutated(event: EventEnum): petitions_mutated
-  readings_mutated(event: EventEnum): readings_mutated
   honeymoon_events_mutated(event: EventEnum): honeymoon_events_mutated
   reception_program_mutated(event: EventEnum): reception_program_mutated
+  readings_mutated(event: EventEnum): readings_mutated
   reception_staff_mutated(event: EventEnum): reception_staff_mutated
   tables_mutated(event: EventEnum): tables_mutated
   sponsors_mutated(event: EventEnum): sponsors_mutated
@@ -572,10 +572,10 @@ type ceremonies {
   estimated_duration: Int
   liturgical_ministers(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [liturgical_ministers]
   liturgical_ministers_func: count_functions
-  programs(filter: ceremony_order_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [ceremony_order]
-  programs_func: count_functions
   entourage(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [entourage]
   entourage_func: count_functions
+  programs(filter: ceremony_order_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [ceremony_order]
+  programs_func: count_functions
 }
 
 type ceremonies_mutated {
@@ -2901,15 +2901,6 @@ type readings {
   Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.
   """
   book: String
-
-  """Chapter number as a string to allow formats like "13" or "3-4"."""
-  chapter: String
-
-  """Opening verse number."""
-  verse_start: String
-
-  """Closing verse number. Leave empty for single-verse readings."""
-  verse_end: String
   translation: String
   reader_confirmed: Boolean
   notes: String
@@ -2920,6 +2911,9 @@ type readings {
   label: String
   scripture: String
   reader(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): persons
+
+  """Must be approved by the parish before going forward with it"""
+  approved: Boolean
   petitions(filter: petitions_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [petitions]
   petitions_func: count_functions
 }
@@ -3577,10 +3571,10 @@ input ceremonies_filter {
   estimated_duration: number_filter_operators
   liturgical_ministers: liturgical_ministers_quantifier_filter
   liturgical_ministers_func: count_function_filter_operators
-  programs: ceremony_order_quantifier_filter
-  programs_func: count_function_filter_operators
   entourage: entourage_quantifier_filter
   entourage_func: count_function_filter_operators
+  programs: ceremony_order_quantifier_filter
+  programs_func: count_function_filter_operators
   _and: [ceremonies_filter]
   _or: [ceremonies_filter]
 }
@@ -5512,15 +5506,13 @@ input readings_filter {
   id: id_filter_operators
   type: string_filter_operators
   book: string_filter_operators
-  chapter: string_filter_operators
-  verse_start: string_filter_operators
-  verse_end: string_filter_operators
   translation: string_filter_operators
   reader_confirmed: boolean_filter_operators
   notes: string_filter_operators
   label: string_filter_operators
   scripture: string_filter_operators
   reader: persons_filter
+  approved: boolean_filter_operators
   petitions: petitions_quantifier_filter
   petitions_func: count_function_filter_operators
   _and: [readings_filter]

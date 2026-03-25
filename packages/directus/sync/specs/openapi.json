@@ -3,7 +3,7 @@
   "info": {
     "title": "Dynamic API Specification",
     "description": "This is a dynamically generated API specification for all endpoints existing on the current project.",
-    "version": "c9370c012429cc2f9bbd66b790c6fab67f6e654b"
+    "version": "f4c04497e6cc16659a8116fd848be3c936b25a08"
   },
   "servers": [
     {
@@ -18402,395 +18402,6 @@
         ]
       }
     },
-    "/items/readings": {
-      "post": {
-        "summary": "Create an Item",
-        "description": "Create a new readings item.",
-        "tags": [
-          "Items",
-          "ItemsReadings"
-        ],
-        "operationId": "createItemsReadings",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/Meta"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "oneOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ItemsReadings"
-                    }
-                  },
-                  {
-                    "$ref": "#/components/schemas/ItemsReadings"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/ItemsReadings"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      },
-      "get": {
-        "summary": "List Items",
-        "description": "List the readings items.",
-        "tags": [
-          "Items",
-          "ItemsReadings"
-        ],
-        "operationId": "readItemsReadings",
-        "security": [
-          {
-            "Auth": []
-          }
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/Fields"
-          },
-          {
-            "$ref": "#/components/parameters/Limit"
-          },
-          {
-            "$ref": "#/components/parameters/Meta"
-          },
-          {
-            "$ref": "#/components/parameters/Offset"
-          },
-          {
-            "$ref": "#/components/parameters/Sort"
-          },
-          {
-            "$ref": "#/components/parameters/Filter"
-          },
-          {
-            "$ref": "#/components/parameters/Search"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "$ref": "#/components/schemas/ItemsReadings"
-                      }
-                    },
-                    "meta": {
-                      "$ref": "#/components/schemas/x-metadata"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        }
-      },
-      "patch": {
-        "summary": "Update Multiple Items",
-        "description": "Update multiple readings items at the same time.",
-        "tags": [
-          "Items",
-          "ItemsReadings"
-        ],
-        "operationId": "updateItemsReadings",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/Fields"
-          },
-          {
-            "$ref": "#/components/parameters/Limit"
-          },
-          {
-            "$ref": "#/components/parameters/Meta"
-          },
-          {
-            "$ref": "#/components/parameters/Offset"
-          },
-          {
-            "$ref": "#/components/parameters/Sort"
-          },
-          {
-            "$ref": "#/components/parameters/Filter"
-          },
-          {
-            "$ref": "#/components/parameters/Search"
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "oneOf": [
-                  {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/components/schemas/ItemsReadings"
-                    }
-                  },
-                  {
-                    "$ref": "#/components/schemas/ItemsReadings"
-                  }
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/ItemsReadings"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete Multiple Items",
-        "description": "Delete multiple existing readings items.",
-        "tags": [
-          "Items",
-          "ItemsReadings"
-        ],
-        "operationId": "deleteItemsReadings",
-        "responses": {
-          "200": {
-            "description": "Successful request"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          }
-        },
-        "parameters": []
-      }
-    },
-    "/items/readings/{id}": {
-      "get": {
-        "summary": "Retrieve an Item",
-        "description": "Retrieve a single readings item by unique identifier.",
-        "tags": [
-          "Items",
-          "ItemsReadings"
-        ],
-        "operationId": "readSingleItemsReadings",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/Fields"
-          },
-          {
-            "$ref": "#/components/parameters/Meta"
-          },
-          {
-            "$ref": "#/components/parameters/Version"
-          },
-          {
-            "name": "id",
-            "description": "Index of the item.",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "oneOf": [
-                {
-                  "type": "integer",
-                  "description": "Incremental index of the item.",
-                  "example": 1
-                },
-                {
-                  "type": "string",
-                  "description": "Unique identifier of the item.",
-                  "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
-                }
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "$ref": "#/components/schemas/ItemsReadings"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      },
-      "patch": {
-        "summary": "Update an Item",
-        "description": "Update an existing readings item.",
-        "tags": [
-          "Items",
-          "ItemsReadings"
-        ],
-        "operationId": "updateSingleItemsReadings",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/Fields"
-          },
-          {
-            "$ref": "#/components/parameters/Meta"
-          },
-          {
-            "name": "id",
-            "description": "Index of the item.",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "oneOf": [
-                {
-                  "type": "integer",
-                  "description": "Incremental index of the item.",
-                  "example": 1
-                },
-                {
-                  "type": "string",
-                  "description": "Unique identifier of the item.",
-                  "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
-                }
-              ]
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "$ref": "#/components/schemas/ItemsReadings"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "$ref": "#/components/schemas/ItemsReadings"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete an Item",
-        "description": "Delete an existing readings item.",
-        "tags": [
-          "Items",
-          "ItemsReadings"
-        ],
-        "operationId": "deleteSingleItemsReadings",
-        "responses": {
-          "200": {
-            "description": "Successful request"
-          },
-          "401": {
-            "$ref": "#/components/responses/UnauthorizedError"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFoundError"
-          }
-        },
-        "parameters": [
-          {
-            "name": "id",
-            "description": "Index of the item.",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "oneOf": [
-                {
-                  "type": "integer",
-                  "description": "Incremental index of the item.",
-                  "example": 1
-                },
-                {
-                  "type": "string",
-                  "description": "Unique identifier of the item.",
-                  "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
-                }
-              ]
-            }
-          }
-        ]
-      }
-    },
     "/items/honeymoon_events": {
       "post": {
         "summary": "Create an Item",
@@ -19534,6 +19145,395 @@
           "ItemsReceptionProgram"
         ],
         "operationId": "deleteSingleItemsReceptionProgram",
+        "responses": {
+          "200": {
+            "description": "Successful request"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Index of the item.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "description": "Incremental index of the item.",
+                  "example": 1
+                },
+                {
+                  "type": "string",
+                  "description": "Unique identifier of the item.",
+                  "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/items/readings": {
+      "post": {
+        "summary": "Create an Item",
+        "description": "Create a new readings item.",
+        "tags": [
+          "Items",
+          "ItemsReadings"
+        ],
+        "operationId": "createItemsReadings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Meta"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ItemsReadings"
+                    }
+                  },
+                  {
+                    "$ref": "#/components/schemas/ItemsReadings"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ItemsReadings"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "get": {
+        "summary": "List Items",
+        "description": "List the readings items.",
+        "tags": [
+          "Items",
+          "ItemsReadings"
+        ],
+        "operationId": "readItemsReadings",
+        "security": [
+          {
+            "Auth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Fields"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Meta"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Sort"
+          },
+          {
+            "$ref": "#/components/parameters/Filter"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "$ref": "#/components/schemas/ItemsReadings"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/x-metadata"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Multiple Items",
+        "description": "Update multiple readings items at the same time.",
+        "tags": [
+          "Items",
+          "ItemsReadings"
+        ],
+        "operationId": "updateItemsReadings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Fields"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Meta"
+          },
+          {
+            "$ref": "#/components/parameters/Offset"
+          },
+          {
+            "$ref": "#/components/parameters/Sort"
+          },
+          {
+            "$ref": "#/components/parameters/Filter"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ItemsReadings"
+                    }
+                  },
+                  {
+                    "$ref": "#/components/schemas/ItemsReadings"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ItemsReadings"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Multiple Items",
+        "description": "Delete multiple existing readings items.",
+        "tags": [
+          "Items",
+          "ItemsReadings"
+        ],
+        "operationId": "deleteItemsReadings",
+        "responses": {
+          "200": {
+            "description": "Successful request"
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          }
+        },
+        "parameters": []
+      }
+    },
+    "/items/readings/{id}": {
+      "get": {
+        "summary": "Retrieve an Item",
+        "description": "Retrieve a single readings item by unique identifier.",
+        "tags": [
+          "Items",
+          "ItemsReadings"
+        ],
+        "operationId": "readSingleItemsReadings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Fields"
+          },
+          {
+            "$ref": "#/components/parameters/Meta"
+          },
+          {
+            "$ref": "#/components/parameters/Version"
+          },
+          {
+            "name": "id",
+            "description": "Index of the item.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "description": "Incremental index of the item.",
+                  "example": 1
+                },
+                {
+                  "type": "string",
+                  "description": "Unique identifier of the item.",
+                  "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "$ref": "#/components/schemas/ItemsReadings"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update an Item",
+        "description": "Update an existing readings item.",
+        "tags": [
+          "Items",
+          "ItemsReadings"
+        ],
+        "operationId": "updateSingleItemsReadings",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Fields"
+          },
+          {
+            "$ref": "#/components/parameters/Meta"
+          },
+          {
+            "name": "id",
+            "description": "Index of the item.",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer",
+                  "description": "Incremental index of the item.",
+                  "example": 1
+                },
+                {
+                  "type": "string",
+                  "description": "Unique identifier of the item.",
+                  "example": "8cbb43fe-4cdf-4991-8352-c461779cec02"
+                }
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "$ref": "#/components/schemas/ItemsReadings"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "$ref": "#/components/schemas/ItemsReadings"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/UnauthorizedError"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundError"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an Item",
+        "description": "Delete an existing readings item.",
+        "tags": [
+          "Items",
+          "ItemsReadings"
+        ],
+        "operationId": "deleteSingleItemsReadings",
         "responses": {
           "200": {
             "description": "Successful request"
@@ -24484,11 +24484,6 @@
       "description": "Individual petition intentions for the Prayer of the Faithful. Child of the readings collection."
     },
     {
-      "name": "ItemsReadings",
-      "x-collection": "readings",
-      "description": "Liturgical readings for the Nuptial Mass. Reading numbers TBD from All Saints Parish booklet."
-    },
-    {
       "name": "ItemsHoneymoonEvents",
       "x-collection": "honeymoon_events"
     },
@@ -24496,6 +24491,11 @@
       "name": "ItemsReceptionProgram",
       "x-collection": "reception_program",
       "description": "Reception programme items in order"
+    },
+    {
+      "name": "ItemsReadings",
+      "x-collection": "readings",
+      "description": "Liturgical readings for the Nuptial Mass. Reading numbers TBD from All Saints Parish booklet."
     },
     {
       "name": "ItemsReceptionStaff",
@@ -25419,21 +25419,6 @@
               ]
             }
           },
-          "programs": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "oneOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "$ref": "#/components/schemas/ItemsCeremonyOrder"
-                }
-              ]
-            }
-          },
           "entourage": {
             "nullable": true,
             "type": "array",
@@ -25445,6 +25430,21 @@
                 },
                 {
                   "$ref": "#/components/schemas/ItemsEntourage"
+                }
+              ]
+            }
+          },
+          "programs": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "$ref": "#/components/schemas/ItemsCeremonyOrder"
                 }
               ]
             }
@@ -29201,92 +29201,6 @@
           "id"
         ]
       },
-      "ItemsReadings": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "nullable": false,
-            "type": "string",
-            "format": "uuid"
-          },
-          "type": {
-            "nullable": true,
-            "type": "string"
-          },
-          "book": {
-            "nullable": true,
-            "description": "Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.",
-            "type": "string"
-          },
-          "chapter": {
-            "nullable": true,
-            "description": "Chapter number as a string to allow formats like \"13\" or \"3-4\".",
-            "type": "string"
-          },
-          "verse_start": {
-            "nullable": true,
-            "description": "Opening verse number.",
-            "type": "string"
-          },
-          "verse_end": {
-            "nullable": true,
-            "description": "Closing verse number. Leave empty for single-verse readings.",
-            "type": "string"
-          },
-          "translation": {
-            "nullable": true,
-            "type": "string"
-          },
-          "reader_confirmed": {
-            "nullable": true,
-            "type": "boolean"
-          },
-          "notes": {
-            "nullable": true,
-            "type": "string"
-          },
-          "label": {
-            "nullable": true,
-            "description": "Manual free-text name for the reading. Used as the display label in dropdowns and the mass booklet.",
-            "type": "string"
-          },
-          "scripture": {
-            "nullable": true,
-            "type": "string"
-          },
-          "reader": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "type": "string",
-                "format": "uuid"
-              },
-              {
-                "$ref": "#/components/schemas/ItemsPersons"
-              }
-            ]
-          },
-          "petitions": {
-            "nullable": true,
-            "type": "array",
-            "items": {
-              "oneOf": [
-                {
-                  "type": "string",
-                  "format": "uuid"
-                },
-                {
-                  "$ref": "#/components/schemas/ItemsPetitions"
-                }
-              ]
-            }
-          }
-        },
-        "x-collection": "readings",
-        "required": [
-          "id"
-        ]
-      },
       "ItemsHoneymoonEvents": {
         "type": "object",
         "properties": {
@@ -29464,6 +29378,82 @@
         "required": [
           "id",
           "label"
+        ]
+      },
+      "ItemsReadings": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "nullable": false,
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "nullable": true,
+            "type": "string"
+          },
+          "book": {
+            "nullable": true,
+            "description": "Name of the scripture book. Leave empty for the Responsorial Psalm if using a refrain-only format.",
+            "type": "string"
+          },
+          "translation": {
+            "nullable": true,
+            "type": "string"
+          },
+          "reader_confirmed": {
+            "nullable": true,
+            "type": "boolean"
+          },
+          "notes": {
+            "nullable": true,
+            "type": "string"
+          },
+          "label": {
+            "nullable": true,
+            "description": "Manual free-text name for the reading. Used as the display label in dropdowns and the mass booklet.",
+            "type": "string"
+          },
+          "scripture": {
+            "nullable": true,
+            "type": "string"
+          },
+          "reader": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "$ref": "#/components/schemas/ItemsPersons"
+              }
+            ]
+          },
+          "approved": {
+            "nullable": true,
+            "description": "Must be approved by the parish before going forward with it",
+            "type": "boolean"
+          },
+          "petitions": {
+            "nullable": true,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "$ref": "#/components/schemas/ItemsPetitions"
+                }
+              ]
+            }
+          }
+        },
+        "x-collection": "readings",
+        "required": [
+          "id"
         ]
       },
       "ItemsReceptionStaff": {

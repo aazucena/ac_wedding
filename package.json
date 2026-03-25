@@ -26,6 +26,7 @@
     "emoji:dev": "pnpm --filter directus-extension-emoji-picker dev",
     "emoji:lint": "pnpm --filter directus-extension-emoji-picker lint",
     "emoji:format": "pnpm --filter directus-extension-emoji-picker format",
+    "dump:collections": "bash scripts/dump-collections.sh",
     "email:preview": "bash scripts/preview-email.sh",
     "test": "pnpm --filter rsvp test",
     "lint": "eslint .",

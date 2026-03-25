@@ -5,14 +5,17 @@
   "meta": {
     "collection": "ceremonies",
     "conditions": null,
-    "display": null,
-    "display_options": null,
+    "display": "related-values",
+    "display_options": {
+      "template": "{{label}}"
+    },
     "field": "programs",
     "group": null,
     "hidden": false,
     "interface": "list-o2m",
     "note": null,
     "options": {
+      "enableLink": true,
       "filter": {
         "_and": [
           {
