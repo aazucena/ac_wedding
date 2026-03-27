@@ -1,0 +1,349 @@
+---
+// components/guestbook/GuestbookForm.astro — open guestbook comment box (top of feed)
+import NameVerifyField from '../ui/NameVerifyField.astro';
+import TiptapEditor    from '../ui/TiptapEditor.astro';
+---
+
+<div class="gb-compose" id="gb-compose">
+
+  <form class="gb-form" id="gb-form" novalidate>
+
+    <NameVerifyField placeholder="e.g. Juan dela Cruz" />
+
+    <div class="gb-editor-wrap">
+      <div class="gb-error" id="gb-error" role="alert" aria-live="polite"></div>
+      <TiptapEditor
+        id="gb-message"
+        placeholder="Write your wishes here…"
+        bottomBar
+      >
+        <button slot="bar-end" class="gb-submit" id="gb-submit" type="submit">
+          <span class="gb-submit-text">Send</span>
+          <span class="gb-submit-arrow" aria-hidden="true">→</span>
+          <span class="gb-submit-dots" aria-hidden="true">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+          </span>
+        </button>
+      </TiptapEditor>
+    </div>
+
+  </form>
+
+  <div class="gb-success" id="gb-success" style="display:none;" aria-live="polite">
+    <span class="gb-success-icon" aria-hidden="true">✦</span>
+    <p class="gb-success-title font-display" id="gb-success-title">Message sent!</p>
+    <p class="gb-success-body" id="gb-success-body"></p>
+  </div>
+
+</div>
+
+<script>
+  import { actions } from 'astro:actions';
+
+  const form         = document.getElementById('gb-form')          as HTMLFormElement     | null;
+  const msgTextarea  = document.getElementById('gb-message')       as HTMLTextAreaElement | null;
+  const errorEl      = document.getElementById('gb-error')         as HTMLElement         | null;
+  const submitBtn    = document.getElementById('gb-submit')        as HTMLButtonElement   | null;
+  const successEl    = document.getElementById('gb-success')       as HTMLElement         | null;
+  const successTitle = document.getElementById('gb-success-title') as HTMLElement         | null;
+  const successBody  = document.getElementById('gb-success-body')  as HTMLElement         | null;
+
+  // NameVerifyField elements
+  const nameInput      = document.getElementById('name-input')          as HTMLInputElement  | null;
+  const nameConfirmed  = document.getElementById('name-confirmed')      as HTMLElement       | null;
+  const nameConfirmTxt = document.getElementById('name-confirmed-text') as HTMLElement       | null;
+  const nameChangeBtn  = document.getElementById('name-change-btn')     as HTMLButtonElement | null;
+  const nameSuggestions= document.getElementById('name-suggestions')    as HTMLElement       | null;
+  const tableVerify    = document.getElementById('table-verify')        as HTMLElement       | null;
+  const pendingNameEl  = document.getElementById('pending-name-display')as HTMLElement       | null;
+  const tableInput     = document.getElementById('table-number-input')  as HTMLInputElement  | null;
+  const tableVerifyBtn = document.getElementById('table-verify-btn')    as HTMLButtonElement | null;
+  const tableCancel    = document.getElementById('table-verify-cancel') as HTMLButtonElement | null;
+  const tableError     = document.getElementById('table-verify-error')  as HTMLElement       | null;
+
+  if (!form || !nameInput || !msgTextarea) throw new Error('GuestbookForm: missing elements');
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  let confirmedName:        string | null = null;
+  let confirmedTableNumber: number | null = null;
+  let pendingGuest: { id: string; name: string } | null = null;
+  let searchTimer: ReturnType<typeof setTimeout>;
+
+  // ── Identity helpers ──────────────────────────────────────────────────────
+  function confirmIdentity(name: string, tableNumber: number) {
+    confirmedName        = name;
+    confirmedTableNumber = tableNumber;
+    pendingGuest         = null;
+    hideTableVerify();
+    hideSuggestions();
+    if (nameConfirmTxt) nameConfirmTxt.textContent = name;
+    nameConfirmed?.classList.remove('hidden');
+    nameInput.classList.add('hidden');
+  }
+
+  function resetName() {
+    confirmedName        = null;
+    confirmedTableNumber = null;
+    pendingGuest         = null;
+    nameConfirmed?.classList.add('hidden');
+    nameInput.classList.remove('hidden');
+    nameInput.value = '';
+    nameInput.focus();
+    hideTableVerify();
+    hideSuggestions();
+  }
+
+  nameChangeBtn?.addEventListener('click', resetName);
+
+  // ── Suggestions ───────────────────────────────────────────────────────────
+  function hideSuggestions() { nameSuggestions?.classList.add('hidden'); }
+
+  function renderSuggestions(results: { id: string; name: string }[]) {
+    if (!nameSuggestions) return;
+    nameSuggestions.replaceChildren();
+
+    if (!results.length) {
+      const empty = document.createElement('div');
+      empty.className   = 'name-suggestions-empty';
+      empty.textContent = 'No guests found — continue with your typed name.';
+      nameSuggestions.appendChild(empty);
+    } else {
+      results.forEach(r => {
+        const btn = document.createElement('button');
+        btn.type  = 'button';
+        btn.className = 'name-suggestion-item';
+        btn.setAttribute('role', 'option');
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = r.name;
+        const hint = document.createElement('span');
+        hint.className   = 'name-suggestion-confirm';
+        hint.textContent = "That's me";
+        btn.appendChild(nameSpan);
+        btn.appendChild(hint);
+        btn.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          hideSuggestions();
+          showTableVerify(r.name, r.id);
+        });
+        nameSuggestions.appendChild(btn);
+      });
+    }
+    nameSuggestions.classList.remove('hidden');
+  }
+
+  // ── Table verify modal ────────────────────────────────────────────────────
+  function showTableVerify(name: string, guestId: string) {
+    pendingGuest = { id: guestId, name };
+    if (pendingNameEl) pendingNameEl.textContent = name;
+    tableVerify?.classList.remove('hidden');
+    if (tableError)  { tableError.textContent = ''; tableError.classList.add('hidden'); }
+    if (tableInput)  { tableInput.value = ''; tableInput.focus(); }
+    document.body.style.overflow = 'hidden';
+  }
+
+  function hideTableVerify() {
+    pendingGuest = null;
+    tableVerify?.classList.add('hidden');
+    if (tableInput) tableInput.value = '';
+    if (tableError) { tableError.textContent = ''; tableError.classList.add('hidden'); }
+    document.body.style.overflow = '';
+  }
+
+  function closeTableVerify() { hideTableVerify(); hideSuggestions(); nameInput.focus(); }
+
+  function showTableError(msg: string) {
+    if (!tableError) return;
+    tableError.textContent = msg;
+    tableError.classList.remove('hidden');
+  }
+
+  async function submitTableVerify() {
+    if (!pendingGuest) return;
+    const rawTable = tableInput?.value.trim() ?? '';
+    if (!rawTable) { showTableError('Please enter your table number.'); return; }
+    const tableNumber = parseInt(rawTable, 10);
+    if (isNaN(tableNumber) || tableNumber < 1) { showTableError('Please enter a valid table number.'); return; }
+
+    if (tableVerifyBtn) tableVerifyBtn.disabled = true;
+    if (tableError)     tableError.classList.add('hidden');
+
+    try {
+      const res  = await fetch('/api/game/verify', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ guestId: pendingGuest.id, tableNumber }),
+      });
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (data.ok) {
+        confirmIdentity(pendingGuest.name, tableNumber);
+      } else {
+        showTableError(data.error ?? 'Table number does not match. Check your place card.');
+      }
+    } catch {
+      showTableError('Something went wrong. Please try again.');
+    } finally {
+      if (tableVerifyBtn) tableVerifyBtn.disabled = false;
+    }
+  }
+
+  tableVerifyBtn?.addEventListener('click', submitTableVerify);
+  tableCancel?.addEventListener('click', closeTableVerify);
+  tableVerify?.querySelectorAll('.js-table-cancel').forEach(btn => btn.addEventListener('click', closeTableVerify));
+  tableVerify?.addEventListener('click', (e) => { if (e.target === tableVerify) closeTableVerify(); });
+  tableInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submitTableVerify(); } });
+
+  // ── Name search (debounced) ───────────────────────────────────────────────
+  nameInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    confirmedName        = null;
+    confirmedTableNumber = null;
+    const q = nameInput.value.trim();
+    if (q.length < 2) { hideSuggestions(); return; }
+    searchTimer = setTimeout(async () => {
+      try {
+        const res  = await fetch(`/api/guest/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json() as { results: { id: string; name: string }[] };
+        renderSuggestions(data.results ?? []);
+      } catch {
+        hideSuggestions();
+      }
+    }, 380);
+  });
+
+  nameInput.addEventListener('blur', () => { setTimeout(hideSuggestions, 180); });
+
+  // ── Form helpers ──────────────────────────────────────────────────────────
+  function setLoading(on: boolean) {
+    if (!submitBtn) return;
+    submitBtn.disabled = on;
+    submitBtn.classList.toggle('loading', on);
+  }
+
+  function showError(msg: string) {
+    if (!errorEl) return;
+    errorEl.textContent   = msg;
+    errorEl.style.display = msg ? '' : 'none';
+  }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showError('');
+
+    const name    = confirmedName ?? nameInput.value.trim();
+    const message = msgTextarea.value.trim();
+
+    if (!name)    { showError('Please enter your name.');  nameInput.focus(); return; }
+    if (!message) { showError('Please write a message.'); return; }
+
+    setLoading(true);
+    const { data, error } = await actions.submitGuestbookEntry({
+      name,
+      message,
+      tableNumber: confirmedTableNumber,
+    });
+    setLoading(false);
+
+    if (error) { showError('Something went wrong. Please try again.'); return; }
+
+    form.style.display = 'none';
+    if (successEl)    successEl.style.display = '';
+    if (successTitle) successTitle.textContent = data.verified ? 'Message published!' : 'Message received!';
+    if (successBody) {
+      successBody.textContent = data.verified
+        ? 'Your message is now live on the guestbook. Thank you!'
+        : 'Your message will appear after a quick review. Thank you!';
+    }
+  });
+</script>
+
+<style>
+.gb-compose {
+  width: 100%;
+  padding-bottom: 32px;
+  border-bottom: 1px solid color-mix(in srgb, var(--cp) 15%, transparent);
+  margin-bottom: 32px;
+}
+
+.gb-form {
+  display: flex; flex-direction: column; gap: 12px;
+  width: 100%;
+}
+
+/* ── Editor wrapper (error sits above it, both full width) ── */
+.gb-editor-wrap {
+  display: flex; flex-direction: column; gap: 6px;
+  width: 100%;
+}
+
+/* ── Error ───────────────────────────────────────────────── */
+.gb-error {
+  display: none;
+  font-family: var(--fb); font-size: 12px; font-weight: 400;
+  color: #b04040; padding: 9px 12px;
+  background: color-mix(in srgb, #b04040 8%, var(--ivory));
+  border: 1px solid color-mix(in srgb, #b04040 25%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Submit button (lives inside TiptapEditor's bar-end slot) */
+.gb-submit {
+  display: flex; align-items: center; gap: 6px;
+  flex-shrink: 0;
+  padding: 7px 16px;
+  background: var(--dark);
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--ivory); cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.gb-submit:hover:not(:disabled) { opacity: 0.85; }
+.gb-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.gb-submit-arrow { font-size: 13px; }
+.gb-submit-dots  { display: none; gap: 4px; }
+.gb-submit.loading .gb-submit-text,
+.gb-submit.loading .gb-submit-arrow { display: none; }
+.gb-submit.loading .gb-submit-dots  { display: flex; }
+
+.dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--ivory);
+  animation: bounce 0.9s ease-in-out infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.30s; }
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%           { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ── Success ─────────────────────────────────────────────── */
+.gb-success {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 6px;
+  padding: 20px 24px;
+  background: color-mix(in srgb, var(--cp) 5%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 22%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--cp) 55%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.gb-success-icon {
+  font-family: var(--fd); font-size: 16px;
+  color: var(--cs); margin-bottom: 2px;
+}
+
+.gb-success-title {
+  font-size: 20px; font-style: italic; font-weight: 300;
+  color: var(--dark); margin: 0;
+}
+
+.gb-success-body {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted); line-height: 1.5; margin: 0;
+}
+</style>

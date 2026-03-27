@@ -3,19 +3,40 @@
 import Layout          from '../layouts/Layout.astro';
 import PageHeader      from '../components/PageHeader.astro';
 import Hashtag         from '~/components/Hashtag.astro';
+import GuestbookForm   from '../components/guestbook/GuestbookForm.astro';
 import { getSettings, getGuestMessages } from '../lib/directus';
 import { formatDate }  from '../lib/utils/format';
+import MarkdownContent from '../components/MarkdownContent.astro';
+import { parseMarkdown } from '../lib/markdown';
 
-const [settings, messages] = await Promise.all([getSettings(), getGuestMessages()]);
+const [settings, rawMessages] = await Promise.all([getSettings(), getGuestMessages()]);
+
+const messages = rawMessages;
 
 const groom            = settings.groom?.first_name ?? 'Aldrin';
 const bride            = settings.bride?.first_name ?? 'Christine';
 const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
 
+const weddingDate    = new Date(settings.wedding_date ?? '2026-09-26');
+const weddingIsOver  = new Date() > weddingDate;
+
+const PAGE_SIZE = 12;
+const total = messages.length;
+const pageSizeOptions = [12, 24, 48].filter(n => n < total).map(n => ({ value: n, label: `${n} / page` }));
+pageSizeOptions.push({ value: total, label: `All (${total})` });
+
 function shortDate(iso?: string): string {
   if (!iso) return '';
   return formatDate(iso, 'MMM d, yyyy');
 }
+
+const initialMessages = messages.slice(0, PAGE_SIZE);
+const allMessages = messages.map(m => ({
+  name: m.name,
+  messageHtml: m.message_to_couple ? parseMarkdown(m.message_to_couple) : null,
+  date: m.date_rsvp_submitted ?? null,
+  dateFormatted: shortDate(m.date_rsvp_submitted),
+}));
 ---
 
 <Layout
@@ -25,7 +46,7 @@ function shortDate(iso?: string): string {
   activeNav="guestbook"
 >
 
-  <div class="page-narrow guestbook-page">
+  <div class="page-wide guestbook-page">
 
     <PageHeader
       groomName={groom}
@@ -34,32 +55,65 @@ function shortDate(iso?: string): string {
       date={`${weddingDateLabel} · Lethbridge, Alberta`}
     />
 
+    {weddingIsOver && <GuestbookForm />}
+
     {messages.length === 0 ? (
       <div class="empty-state">
         <p class="empty-text">Messages will appear here once guests RSVP.</p>
       </div>
     ) : (
-      <div class="letters">
-        {messages.map((msg, i) => (
-          <article class="letter" style={`animation-delay: ${0.1 + i * 0.06}s`}>
-            <header class="letter-header">
-              <div class="letter-from">
-                <span class="letter-symbol" aria-hidden="true">✦</span>
-                <span class="letter-name">{msg.name}</span>
-              </div>
-              {msg.date_rsvp_submitted && (
-                <time class="letter-date" datetime={msg.date_rsvp_submitted}>
-                  {shortDate(msg.date_rsvp_submitted)}
-                </time>
-              )}
-            </header>
-            <div class="letter-rule" aria-hidden="true"></div>
-            <blockquote class="letter-message">
-              "{msg.message_to_couple}"
-            </blockquote>
-          </article>
-        ))}
-      </div>
+      <>
+        <p class="messages-eyebrow">
+          <span>{total}</span> {total === 1 ? 'Message' : 'Messages'}
+        </p>
+
+        <div class="list-header">
+          <select class="toolbar-pagesize" id="guestbook-pagesize" aria-label="Page size">
+            {pageSizeOptions.map(opt => (
+              <option value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <button class="toolbar-sort" id="guestbook-sort" type="button" aria-label="Sort order">
+            <span id="sort-label">Newest</span>
+            <span class="sort-arrow" id="sort-arrow">↓</span>
+          </button>
+        </div>
+
+        <div class="letters-wrap" id="letters-wrap">
+        <div class="letters" id="letters-list">
+          {initialMessages.map((msg, i) => (
+            <article class="letter" style={`animation-delay: ${0.1 + i * 0.06}s`}>
+              <header class="letter-header">
+                <div class="letter-from">
+                  <span class="letter-symbol" aria-hidden="true">✦</span>
+                  <span class="letter-name">{msg.name}</span>
+                </div>
+                {msg.date_rsvp_submitted && (
+                  <time class="letter-date" datetime={msg.date_rsvp_submitted}>
+                    {shortDate(msg.date_rsvp_submitted)}
+                  </time>
+                )}
+              </header>
+              <div class="letter-rule" aria-hidden="true"></div>
+              <MarkdownContent as="div" class="letter-message" content={msg.message_to_couple ?? ''} />
+            </article>
+          ))}
+        </div>
+        </div>
+
+        {messages.length > PAGE_SIZE && (
+          <div class="load-more-wrap" id="load-more-wrap">
+            <button class="load-more-btn" id="load-more-btn" type="button">
+              Show more messages
+              <span class="load-more-count" id="load-more-count">
+                {messages.length - PAGE_SIZE} remaining
+              </span>
+            </button>
+          </div>
+        )}
+
+        <script type="application/json" id="all-messages" set:html={JSON.stringify(allMessages)} />
+      </>
     )}
 
   </div>
@@ -71,10 +125,217 @@ function shortDate(iso?: string): string {
 
 </Layout>
 
+<script>
+  const BATCH = 12;
+
+  const list        = document.getElementById('letters-list') as HTMLElement | null;
+  const listWrap    = document.getElementById('letters-wrap') as HTMLElement | null;
+  const loadWrap    = document.getElementById('load-more-wrap') as HTMLElement | null;
+  const loadBtn     = document.getElementById('load-more-btn') as HTMLButtonElement | null;
+  const countEl     = document.getElementById('load-more-count') as HTMLElement | null;
+  const sortBtn     = document.getElementById('guestbook-sort') as HTMLButtonElement | null;
+  const pageSizeEl  = document.getElementById('guestbook-pagesize') as HTMLSelectElement | null;
+  const sortLabel   = document.getElementById('sort-label') as HTMLElement | null;
+  const sortArrow   = document.getElementById('sort-arrow') as HTMLElement | null;
+  const dataEl      = document.getElementById('all-messages');
+
+  if (list && listWrap && dataEl) {
+
+  type Entry = { name: string; messageHtml: string | null; date: string | null; dateFormatted: string };
+  const allMessages: Entry[] = JSON.parse(dataEl.textContent ?? '[]');
+
+  let sortOrder: 'desc' | 'asc' = 'desc';
+  let offset = BATCH;
+
+  // ── Helpers ────────────────────────────────────────────
+  function mkEl<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    return e;
+  }
+
+  function buildCard(entry: Entry, delay: number): HTMLElement {
+    const article = mkEl('article', 'letter');
+    article.style.animationDelay = `${delay}s`;
+
+    const header = mkEl('header', 'letter-header');
+    const from   = mkEl('div', 'letter-from');
+    const symbol = mkEl('span', 'letter-symbol');
+    symbol.setAttribute('aria-hidden', 'true');
+    symbol.textContent = '✦';
+    const name = mkEl('span', 'letter-name');
+    name.textContent = entry.name;
+    from.append(symbol, name);
+    header.appendChild(from);
+
+    if (entry.date) {
+      const time = mkEl('time', 'letter-date');
+      time.setAttribute('datetime', entry.date);
+      time.textContent = entry.dateFormatted;
+      header.appendChild(time);
+    }
+
+    const rule = mkEl('div', 'letter-rule');
+    rule.setAttribute('aria-hidden', 'true');
+
+    const quote = mkEl('div', 'letter-message');
+    // safe: messageHtml is pre-rendered server-side by parseMarkdown which strips raw HTML
+    quote.innerHTML = entry.messageHtml ?? '';
+
+    article.append(header, rule, quote);
+    return article;
+  }
+
+  function getFiltered(): Entry[] {
+    const base = [...allMessages];
+    return sortOrder === 'asc' ? base.reverse() : base;
+  }
+
+  function updateTally(_shown: number) { /* tally removed from UI */ }
+
+  function showLoadMore(left: number) {
+    if (!loadWrap || !loadBtn) return;
+    if (left <= 0) {
+      loadWrap.remove();
+    } else {
+      if (countEl) countEl.textContent = `${left} remaining`;
+    }
+  }
+
+  function showFadeHint(active: boolean) {
+    listWrap!.classList.toggle('faded', active);
+  }
+
+  // ── Render ─────────────────────────────────────────────
+  function render() {
+    const filtered = getFiltered();
+
+    list!.innerHTML = '';
+    filtered.slice(0, offset).forEach((entry, i) => {
+      list!.appendChild(buildCard(entry, 0.03 + i * 0.04));
+    });
+
+    if (loadWrap) {
+      const left = filtered.length - offset;
+      loadWrap.classList.toggle('hidden-wrap', left <= 0);
+      if (left > 0 && countEl) countEl.textContent = `${left} remaining`;
+    }
+
+    list!.scrollTop = 0;
+    const hasOverflow = list!.scrollHeight > list!.clientHeight;
+    showFadeHint(hasOverflow);
+  }
+
+  // ── Scroll / load more ─────────────────────────────────
+  function onScroll() {
+    const nearBottom = list!.scrollTop + list!.clientHeight >= list!.scrollHeight - 40;
+    if (loadWrap) nearBottom ? loadWrap.classList.add('visible') : loadWrap.classList.remove('visible');
+    showFadeHint(!nearBottom);
+  }
+
+  function loadMore() {
+    const filtered = getFiltered();
+    const batch = filtered.slice(offset, offset + BATCH);
+    let firstNew: HTMLElement | null = null;
+    batch.forEach((entry, i) => {
+      const card = buildCard(entry, 0.05 + i * 0.06);
+      if (i === 0) firstNew = card;
+      list!.appendChild(card);
+    });
+    offset += batch.length;
+
+    if (loadWrap) loadWrap.classList.remove('visible');
+    firstNew?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    const left = filtered.length - offset;
+    updateTally(Math.min(offset, filtered.length));
+    if (left <= 0) {
+      loadWrap?.remove();
+      showFadeHint(false);
+      list!.removeEventListener('scroll', onScroll);
+    } else if (countEl) {
+      countEl.textContent = `${left} remaining`;
+    }
+  }
+
+  // ── Page size ──────────────────────────────────────────
+  pageSizeEl?.addEventListener('change', () => {
+    const val = parseInt(pageSizeEl.value, 10);
+    if (!isNaN(val)) {
+      (window as any).__GUESTBOOK_BATCH = val;
+      offset = val;
+      render();
+    }
+  });
+
+  function getBatch(): number {
+    return (window as any).__GUESTBOOK_BATCH ?? BATCH;
+  }
+
+  // ── Sort ───────────────────────────────────────────────
+  sortBtn?.addEventListener('click', () => {
+    sortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+    if (sortLabel) sortLabel.textContent = sortOrder === 'desc' ? 'Newest' : 'Oldest';
+    if (sortArrow) sortArrow.textContent = sortOrder === 'desc' ? '↓' : '↑';
+    offset = getBatch();
+    render();
+  });
+
+  // ── Init ───────────────────────────────────────────────
+  list.addEventListener('scroll', onScroll);
+  loadBtn?.addEventListener('click', loadMore);
+  listWrap.classList.add('faded');
+
+  } // end guard
+</script>
+
 <style>
 .guestbook-page {
   display: flex; flex-direction: column; align-items: stretch;
 }
+
+/* ── Messages section eyebrow ──────────────────────────── */
+.messages-eyebrow {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 16px;
+}
+.messages-eyebrow span { color: var(--dark); }
+
+/* ── List header (pagesize + sort) ────────────────────── */
+.list-header {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; margin-bottom: 12px;
+}
+
+.toolbar-pagesize {
+  flex-shrink: 0; padding: 9px 10px;
+  background: color-mix(in srgb, var(--cp) 5%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 22%, transparent);
+  border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 11px; font-weight: 300;
+  color: var(--dark); cursor: pointer; outline: none;
+  transition: border-color 0.2s;
+}
+
+.toolbar-pagesize:focus { border-color: color-mix(in srgb, var(--cp) 60%, transparent); }
+
+.toolbar-sort {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  padding: 0;
+  background: none; border: none;
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--dark); cursor: pointer;
+  transition: color 0.2s;
+}
+
+.toolbar-sort:hover { color: var(--cp); }
+
+.sort-arrow { font-size: 12px; color: var(--cs); }
+
+
+.hidden-wrap { display: none !important; }
 
 /* ── Empty ─────────────────────────────────────────────── */
 .empty-state {
@@ -84,14 +345,41 @@ function shortDate(iso?: string): string {
   font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--muted);
 }
 
+/* ── Letter stack wrapper (scroll fade hint) ───────────── */
+.letters-wrap {
+  position: relative; width: 100%;
+}
+
+.letters-wrap::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 72px;
+  background: linear-gradient(to top, var(--ivory, #faf8f4), transparent);
+  pointer-events: none;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+
+.letters-wrap.faded::after { opacity: 1; }
+
 /* ── Letter stack ──────────────────────────────────────── */
 .letters {
   display: flex; flex-direction: column; gap: 20px;
   width: 100%;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+  scroll-behavior: smooth;
 }
 
-/* ── Individual letter ─────────────────────────────────── */
-.letter {
+.letters::-webkit-scrollbar { width: 4px; }
+.letters::-webkit-scrollbar-track { background: transparent; }
+.letters::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--cp) 35%, transparent);
+  border-radius: 2px;
+}
+
+/* ── Individual letter (global: also applies to JS-created cards) ── */
+:global(.letter) {
   background: color-mix(in srgb, var(--cp) 5%, var(--ivory));
   border: 1px solid color-mix(in srgb, var(--cp) 22%, transparent);
   border-left: 3px solid color-mix(in srgb, var(--cp) 55%, transparent);
@@ -101,33 +389,33 @@ function shortDate(iso?: string): string {
 }
 
 /* ── Header row ────────────────────────────────────────── */
-.letter-header {
+:global(.letter-header) {
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; margin-bottom: 14px;
 }
 
-.letter-from {
+:global(.letter-from) {
   display: flex; align-items: center; gap: 10px; min-width: 0;
 }
 
-.letter-symbol {
+:global(.letter-symbol) {
   font-family: var(--fd); font-size: 13px;
   color: var(--cs); flex-shrink: 0;
 }
 
-.letter-name {
+:global(.letter-name) {
   font-family: var(--fb); font-size: 11px; font-weight: 600;
   letter-spacing: 2.5px; text-transform: uppercase; color: var(--dark);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-.letter-date {
+:global(.letter-date) {
   font-family: var(--fb); font-size: 10px; font-weight: 300;
   color: var(--muted); letter-spacing: 0.5px; flex-shrink: 0;
 }
 
 /* ── Divider ───────────────────────────────────────────── */
-.letter-rule {
+:global(.letter-rule) {
   height: 1px;
   background: linear-gradient(90deg,
     color-mix(in srgb, var(--cp) 40%, transparent),
@@ -137,14 +425,68 @@ function shortDate(iso?: string): string {
 }
 
 /* ── Message body ──────────────────────────────────────── */
-.letter-message {
+:global(.letter-message) {
   font-family: var(--fd); font-size: 21px; font-weight: 300; font-style: italic;
   color: var(--dark); line-height: 1.7;
   margin: 0;
 }
 
+:global(.letter-message > p) { margin: 0 0 0.5em; }
+:global(.letter-message > p:last-child) { margin-bottom: 0; }
+
 @media (max-width: 520px) {
-  .letter { padding: 20px 20px 22px; }
-  .letter-message { font-size: 18px; }
+  .toolbar { margin-bottom: 32px; }
+  :global(.letter) { padding: 16px 16px 20px; }
+  :global(.letter-message) { font-size: 17px; }
+
+  /* stack name + date vertically */
+  :global(.letter-header) {
+    flex-direction: column; align-items: flex-start; gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  /* allow name to wrap instead of truncate */
+  :global(.letter-name) {
+    white-space: normal; letter-spacing: 2px; font-size: 10px;
+  }
+
+  :global(.letter-date) { font-size: 9px; padding-left: 23px; }
+
+  .letters { max-height: 320px; }
+}
+
+/* ── Load more ─────────────────────────────────────────── */
+.load-more-wrap {
+  display: flex; justify-content: center;
+  padding: 16px 0 8px;
+  opacity: 0; pointer-events: none;
+  transform: translateY(6px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.load-more-wrap.visible {
+  opacity: 1; pointer-events: auto;
+  transform: translateY(0);
+}
+
+.load-more-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: 1px solid color-mix(in srgb, var(--cp) 40%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 12px 28px;
+  font-family: var(--fb); font-size: 12px; font-weight: 500;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--dark); cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.load-more-btn:hover {
+  background: color-mix(in srgb, var(--cp) 6%, transparent);
+  border-color: color-mix(in srgb, var(--cp) 65%, transparent);
+}
+
+.load-more-count {
+  font-size: 10px; font-weight: 300; letter-spacing: 0.5px;
+  color: var(--muted); text-transform: none;
 }
 </style>
