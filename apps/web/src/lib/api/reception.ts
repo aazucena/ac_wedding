@@ -29,7 +29,7 @@ export async function getGuests(): Promise<Guests[]> {
   try {
     return await get<Guests[]>('/items/guests', {
       fields: [
-        'id', 'attending', 'meal_preference',
+        'id', 'attending',
         'person.id', 'person.first_name', 'person.last_name', 'person.preferred_name',
         'table.id', 'table.number', 'table.name',
       ],

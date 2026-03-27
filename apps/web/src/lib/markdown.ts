@@ -7,7 +7,10 @@ const md = new Marked();
 
 md.use({
   renderer: {
-    html: () => '',
+    // Strip all raw HTML except safe inline formatting tags (<u>, <mark>)
+    html: (token) => {
+      return /^<\/?(u|mark)(\s[^>]*)?>$/i.test(token.text.trim()) ? token.text : '';
+    },
   },
 });
 
