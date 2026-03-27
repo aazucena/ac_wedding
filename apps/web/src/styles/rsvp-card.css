@@ -20,7 +20,7 @@
   border-bottom-color: color-mix(in srgb, var(--cp) 18%, transparent) !important;
 }
 #rsvp-card .card-option.selected .card-option-check { opacity: 1 !important; }
-#rsvp-card .error-banner.visible { display: block !important; }
+#rsvp-card .error-banner.visible { display: block !important; margin-top: 10px; }
 
 /* THUMBNAIL GRID (global — nodes created by JS, Astro scoping won't apply) */
 .thumb-grid {
