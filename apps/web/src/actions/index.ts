@@ -2,6 +2,7 @@
 // Astro Actions — type-safe server mutations replacing api/rsvp.ts and api/parties.ts
 import { defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
+import { DIRECTUS_URL, DIRECTUS_TOKEN } from 'astro:env/server';
 import {
   validatePartyByIdAndToken,
   patchParty,
@@ -9,10 +10,17 @@ import {
   searchPartiesByName,
   searchGuestsForSeating,
   getTablemates,
+  verifyGuestNameAndTable,
+  createGuestbookEntry,
+  getSettings,
 } from '@lib/directus';
 import { buildNameFilter } from '@lib/utils/search';
+import { buildFlowActions } from './flows';
+
+const flowActions = await buildFlowActions();
 
 export const server = {
+  ...flowActions,
   submitRsvp: defineAction({
     input: z.object({
       token: z.string(),
@@ -20,6 +28,7 @@ export const server = {
       partyPayload: z.object({
         status: z.enum([ 'confirmed', 'declined' ]),
         hotel: z.boolean(),
+        representative: z.string(),
         transportation: z.boolean(),
         song_request: z.string().nullable(),
         message_to_couple: z.string().nullable(),
@@ -29,7 +38,6 @@ export const server = {
         id: z.string(),
         attending: z.boolean(),
         attendance: z.array(z.enum(['ceremony', 'reception'])),
-        meal_preference: z.string().nullable(),
         dietary_restrictions: z.string().nullable(),
       })),
     }),
@@ -49,13 +57,82 @@ export const server = {
             patchGuest(g.id, {
               attending:            g.attending,
               attendance:           g.attendance,
-              meal_preference:      g.meal_preference,
               dietary_restrictions: g.dietary_restrictions,
             })
           )
         );
       }
       return { success: true };
+    },
+  }),
+
+  submitContactDetails: defineAction({
+    input: z.object({
+      token:          z.string(),
+      partyId:        z.string(),
+      guestId:        z.string(),        // guests.id — used for party membership check
+      representative: z.string(),        // persons.id — the record that gets phone/email updated
+      phone:          z.string().nullable(),
+      email:          z.email().nullable(),
+    }).refine(({ phone, email }) => !!(phone || email), {
+      message: 'Please provide at least a phone number or email address.',
+    }),
+    handler: async ({ token, partyId, guestId, representative, phone, email }) => {
+      // Validate token and ensure the selected guest belongs to this party
+      const memberIds = await validatePartyByIdAndToken(partyId, token);
+      if (!memberIds) throw new Error('Invalid invitation token.');
+      if (!memberIds.includes(guestId)) {
+        throw new Error('Selected representative is not a member of your party.');
+      }
+
+      // Forward to the gateway — the flow performs the person↔guest ownership check
+      const res = await fetch(`${DIRECTUS_URL}/api/v1/representative`, {
+        method:  'POST',
+        headers: {
+          Authorization:  `Bearer ${DIRECTUS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body:   JSON.stringify({ token, id: guestId, party: partyId, representative, phone: phone || null, email: email || null }),
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as any)?.error ?? 'Failed to update contact details.');
+      }
+
+      return { success: true };
+    },
+  }),
+
+  submitGuestbookEntry: defineAction({
+    input: z.object({
+      name:        z.string().min(1).max(255),
+      message:     z.string().min(1),
+      tableNumber: z.number().int().positive().nullable(),
+    }),
+    handler: async ({ name, message, tableNumber }) => {
+      let guestId: string | null = null;
+      let verified = false;
+
+      if (tableNumber !== null) {
+        guestId = await verifyGuestNameAndTable(name, tableNumber);
+        verified = guestId !== null;
+      }
+
+      const settings = await getSettings();
+      const receptionId = settings.reception?.id ?? null;
+
+      await createGuestbookEntry({
+        name,
+        message,
+        status:    verified ? 'published' : 'draft',
+        verified,
+        guest:     guestId,
+        reception: receptionId,
+      });
+
+      return { verified };
     },
   }),
 
