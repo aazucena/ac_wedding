@@ -173,6 +173,14 @@ type Query {
   directus_sync_id_map_by_id(id: ID!, version: String): directus_sync_id_map
   directus_sync_id_map_aggregated(groupBy: [String], filter: directus_sync_id_map_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_sync_id_map_aggregated!]!
   directus_sync_id_map_by_version(version: String!, id: ID!): version_directus_sync_id_map
+  api_endpoints(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [api_endpoints!]!
+  api_endpoints_by_id(id: ID!, version: String): api_endpoints
+  api_endpoints_aggregated(groupBy: [String], filter: api_endpoints_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [api_endpoints_aggregated!]!
+  api_endpoints_by_version(version: String!, id: ID!): version_api_endpoints
+  guestbook_entries(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [guestbook_entries!]!
+  guestbook_entries_by_id(id: ID!, version: String): guestbook_entries
+  guestbook_entries_aggregated(groupBy: [String], filter: guestbook_entries_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [guestbook_entries_aggregated!]!
+  guestbook_entries_by_version(version: String!, id: ID!): version_guestbook_entries
 }
 
 type Mutation {
@@ -262,6 +270,10 @@ type Mutation {
   create_memories_item(data: create_memories_input!): memories
   create_directus_sync_id_map_items(filter: directus_sync_id_map_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_sync_id_map_input!]): [directus_sync_id_map!]!
   create_directus_sync_id_map_item(data: create_directus_sync_id_map_input!): directus_sync_id_map
+  create_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_api_endpoints_input!]): [api_endpoints!]!
+  create_api_endpoints_item(data: create_api_endpoints_input!): api_endpoints
+  create_guestbook_entries_items(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_guestbook_entries_input!]): [guestbook_entries!]!
+  create_guestbook_entries_item(data: create_guestbook_entries_input!): guestbook_entries
   update_parties_items(filter: parties_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_parties_input!): [parties!]!
   update_parties_batch(filter: parties_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_parties_input!]): [parties!]!
   update_parties_item(id: ID!, data: update_parties_input!): parties
@@ -392,6 +404,12 @@ type Mutation {
   update_directus_sync_id_map_items(filter: directus_sync_id_map_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_sync_id_map_input!): [directus_sync_id_map!]!
   update_directus_sync_id_map_batch(filter: directus_sync_id_map_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_sync_id_map_input!]): [directus_sync_id_map!]!
   update_directus_sync_id_map_item(id: ID!, data: update_directus_sync_id_map_input!): directus_sync_id_map
+  update_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_api_endpoints_input!): [api_endpoints!]!
+  update_api_endpoints_batch(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_api_endpoints_input!]): [api_endpoints!]!
+  update_api_endpoints_item(id: ID!, data: update_api_endpoints_input!): api_endpoints
+  update_guestbook_entries_items(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_guestbook_entries_input!): [guestbook_entries!]!
+  update_guestbook_entries_batch(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_guestbook_entries_input!]): [guestbook_entries!]!
+  update_guestbook_entries_item(id: ID!, data: update_guestbook_entries_input!): guestbook_entries
   delete_parties_items(ids: [ID]!): delete_many
   delete_parties_item(id: ID!): delete_one
   delete_ceremonies_items(ids: [ID]!): delete_many
@@ -478,6 +496,10 @@ type Mutation {
   delete_memories_item(id: ID!): delete_one
   delete_directus_sync_id_map_items(ids: [ID]!): delete_many
   delete_directus_sync_id_map_item(id: ID!): delete_one
+  delete_api_endpoints_items(ids: [ID]!): delete_many
+  delete_api_endpoints_item(id: ID!): delete_one
+  delete_guestbook_entries_items(ids: [ID]!): delete_many
+  delete_guestbook_entries_item(id: ID!): delete_one
 }
 
 type Subscription {
@@ -492,10 +514,10 @@ type Subscription {
   persons_mutated(event: EventEnum): persons_mutated
   directus_presets_mutated(event: EventEnum): directus_presets_mutated
   directus_panels_mutated(event: EventEnum): directus_panels_mutated
+  directus_flows_mutated(event: EventEnum): directus_flows_mutated
   directus_dashboards_mutated(event: EventEnum): directus_dashboards_mutated
   directus_notifications_mutated(event: EventEnum): directus_notifications_mutated
   directus_shares_mutated(event: EventEnum): directus_shares_mutated
-  directus_flows_mutated(event: EventEnum): directus_flows_mutated
   directus_operations_mutated(event: EventEnum): directus_operations_mutated
   directus_translations_mutated(event: EventEnum): directus_translations_mutated
   directus_users_mutated(event: EventEnum): directus_users_mutated
@@ -548,6 +570,8 @@ type Subscription {
   accomodations_mutated(event: EventEnum): accomodations_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
+  guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""
@@ -667,6 +691,49 @@ type accomodations_mutated {
   key: ID!
   event: EventEnum
   data: accomodations
+}
+
+type api_endpoints {
+  id: ID!
+  flow(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_flows
+  key: String!
+  enabled: Boolean
+  request_schema: String
+  response_schema: String
+  method: String
+  description: String
+  auth_required: Boolean!
+  tags: String
+  deprecated: Boolean!
+  version: String
+}
+
+type api_endpoints_aggregated {
+  group: JSON
+  countAll: Int
+  count: api_endpoints_aggregated_count
+  countDistinct: api_endpoints_aggregated_count
+}
+
+type api_endpoints_aggregated_count {
+  id: Int
+  flow: Int
+  key: Int
+  enabled: Int
+  request_schema: Int
+  response_schema: Int
+  method: Int
+  description: Int
+  auth_required: Int
+  tags: Int
+  deprecated: Int
+  version: Int
+}
+
+type api_endpoints_mutated {
+  key: ID!
+  event: EventEnum
+  data: api_endpoints
 }
 
 type budget_adjustments {
@@ -2366,9 +2433,62 @@ type groups_mutated {
   data: groups
 }
 
+type guestbook_entries {
+  date_created: Date
+  date_created_func: datetime_functions
+  id: ID!
+
+  """Markdown string — rendered on the guestbook page"""
+  message: String!
+
+  """Name as entered by the submitter"""
+  name: String!
+
+  """draft = awaiting moderation, published = visible on the guestbook"""
+  status: String
+
+  """True if name + table number matched a guest record at submission time"""
+  verified: Boolean
+  guest(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): guests
+  reception(filter: reception_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): reception
+}
+
+type guestbook_entries_aggregated {
+  group: JSON
+  countAll: Int
+  count: guestbook_entries_aggregated_count
+  countDistinct: guestbook_entries_aggregated_count
+}
+
+type guestbook_entries_aggregated_count {
+  date_created: Int
+  id: Int
+
+  """Markdown string — rendered on the guestbook page"""
+  message: Int
+
+  """Name as entered by the submitter"""
+  name: Int
+
+  """draft = awaiting moderation, published = visible on the guestbook"""
+  status: Int
+
+  """True if name + table number matched a guest record at submission time"""
+  verified: Int
+
+  """Linked guest record — set only when verified is true"""
+  guest: Int
+  reception: Int
+}
+
+type guestbook_entries_mutated {
+  key: ID!
+  event: EventEnum
+  data: guestbook_entries
+}
+
 type guests {
   id: ID!
-  meal_preference: String
   dietary_restrictions: String
   notes: String
   person(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): persons
@@ -2389,7 +2509,6 @@ type guests_aggregated {
 
 type guests_aggregated_count {
   id: Int
-  meal_preference: Int
   dietary_restrictions: Int
   notes: Int
   person: Int
@@ -3414,6 +3533,8 @@ type parties {
   date_updated: Date
   date_updated_func: datetime_functions
   name: String!
+
+  """Auto-generated token from creating this data"""
   rsvp_token: String
   hotel: Boolean
   transportation: Boolean
@@ -3446,6 +3567,8 @@ type parties_aggregated_count {
   user_updated: Int
   date_updated: Int
   name: Int
+
+  """Auto-generated token from creating this data"""
   rsvp_token: Int
   hotel: Int
   transportation: Int
@@ -4456,6 +4579,22 @@ type version_accomodations {
 }
 
 """"""
+type version_api_endpoints {
+  id: ID
+  flow: JSON
+  key: String
+  enabled: Boolean
+  request_schema: String
+  response_schema: String
+  method: String
+  description: String
+  auth_required: Boolean
+  tags: String
+  deprecated: Boolean
+  version: String
+}
+
+""""""
 type version_budget_adjustments {
   id: ID
   user_created: JSON
@@ -4801,9 +4940,28 @@ type version_groups {
 }
 
 """"""
+type version_guestbook_entries {
+  date_created: Date
+  id: ID
+
+  """Markdown string — rendered on the guestbook page"""
+  message: String
+
+  """Name as entered by the submitter"""
+  name: String
+
+  """draft = awaiting moderation, published = visible on the guestbook"""
+  status: String
+
+  """True if name + table number matched a guest record at submission time"""
+  verified: Boolean
+  guest: JSON
+  reception: JSON
+}
+
+""""""
 type version_guests {
   id: ID
-  meal_preference: String
   dietary_restrictions: String
   notes: String
   person: JSON
@@ -5205,6 +5363,8 @@ type version_parties {
   user_updated: JSON
   date_updated: Date
   name: String
+
+  """Auto-generated token from creating this data"""
   rsvp_token: String
   hotel: Boolean
   transportation: Boolean
@@ -5771,6 +5931,23 @@ input accomodations_filter {
   _or: [accomodations_filter]
 }
 
+input api_endpoints_filter {
+  id: id_filter_operators
+  flow: directus_flows_filter
+  key: string_filter_operators
+  enabled: boolean_filter_operators
+  request_schema: string_filter_operators
+  response_schema: string_filter_operators
+  method: string_filter_operators
+  description: string_filter_operators
+  auth_required: boolean_filter_operators
+  tags: string_filter_operators
+  deprecated: boolean_filter_operators
+  version: string_filter_operators
+  _and: [api_endpoints_filter]
+  _or: [api_endpoints_filter]
+}
+
 input big_int_filter_operators {
   _eq: GraphQLBigInt
   _neq: GraphQLBigInt
@@ -6064,6 +6241,21 @@ input create_accomodations_input {
   status: String
 }
 
+input create_api_endpoints_input {
+  id: ID!
+  flow: create_directus_flows_input
+  key: String!
+  enabled: Boolean
+  request_schema: String
+  response_schema: String
+  method: String
+  description: String
+  auth_required: Boolean!
+  tags: String
+  deprecated: Boolean!
+  version: String
+}
+
 input create_budget_adjustments_input {
   id: ID
   user_created: create_directus_users_input
@@ -6348,10 +6540,41 @@ input create_directus_files_input {
   uploaded_on: Date
 }
 
+input create_directus_flows_input {
+  id: ID
+  name: String!
+  icon: String
+  color: String
+  description: String
+  status: String
+  trigger: String
+  accountability: String
+  options: JSON
+  operation: create_directus_operations_input
+  date_created: Date
+  user_created: create_directus_users_input
+  operations: [create_directus_operations_input]
+}
+
 input create_directus_folders_input {
   id: ID
   name: String!
   parent: create_directus_folders_input
+}
+
+input create_directus_operations_input {
+  id: ID
+  name: String
+  key: String!
+  type: String!
+  position_x: Int!
+  position_y: Int!
+  options: JSON
+  resolve: create_directus_operations_input
+  reject: create_directus_operations_input
+  flow: create_directus_flows_input
+  date_created: Date
+  user_created: create_directus_users_input
 }
 
 input create_directus_permissions_input {
@@ -6508,9 +6731,27 @@ input create_groups_input {
   members: [create_parties_input]
 }
 
+input create_guestbook_entries_input {
+  date_created: Date
+  id: ID
+
+  """Markdown string — rendered on the guestbook page"""
+  message: String!
+
+  """Name as entered by the submitter"""
+  name: String!
+
+  """draft = awaiting moderation, published = visible on the guestbook"""
+  status: String
+
+  """True if name + table number matched a guest record at submission time"""
+  verified: Boolean
+  guest: create_guests_input
+  reception: create_reception_input
+}
+
 input create_guests_input {
   id: ID
-  meal_preference: String
   dietary_restrictions: String
   notes: String
   person: create_persons_input
@@ -6899,6 +7140,8 @@ input create_parties_input {
   user_updated: create_directus_users_input
   date_updated: Date
   name: String!
+
+  """Auto-generated token from creating this data"""
   rsvp_token: String
   hotel: Boolean
   transportation: Boolean
@@ -7917,9 +8160,22 @@ input groups_filter {
   _or: [groups_filter]
 }
 
+input guestbook_entries_filter {
+  date_created: date_filter_operators
+  date_created_func: datetime_function_filter_operators
+  id: id_filter_operators
+  message: string_filter_operators
+  name: string_filter_operators
+  status: string_filter_operators
+  verified: boolean_filter_operators
+  guest: guests_filter
+  reception: reception_filter
+  _and: [guestbook_entries_filter]
+  _or: [guestbook_entries_filter]
+}
+
 input guests_filter {
   id: id_filter_operators
-  meal_preference: string_filter_operators
   dietary_restrictions: string_filter_operators
   notes: string_filter_operators
   person: persons_filter
@@ -7936,7 +8192,6 @@ input guests_filter {
 """"""
 input guests_quantifier_filter {
   id: id_filter_operators
-  meal_preference: string_filter_operators
   dietary_restrictions: string_filter_operators
   notes: string_filter_operators
   person: persons_filter
@@ -8837,6 +9092,21 @@ input update_accomodations_input {
   status: String
 }
 
+input update_api_endpoints_input {
+  id: ID
+  flow: update_directus_flows_input
+  key: String
+  enabled: Boolean
+  request_schema: String
+  response_schema: String
+  method: String
+  description: String
+  auth_required: Boolean
+  tags: String
+  deprecated: Boolean
+  version: String
+}
+
 input update_budget_adjustments_input {
   id: ID
   user_created: update_directus_users_input
@@ -9121,10 +9391,41 @@ input update_directus_files_input {
   uploaded_on: Date
 }
 
+input update_directus_flows_input {
+  id: ID
+  name: String
+  icon: String
+  color: String
+  description: String
+  status: String
+  trigger: String
+  accountability: String
+  options: JSON
+  operation: update_directus_operations_input
+  date_created: Date
+  user_created: update_directus_users_input
+  operations: [update_directus_operations_input]
+}
+
 input update_directus_folders_input {
   id: ID
   name: String
   parent: update_directus_folders_input
+}
+
+input update_directus_operations_input {
+  id: ID
+  name: String
+  key: String
+  type: String
+  position_x: Int
+  position_y: Int
+  options: JSON
+  resolve: update_directus_operations_input
+  reject: update_directus_operations_input
+  flow: update_directus_flows_input
+  date_created: Date
+  user_created: update_directus_users_input
 }
 
 input update_directus_permissions_input {
@@ -9281,9 +9582,27 @@ input update_groups_input {
   members: [update_parties_input]
 }
 
+input update_guestbook_entries_input {
+  date_created: Date
+  id: ID
+
+  """Markdown string — rendered on the guestbook page"""
+  message: String
+
+  """Name as entered by the submitter"""
+  name: String
+
+  """draft = awaiting moderation, published = visible on the guestbook"""
+  status: String
+
+  """True if name + table number matched a guest record at submission time"""
+  verified: Boolean
+  guest: update_guests_input
+  reception: update_reception_input
+}
+
 input update_guests_input {
   id: ID
-  meal_preference: String
   dietary_restrictions: String
   notes: String
   person: update_persons_input
@@ -9672,6 +9991,8 @@ input update_parties_input {
   user_updated: update_directus_users_input
   date_updated: Date
   name: String
+
+  """Auto-generated token from creating this data"""
   rsvp_token: String
   hotel: Boolean
   transportation: Boolean

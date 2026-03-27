@@ -5,8 +5,27 @@
   "meta": {
     "collection": "parties",
     "conditions": null,
-    "display": null,
-    "display_options": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Invited",
+          "value": "invited"
+        },
+        {
+          "text": "Confirmed",
+          "value": "confirmed"
+        },
+        {
+          "text": "Declined",
+          "value": "declined"
+        },
+        {
+          "text": "Pending",
+          "value": "pending"
+        }
+      ]
+    },
     "field": "status",
     "group": null,
     "hidden": false,

@@ -5,8 +5,23 @@
   "meta": {
     "collection": "groups",
     "conditions": null,
-    "display": null,
-    "display_options": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Bride",
+          "value": "bride"
+        },
+        {
+          "text": "Groom",
+          "value": "groom"
+        },
+        {
+          "text": "Both",
+          "value": "both"
+        }
+      ]
+    },
     "field": "side",
     "group": null,
     "hidden": false,

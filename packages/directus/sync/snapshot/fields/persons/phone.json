@@ -12,9 +12,10 @@
     "field": "phone",
     "group": null,
     "hidden": false,
-    "interface": "extension-masked-input",
+    "interface": "input",
     "note": null,
     "options": {
+      "placeholder": "(123) 456-7890",
       "template": "\\(999\\) 999-9999"
     },
     "readonly": false,

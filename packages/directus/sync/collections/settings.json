@@ -60,6 +60,11 @@
         "type": "module",
         "id": "protoqol/schema",
         "enabled": true
+      },
+      {
+        "type": "module",
+        "id": "api-gateway",
+        "enabled": true
       }
     ],
     "project_descriptor": "Aldrin & Christine · September 26, 2026",

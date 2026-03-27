@@ -8,7 +8,7 @@
     "display": null,
     "display_options": null,
     "field": "attending",
-    "group": null,
+    "group": "inquiry",
     "hidden": false,
     "interface": "boolean",
     "note": null,
@@ -16,7 +16,7 @@
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 4,
+    "sort": 1,
     "special": [
       "cast-boolean"
     ],

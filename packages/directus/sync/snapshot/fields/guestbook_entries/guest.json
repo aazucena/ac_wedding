@@ -1,0 +1,49 @@
+{
+  "collection": "guestbook_entries",
+  "field": "guest",
+  "type": "uuid",
+  "meta": {
+    "collection": "guestbook_entries",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "guest",
+    "group": null,
+    "hidden": true,
+    "interface": null,
+    "note": "Linked guest record — set only when verified is true",
+    "options": {
+      "enableCreate": false,
+      "enableSelect": false
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 6,
+    "special": [
+      "m2o"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "guest",
+    "table": "guestbook_entries",
+    "data_type": "uuid",
+    "default_value": null,
+    "max_length": null,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": "guests",
+    "foreign_key_column": "id"
+  }
+}

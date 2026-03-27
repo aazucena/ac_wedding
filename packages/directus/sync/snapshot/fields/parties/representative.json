@@ -8,7 +8,7 @@
     "display": "related-values",
     "display_options": null,
     "field": "representative",
-    "group": null,
+    "group": "inquiry",
     "hidden": false,
     "interface": "select-dropdown-m2o",
     "note": null,
@@ -19,7 +19,7 @@
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 6,
+    "sort": 1,
     "special": [
       "m2o"
     ],

@@ -5,20 +5,27 @@
   "meta": {
     "collection": "parties",
     "conditions": null,
-    "display": null,
+    "display": "raw",
     "display_options": null,
     "field": "rsvp_token",
     "group": null,
     "hidden": false,
-    "interface": null,
-    "note": null,
-    "options": null,
-    "readonly": false,
+    "interface": "input",
+    "note": "Auto-generated token from creating this data",
+    "options": {
+      "placeholder": "Auto-generated token (e.g TEST-TH15)"
+    },
+    "readonly": true,
     "required": false,
     "searchable": true,
-    "sort": 7,
+    "sort": 6,
     "special": null,
-    "translations": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Token"
+      }
+    ],
     "validation": null,
     "validation_message": null,
     "width": "full"

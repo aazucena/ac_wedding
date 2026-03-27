@@ -5,8 +5,10 @@
   "meta": {
     "collection": "groups",
     "conditions": null,
-    "display": null,
-    "display_options": null,
+    "display": "related-values",
+    "display_options": {
+      "template": "{{first_name}} {{last_name}}"
+    },
     "field": "representative",
     "group": null,
     "hidden": false,
@@ -14,10 +16,28 @@
     "note": null,
     "options": {
       "enableLink": true,
-      "template": null
+      "filter": {
+        "_and": [
+          {
+            "_or": [
+              {
+                "phone": {
+                  "_nnull": true
+                }
+              },
+              {
+                "email": {
+                  "_nnull": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "template": "{{first_name}} {{last_name}}"
     },
     "readonly": false,
-    "required": false,
+    "required": true,
     "searchable": true,
     "sort": 4,
     "special": [

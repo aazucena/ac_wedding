@@ -8,15 +8,22 @@
     "display": null,
     "display_options": null,
     "field": "message_to_couple",
-    "group": null,
+    "group": "inquiry",
     "hidden": false,
-    "interface": null,
+    "interface": "input-rich-text-md",
     "note": null,
-    "options": null,
+    "options": {
+      "toolbar": [
+        "bold",
+        "italic",
+        "strikethrough",
+        "empty"
+      ]
+    },
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 10,
+    "sort": 5,
     "special": null,
     "translations": null,
     "validation": null,

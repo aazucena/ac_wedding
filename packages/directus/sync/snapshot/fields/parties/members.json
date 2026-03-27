@@ -5,18 +5,22 @@
   "meta": {
     "collection": "parties",
     "conditions": null,
-    "display": null,
-    "display_options": null,
+    "display": "related-values",
+    "display_options": {
+      "template": "{{person.first_name}} {{person.last_name}}"
+    },
     "field": "members",
     "group": null,
     "hidden": false,
     "interface": "list-m2m",
     "note": null,
-    "options": null,
+    "options": {
+      "template": "{{person.first_name}} {{person.last_name}}"
+    },
     "readonly": false,
     "required": true,
     "searchable": true,
-    "sort": 4,
+    "sort": 5,
     "special": [
       "m2m"
     ],

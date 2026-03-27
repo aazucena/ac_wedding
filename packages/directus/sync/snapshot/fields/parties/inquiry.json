@@ -1,0 +1,30 @@
+{
+  "collection": "parties",
+  "field": "inquiry",
+  "type": "alias",
+  "meta": {
+    "collection": "parties",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "inquiry",
+    "group": null,
+    "hidden": false,
+    "interface": "group-raw",
+    "note": "Must be filled out by this party",
+    "options": null,
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 7,
+    "special": [
+      "alias",
+      "no-data",
+      "group"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

@@ -17,20 +17,6 @@
     "_syncId": "3b72c2eb-d428-4c56-a80e-ccf793f90740"
   },
   {
-    "name": "RSVP Form Submission",
-    "icon": "how_to_reg",
-    "color": "#2ECDA7",
-    "description": "SUPERSEDED — RSVP submissions are now handled by the Astro Actions server endpoint (submitRsvp), which patches the parties and guests collections directly via the Directus SDK. This flow is kept for reference but must remain inactive.",
-    "status": "inactive",
-    "trigger": "webhook",
-    "accountability": "all",
-    "options": {
-      "method": "POST"
-    },
-    "operation": "1451dee9-d112-40c8-beb1-d2ebbe83724e",
-    "_syncId": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1"
-  },
-  {
     "name": "Budget Payment Sync",
     "icon": "payments",
     "color": "#F7C948",
@@ -67,8 +53,24 @@
         "parties"
       ]
     },
-    "operation": "5891d591-64b1-477a-a83d-d186a3a5f015",
+    "operation": "5912d814-e691-4707-9c09-46d0da34da1b",
     "_syncId": "9978a209-4a98-429c-b32e-d233ecef70b7"
+  },
+  {
+    "name": "RSVP Contact Details",
+    "icon": "contact_phone",
+    "color": "#6366F1",
+    "description": "Webhook — updates the representative's phone and email on the persons record after RSVP submission. Validates rsvp_token against the party and confirms the representative guest belongs to that party before patching.",
+    "status": "active",
+    "trigger": "webhook",
+    "accountability": "all",
+    "options": {
+      "method": "POST",
+      "return": "$last",
+      "error_on_reject": true
+    },
+    "operation": "9d101a4d-b93b-4b5a-a590-4b29df430b62",
+    "_syncId": "b1dc8579-4d52-47af-861d-61707ac9851f"
   },
   {
     "name": "RSVP Deadline: Mark Non-Responders",

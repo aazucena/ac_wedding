@@ -1,0 +1,30 @@
+{
+  "collection": "guests",
+  "field": "inquiry",
+  "type": "alias",
+  "meta": {
+    "collection": "guests",
+    "conditions": null,
+    "display": null,
+    "display_options": null,
+    "field": "inquiry",
+    "group": null,
+    "hidden": false,
+    "interface": "group-raw",
+    "note": "Must be fill out by this guest",
+    "options": null,
+    "readonly": true,
+    "required": false,
+    "searchable": true,
+    "sort": 4,
+    "special": [
+      "alias",
+      "no-data",
+      "group"
+    ],
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  }
+}

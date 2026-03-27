@@ -1,49 +1,44 @@
 {
-  "collection": "guests",
-  "field": "meal_preference",
+  "collection": "guestbook_entries",
+  "field": "status",
   "type": "string",
   "meta": {
-    "collection": "guests",
+    "collection": "guestbook_entries",
     "conditions": null,
-    "display": null,
-    "display_options": null,
-    "field": "meal_preference",
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Draft",
+          "value": "draft"
+        },
+        {
+          "text": "Published",
+          "value": "published"
+        }
+      ]
+    },
+    "field": "status",
     "group": null,
     "hidden": false,
     "interface": "select-dropdown",
-    "note": null,
+    "note": "draft = awaiting moderation, published = visible on the guestbook",
     "options": {
       "choices": [
         {
-          "text": "Standard",
-          "value": "standard"
+          "text": "Draft",
+          "value": "draft"
         },
         {
-          "text": "Vegetarian",
-          "value": "vegetarian"
-        },
-        {
-          "text": "Vegan",
-          "value": "vegan"
-        },
-        {
-          "text": "Halal",
-          "value": "halal"
-        },
-        {
-          "text": "Kosher",
-          "value": "kosher"
-        },
-        {
-          "text": "Kids Meal",
-          "value": "kids_meal"
+          "text": "Published",
+          "value": "published"
         }
       ]
     },
     "readonly": false,
-    "required": false,
+    "required": true,
     "searchable": true,
-    "sort": 6,
+    "sort": 2,
     "special": null,
     "translations": null,
     "validation": null,
@@ -51,14 +46,14 @@
     "width": "full"
   },
   "schema": {
-    "name": "meal_preference",
-    "table": "guests",
+    "name": "status",
+    "table": "guestbook_entries",
     "data_type": "character varying",
-    "default_value": null,
+    "default_value": "draft",
     "max_length": 255,
     "numeric_precision": null,
     "numeric_scale": null,
-    "is_nullable": true,
+    "is_nullable": false,
     "is_unique": false,
     "is_indexed": false,
     "is_primary_key": false,

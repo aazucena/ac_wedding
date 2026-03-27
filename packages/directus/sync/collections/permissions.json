@@ -72,6 +72,35 @@
     "_syncId": "3bb2a696-3aac-4e2e-a775-35a57a3c97e6"
   },
   {
+    "collection": "directus_flows",
+    "action": "read",
+    "permissions": {
+      "_and": [
+        {
+          "trigger": {
+            "_eq": "webhook"
+          }
+        },
+        {
+          "status": {
+            "_eq": "active"
+          }
+        }
+      ]
+    },
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "id",
+      "name",
+      "trigger",
+      "status",
+      "options"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "1dec22e6-d2b1-4370-9c8a-ff1dbc9d29a8"
+  },
+  {
     "collection": "directus_folders",
     "action": "read",
     "permissions": null,
@@ -132,6 +161,49 @@
     "_syncId": "3fa1aa6f-1de8-47bf-8182-eae362864eac"
   },
   {
+    "collection": "guestbook_entries",
+    "action": "create",
+    "permissions": null,
+    "validation": null,
+    "presets": {
+      "status": "draft",
+      "verified": false
+    },
+    "fields": [
+      "name",
+      "message",
+      "status",
+      "verified"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "76d1f68d-e0d1-4df6-b0f3-7050caa81523"
+  },
+  {
+    "collection": "guestbook_entries",
+    "action": "read",
+    "permissions": {
+      "_and": [
+        {
+          "status": {
+            "_eq": "published"
+          }
+        }
+      ]
+    },
+    "validation": null,
+    "presets": null,
+    "fields": [
+      "id",
+      "date_created",
+      "name",
+      "message",
+      "status",
+      "verified"
+    ],
+    "policy": "_sync_default_public_policy",
+    "_syncId": "3f9d5cb2-3e82-4425-aed2-2e63cab9b6d3"
+  },
+  {
     "collection": "guests",
     "action": "read",
     "permissions": null,
@@ -152,7 +224,6 @@
     "fields": [
       "attending",
       "attendance",
-      "meal_preference",
       "dietary_restrictions"
     ],
     "policy": "_sync_default_public_policy",
@@ -242,7 +313,9 @@
       "transportation",
       "song_request",
       "message_to_couple",
-      "date_rsvp_submitted"
+      "date_rsvp_submitted",
+      "representative",
+      "inquiry"
     ],
     "policy": "_sync_default_public_policy",
     "_syncId": "72056ff6-24be-4e1b-bfd4-ef37180140f5"

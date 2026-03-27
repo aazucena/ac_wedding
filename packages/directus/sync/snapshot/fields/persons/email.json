@@ -12,9 +12,10 @@
     "field": "email",
     "group": null,
     "hidden": false,
-    "interface": "extension-masked-input",
+    "interface": "input",
     "note": null,
     "options": {
+      "placeholder": "example@provider.com",
       "storeMasked": true,
       "templateType": "email"
     },

@@ -41,6 +41,9 @@ type Query {
   panels(filter: directus_panels_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [directus_panels!]!
   panels_by_id(id: ID!, version: String): directus_panels
   panels_aggregated(groupBy: [String], filter: directus_panels_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_panels_aggregated!]!
+  flows(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [directus_flows!]!
+  flows_by_id(id: ID!, version: String): directus_flows
+  flows_aggregated(groupBy: [String], filter: directus_flows_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_flows_aggregated!]!
   dashboards(filter: directus_dashboards_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [directus_dashboards!]!
   dashboards_by_id(id: ID!, version: String): directus_dashboards
   dashboards_aggregated(groupBy: [String], filter: directus_dashboards_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_dashboards_aggregated!]!
@@ -50,9 +53,6 @@ type Query {
   shares(filter: directus_shares_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [directus_shares!]!
   shares_by_id(id: ID!, version: String): directus_shares
   shares_aggregated(groupBy: [String], filter: directus_shares_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_shares_aggregated!]!
-  flows(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [directus_flows!]!
-  flows_by_id(id: ID!, version: String): directus_flows
-  flows_aggregated(groupBy: [String], filter: directus_flows_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_flows_aggregated!]!
   operations(filter: directus_operations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [directus_operations!]!
   operations_by_id(id: ID!, version: String): directus_operations
   operations_aggregated(groupBy: [String], filter: directus_operations_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_operations_aggregated!]!
@@ -130,14 +130,14 @@ type Mutation {
   create_presets_item(data: create_directus_presets_input!): directus_presets
   create_panels_items(filter: directus_panels_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_panels_input!]): [directus_panels!]!
   create_panels_item(data: create_directus_panels_input!): directus_panels
+  create_flows_items(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_flows_input!]): [directus_flows!]!
+  create_flows_item(data: create_directus_flows_input!): directus_flows
   create_dashboards_items(filter: directus_dashboards_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_dashboards_input!]): [directus_dashboards!]!
   create_dashboards_item(data: create_directus_dashboards_input!): directus_dashboards
   create_notifications_items(filter: directus_notifications_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_notifications_input!]): [directus_notifications!]!
   create_notifications_item(data: create_directus_notifications_input!): directus_notifications
   create_shares_items(filter: directus_shares_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_shares_input!]): [directus_shares!]!
   create_shares_item(data: create_directus_shares_input!): directus_shares
-  create_flows_items(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_flows_input!]): [directus_flows!]!
-  create_flows_item(data: create_directus_flows_input!): directus_flows
   create_operations_items(filter: directus_operations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_operations_input!]): [directus_operations!]!
   create_operations_item(data: create_directus_operations_input!): directus_operations
   create_translations_items(filter: directus_translations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_translations_input!]): [directus_translations!]!
@@ -176,6 +176,9 @@ type Mutation {
   update_panels_items(filter: directus_panels_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_panels_input!): [directus_panels!]!
   update_panels_batch(filter: directus_panels_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_panels_input!]): [directus_panels!]!
   update_panels_item(id: ID!, data: update_directus_panels_input!): directus_panels
+  update_flows_items(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_flows_input!): [directus_flows!]!
+  update_flows_batch(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_flows_input!]): [directus_flows!]!
+  update_flows_item(id: ID!, data: update_directus_flows_input!): directus_flows
   update_dashboards_items(filter: directus_dashboards_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_dashboards_input!): [directus_dashboards!]!
   update_dashboards_batch(filter: directus_dashboards_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_dashboards_input!]): [directus_dashboards!]!
   update_dashboards_item(id: ID!, data: update_directus_dashboards_input!): directus_dashboards
@@ -185,9 +188,6 @@ type Mutation {
   update_shares_items(filter: directus_shares_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_shares_input!): [directus_shares!]!
   update_shares_batch(filter: directus_shares_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_shares_input!]): [directus_shares!]!
   update_shares_item(id: ID!, data: update_directus_shares_input!): directus_shares
-  update_flows_items(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_flows_input!): [directus_flows!]!
-  update_flows_batch(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_flows_input!]): [directus_flows!]!
-  update_flows_item(id: ID!, data: update_directus_flows_input!): directus_flows
   update_operations_items(filter: directus_operations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_operations_input!): [directus_operations!]!
   update_operations_batch(filter: directus_operations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_operations_input!]): [directus_operations!]!
   update_operations_item(id: ID!, data: update_directus_operations_input!): directus_operations
@@ -231,14 +231,14 @@ type Mutation {
   delete_presets_item(id: ID!): delete_one
   delete_panels_items(ids: [ID]!): delete_many
   delete_panels_item(id: ID!): delete_one
+  delete_flows_items(ids: [ID]!): delete_many
+  delete_flows_item(id: ID!): delete_one
   delete_dashboards_items(ids: [ID]!): delete_many
   delete_dashboards_item(id: ID!): delete_one
   delete_notifications_items(ids: [ID]!): delete_many
   delete_notifications_item(id: ID!): delete_one
   delete_shares_items(ids: [ID]!): delete_many
   delete_shares_item(id: ID!): delete_one
-  delete_flows_items(ids: [ID]!): delete_many
-  delete_flows_item(id: ID!): delete_one
   delete_operations_items(ids: [ID]!): delete_many
   delete_operations_item(id: ID!): delete_one
   delete_translations_items(ids: [ID]!): delete_many
@@ -273,10 +273,10 @@ type Subscription {
   persons_mutated(event: EventEnum): persons_mutated
   directus_presets_mutated(event: EventEnum): directus_presets_mutated
   directus_panels_mutated(event: EventEnum): directus_panels_mutated
+  directus_flows_mutated(event: EventEnum): directus_flows_mutated
   directus_dashboards_mutated(event: EventEnum): directus_dashboards_mutated
   directus_notifications_mutated(event: EventEnum): directus_notifications_mutated
   directus_shares_mutated(event: EventEnum): directus_shares_mutated
-  directus_flows_mutated(event: EventEnum): directus_flows_mutated
   directus_operations_mutated(event: EventEnum): directus_operations_mutated
   directus_translations_mutated(event: EventEnum): directus_translations_mutated
   directus_users_mutated(event: EventEnum): directus_users_mutated
@@ -329,6 +329,8 @@ type Subscription {
   accomodations_mutated(event: EventEnum): accomodations_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
+  guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""
@@ -423,6 +425,27 @@ type accomodations_mutated {
   key: ID!
   event: EventEnum
   data: accomodations
+}
+
+type api_endpoints {
+  id: ID!
+  flow(filter: directus_flows_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_flows
+  key: String!
+  enabled: Boolean
+  request_schema: String
+  response_schema: String
+  method: String
+  description: String
+  auth_required: Boolean!
+  tags: String
+  deprecated: Boolean!
+  version: String
+}
+
+type api_endpoints_mutated {
+  key: ID!
+  event: EventEnum
+  data: api_endpoints
 }
 
 type auth_tokens {
@@ -2263,9 +2286,34 @@ type groups_mutated {
   data: groups
 }
 
+type guestbook_entries {
+  date_created: Date
+  date_created_func: datetime_functions
+  id: ID!
+
+  """Markdown string — rendered on the guestbook page"""
+  message: String!
+
+  """Name as entered by the submitter"""
+  name: String!
+
+  """draft = awaiting moderation, published = visible on the guestbook"""
+  status: String
+
+  """True if name + table number matched a guest record at submission time"""
+  verified: Boolean
+  guest(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): guests
+  reception(filter: reception_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): reception
+}
+
+type guestbook_entries_mutated {
+  key: ID!
+  event: EventEnum
+  data: guestbook_entries
+}
+
 type guests {
   id: ID!
-  meal_preference: String
   dietary_restrictions: String
   notes: String
   person(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): persons
@@ -2769,6 +2817,8 @@ type parties {
   date_updated: Date
   date_updated_func: datetime_functions
   name: String!
+
+  """Auto-generated token from creating this data"""
   rsvp_token: String
   hotel: Boolean
   transportation: Boolean
@@ -4947,7 +4997,6 @@ input groups_filter {
 
 input guests_filter {
   id: id_filter_operators
-  meal_preference: string_filter_operators
   dietary_restrictions: string_filter_operators
   notes: string_filter_operators
   person: persons_filter
@@ -4964,7 +5013,6 @@ input guests_filter {
 """"""
 input guests_quantifier_filter {
   id: id_filter_operators
-  meal_preference: string_filter_operators
   dietary_restrictions: string_filter_operators
   notes: string_filter_operators
   person: persons_filter

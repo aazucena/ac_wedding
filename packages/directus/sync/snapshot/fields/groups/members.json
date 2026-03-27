@@ -5,11 +5,13 @@
   "meta": {
     "collection": "groups",
     "conditions": null,
-    "display": null,
-    "display_options": null,
+    "display": "related-values",
+    "display_options": {
+      "template": "{{name}}"
+    },
     "field": "members",
     "group": null,
-    "hidden": false,
+    "hidden": true,
     "interface": "list-o2m",
     "note": null,
     "options": {

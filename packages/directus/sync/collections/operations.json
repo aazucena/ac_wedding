@@ -62,6 +62,20 @@
     "_syncId": "86775c11-c593-4874-b669-8b33fcb9a874"
   },
   {
+    "name": "Check Guest Valid",
+    "key": "check_guest_valid",
+    "type": "exec",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function(data) {\n    if (!data.validate_guest || !data.validate_guest.length) {\n        throw new Error('Representative guest does not belong to this party.');\n    }\n    return true;\n}"
+    },
+    "resolve": "dbb8a315-d0d1-4f8d-b645-cbc58c172813",
+    "reject": "ef2442c4-0905-4a72-8b96-a6a3f02592b3",
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "f0fb6c64-0de9-469c-85e6-3780051e8831"
+  },
+  {
     "name": "Check Over Budget",
     "key": "check_over_budget_alert",
     "type": "condition",
@@ -78,6 +92,20 @@
     "reject": null,
     "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
     "_syncId": "7631effe-598c-4b4e-ad7e-ceab0f4b5a86"
+  },
+  {
+    "name": "Check Party Valid",
+    "key": "check_party_valid",
+    "type": "exec",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function(data) {\n\tif (!data.validate_party || !data.validate_party.length) {\n        throw new Error('Invalid or expired RSVP token.');\n    }\n    return true;\n}"
+    },
+    "resolve": "c9630a61-9444-4f4a-a5ec-0284792ec59b",
+    "reject": "2b565d63-3a6e-490b-b1a5-61b624771f4e",
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "374f6d5c-6326-491e-a85e-3998590a7172"
   },
   {
     "name": "Check Status = Booked",
@@ -132,24 +160,6 @@
     "reject": null,
     "flow": "5499f98e-2875-4bc7-89b5-22e4871cedfb",
     "_syncId": "af1d883c-06bc-4bd5-a1ca-e4b2d7c91c1f"
-  },
-  {
-    "name": "Check Token Valid",
-    "key": "check_token_valid",
-    "type": "condition",
-    "position_x": 37,
-    "position_y": 1,
-    "options": {
-      "filter": {
-        "find_guest[0]": {
-          "_nnull": true
-        }
-      }
-    },
-    "resolve": "7907fe95-75eb-46c8-9687-57352baa418e",
-    "reject": "fde7e417-0271-415c-a864-514b1d1a131c",
-    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
-    "_syncId": "077d9a6b-cc22-4c47-a06d-8d70cc6ce5b8"
   },
   {
     "name": "Compute New Amount Paid",
@@ -213,6 +223,48 @@
     "reject": null,
     "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
     "_syncId": "233bb294-3e54-4e69-bd27-d64385c4fd65"
+  },
+  {
+    "name": "Error — Invalid Representative",
+    "key": "error_invalid_representative",
+    "type": "exec",
+    "position_x": 73,
+    "position_y": 19,
+    "options": {
+      "code": "module.exports = async function(data) {\n  throw new Error('Representative guest does not belong to this party.');\n}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "ef2442c4-0905-4a72-8b96-a6a3f02592b3"
+  },
+  {
+    "name": "Error — Invalid Token",
+    "key": "error_invalid_token",
+    "type": "exec",
+    "position_x": 37,
+    "position_y": 19,
+    "options": {
+      "code": "module.exports = async function(data) {\n  throw new Error('Invalid or expired RSVP token.');\n}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "2b565d63-3a6e-490b-b1a5-61b624771f4e"
+  },
+  {
+    "name": "Error — Invalid Representative",
+    "key": "error_unable_to_update",
+    "type": "exec",
+    "position_x": 91,
+    "position_y": 19,
+    "options": {
+      "code": "module.exports = async function(data) {\n  throw new Error('Unable to update the representative\\'s contact detailts.');\n}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "d434f196-8b5c-4d5f-997d-bf24299ba2f6"
   },
   {
     "name": "Fetch All Entourage",
@@ -304,42 +356,6 @@
     "reject": null,
     "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
     "_syncId": "926e4b42-fa2f-4f19-847e-621a354399b0"
-  },
-  {
-    "name": "Find Guest by Token",
-    "key": "find_guest",
-    "type": "item-read",
-    "position_x": 19,
-    "position_y": 1,
-    "options": {
-      "collection": "guests",
-      "query": {
-        "filter": {
-          "rsvp_token": {
-            "_eq": "{{$trigger.body.token}}"
-          }
-        },
-        "limit": 1
-      }
-    },
-    "resolve": "077d9a6b-cc22-4c47-a06d-8d70cc6ce5b8",
-    "reject": null,
-    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
-    "_syncId": "1451dee9-d112-40c8-beb1-d2ebbe83724e"
-  },
-  {
-    "name": "Generate UUID Token",
-    "key": "generate_token",
-    "type": "exec",
-    "position_x": 19,
-    "position_y": 1,
-    "options": {
-      "code": "module.exports = async function({ data }) {\n  const { randomUUID } = await import('crypto');\n  return { rsvp_token: randomUUID() };\n}"
-    },
-    "resolve": "6ad5491c-8edd-4f65-afc8-d93b9dcd46f0",
-    "reject": null,
-    "flow": "9978a209-4a98-429c-b32e-d233ecef70b7",
-    "_syncId": "5891d591-64b1-477a-a83d-d186a3a5f015"
   },
   {
     "name": "Log Already Sent (skip)",
@@ -439,6 +455,31 @@
     "reject": null,
     "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
     "_syncId": "85a1d866-99a0-4249-a176-37524ba43067"
+  },
+  {
+    "name": "Party",
+    "key": "party",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "parties",
+      "key": "{{ $trigger.key }}",
+      "query": {
+        "fields": [
+          "*",
+          "group.*",
+          "members.*",
+          "members.person.*"
+        ]
+      }
+    },
+    "resolve": "5891d591-64b1-477a-a83d-d186a3a5f015",
+    "reject": null,
+    "flow": "9978a209-4a98-429c-b32e-d233ecef70b7",
+    "_syncId": "5912d814-e691-4707-9c09-46d0da34da1b"
   },
   {
     "name": "Read Party Record",
@@ -546,45 +587,6 @@
     "_syncId": "07e6a6e5-1538-4855-ae32-d8730a83473f"
   },
   {
-    "name": "Return Invalid Token",
-    "key": "return_invalid_token",
-    "type": "trigger",
-    "position_x": 37,
-    "position_y": 19,
-    "options": {
-      "response": {
-        "status": 404,
-        "body": {
-          "error": "Invalid or expired RSVP token."
-        }
-      }
-    },
-    "resolve": null,
-    "reject": null,
-    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
-    "_syncId": "fde7e417-0271-415c-a864-514b1d1a131c"
-  },
-  {
-    "name": "Return Success",
-    "key": "return_success",
-    "type": "trigger",
-    "position_x": 91,
-    "position_y": 1,
-    "options": {
-      "response": {
-        "status": 200,
-        "body": {
-          "success": true,
-          "message": "RSVP received. Thank you!"
-        }
-      }
-    },
-    "resolve": null,
-    "reject": null,
-    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
-    "_syncId": "aee09681-3e25-4ebb-b189-5e393c6e68aa"
-  },
-  {
     "name": "Reverse Budget Allocation",
     "key": "reverse_allocation",
     "type": "exec",
@@ -599,23 +601,18 @@
     "_syncId": "6f9ba512-69be-4229-bb37-0994d52f49ad"
   },
   {
-    "name": "Send Confirmation Email",
-    "key": "send_confirmation_email",
-    "type": "mail",
-    "position_x": 73,
+    "name": "Generate RSVP Token",
+    "key": "rsvp",
+    "type": "exec",
+    "position_x": 37,
     "position_y": 1,
     "options": {
-      "to": [
-        "{{find_guest[0].email}}"
-      ],
-      "subject": "RSVP Confirmed — Aldrin & Christine, September 26, 2026",
-      "type": "html",
-      "body": "<!DOCTYPE html><html><head><meta charset='utf-8'><style>body{font-family:Georgia,serif;background:#faf7f2;margin:0;padding:0}.wrapper{max-width:600px;margin:0 auto;background:#fff}.header{background:#2c2c2c;padding:40px 32px;text-align:center}.header h1{color:#e8d5a3;font-size:28px;margin:0;letter-spacing:3px;font-weight:400}.body{padding:40px;text-align:center;color:#555}.body h2{color:#2c2c2c;font-weight:400}.body p{line-height:1.8}.footer{background:#f5f0e8;padding:24px;text-align:center;color:#999;font-size:12px}</style></head><body><div class='wrapper'><div class='header'><h1>Thank You, {{find_guest[0].first_name}}!</h1></div><div class='body'><h2>Your RSVP has been received.</h2><p>We're so glad you'll be joining us on September 26, 2026 to celebrate our wedding day.</p><p>We'll be in touch with more details as the day approaches.</p><p>With love,<br><strong>Aldrin &amp; Christine</strong></p></div><div class='footer'><p>Questions? Reach us at our wedding email.</p></div></div></body></html>"
+      "code": "module.exports = async function(data) {\n    const CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ0123456789';\n    const BLACKLIST_FILTER = [\n        'FAMILY',\n        'PARTY',\n        'GROUP',\n        'EXTENDED',\n        'THE',\n        'AND',\n        'MEMBERS',\n        'FRIENDS',\n        'COWORKERS',\n        'COLLEAGUES'\n    ];\n    function randomChars(n) {\n        var s = '';\n        for (var i = 0; i < n; i++) {\n            s += CHARS[Math.floor(Math.random() * CHARS.length)];\n        }\n        return s;\n    }\n    const party = data?.party;\n    const group = party?.group;\n    function generateToken(str, maxLength = 8, delim = '-') {\n      const suggestedLength = Math.ceil(maxLength / 2);\n      const remainingLength = Math.floor(maxLength / 2);\n      if (!str) return randomChars(maxLength);\n      let prefix = str.toUpperCase()\n        .split(/\\\\s+/)\n        .filter(w => BLACKLIST_FILTER.indexOf(w) === -1)\n        .join('')\n        .replace(/[^A-Z0-9]/g, '')\n        .slice(0, suggestedLength);\n      if (!prefix) return randomChars(maxLength);\n      return [prefix, randomChars(remainingLength)].join(delim);\n    }\n    const timestamp = new Date().toISOString().split(\".\")[0].replace('T', ' ');\n    \n    const groupName = group?.name ?? party?.name ?? '';\n    const token = generateToken(groupName);\n    return {\n      ...data,\n      token,\n      timestamp,\n    };\n}"
     },
-    "resolve": "aee09681-3e25-4ebb-b189-5e393c6e68aa",
-    "reject": "aee09681-3e25-4ebb-b189-5e393c6e68aa",
-    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
-    "_syncId": "6f564a03-b7a9-4cc7-acb5-415f85447e83"
+    "resolve": "6ad5491c-8edd-4f65-afc8-d93b9dcd46f0",
+    "reject": null,
+    "flow": "9978a209-4a98-429c-b32e-d233ecef70b7",
+    "_syncId": "5891d591-64b1-477a-a83d-d186a3a5f015"
   },
   {
     "name": "Send HTML Email",
@@ -731,47 +728,111 @@
     "_syncId": "474bbc9f-5583-448b-949c-f44008550816"
   },
   {
-    "name": "Update Guest RSVP Fields",
-    "key": "update_guest_rsvp",
-    "type": "item-update",
-    "position_x": 55,
-    "position_y": 1,
-    "options": {
-      "collection": "guests",
-      "key": "{{find_guest[0].id}}",
-      "payload": {
-        "status": "{{$trigger.body.attending == true ? 'confirmed' : 'declined'}}",
-        "plus_ones_confirmed": "{{$trigger.body.plus_ones_confirmed}}",
-        "meal_preference": "{{$trigger.body.meal_preference}}",
-        "dietary_restrictions": "{{$trigger.body.dietary_restrictions}}",
-        "hotel_required": "{{$trigger.body.hotel_required}}",
-        "transportation_required": "{{$trigger.body.transportation_required}}",
-        "song_request": "{{$trigger.body.song_request}}",
-        "message_to_couple": "{{$trigger.body.message_to_couple}}",
-        "rsvp_submitted_at": "{{$now}}"
-      }
-    },
-    "resolve": "6f564a03-b7a9-4cc7-acb5-415f85447e83",
-    "reject": null,
-    "flow": "4e0d4f1a-156f-4c6f-b8a7-ca471ae7d1f1",
-    "_syncId": "7907fe95-75eb-46c8-9687-57352baa418e"
-  },
-  {
     "name": "Write Token to Party",
     "key": "update_party",
     "type": "item-update",
-    "position_x": 37,
+    "position_x": 56,
     "position_y": 1,
     "options": {
+      "permissions": "$trigger",
+      "emitEvents": false,
       "collection": "parties",
       "key": "{{$trigger.key}}",
       "payload": {
-        "rsvp_token": "{{generate_token.rsvp_token}}"
+        "rsvp_token": "{{rsvp.token}}"
       }
     },
     "resolve": null,
     "reject": null,
     "flow": "9978a209-4a98-429c-b32e-d233ecef70b7",
     "_syncId": "6ad5491c-8edd-4f65-afc8-d93b9dcd46f0"
+  },
+  {
+    "name": "Update Person Contact Details",
+    "key": "update_person",
+    "type": "item-update",
+    "position_x": 91,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "persons",
+      "key": "{{$trigger.body.representative}}",
+      "payload": {
+        "phone": "{{$trigger.body.phone}}",
+        "email": "{{$trigger.body.email}}"
+      }
+    },
+    "resolve": null,
+    "reject": "d434f196-8b5c-4d5f-997d-bf24299ba2f6",
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "dbb8a315-d0d1-4f8d-b645-cbc58c172813"
+  },
+  {
+    "name": "Validate Representative Guest",
+    "key": "validate_guest",
+    "type": "item-read",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "collection": "guests",
+      "query": {
+        "filter": {
+          "_and": [
+            {
+              "id": {
+                "_eq": "{{$trigger.body.id}}"
+              }
+            },
+            {
+              "party": {
+                "_eq": "{{$trigger.body.party}}"
+              }
+            },
+            {
+              "person": {
+                "_eq": "{{$trigger.body.representative}}"
+              }
+            }
+          ]
+        },
+        "limit": 1
+      }
+    },
+    "resolve": "f0fb6c64-0de9-469c-85e6-3780051e8831",
+    "reject": null,
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "c9630a61-9444-4f4a-a5ec-0284792ec59b"
+  },
+  {
+    "name": "Validate Party Token",
+    "key": "validate_party",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "collection": "parties",
+      "query": {
+        "filter": {
+          "_and": [
+            {
+              "id": {
+                "_eq": "{{$trigger.body.party}}"
+              }
+            },
+            {
+              "rsvp_token": {
+                "_eq": "{{$trigger.body.token}}"
+              }
+            }
+          ]
+        },
+        "limit": 1
+      }
+    },
+    "resolve": "374f6d5c-6326-491e-a85e-3998590a7172",
+    "reject": null,
+    "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
+    "_syncId": "9d101a4d-b93b-4b5a-a590-4b29df430b62"
   }
 ]
