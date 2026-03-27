@@ -32,7 +32,7 @@ export async function getGuestMessages(): Promise<Array<{ name: string; message_
     return await get<Array<{ name: string; message_to_couple: string; date_rsvp_submitted?: string }>>('/items/parties', {
       filter: { status: { _eq: 'confirmed' }, message_to_couple: { _nnull: true } },
       fields: ['name', 'message_to_couple', 'date_rsvp_submitted'],
-      sort: ['date_rsvp_submitted'],
+      sort: ['-date_rsvp_submitted'],
       limit: 200,
     });
   } catch {

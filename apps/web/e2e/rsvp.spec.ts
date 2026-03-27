@@ -55,7 +55,6 @@ async function resetTestFixture() {
       body: JSON.stringify({
         attending: null,
         attendance: null,
-        meal_preference: 'standard',
         dietary_restrictions: null,
       }),
     });

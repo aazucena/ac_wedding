@@ -107,7 +107,6 @@ async function handleSubmit(e) {
     token:                   guestToken,
     attending,
     plus_ones_confirmed:     attending ? plusOneCount : 0,
-    meal_preference:         attending ? document.getElementById('meal').value : null,
     dietary_restrictions:    attending ? document.getElementById('dietary').value : null,
     hotel_required:          attending ? document.getElementById('hotel').checked : false,
     transportation_required: attending ? document.getElementById('transport').checked : false,

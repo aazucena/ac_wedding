@@ -212,7 +212,6 @@ export interface Groups {
 
 export interface Guests {
   id: string;
-  meal_preference?: string;
   dietary_restrictions?: string;
   notes?: string;
   person?: Persons;
