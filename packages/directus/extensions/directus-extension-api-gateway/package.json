@@ -1,0 +1,77 @@
+{
+	"name": "directus-extension-api-gateway",
+	"description": "API Gateway manager for Directus webhook flows — auto-registers flows, manages keys, defines request/response schemas, and exposes a typed flow-keys endpoint.",
+	"icon": "hub",
+  "author": {
+    "name": "Aldrin Aazucena",
+    "url": "https://aazucena.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/aazucena/directus-extension-api-gateway#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aazucena/directus-extension-api-gateway.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aazucena/directus-extension-api-gateway/issues"
+  },
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-extension-bundle"
+	],
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"directus:extension": {
+		"type": "bundle",
+		"path": {
+			"app": "dist/app.js",
+			"api": "dist/api.js"
+		},
+		"entries": [
+			{
+				"type": "endpoint",
+				"name": "endpoint",
+				"source": "src/endpoint/index.ts"
+			},
+			{
+				"type": "hook",
+				"name": "hook",
+				"source": "src/hook/index.ts"
+			},
+			{
+				"type": "module",
+				"name": "module",
+				"source": "src/module/index.ts"
+			}
+		],
+		"host": "^10.10.0"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"link": "directus-extension link",
+		"validate": "directus-extension validate",
+		"add": "directus-extension add"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "17.1.0",
+		"@types/node": "^25.5.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.3",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-vue": "^10.8.0",
+    "prettier": "^3.8.1",
+		"typescript": "^6.0.2",
+    "typescript-eslint": "^8.57.1",
+		"vue": "^3.5.31"
+	},
+	"dependencies": {
+		"@directus/format-title": "^12.1.2",
+		"jsonschema": "^1.4.1",
+		"vuedraggable": "^4.1.0"
+	}
+}
