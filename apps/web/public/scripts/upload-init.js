@@ -105,6 +105,7 @@ function showTableVerify(name, guestId) {
   if (tableVerify) tableVerify.classList.remove('hidden');
   if (tableVerifyError) { tableVerifyError.textContent = ''; tableVerifyError.classList.add('hidden'); }
   if (tableNumberInput) { tableNumberInput.value = ''; tableNumberInput.focus(); }
+  document.body.style.overflow = 'hidden';
 }
 
 function hideTableVerify() {
@@ -112,6 +113,7 @@ function hideTableVerify() {
   if (tableVerify)      tableVerify.classList.add('hidden');
   if (tableNumberInput) tableNumberInput.value = '';
   if (tableVerifyError) { tableVerifyError.textContent = ''; tableVerifyError.classList.add('hidden'); }
+  document.body.style.overflow = '';
 }
 
 async function submitTableVerify() {
@@ -150,10 +152,17 @@ function showVerifyError(msg) {
 }
 
 if (tableVerifyBtn)    tableVerifyBtn.addEventListener('click', submitTableVerify);
-if (tableVerifyCancel) tableVerifyCancel.addEventListener('click', () => {
+function closeTableVerify() {
   hideTableVerify();
   hideSuggestions();
   if (nameInput) nameInput.focus();
+}
+if (tableVerifyCancel) tableVerifyCancel.addEventListener('click', closeTableVerify);
+document.querySelectorAll('.js-table-cancel').forEach(function(btn) {
+  btn.addEventListener('click', closeTableVerify);
+});
+if (tableVerify) tableVerify.addEventListener('click', function(e) {
+  if (e.target === tableVerify) closeTableVerify();
 });
 if (tableNumberInput) {
   tableNumberInput.addEventListener('keydown', function(e) {

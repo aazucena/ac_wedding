@@ -15,6 +15,7 @@ import Hashtag from '@components/Hashtag.astro';
 import SquareGrid from '@components/game/SquareGrid.astro';
 import IdentityModal from '@components/game/IdentityModal.astro';
 import UploadModal from '@components/game/UploadModal.astro';
+import NameVerifyField from '@components/ui/NameVerifyField.astro';
 import '../../styles/upload-base.css';
 import '../../styles/upload-card.css';
 
@@ -84,27 +85,7 @@ const partyMembers = (party?.members ?? []).map(m => ({
           <form id="upload-form" novalidate>
 
             <!-- Name — required -->
-            <div class="field">
-              <label class="field-label" for="name-input">Your name</label>
-              <div id="name-confirmed" class="name-confirmed hidden">
-                <span id="name-confirmed-text"></span>
-                <button type="button" id="name-change-btn" class="name-change-btn">Change</button>
-              </div>
-              <input id="name-input" name="name" type="text" placeholder="e.g. Maria Santos"
-                class="field-input" autocomplete="off" required />
-              <div id="name-suggestions" class="name-suggestions hidden" role="listbox" aria-label="Guest matches"></div>
-              <div id="table-verify" class="table-verify hidden" aria-live="polite">
-                <p class="table-verify-label">Confirming as <strong id="pending-name-display"></strong></p>
-                <input id="table-number-input" class="field-input table-number-input"
-                  type="number" min="1" max="99" placeholder="Your table number" autocomplete="off"
-                  inputmode="numeric" />
-                <div class="table-verify-actions">
-                  <button type="button" id="table-verify-btn" class="table-verify-confirm-btn">Confirm</button>
-                  <button type="button" id="table-verify-cancel" class="table-verify-cancel-btn">Cancel</button>
-                </div>
-                <p id="table-verify-error" class="table-verify-error hidden"></p>
-              </div>
-            </div>
+            <NameVerifyField />
 
             <div class="field-divider"></div>
 
