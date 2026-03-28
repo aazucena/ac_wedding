@@ -1,0 +1,182 @@
+---
+// components/memories/MemoryGrid.astro
+// Paginated 9-per-page photo grid for /memories.
+// All items are rendered in the DOM so the lightbox can navigate across pages.
+import type { DirectusFiles } from '../../lib/types';
+import { assetUrl } from '../../lib/utils/format';
+
+const PAGE_SIZE = 6;
+
+interface GalleryItem {
+  id:           string;
+  title?:       string | null;
+  description?: string | null;
+  image?:       DirectusFiles | null;
+  sort?:        number | null;
+}
+interface Props {
+  items: GalleryItem[];
+}
+const { items } = Astro.props;
+const totalPages = Math.ceil(items.length / PAGE_SIZE);
+---
+
+<div class="mg-wrap">
+
+  <div class="mg-grid" id="mg-grid">
+    {items.map((photo, i) => (
+      <button
+        class="gallery-item"
+        data-index={i}
+        data-page={Math.floor(i / PAGE_SIZE)}
+        data-src={photo.image ? assetUrl(photo.image) : null}
+        data-title={photo.title}
+        data-desc={photo.description}
+        onclick="openLightbox(this)"
+        aria-label={photo.title ?? `Photo ${i + 1}`}
+      >
+        {photo.image ? (
+          <img
+            src={assetUrl(photo.image, { width: 600, height: 600, fit: 'cover' })}
+            alt={photo.title ?? `Photo ${i + 1}`}
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div class="gallery-placeholder">
+            <span class="gallery-placeholder-icon">📷</span>
+          </div>
+        )}
+        <div class="gallery-overlay">
+          {photo.title && <p class="gallery-item-title">{photo.title}</p>}
+        </div>
+      </button>
+    ))}
+  </div>
+
+  {totalPages > 1 && (
+    <div class="mg-pagination" id="mg-pagination">
+      <button class="mg-btn" id="mg-prev" type="button" aria-label="Previous page">‹</button>
+      <span class="mg-counter" id="mg-counter" aria-live="polite">1 / {totalPages}</span>
+      <button class="mg-btn" id="mg-next" type="button" aria-label="Next page">›</button>
+    </div>
+  )}
+
+</div>
+
+<script>
+  const grid       = document.getElementById('mg-grid');
+  const prevBtn    = document.getElementById('mg-prev')    as HTMLButtonElement | null;
+  const nextBtn    = document.getElementById('mg-next')    as HTMLButtonElement | null;
+  const counterEl  = document.getElementById('mg-counter') as HTMLElement       | null;
+
+  if (!grid) throw new Error('MemoryGrid: #mg-grid not found');
+
+  const PAGE_SIZE  = 6;
+  const allItems   = Array.from(grid.querySelectorAll<HTMLElement>('.gallery-item'));
+  const totalPages = Math.ceil(allItems.length / PAGE_SIZE);
+  let   page       = 0;
+
+  function showPage(p: number) {
+    page = Math.max(0, Math.min(p, totalPages - 1));
+
+    allItems.forEach(el => {
+      const elPage = parseInt(el.dataset.page ?? '0', 10);
+      el.hidden = elPage !== page;
+    });
+
+    if (counterEl) counterEl.textContent = `${page + 1} / ${totalPages}`;
+    if (prevBtn)   prevBtn.disabled  = page === 0;
+    if (nextBtn)   nextBtn.disabled  = page === totalPages - 1;
+  }
+
+  prevBtn?.addEventListener('click', () => { showPage(page - 1); window.scrollTo({ top: grid.getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' }); });
+  nextBtn?.addEventListener('click', () => { showPage(page + 1); window.scrollTo({ top: grid.getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' }); });
+
+  showPage(0);
+</script>
+
+<style>
+/* ── Grid ──────────────────────────────────────────────── */
+.mg-wrap { width: 100%; display: flex; flex-direction: column; gap: 20px; }
+
+.mg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px; width: 100%;
+  opacity: 0; animation: fadeUp 0.8s 0.2s ease forwards;
+}
+
+/* ── Tiles (shared with GalleryGrid) ───────────────────── */
+.gallery-item {
+  position: relative; aspect-ratio: 1;
+  border-radius: var(--radius-sm);
+  overflow: hidden; cursor: pointer;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  background: none; padding: 0;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.gallery-item:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-hover);
+  z-index: 1;
+}
+.gallery-item img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; transition: transform 0.4s ease;
+}
+.gallery-item:hover img { transform: scale(1.05); }
+
+.gallery-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 18%, var(--warm)),
+    color-mix(in srgb, var(--cs) 14%, var(--warm))
+  );
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; opacity: 0.5;
+}
+
+.gallery-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(26,26,46,0.6) 100%);
+  display: flex; align-items: flex-end; padding: 12px;
+  opacity: 0; transition: opacity 0.25s ease;
+}
+.gallery-item:hover .gallery-overlay { opacity: 1; }
+
+.gallery-item-title {
+  font-family: var(--fd); font-size: 14px; font-style: italic;
+  color: #fff; line-height: 1.2;
+}
+
+/* ── Pagination ────────────────────────────────────────── */
+.mg-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px;
+}
+
+.mg-btn {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--cp) 8%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 25%, transparent);
+  border-radius: 50%;
+  font-size: 22px; line-height: 1;
+  color: var(--dark); cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.mg-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--cp) 16%, var(--ivory)); }
+.mg-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+.mg-counter {
+  font-family: var(--fb); font-size: 10px; font-weight: 500;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); min-width: 36px; text-align: center;
+}
+
+@media (max-width: 640px) {
+  .mg-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+}
+</style>

@@ -1,33 +1,57 @@
 ---
-// apps/web/src/pages/memories.astro — guest-submitted wedding photos slideshow
-import Layout from '../layouts/Layout.astro';
-import GalleryGrid from '../components/gallery/GalleryGrid.astro';
+// apps/web/src/pages/memories.astro — guest-submitted wedding photos + guestbook messages
+import Layout          from '../layouts/Layout.astro';
+import MemoryGrid      from '../components/memories/MemoryGrid.astro';
 import GalleryLightbox from '../components/gallery/GalleryLightbox.astro';
+import GuestbookSwiper from '../components/guestbook/GuestbookSwiper.astro';
+import MemoryUpload    from '../components/memories/MemoryUpload.astro';
 import { getSettings } from '../lib/directus';
-import { getMemories } from '../lib/api/content';
-import { formatDate } from '../lib/utils/format';
-import { DateTime } from 'luxon';
-import { toDateTime } from '../lib/date';
-import Hashtag from '~/components/Hashtag.astro';
+import { getMemories }  from '../lib/api/content';
+import { getGuestbookEntries } from '../lib/api/guestbook';
+import { formatDate }   from '../lib/utils/format';
+import { parseMarkdown } from '../lib/markdown';
+import { DateTime }    from 'luxon';
+import { toDateTime }  from '../lib/date';
+import Hashtag         from '~/components/Hashtag.astro';
 
-const [settings, memories] = await Promise.all([getSettings(), getMemories()]);
+const urlToken   = Astro.url.searchParams.get('token') ?? '';
 
-// Post-wedding gate: redirect to home if wedding hasn't happened yet
+const [settings, memories, entries] = await Promise.all([
+  getSettings(),
+  getMemories(),
+  getGuestbookEntries(),
+]);
+
+// Post-wedding gate
 if (DateTime.now() < toDateTime(settings.wedding_date ?? '2099-12-31')) {
   return Astro.redirect('/', 307);
 }
 
-const groom = settings.groom?.first_name ?? 'Aldrin';
-const bride = settings.bride?.first_name ?? 'Christine';
+const groom          = settings.groom?.first_name ?? 'Aldrin';
+const bride          = settings.bride?.first_name ?? 'Christine';
 const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const hashtag        = settings.hashtag ?? null;
+
+function shortDate(iso?: string): string {
+  if (!iso) return '';
+  return formatDate(iso, 'MMM d, yyyy');
+}
+
+const slides = entries.map(e => ({
+  name:          e.name,
+  messageHtml:   e.message ? parseMarkdown(e.message) : '',
+  dateFormatted: shortDate(e.date_created),
+  verified:      e.verified,
+}));
 
 const items = memories.map(m => ({
-  id: m.id,
-  title: m.title ?? null,
+  id:          m.id,
+  title:       m.title ?? null,
   description: m.description ?? null,
-  image: m.image,
-  sort: null,
+  image:       m.image,
+  sort:        null,
 }));
+
 ---
 
 <Layout
@@ -38,25 +62,56 @@ const items = memories.map(m => ({
 >
   <div class="page-wide memories-page" id="memories">
 
+    <!-- ── Header ────────────────────────────────────────────── -->
     <header class="header">
       <div class="header-eyebrow">Our Wedding Memories</div>
       <h1 class="header-title font-display">{groom} & {bride}</h1>
       <p class="header-subtitle">
-        Photos shared by our guests on {weddingDateLabel}.
+        Photos and wishes shared by our guests on {weddingDateLabel}.
       </p>
+      {hashtag && (
+        <p class="header-hashtag">
+          Tag your photos with{' '}
+          <Hashtag tag={hashtag} as="strong" class="header-hashtag-tag" />
+          {' '}to be featured here.
+        </p>
+      )}
     </header>
 
+    <!-- ── Photo gallery ─────────────────────────────────────── -->
     {items.length > 0 ? (
-      <GalleryGrid items={items} />
+      <section class="photos-section">
+        <p class="section-eyebrow">
+          <span>{items.length}</span> {items.length === 1 ? 'Photo' : 'Photos'}
+        </p>
+        <MemoryGrid items={items} />
+      </section>
     ) : (
       <div class="empty-state">
-        <span class="empty-icon">📷</span>
+        <span class="empty-icon" aria-hidden="true">📷</span>
         <p class="empty-title font-display">Photos coming soon</p>
         <p class="empty-body">
           Guest photos will appear here after the wedding.
-          Check back soon!
+          Be the first to share one below!
         </p>
       </div>
+    )}
+
+    <!-- ── Photo upload ───────────────────────────────────────── -->
+    <MemoryUpload defaultToken={urlToken} />
+
+    {slides.length > 0 && (
+      <>
+        <div class="section-divider" aria-hidden="true" />
+
+        <!-- ── Guestbook entries (Swiper card stack) ───────────── -->
+        <section class="wishes-section">
+          <p class="section-eyebrow">
+            <span>{slides.length}</span> {slides.length === 1 ? 'Wish' : 'Wishes'}
+          </p>
+          <GuestbookSwiper slides={slides} />
+        </section>
+      </>
     )}
 
   </div>
@@ -70,17 +125,60 @@ const items = memories.map(m => ({
 </Layout>
 
 <style>
-.memories-page { display: flex; flex-direction: column; align-items: center; }
+.memories-page {
+  display: flex; flex-direction: column; align-items: center;
+}
 
+/* ── Header ────────────────────────────────────────────── */
+.header-hashtag {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted); margin: 8px 0 0; line-height: 1.5;
+}
+:global(.header-hashtag-tag) {
+  font-weight: 600;
+  color: color-mix(in srgb, var(--cp) 75%, var(--dark));
+}
+
+/* ── Section eyebrow ───────────────────────────────────── */
+.section-eyebrow {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 20px; align-self: flex-start;
+}
+.section-eyebrow span { color: var(--dark); }
+
+/* ── Wishes section ────────────────────────────────────── */
+.wishes-section {
+  width: 100%;
+  display: flex; flex-direction: column; align-items: center;
+}
+.wishes-section .section-eyebrow { align-self: center; }
+
+/* ── Section divider ───────────────────────────────────── */
+.section-divider {
+  width: 100%;
+  height: 1px;
+  margin: 40px 0;
+  background: linear-gradient(90deg,
+    transparent,
+    color-mix(in srgb, var(--cp) 30%, transparent) 30%,
+    color-mix(in srgb, var(--cs) 20%, transparent) 70%,
+    transparent
+  );
+}
+
+/* ── Photos section ────────────────────────────────────── */
+.photos-section { width: 100%; margin-bottom: 12px; }
+
+/* ── Empty state ───────────────────────────────────────── */
 .empty-state {
   display: flex; flex-direction: column; align-items: center;
-  gap: 12px; padding: 64px 24px; text-align: center;
+  gap: 12px; padding: 48px 24px; text-align: center;
   max-width: 400px; margin: 0 auto;
 }
 .empty-icon { font-size: 40px; opacity: 0.4; }
 .empty-title {
-  font-size: 22px; font-style: italic; font-weight: 300;
-  color: var(--dark);
+  font-size: 22px; font-style: italic; font-weight: 300; color: var(--dark);
 }
 .empty-body {
   font-family: var(--fb); font-size: 14px; font-weight: 300;

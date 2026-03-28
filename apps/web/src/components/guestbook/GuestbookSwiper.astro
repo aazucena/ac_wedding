@@ -1,0 +1,226 @@
+---
+// components/guestbook/GuestbookSwiper.astro
+// Infinite stacked-card carousel for guestbook entries (SwiperJS cards effect).
+export interface GuestbookSlide {
+  name:          string;
+  messageHtml:   string;
+  dateFormatted: string;
+  verified:      boolean;
+}
+interface Props {
+  slides: GuestbookSlide[];
+}
+const { slides } = Astro.props;
+---
+
+<div class="gb-stack">
+
+  <div class="swiper gb-swiper">
+    <div class="swiper-wrapper">
+      {slides.map(slide => (
+        <div class="swiper-slide">
+          <article class="gb-card">
+            <div class="gb-card-body" set:html={slide.messageHtml} />
+
+            <footer class="gb-card-foot">
+              <div class="gb-card-from">
+                <span class="gb-card-dash" aria-hidden="true">—</span>
+                <span class="gb-card-name">{slide.name}</span>
+                {slide.verified && (
+                  <span class="gb-badge" aria-label="Verified guest" title="Verified guest">✓</span>
+                )}
+              </div>
+              <time class="gb-card-date">{slide.dateFormatted}</time>
+            </footer>
+          </article>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="gb-controls" aria-label="Card navigation">
+    <button class="gb-nav-btn" id="gb-prev" type="button" aria-label="Previous wish">‹</button>
+    <span class="gb-count" id="gb-count" aria-live="polite">1 / {slides.length}</span>
+    <button class="gb-nav-btn" id="gb-next" type="button" aria-label="Next wish">›</button>
+  </div>
+
+</div>
+
+<script>
+  import 'swiper/css';
+  import 'swiper/css/effect-cards';
+  import Swiper from 'swiper';
+  import { EffectCards, Navigation } from 'swiper/modules';
+
+  const el = document.querySelector<HTMLElement>('.gb-swiper');
+  if (!el) throw new Error('GuestbookSwiper: .gb-swiper not found');
+
+  const total   = el.querySelectorAll('.swiper-slide').length;
+  const countEl = document.getElementById('gb-count');
+
+  function setCount(realIndex: number) {
+    if (countEl) countEl.textContent = `${realIndex + 1} / ${total}`;
+  }
+
+  new Swiper(el, {
+    modules:     [EffectCards, Navigation],
+    effect:      'cards',
+    grabCursor:  true,
+    loop:        total > 2,
+    navigation:  {
+      prevEl:        '#gb-prev',
+      nextEl:        '#gb-next',
+      disabledClass: 'gb-nav-btn--disabled',
+    },
+    on: {
+      init(s)        { setCount(s.realIndex); },
+      slideChange(s) { setCount(s.realIndex); },
+    },
+  });
+</script>
+
+<style is:global>
+  /* Swiper base resets — must be global so Swiper's own class names are unscoped */
+  .gb-swiper { overflow: visible !important; }
+  .gb-swiper .swiper-slide { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+</style>
+
+<style>
+/* ── Outer wrapper ─────────────────────────────────────── */
+.gb-stack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 8px 0 4px;
+}
+
+/* ── Swiper container ──────────────────────────────────── */
+.gb-swiper {
+  width: 100%;
+  max-width: 520px;
+  height: 320px;
+}
+
+/* ── Card ─────────────────────────────────────────────── */
+.gb-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--cp) 5%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 22%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--cp) 55%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 28px 28px 20px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* ── Message body ──────────────────────────────────────── */
+.gb-card-body {
+  font-family: var(--fd);
+  font-size: 20px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--dark);
+  line-height: 1.7;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.gb-card-body::-webkit-scrollbar { display: none; }
+.gb-card-body > :global(p) { margin: 0 0 0.5em; }
+.gb-card-body > :global(p:last-child) { margin-bottom: 0; }
+
+/* ── Card footer ───────────────────────────────────────── */
+.gb-card-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--cp) 18%, transparent);
+}
+
+.gb-card-from {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.gb-card-dash {
+  font-family: var(--fd);
+  font-size: 14px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.gb-card-name {
+  font-family: var(--fb);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gb-badge {
+  font-size: 11px;
+  color: color-mix(in srgb, var(--cp) 60%, #2a7f5f);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.gb-card-date {
+  font-family: var(--fb);
+  font-size: 10px;
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+/* ── Navigation row ────────────────────────────────────── */
+.gb-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.gb-nav-btn {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--cp) 8%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 25%, transparent);
+  border-radius: 50%;
+  font-size: 22px; line-height: 1;
+  color: var(--dark); cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.gb-nav-btn:hover { background: color-mix(in srgb, var(--cp) 16%, var(--ivory)); }
+.gb-nav-btn--disabled { opacity: 0.25; cursor: not-allowed; pointer-events: none; }
+
+.gb-count {
+  font-family: var(--fb);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 36px;
+  text-align: center;
+}
+
+@media (max-width: 520px) {
+  .gb-swiper { max-width: 100%; height: 300px; }
+  .gb-card { padding: 18px 20px 16px; }
+  .gb-card-body { font-size: 17px; }
+}
+</style>

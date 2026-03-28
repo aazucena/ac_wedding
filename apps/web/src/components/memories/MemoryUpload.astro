@@ -1,0 +1,500 @@
+---
+// components/memories/MemoryUpload.astro
+// "Share your photo" form — POSTs multipart to /api/photo/upload.
+// defaultToken pre-fills the token field when navigated from the RSVP link.
+interface Props {
+  defaultToken?: string;
+}
+const { defaultToken = '' } = Astro.props;
+---
+
+<section class="mu-section" id="mu-section">
+
+  <!-- ── CTA banner (collapsed state) ─────────────────────── -->
+  <div class="mu-cta" id="mu-cta">
+    <div class="mu-cta-left">
+      <p class="mu-cta-title font-display">Share your photos</p>
+      <p class="mu-cta-body">
+        Upload a photo from the day to add it to our memories.
+      </p>
+    </div>
+    <button class="mu-open-btn" id="mu-open" type="button">
+      Upload
+      <span class="mu-open-arrow" aria-hidden="true">↑</span>
+    </button>
+  </div>
+
+  <!-- ── Upload form (expanded state) ──────────────────────── -->
+  <div class="mu-expand" id="mu-expand" hidden>
+
+    <form class="mu-form" id="mu-form" novalidate>
+
+      <!-- File drop zone -->
+      <div class="mu-drop" id="mu-drop" tabindex="0" role="button"
+           aria-label="Select a photo to upload">
+        <input class="mu-file-input" id="mu-file" type="file"
+               accept="image/*" tabindex="-1" aria-hidden="true" />
+
+        <div class="mu-drop-ph" id="mu-drop-ph">
+          <span class="mu-drop-icon" aria-hidden="true">📷</span>
+          <span class="mu-drop-label">Click or drag a photo here</span>
+          <span class="mu-drop-hint">JPG · PNG · WEBP · max 10 MB</span>
+        </div>
+
+        <div class="mu-drop-preview" id="mu-drop-preview" hidden>
+          <img class="mu-preview-img" id="mu-preview-img" alt="Selected photo preview" />
+          <button class="mu-remove" id="mu-remove" type="button" aria-label="Remove photo">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Invitation token -->
+      <div class="mu-field">
+        <label class="mu-label" for="mu-token">Invitation code</label>
+        <input class="mu-input" id="mu-token" type="text"
+               value={defaultToken}
+               placeholder="Paste the code from your RSVP link"
+               autocomplete="off" spellcheck={false} />
+        <p class="mu-hint">The unique code at the end of your invitation email link.</p>
+      </div>
+
+      <!-- Caption (optional) -->
+      <div class="mu-field">
+        <label class="mu-label" for="mu-caption">
+          Caption <span class="mu-optional">(optional)</span>
+        </label>
+        <input class="mu-input" id="mu-caption" type="text"
+               placeholder="Describe this moment…"
+               maxlength="120" />
+      </div>
+
+      <div class="mu-error" id="mu-error" role="alert" aria-live="polite" hidden></div>
+
+      <div class="mu-actions">
+        <button class="mu-cancel-btn" id="mu-cancel" type="button">Cancel</button>
+        <button class="mu-submit-btn" id="mu-submit" type="submit">
+          <span class="mu-submit-text">Upload photo</span>
+          <span class="mu-submit-dots" aria-hidden="true">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </span>
+        </button>
+      </div>
+
+    </form>
+
+    <!-- ── Success state ──────────────────────────────────── -->
+    <div class="mu-success" id="mu-success" hidden>
+      <span class="mu-success-icon" aria-hidden="true">✦</span>
+      <p class="mu-success-title font-display">Photo submitted!</p>
+      <p class="mu-success-body">
+        Your photo will appear in our memories once it's approved. Thank you!
+      </p>
+      <button class="mu-another-btn" id="mu-another" type="button">
+        Upload another
+      </button>
+    </div>
+
+  </div>
+
+</section>
+
+<script>
+  const openBtn    = document.getElementById('mu-open')         as HTMLButtonElement   | null;
+  const cta        = document.getElementById('mu-cta')          as HTMLElement         | null;
+  const expand     = document.getElementById('mu-expand')       as HTMLElement         | null;
+  const form       = document.getElementById('mu-form')         as HTMLFormElement     | null;
+  const fileInput  = document.getElementById('mu-file')         as HTMLInputElement    | null;
+  const drop       = document.getElementById('mu-drop')         as HTMLElement         | null;
+  const dropPh     = document.getElementById('mu-drop-ph')      as HTMLElement         | null;
+  const dropPrev   = document.getElementById('mu-drop-preview') as HTMLElement         | null;
+  const previewImg = document.getElementById('mu-preview-img')  as HTMLImageElement    | null;
+  const removeBtn  = document.getElementById('mu-remove')       as HTMLButtonElement   | null;
+  const tokenInput = document.getElementById('mu-token')        as HTMLInputElement    | null;
+  const captionInput=document.getElementById('mu-caption')      as HTMLInputElement    | null;
+  const errorEl    = document.getElementById('mu-error')        as HTMLElement         | null;
+  const submitBtn  = document.getElementById('mu-submit')       as HTMLButtonElement   | null;
+  const cancelBtn  = document.getElementById('mu-cancel')       as HTMLButtonElement   | null;
+  const successEl  = document.getElementById('mu-success')      as HTMLElement         | null;
+  const anotherBtn = document.getElementById('mu-another')      as HTMLButtonElement   | null;
+
+  if (!openBtn || !cta || !expand || !form || !fileInput || !drop) {
+    throw new Error('MemoryUpload: required elements missing');
+  }
+
+  let selectedFile: File | null = null;
+
+  // ── Open / close ─────────────────────────────────────────
+  function openForm() {
+    cta.hidden    = true;
+    expand.hidden = false;
+    drop?.focus();
+  }
+
+  function closeForm() {
+    expand.hidden = false; // keep open briefly for transition
+    resetForm();
+    cta.hidden    = false;
+    expand.hidden = true;
+  }
+
+  openBtn.addEventListener('click', openForm);
+  cancelBtn?.addEventListener('click', closeForm);
+
+  // ── File selection ────────────────────────────────────────
+  function showPreview(file: File) {
+    selectedFile = file;
+    const url = URL.createObjectURL(file);
+    if (previewImg) { previewImg.src = url; previewImg.alt = file.name; }
+    if (dropPh)     dropPh.hidden    = true;
+    if (dropPrev)   dropPrev.hidden  = false;
+    drop?.classList.add('has-file');
+  }
+
+  function clearFile() {
+    if (previewImg?.src) URL.revokeObjectURL(previewImg.src);
+    selectedFile       = null;
+    fileInput.value    = '';
+    if (previewImg)  previewImg.src  = '';
+    if (dropPh)      dropPh.hidden   = false;
+    if (dropPrev)    dropPrev.hidden = true;
+    drop?.classList.remove('has-file');
+  }
+
+  // Click on drop zone → trigger file input
+  drop.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('#mu-remove')) return;
+    fileInput.click();
+  });
+  drop.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) showPreview(file);
+  });
+
+  removeBtn?.addEventListener('click', (e) => { e.stopPropagation(); clearFile(); });
+
+  // Drag-and-drop
+  drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag-over'); });
+  drop.addEventListener('dragleave', ()   => { drop.classList.remove('drag-over'); });
+  drop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    drop.classList.remove('drag-over');
+    const file = e.dataTransfer?.files[0];
+    if (file && file.type.startsWith('image/')) {
+      showPreview(file);
+    } else if (file) {
+      showError('Only image files are accepted.');
+    }
+  });
+
+  // ── Error / loading helpers ───────────────────────────────
+  function showError(msg: string) {
+    if (!errorEl) return;
+    errorEl.textContent = msg;
+    errorEl.hidden      = false;
+  }
+
+  function clearError() {
+    if (!errorEl) return;
+    errorEl.textContent = '';
+    errorEl.hidden      = true;
+  }
+
+  function setLoading(on: boolean) {
+    if (!submitBtn) return;
+    submitBtn.disabled = on;
+    submitBtn.classList.toggle('loading', on);
+  }
+
+  // ── Reset ────────────────────────────────────────────────
+  function resetForm() {
+    clearFile();
+    clearError();
+    setLoading(false);
+    if (captionInput) captionInput.value = '';
+    if (successEl)    successEl.hidden   = true;
+    if (form)         form.hidden        = false;
+  }
+
+  // ── Submit ────────────────────────────────────────────────
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const token   = tokenInput?.value.trim() ?? '';
+    const caption = captionInput?.value.trim() || null;
+
+    if (!selectedFile)  { showError('Please select a photo.');          return; }
+    if (!token)         { showError('Please enter your invitation code.'); tokenInput?.focus(); return; }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      showError('Photo is too large. Maximum size is 10 MB.'); return;
+    }
+
+    const fd = new FormData();
+    fd.append('file',  selectedFile);
+    fd.append('token', token);
+    if (caption) fd.append('caption', caption);
+
+    setLoading(true);
+    try {
+      const res  = await fetch('/api/photo/upload', { method: 'POST', body: fd });
+      const data = await res.json() as { success?: boolean; error?: string };
+
+      if (!res.ok || !data.success) {
+        showError(data.error ?? 'Upload failed. Please try again.');
+        return;
+      }
+
+      // Show success
+      form.hidden         = true;
+      if (successEl) successEl.hidden = false;
+
+    } catch {
+      showError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  // ── Upload another ────────────────────────────────────────
+  anotherBtn?.addEventListener('click', () => {
+    resetForm();
+  });
+</script>
+
+<style>
+/* ── Section wrapper ───────────────────────────────────── */
+.mu-section { width: 100%; }
+
+/* ── CTA banner ────────────────────────────────────────── */
+.mu-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  background: color-mix(in srgb, var(--cp) 5%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 22%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.mu-cta-left { min-width: 0; }
+
+.mu-cta-title {
+  font-size: 18px; font-style: italic; font-weight: 300;
+  color: var(--dark); margin: 0 0 2px;
+}
+
+.mu-cta-body {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted); margin: 0; line-height: 1.4;
+}
+
+.mu-open-btn {
+  display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+  padding: 9px 18px;
+  background: var(--dark);
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--ivory); cursor: pointer;
+  transition: opacity 0.2s;
+}
+.mu-open-btn:hover { opacity: 0.82; }
+
+.mu-open-arrow { font-size: 12px; }
+
+/* ── Expanded form area ────────────────────────────────── */
+.mu-expand {
+  padding: 24px;
+  background: color-mix(in srgb, var(--cp) 4%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 22%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+.mu-form { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── Drop zone ─────────────────────────────────────────── */
+.mu-drop {
+  position: relative;
+  border: 2px dashed color-mix(in srgb, var(--cp) 35%, transparent);
+  border-radius: var(--radius-sm);
+  min-height: 140px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  outline: none;
+}
+.mu-drop:hover,
+.mu-drop:focus-visible { border-color: color-mix(in srgb, var(--cp) 65%, transparent); }
+.mu-drop.drag-over {
+  border-color: var(--cp);
+  background: color-mix(in srgb, var(--cp) 8%, var(--ivory));
+}
+.mu-drop.has-file { border-style: solid; cursor: default; }
+
+.mu-file-input {
+  position: absolute; inset: 0; opacity: 0; width: 0; height: 0;
+  pointer-events: none;
+}
+
+.mu-drop-ph {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 24px; text-align: center; pointer-events: none;
+}
+.mu-drop-icon { font-size: 28px; opacity: 0.45; }
+.mu-drop-label {
+  font-family: var(--fb); font-size: 13px; font-weight: 400; color: var(--dark);
+}
+.mu-drop-hint {
+  font-family: var(--fb); font-size: 11px; font-weight: 300; color: var(--muted);
+}
+
+.mu-drop-preview {
+  position: relative; width: 100%; height: 180px;
+}
+.mu-preview-img {
+  width: 100%; height: 100%;
+  object-fit: cover; border-radius: calc(var(--radius-sm) - 2px);
+  display: block;
+}
+.mu-remove {
+  position: absolute; top: 8px; right: 8px;
+  width: 28px; height: 28px;
+  background: rgba(26,26,46,0.65); backdrop-filter: blur(4px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 50%; color: #fff; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.2s;
+}
+.mu-remove:hover { background: rgba(26,26,46,0.9); }
+
+/* ── Form fields ───────────────────────────────────────── */
+.mu-field { display: flex; flex-direction: column; gap: 5px; }
+
+.mu-label {
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--dark);
+}
+.mu-optional {
+  font-weight: 300; letter-spacing: 0; text-transform: none;
+  color: var(--muted);
+}
+
+.mu-input {
+  width: 100%; padding: 10px 12px;
+  background: var(--ivory);
+  border: 1px solid color-mix(in srgb, var(--cp) 28%, transparent);
+  border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--dark); outline: none;
+  transition: border-color 0.2s;
+}
+.mu-input::placeholder { color: var(--muted); }
+.mu-input:focus { border-color: color-mix(in srgb, var(--cp) 65%, transparent); }
+
+.mu-hint {
+  font-family: var(--fb); font-size: 11px; font-weight: 300;
+  color: var(--muted); line-height: 1.4; margin: 0;
+}
+
+/* ── Error ─────────────────────────────────────────────── */
+.mu-error {
+  font-family: var(--fb); font-size: 12px; font-weight: 400;
+  color: #b04040; padding: 9px 12px;
+  background: color-mix(in srgb, #b04040 8%, var(--ivory));
+  border: 1px solid color-mix(in srgb, #b04040 25%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Actions row ───────────────────────────────────────── */
+.mu-actions {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px;
+}
+
+.mu-cancel-btn {
+  padding: 9px 16px;
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--cp) 30%, transparent);
+  border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--muted); cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.mu-cancel-btn:hover { border-color: var(--cp); color: var(--dark); }
+
+.mu-submit-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 9px 20px;
+  background: var(--dark);
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--ivory); cursor: pointer;
+  transition: opacity 0.2s;
+}
+.mu-submit-btn:hover:not(:disabled) { opacity: 0.82; }
+.mu-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.mu-submit-dots { display: none; gap: 4px; }
+.mu-submit-btn.loading .mu-submit-text { display: none; }
+.mu-submit-btn.loading .mu-submit-dots { display: flex; }
+
+.dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--ivory);
+  animation: bounce 0.9s ease-in-out infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.30s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40%           { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ── Success ───────────────────────────────────────────── */
+.mu-success {
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 6px; padding: 20px 0 4px;
+}
+.mu-success-icon {
+  font-family: var(--fd); font-size: 16px; color: var(--cs); margin-bottom: 2px;
+}
+.mu-success-title {
+  font-size: 22px; font-style: italic; font-weight: 300;
+  color: var(--dark); margin: 0;
+}
+.mu-success-body {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted); line-height: 1.5; margin: 0;
+}
+.mu-another-btn {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid color-mix(in srgb, var(--cp) 35%, transparent);
+  border-radius: var(--radius-sm);
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--dark); cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.mu-another-btn:hover {
+  background: color-mix(in srgb, var(--cp) 8%, var(--ivory));
+  border-color: color-mix(in srgb, var(--cp) 60%, transparent);
+}
+
+@media (max-width: 520px) {
+  .mu-cta { flex-direction: column; align-items: flex-start; }
+  .mu-open-btn { align-self: flex-end; }
+}
+</style>
