@@ -1,0 +1,82 @@
+---
+// ui/RefTagger.astro — Logos RefTagger: auto-tags scripture references with hover tooltips
+// bibleReader valid values: "biblia" | "bible.faithlife" | "app.logos"
+// socialSharing valid values: "twitter" | "facebook" (only these two)
+interface HeadingStyle {
+  backgroundColor?: string;
+  color?:           string;
+  fontSize?:        string;
+  fontFamily?:      string;
+  fontWeight?:      string;
+  lineHeight?:      string;
+}
+interface BodyStyle {
+  color?:      string;
+  fontSize?:   string;
+  fontFamily?: string;
+  fontWeight?: string;
+  lineHeight?: string;
+  moreLink?:   { color: string };
+}
+interface Props {
+  version?:           string;
+  bibleReader?:       'biblia' | 'bible.faithlife' | 'app.logos';
+  socialSharing?:     ('twitter' | 'facebook')[];
+  tagChapters?:       boolean;
+  convertHyperlinks?: boolean;
+  roundCorners?:      boolean;
+  tooltipStyle?:      'light' | 'dark';
+  heading?:           HeadingStyle;
+  body?:              BodyStyle;
+}
+const {
+  version           = 'RSVCE',
+  bibleReader       = 'biblia',
+  socialSharing     = ['twitter', 'facebook'],
+  tagChapters       = false,
+  convertHyperlinks = false,
+  roundCorners      = false,
+  tooltipStyle      = 'light',
+  heading           = {},
+  body              = {},
+} = Astro.props;
+
+const config = { version, bibleReader, socialSharing, tagChapters, convertHyperlinks, roundCorners, tooltipStyle, heading, body };
+---
+
+<script is:inline define:vars={{ config }}>
+  function initRefTagger() {
+    var customStyle = {};
+    if (Object.keys(config.heading).length) customStyle.heading = config.heading;
+    if (Object.keys(config.body).length)    customStyle.body    = config.body;
+
+    window.refTagger = {
+      settings: {
+        bibleReader:       config.bibleReader,
+        bibleVersion:      config.version,
+        socialSharing:     config.socialSharing,
+        tagChapters:       config.tagChapters,
+        convertHyperlinks: config.convertHyperlinks,
+        roundCorners:      config.roundCorners,
+        tooltipStyle:      config.tooltipStyle,
+        customStyle:       customStyle,
+      },
+    };
+
+    if (document.querySelector('script[src*="RefTagger"]')) {
+      if (window.refTagger.tag) window.refTagger.tag();
+      return;
+    }
+
+    var n = document.querySelector('[nonce]');
+    window.refTagger.settings.nonce = n && (n.nonce || n.getAttribute('nonce'));
+
+    var g = document.createElement('script');
+    var s = document.getElementsByTagName('script')[0];
+    g.src   = 'https://api.reftagger.com/v2/RefTagger.js';
+    g.nonce = window.refTagger.settings.nonce;
+    s.parentNode.insertBefore(g, s);
+  }
+
+  document.addEventListener('astro:page-load', initRefTagger);
+</script>

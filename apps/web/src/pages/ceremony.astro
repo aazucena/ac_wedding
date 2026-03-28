@@ -4,11 +4,13 @@ export const prerender = true;
 import Layout      from '../layouts/Layout.astro';
 import PageHeader  from '../components/PageHeader.astro';
 import Hashtag     from '~/components/Hashtag.astro';
+import RefTagger   from '~/components/ui/RefTagger.astro';
 import { getSettings, getCeremony, getReadings, getClergies } from '../lib/directus';
+import { getMassMusic } from '../lib/api/ceremony';
 import { formatDate, formatTime } from '../lib/utils/format';
 
-const [settings, ceremony, readings, clergies] = await Promise.all([
-  getSettings(), getCeremony(), getReadings(), getClergies(),
+const [settings, ceremony, readings, clergies, music] = await Promise.all([
+  getSettings(), getCeremony(), getReadings(), getClergies(), getMassMusic(),
 ]);
 
 const groom            = settings.groom?.first_name ?? 'Aldrin';
@@ -33,19 +35,40 @@ const sortedReadings = [...readings].sort((a, b) => {
 
 const ministers = ceremony.liturgical_ministers ?? [];
 
+// Venue
+const venue = ceremony.venue ?? null;
+const venueAddress = [venue?.address_line1, venue?.city].filter(Boolean).join(', ') || null;
+
+// Order of service — top-level sections with children
+const programs = (ceremony.programs ?? [])
+  .filter(p => !p.parent)
+  .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+
+// Dress code color palette
+const dressCodeColors = [
+  { label: 'Mint Green', hex: '#A8D5C2' },
+  { label: 'White',      hex: '#F8F8F4' },
+  { label: 'Black',      hex: '#1A1A1A' },
+  { label: 'Lavender',   hex: '#C9B8E8' },
+];
+
+const isHex = (v?: string) => /^#[0-9A-Fa-f]{6}$/.test(v ?? '');
+const cp = isHex(settings.color_primary)   ? settings.color_primary!.toLowerCase()  : undefined;
+const cs = isHex(settings.color_secondary) ? settings.color_secondary!.toLowerCase() : undefined;
+
+// Music
+const SLOT_LABELS: Record<string, string> = {
+  prelude: 'Prelude', processional: 'Processional', kyrie: 'Kyrie', gloria: 'Gloria',
+  psalm: 'Responsorial Psalm', gospel_acclamation: 'Gospel Acclamation',
+  offertory: 'Offertory', sanctus: 'Sanctus', agnus_dei: 'Agnus Dei',
+  communion: 'Communion', recessional: 'Recessional',
+};
+
 function personName(person?: { first_name?: string; last_name?: string; preferred_name?: string | null } | null): string {
   if (!person) return '';
   return `${person.preferred_name ?? person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
 }
 
-function reference(r: { book?: string; chapter?: string; verse_start?: string; verse_end?: string }): string {
-  const parts = [r.book, r.chapter ? `${r.chapter}` : null];
-  const verses = r.verse_start
-    ? (r.verse_end ? `${r.verse_start}–${r.verse_end}` : r.verse_start)
-    : null;
-  if (r.chapter && verses) parts.push(`:${verses}`);
-  return parts.filter(Boolean).join(' ');
-}
 ---
 
 <Layout
@@ -64,6 +87,51 @@ function reference(r: { book?: string; chapter?: string; verse_start?: string; v
       eyebrow="Nuptial Mass"
       date={metaLine ?? weddingDateLabel}
     />
+
+    <!-- ── Venue & Logistics ──────────────────────────── -->
+    {(venue || ceremony.dress_code) && (
+      <section class="ceremony-section" id="venue" style="animation-delay: 0.05s">
+        <h2 class="section-title">Venue & Logistics</h2>
+        <div class="logistics-grid">
+          {venue && (
+            <div class="logistics-card">
+              <span class="card-eyebrow">Location</span>
+              <span class="logistics-value font-display">{venue.name}</span>
+              {venueAddress && <span class="logistics-sub">{venueAddress}</span>}
+              {ceremony.parking_notes && (
+                <span class="logistics-sub">{ceremony.parking_notes}</span>
+              )}
+              {venue.maps_url && (
+                <a href={venue.maps_url} target="_blank" rel="noopener" class="logistics-link">Get Directions →</a>
+              )}
+            </div>
+          )}
+          {ceremony.dress_code && (
+            <div class="logistics-card">
+              <span class="card-eyebrow">Dress Code</span>
+              <span class="logistics-value font-display">{ceremony.dress_code}</span>
+              {ceremony.dress_code_description && (
+                <span class="logistics-sub">{ceremony.dress_code_description}</span>
+              )}
+              <div class="swatch-row">
+                {dressCodeColors.map(c => (
+                  <div class="swatch-wrap">
+                    <span
+                      class="swatch"
+                      style={`background:${c.hex};${c.hex === '#F8F8F4' ? 'border-color:var(--border);' : ''}`}
+                      title={c.label}
+                    ></span>
+                    <span class="swatch-label">{c.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+    )}
+
+    <div class="section-divider" aria-hidden="true"><span class="spin-symbol">✦</span></div>
 
     <!-- Those Serving -->
     {(clergies.length > 0 || ministers.length > 0) && (
@@ -110,8 +178,8 @@ function reference(r: { book?: string; chapter?: string; verse_start?: string; v
                 <span class="reading-index">{i + 1}</span>
                 <div class="reading-body">
                   <span class="card-eyebrow">{r.label ?? r.type}</span>
-                  {(r.book || r.chapter) && (
-                    <span class="reading-ref">{reference(r)}</span>
+                  {r.book && (
+                    <span class="reading-ref">{r.book}</span>
                   )}
                   {personName(r.reader) && (
                     <span class="reading-reader">Read by {personName(r.reader)}</span>
@@ -124,14 +192,79 @@ function reference(r: { book?: string; chapter?: string; verse_start?: string; v
       </section>
     )}
 
-    <div class="section-divider" aria-hidden="true"><span class="spin-symbol">✦</span></div>
+    {sortedReadings.length > 0 && <div class="section-divider" aria-hidden="true"><span class="spin-symbol">✦</span></div>}
 
-    <!-- CTA -->
-    <div class="program-cta" style="animation-delay: 0.3s">
-      <a href="/print/program" class="program-cta-card">
-        <span class="program-cta-label">Ceremony Program</span>
-        <span class="program-cta-sub">Order of service, wedding party & reception details</span>
-        <span class="program-cta-arrow">→</span>
+    <!-- ── Order of Service ───────────────────────────── -->
+    {programs.length > 0 && (
+      <section class="ceremony-section" id="order-of-service" style="animation-delay: 0.3s">
+        <h2 class="section-title">Order of Service</h2>
+        <ol class="oos-list">
+          {programs.map((section) => {
+            const children = (section.children ?? []).sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+            return (
+              <li class="oos-section">
+                <span class="oos-section-label">{section.label}</span>
+                {children.length > 0 && (
+                  <ul class="oos-items">
+                    {children.map((item) => (
+                      <li class="oos-item">
+                        <span class="oos-item-dot"></span>
+                        <div class="oos-item-body">
+                          <span class="oos-item-label">{item.label}</span>
+                          {item.reading?.book && (
+                            <span class="oos-item-meta">{item.reading.book}</span>
+                          )}
+                          {item.music && (
+                            <span class="oos-item-meta">{item.music.title}{item.music.composer ? ` — ${item.music.composer}` : ''}</span>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ol>
+      </section>
+    )}
+
+    {programs.length > 0 && <div class="section-divider" aria-hidden="true"><span class="spin-symbol">✦</span></div>}
+
+    <!-- ── Music ──────────────────────────────────────── -->
+    {music.length > 0 && (
+      <section class="ceremony-section" id="music" style="animation-delay: 0.35s">
+        <h2 class="section-title">Music</h2>
+        <div class="music-list">
+          {music.map((m) => (
+            <div class="music-item">
+              <span class="card-eyebrow">{SLOT_LABELS[m.slot ?? ''] ?? m.slot}</span>
+              <span class="music-title font-display">{m.title}</span>
+              {m.composer && <span class="music-meta">{m.composer}</span>}
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {music.length > 0 && <div class="section-divider" aria-hidden="true"><span class="spin-symbol">✦</span></div>}
+
+    <!-- ── CTAs ───────────────────────────────────────── -->
+    <div class="cta-row" style="animation-delay: 0.4s">
+      <a href="/print/program" class="cta-card">
+        <span class="cta-label">Ceremony Program</span>
+        <span class="cta-sub">Full order of service & reception details</span>
+        <span class="cta-arrow">→</span>
+      </a>
+      <a href="/wedding-party" class="cta-card">
+        <span class="cta-label">Wedding Party</span>
+        <span class="cta-sub">Entourage & principal sponsors</span>
+        <span class="cta-arrow">→</span>
+      </a>
+      <a href="/sponsors" class="cta-card">
+        <span class="cta-label">Sponsors</span>
+        <span class="cta-sub">Our cord, veil & candle sponsors</span>
+        <span class="cta-arrow">→</span>
       </a>
     </div>
 
@@ -143,6 +276,12 @@ function reference(r: { book?: string; chapter?: string; verse_start?: string; v
   </Fragment>
 
 </Layout>
+
+<RefTagger
+  version="RSVCE"
+  heading={cp ? { backgroundColor: cp, color: '#ffffff' } : undefined}
+  body={cs ? { color: cs } : undefined }
+/>
 
 <style>
 .ceremony-page { display: flex; flex-direction: column; align-items: center; }
@@ -261,44 +400,155 @@ function reference(r: { book?: string; chapter?: string; verse_start?: string; v
   color: var(--muted); margin-top: 2px;
 }
 
-/* CTA card */
-.program-cta {
-  width: 100%; max-width: 480px; margin-bottom: 52px;
+/* Logistics */
+.logistics-grid {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+}
+.logistics-card {
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--ivory); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-card);
+  padding: 20px 28px; min-width: 200px; flex: 1; max-width: 280px;
+  position: relative; overflow: hidden;
+}
+.logistics-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+.logistics-value {
+  font-size: 22px; font-weight: 400; color: var(--dark); line-height: 1.2;
+}
+.logistics-sub {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--muted); line-height: 1.5;
+}
+.swatch-row {
+  display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0;
+}
+.swatch-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.swatch {
+  display: block; width: 32px; height: 32px; border-radius: 50%;
+  border: 1.5px solid transparent; box-shadow: var(--shadow-card);
+  flex-shrink: 0;
+}
+.swatch-label {
+  font-family: var(--fb); font-size: 10px; font-weight: 400;
+  color: var(--muted); text-align: center; line-height: 1.2;
+  max-width: 48px;
+}
+
+.logistics-link {
+  font-family: var(--fb); font-size: 12px; font-weight: 500;
+  color: var(--cs); text-decoration: none; margin-top: 2px;
+  transition: opacity 0.15s ease;
+}
+.logistics-link:hover { opacity: 0.7; }
+
+/* Order of Service */
+.oos-list {
+  list-style: none; display: flex; flex-direction: column; gap: 16px;
+  width: 100%; max-width: 520px; margin: 0 auto;
+}
+.oos-section {
+  background: var(--ivory); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+.oos-section-label {
+  display: block;
+  font-family: var(--fd); font-size: 18px; font-weight: 400; font-style: italic;
+  color: var(--dark); padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--cp) 6%, var(--ivory));
+}
+.oos-items {
+  list-style: none; display: flex; flex-direction: column;
+  padding: 8px 0;
+}
+.oos-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 8px 20px;
+}
+.oos-item-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: color-mix(in srgb, var(--cs) 60%, transparent);
+  flex-shrink: 0; margin-top: 7px;
+}
+.oos-item-body { display: flex; flex-direction: column; gap: 2px; }
+.oos-item-label {
+  font-family: var(--fb); font-size: 14px; font-weight: 400; color: var(--dark);
+}
+.oos-item-meta {
+  font-family: var(--fb); font-size: 12px; font-weight: 300; color: var(--muted);
+}
+
+/* Music */
+.music-list {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  width: 100%; max-width: 600px; margin: 0 auto;
+}
+.music-item {
+  display: flex; flex-direction: column; gap: 4px;
+  background: var(--ivory); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-card);
+  padding: 14px 20px; min-width: 180px; flex: 1; max-width: 260px;
+  position: relative; overflow: hidden;
+}
+.music-item::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(180deg, var(--cp), var(--cs));
+}
+.music-title {
+  font-size: 18px; font-weight: 400; color: var(--dark); line-height: 1.2;
+}
+.music-meta {
+  font-family: var(--fb); font-size: 12px; font-weight: 300; color: var(--muted);
+}
+
+/* CTAs */
+.cta-row {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 12px;
+  width: 100%; margin-bottom: 52px;
   opacity: 0; animation: fadeUp 0.8s ease forwards;
 }
-.program-cta-card {
+.cta-card {
   display: grid; grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   align-items: center; gap: 2px 16px;
   background: var(--ivory); border: 1px solid var(--border);
   border-radius: var(--radius-sm); box-shadow: var(--shadow-card);
   padding: 20px 24px; text-decoration: none;
-  position: relative; overflow: hidden;
+  position: relative; overflow: hidden; flex: 1; min-width: 200px; max-width: 280px;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.program-cta-card::before {
+.cta-card::before {
   content: '';
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
   background: linear-gradient(90deg, var(--cp), var(--cs));
 }
-.program-cta-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
-.program-cta-label {
-  font-family: var(--fd); font-size: 22px; font-weight: 400; color: var(--dark);
+.cta-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.cta-label {
+  font-family: var(--fd); font-size: 20px; font-weight: 400; color: var(--dark);
   grid-column: 1; grid-row: 1;
 }
-.program-cta-sub {
+.cta-sub {
   font-family: var(--fb); font-size: 11px; font-weight: 300;
   color: var(--muted); grid-column: 1; grid-row: 2;
 }
-.program-cta-arrow {
-  font-family: var(--fb); font-size: 20px; color: var(--cs);
+.cta-arrow {
+  font-family: var(--fb); font-size: 18px; color: var(--cs);
   grid-column: 2; grid-row: 1 / 3; align-self: center;
   transition: transform 0.2s ease;
 }
-.program-cta-card:hover .program-cta-arrow { transform: translateX(3px); }
+.cta-card:hover .cta-arrow { transform: translateX(3px); }
 
 @media (max-width: 600px) {
-  .readings-grid { grid-template-columns: 1fr; }
   .clergy-card { min-width: 160px; padding: 18px 24px; }
+  .logistics-card, .music-item, .cta-card { max-width: 100%; }
+  .cta-row { flex-direction: column; }
 }
 </style>
