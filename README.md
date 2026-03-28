@@ -54,26 +54,32 @@ wedding-planner/                         ← pnpm workspace root
 ├── package.json                         ← root scripts
 ├── pnpm-workspace.yaml
 ├── .env.local                           ← shared secrets (never committed)
+├── CLAUDE.md                            ← instructions for Claude Code
+├── MIGRATION.md                         ← production data migration guide
+├── RAILWAY.md                           ← Railway infrastructure setup guide
 ├── .docker/
 │   └── compose.yaml                    ← PostgreSQL/PostGIS + Redis + Directus
 ├── apps/
 │   └── web/                            ← Astro 6 SSR (Vercel) - guest-facing site
 │       └── src/
+│           ├── middleware.ts            ← preview token gate (PREVIEW_TOKEN)
 │           ├── lib/directus.ts         ← Directus HTTP client
 │           ├── lib/api/                ← domain-specific data fetchers
 │           ├── lib/types.ts            ← TypeScript interfaces
 │           └── pages/                  ← routes: /, /rsvp, /ceremony, /story, etc.
 ├── packages/
-│   ├── directus/                       ← Directus config & extensions
+│   ├── directus/                       ← Directus config, extensions & templates
 │   │   ├── schemas/snapshot.json       ← full schema backup (import to restore)
+│   │   ├── sync/                       ← directus-sync tracked files (flows, permissions, fields)
+│   │   ├── templates/                  ← Liquid email templates (invitation, reminder)
 │   │   └── extensions/
-│   │       └── directus-emoji-picker/  ← custom emoji picker interface extension
-│   └── seed/                           ← idempotent seed scripts
+│   │       ├── directus-emoji-picker/          ← custom emoji picker interface extension
+│   │       └── directus-extension-api-gateway/ ← custom API gateway endpoint extension
+│   └── seed/                           ← idempotent seed scripts (local dev only)
 │       └── src/
 │           ├── runner.js               ← generic seed orchestrator (~4k lines)
 │           └── collections/            ← 19 JSON seed files
-├── flows/                              ← 7 Directus automation flows (importable)
-└── scripts/                            ← helper scripts (e.g. email preview)
+└── scripts/                            ← helper scripts (dump-collections.sh, etc.)
 ```
 
 ---
@@ -87,23 +93,34 @@ pnpm directus:stop     # Stop containers
 pnpm directus:logs     # Follow container logs
 pnpm directus:cli      # Enter Directus container shell
 pnpm db:exec           # Enter PostgreSQL shell
+pnpm directus:reset    # Stop containers and wipe all volumes (destructive)
+pnpm directus:build    # Rebuild the Directus Docker image
 
 # Astro frontend
 pnpm rsvp:dev          # Start Astro dev server on http://localhost:4321
 pnpm rsvp:build        # Build Astro for production
+pnpm rsvp:check        # Run astro check (TypeScript diagnostics)
 
-# Seeding
-pnpm seed                                  # Insert-or-skip (safe, default)
-pnpm seed -- --fresh                       # Overwrite existing records (destructive)
-pnpm seed -- --collection=persons,vendors  # Seed specific collections only
-pnpm seed -- --fields                      # Apply field metadata
-pnpm seed:settings / seed:budget / seed:checklist / seed:ceremony / seed:prep
+# Directus schema sync
+pnpm sync:pull         # Pull schema/flows/permissions from local Directus
+pnpm sync:push         # Push schema/flows/permissions to local Directus
+pnpm sync:push:prod    # Push to production Directus (requires TRANSFER_URL + TRANSFER_TOKEN)
 
-# Emoji picker extension
-pnpm run emoji:build   # Build the extension
-pnpm run emoji:dev     # Watch mode
-pnpm run emoji:lint    # Lint src/
-pnpm run emoji:format  # Format src/
+# Seeding (local dev only — never run against production)
+pnpm --filter seed seed                                  # Insert-or-skip (safe, default)
+pnpm --filter seed seed -- --fresh                       # Overwrite existing records (destructive)
+pnpm --filter seed seed -- --collection=persons,vendors  # Seed specific collections only
+pnpm --filter seed seed -- --fields                      # Apply field metadata
+
+# Data migration (local → production)
+pnpm dump:collections  # Dump local collection data to .docker/docker-entrypoint.d/collections.local.sql
+                       # See MIGRATION.md for full production migration steps
+
+# Emoji picker extension (run from packages/directus/extensions/directus-emoji-picker/)
+pnpm build   # Build the extension
+pnpm dev     # Watch mode
+pnpm lint    # Lint src/
+pnpm format  # Format src/
 ```
 
 ---
@@ -148,7 +165,7 @@ honeymoon             → Honeymoon planning details
 
 ---
 
-## Directus Flows (7 Automations)
+## Directus Flows (9 Automations)
 
 | Flow | Trigger | What It Does |
 |---|---|---|
@@ -159,6 +176,8 @@ honeymoon             → Honeymoon planning details
 | 5. Budget Allocation | Vendor → booked | Allocates total_cost to category budget, alerts if over ceiling |
 | 6. Budget Payment | Vendor → paid | Syncs paid amount to budget category |
 | 7. Recessional Order | Entourage updated | Auto-inverts procession sequence into recessional order |
+| 8. RSVP Reminder: Send Nudge Emails | Scheduled (daily 9am) | Computes 14d/3d windows before RSVP deadline, triggers per-party sub-flow |
+| 9. RSVP Reminder: Send Per Party | Sub-flow (triggered by Flow 8) | Deduplicates via invitations log, sends reminder email, logs result |
 
 ---
 
@@ -186,19 +205,27 @@ honeymoon             → Honeymoon planning details
 
 ## Production (Railway)
 
-See `RAILWAY.md` for the full setup guide.
+See `RAILWAY.md` for the full infrastructure setup guide (first-time provisioning).
+
+See `MIGRATION.md` for the data migration guide (pushing local schema + data to production).
+
+**Quick reference:**
 
 ```
-1. Create Railway project
-2. Add PostgreSQL plugin
-3. Deploy Directus via Docker image (directus/directus:latest)
-4. Set environment variables (see RAILWAY.md Step 4)
-5. Add custom domain: planner.aazucena.com
-6. Add CNAME in Vercel DNS: planner → Railway domain
-7. Add persistent volume at /directus/uploads
-8. Import schema: packages/directus/schemas/snapshot.json
-9. Run seed scripts against production URL
-10. Deploy apps/web to Vercel (DIRECTUS_URL + DIRECTUS_TOKEN env vars)
+Infrastructure setup (RAILWAY.md):
+1. Create Railway project + PostgreSQL plugin
+2. Deploy Directus from packages/directus/ Dockerfile (includes extensions + templates)
+3. Set environment variables (DB, SMTP, SECRET, PUBLIC_URL)
+4. Add custom domain: planner.aazucena.com + CNAME in Vercel DNS
+5. Add persistent volume at /directus/uploads
+6. Deploy apps/web to Vercel (DIRECTUS_URL + DIRECTUS_TOKEN + PREVIEW_TOKEN env vars)
+
+Data migration (MIGRATION.md):
+1. Backup production DB (Railway dashboard or pg_dump)
+2. pnpm dump:collections → exports local collection SQL
+3. aws s3 sync uploads to Railway S3 bucket
+4. pnpm sync:push:prod → pushes schema, flows, permissions
+5. psql $DATABASE_URL < collections.local.sql → applies data dump
 ```
 
 ---
@@ -212,6 +239,33 @@ railway run pg_dump $DATABASE_URL > backup_$(date +%Y%m%d).sql
 ```
 
 Store backups externally. Do not rely on Railway alone for irreplaceable wedding data.
+
+---
+
+## Pending Content & Known Blockers
+
+Some areas of the site and admin data are intentionally incomplete — either because the content changes frequently as plans are confirmed, or because it is blocked on an external dependency.
+
+### High-churn content (update frequently as plans are confirmed)
+
+| Area | Status | Notes |
+|---|---|---|
+| **Guests** | Partial | Final guest list and RSVP tokens pending full invite confirmation |
+| **Vendors** | Partial | Several vendors not yet booked or contracts unsigned |
+| **Seating** | Not started | Assignments will be done last-minute, close to the wedding date |
+| **Budget** | Ongoing | Costs update as vendors are booked and deposits are paid |
+| **Checklist** | Ongoing | Tasks and due dates shift as plans are finalised |
+| **Marriage prep** | Ongoing | Pre-Cana and canonical document deadlines are moving |
+
+### Blocked on external dependencies
+
+| Area | Blocked by | Notes |
+|---|---|---|
+| **Prenup photos** | Prenup shoot not yet done | `/gallery`, `/story`, and homepage hero images will be replaced once available |
+| **Ceremony readings** | Parish approval pending | Full text and reader assignments confirmed after parish meeting |
+| **Mass music** | Parish approval pending | Music slots need sign-off from parish music director before printing booklets |
+| **Reception program** | Venue confirmation pending | Runsheet and emcee script finalised after venue walk-through |
+| **Memories / hashtag feed** | Post-wedding | `/memories` page unlocks after the wedding date; social content populated after |
 
 ---
 
