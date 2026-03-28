@@ -65,7 +65,17 @@ export default defineConfig({
         '@assets':     resolve(__dirname, 'src/assets'),
       },
     },
-
+    optimizeDeps: {
+      exclude: [
+        'astro/toolbar',
+        'astro:toolbar:internal',
+        'astro:toolbar',
+        'astro:xray',
+        'astro:audit',
+        'astro/runtime/client/dev-toolbar/entrypoint.js',
+        '/@id/astro/runtime/client/dev-toolbar/astro_runtime_client_dev-toolbar_entrypoint__js.js.map'
+      ]
+    },
     plugins: [
       // Restore Vite 7's @vite/env resolution lost in Astro's config merge
       {
@@ -73,6 +83,11 @@ export default defineConfig({
         enforce: 'pre',
         resolveId(id) {
           if (id === '@vite/env') return _require.resolve('vite/dist/client/env.mjs');
+        },
+        transform(code, id) {
+          if (id.endsWith('env.mjs') && code.includes('__DEFINES__')) {
+            return { code: code.replace(/__DEFINES__/g, '{}'), map: null };
+          }
         },
       },
       tailwindcss(),
