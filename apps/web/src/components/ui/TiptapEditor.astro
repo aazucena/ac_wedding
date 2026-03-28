@@ -69,18 +69,19 @@ const EMOJI_LIST = ['💍','💒','💐','🌸','💕','💞','💌','🥂','�
   import Placeholder      from '@tiptap/extension-placeholder';
   import Underline        from '@tiptap/extension-underline';
   import Highlight        from '@tiptap/extension-highlight';
+  //@ts-ignore
   import type { Node }    from '@tiptap/pm/model';
 
   // ── Markdown serialiser ────────────────────────────────
   function serializeInline(node: Node): string {
     let text = '';
-    node.forEach(child => {
+    node.forEach((child: { type: { name: string; }; text: string; marks: any[]; }) => {
       if (child.type.name === 'hardBreak') { text += '  \n'; return; }
       let t = child.text ?? '';
-      const bold      = child.marks.some(m => m.type.name === 'bold');
-      const italic    = child.marks.some(m => m.type.name === 'italic');
-      const underline = child.marks.some(m => m.type.name === 'underline');
-      const highlight = child.marks.some(m => m.type.name === 'highlight');
+      const bold      = child.marks.some((m: { type: { name: string; }; }) => m.type.name === 'bold');
+      const italic    = child.marks.some((m: { type: { name: string; }; }) => m.type.name === 'italic');
+      const underline = child.marks.some((m: { type: { name: string; }; }) => m.type.name === 'underline');
+      const highlight = child.marks.some((m: { type: { name: string; }; }) => m.type.name === 'highlight');
       if (bold && italic) t = `***${t}***`; else if (bold) t = `**${t}**`; else if (italic) t = `_${t}_`;
       if (underline) t = `<u>${t}</u>`;
       if (highlight)  t = `<mark>${t}</mark>`;
@@ -91,12 +92,12 @@ const EMOJI_LIST = ['💍','💒','💐','🌸','💕','💞','💌','🥂','�
 
   function toMarkdown(doc: Node): string {
     const parts: string[] = [];
-    doc.forEach(node => {
+    doc.forEach((node: { type: { name: string; }; forEach: (arg0: (child: any) => void) => void; }) => {
       if (node.type.name === 'paragraph') {
         parts.push(serializeInline(node));
       } else if (node.type.name === 'blockquote') {
         const inner: string[] = [];
-        node.forEach(child => {
+        node.forEach((child: { type: { name: string; }; }) => {
           if (child.type.name === 'paragraph') inner.push(serializeInline(child));
         });
         parts.push(inner.map(l => `> ${l}`).join('\n'));
