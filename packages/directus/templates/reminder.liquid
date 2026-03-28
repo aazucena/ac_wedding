@@ -16,6 +16,13 @@
   </noscript>
   <![endif]-->
   <style>
+    {% comment %}
+      CSS lives here in <head> — email clients require it inline, not in an external file.
+      Design system mirrors apps/web/src/styles/global.css.
+      color_primary (#A8D4B8 mint green) and color_secondary (#C5B8E0 lavender) are Liquid vars from read_wedding_settings.
+      No flexbox, grid, or color-mix() — email-client-safe only.
+    {% endcomment %}
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
     table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
@@ -29,17 +36,17 @@
     .email-wrapper { background-color: #f4f0ec; padding: 40px 16px; }
     .email-container { max-width: 600px; margin: 0 auto; background: #fdfaf7; border-radius: 2px; overflow: hidden; box-shadow: 0 8px 48px rgba(26,26,46,0.08), 0 2px 12px rgba(26,26,46,0.04); border: 1px solid rgba(196,186,220,0.25); }
 
-    .band-top    { height: 6px; background: linear-gradient(90deg, {{ read_wedding_settings.color_primary }} 0%, {{ read_wedding_settings.color_secondary }} 50%, {{ read_wedding_settings.color_primary }} 100%); }
-    .band-bottom { height: 4px; background: linear-gradient(90deg, {{ read_wedding_settings.color_secondary }} 0%, {{ read_wedding_settings.color_primary }} 50%, {{ read_wedding_settings.color_secondary }} 100%); }
+    .band-top    { height: 6px; background: linear-gradient(90deg, {{ read_wedding_settings.color_primary | default: '#A8D4B8' }} 0%, {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }} 50%, {{ read_wedding_settings.color_primary | default: '#A8D4B8' }} 100%); }
+    .band-bottom { height: 4px; background: linear-gradient(90deg, {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }} 0%, {{ read_wedding_settings.color_primary | default: '#A8D4B8' }} 50%, {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }} 100%); }
 
     /* ─── Compact hero ───────────────────────────── */
     .hero-compact { background-color: #1a1a2e; padding: 36px 40px; text-align: center; }
     .hero-eyebrow { font-family: 'Jost', Arial, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 10px; }
     .hero-names   { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 300; font-style: italic; color: #fdfaf7; line-height: 1.1; letter-spacing: -0.5px; }
-    .hero-names .ampersand { color: {{ read_wedding_settings.color_secondary }}; font-style: normal; }
+    .hero-names .ampersand { color: {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }}; font-style: normal; }
 
     /* ─── Greeting band ──────────────────────────── */
-    .greeting-band { background: linear-gradient(135deg, {{ read_wedding_settings.color_primary }} 0%, {{ read_wedding_settings.color_secondary }} 100%); padding: 18px 40px; text-align: center; }
+    .greeting-band { background: linear-gradient(135deg, {{ read_wedding_settings.color_primary | default: '#A8D4B8' }} 0%, {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }} 100%); padding: 18px 40px; text-align: center; }
     .greeting-band p { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 400; font-style: italic; color: #1a1a2e; letter-spacing: 0.3px; }
 
     /* ─── Body ───────────────────────────────────── */
@@ -51,15 +58,15 @@
 
     /* ─── RSVP Button ────────────────────────────── */
     .rsvp-wrap { padding: 8px 48px 36px; text-align: center; }
-    .rsvp-btn { display: inline-block; background: linear-gradient(135deg, #1a1a2e 0%, #2d2248 100%); color: {{ read_wedding_settings.color_primary }} !important; text-decoration: none; padding: 18px 56px; font-family: 'Jost', Arial, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; border-radius: 14px; box-shadow: 0 8px 32px rgba(26,26,46,0.20); }
+    .rsvp-btn { display: inline-block; background: linear-gradient(135deg, #1a1a2e 0%, #2d2248 100%); color: {{ read_wedding_settings.color_primary | default: '#A8D4B8' }} !important; text-decoration: none; padding: 18px 56px; font-family: 'Jost', Arial, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; border-radius: 14px; box-shadow: 0 8px 32px rgba(26,26,46,0.20); }
     .rsvp-deadline { margin-top: 14px; font-family: 'Jost', Arial, sans-serif; font-size: 12px; font-weight: 300; color: #9a95a8; letter-spacing: 0.5px; }
-    .rsvp-deadline strong { color: {{ read_wedding_settings.color_secondary }}; font-weight: 500; }
+    .rsvp-deadline strong { color: {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }}; font-weight: 500; }
 
     /* ─── Footer ─────────────────────────────────── */
     .footer { padding: 32px 48px; text-align: center; border-top: 1px solid rgba(196,186,220,0.45); }
-    .footer-hashtag { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-style: italic; color: {{ read_wedding_settings.color_secondary }}; margin-bottom: 16px; }
+    .footer-hashtag { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-style: italic; color: {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }}; margin-bottom: 16px; }
     .footer-couple { font-family: 'Jost', Arial, sans-serif; font-size: 11px; font-weight: 300; letter-spacing: 0.5px; color: #9a95a8; line-height: 1.8; }
-    .footer-couple a { color: {{ read_wedding_settings.color_secondary }} !important; }
+    .footer-couple a { color: {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }} !important; }
     .footer-fine { margin-top: 20px; font-family: 'Jost', Arial, sans-serif; font-size: 10px; font-weight: 300; color: #bbb5c8; line-height: 1.6; }
 
     @media only screen and (max-width: 480px) {
@@ -108,7 +115,7 @@
 
   <!-- Accent bar -->
   <tr>
-    <td style="height:5px; background:linear-gradient(90deg, {{ read_wedding_settings.color_primary }} 0%, {{ read_wedding_settings.color_secondary }} 100%);"></td>
+    <td style="height:5px; background:linear-gradient(90deg, {{ read_wedding_settings.color_primary | default: '#A8D4B8' }} 0%, {{ read_wedding_settings.color_secondary | default: '#C5B8E0' }} 100%);"></td>
   </tr>
 
   <!-- ─── RSVP BUTTON ───────────────────────────── -->
