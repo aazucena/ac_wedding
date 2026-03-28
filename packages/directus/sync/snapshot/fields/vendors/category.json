@@ -87,6 +87,10 @@
         {
           "text": "Hotel",
           "value": "hotel"
+        },
+        {
+          "text": "Designer",
+          "value": "designer"
         }
       ]
     },
@@ -181,6 +185,10 @@
         {
           "text": "Emcee",
           "value": "emcee"
+        },
+        {
+          "text": "Designer",
+          "value": "designer"
         }
       ]
     },
