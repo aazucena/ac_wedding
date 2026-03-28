@@ -13,10 +13,9 @@ interface Props {
   brideName:    string;
   hashtag:      string;
   rsvpDeadline: string;
-  dryRun?:      boolean;
 }
 
-const { party, groomName, brideName, hashtag, rsvpDeadline, dryRun } = Astro.props;
+const { party, groomName, brideName, hashtag, rsvpDeadline } = Astro.props;
 
 const alreadyResponded = party.status === 'confirmed' || party.status === 'declined';
 ---
@@ -49,7 +48,6 @@ const alreadyResponded = party.status === 'confirmed' || party.status === 'decli
       brideName={brideName}
       hashtag={hashtag}
       rsvpDeadline={rsvpDeadline}
-      dryRun={dryRun}
     />
   )}
 
