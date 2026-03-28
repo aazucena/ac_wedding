@@ -834,5 +834,67 @@
     "reject": null,
     "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
     "_syncId": "9d101a4d-b93b-4b5a-a590-4b29df430b62"
+  },
+  {
+    "name": "Check Reminder Window",
+    "key": "check_window",
+    "type": "exec",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data, services, database, getSchema }) {\n  const { ItemsService } = services;\n  const schema = await getSchema();\n  const settingsService = new ItemsService('wedding_settings', { database, schema });\n  const settings = await settingsService.readOne(1, { fields: ['rsvp_deadline'] });\n\n  if (!settings?.rsvp_deadline) {\n    return { should_send: false, reason: 'No rsvp_deadline set' };\n  }\n\n  const deadline = new Date(settings.rsvp_deadline);\n  const now = new Date();\n\n  if (now >= deadline) {\n    return { should_send: false, reason: 'Deadline has already passed' };\n  }\n\n  const daysUntil = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));\n\n  let window_key = null;\n  if (daysUntil === 14) window_key = '14d';\n  else if (daysUntil === 3) window_key = '3d';\n\n  if (!window_key) {\n    return { should_send: false, reason: `Not a reminder day (${daysUntil} days until deadline)` };\n  }\n\n  return { should_send: true, window_key, days_until: daysUntil, deadline: settings.rsvp_deadline };\n}"
+    },
+    "resolve": "b6969542-a815-4859-8ed8-24a91eb2571c",
+    "reject": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e",
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "0671df4b-f7aa-4c37-8aea-4c778534dfcc"
+  },
+  {
+    "name": "Should Send?",
+    "key": "should_send",
+    "type": "condition",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "check_window": {
+          "should_send": {
+            "_eq": true
+          }
+        }
+      }
+    },
+    "resolve": "09556a52-e405-4ecb-bfbe-739bfa8fedae",
+    "reject": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e",
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "b6969542-a815-4859-8ed8-24a91eb2571c"
+  },
+  {
+    "name": "Send Reminder Emails",
+    "key": "send_reminders",
+    "type": "exec",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ data, services, database, getSchema, env }) {\n  const { ItemsService, MailService } = services;\n  const schema = await getSchema();\n  const window_key = data.check_window.window_key;\n\n  // Read settings\n  const settingsService = new ItemsService('wedding_settings', { database, schema });\n  const settings = await settingsService.readOne(1, {\n    fields: [\n      'rsvp_deadline', 'hashtag', 'email', 'color_primary', 'color_secondary', 'insignia',\n      'groom.first_name', 'bride.first_name',\n    ],\n  });\n\n  // Get all pending parties that have already been invited\n  const partiesService = new ItemsService('parties', { database, schema });\n  const pendingParties = await partiesService.readByQuery({\n    filter: {\n      _and: [\n        { status: { _nin: ['confirmed', 'declined', 'no_response'] } },\n        { invitation_sent: { _eq: true } },\n      ],\n    },\n    fields: ['id', 'name', 'rsvp_token', 'representative.email', 'representative.first_name'],\n  });\n\n  if (!pendingParties || pendingParties.length === 0) {\n    return { sent: 0, skipped: 0, reason: 'No pending parties found' };\n  }\n\n  // Find which parties already got this window's reminder\n  const invitationsService = new ItemsService('invitations', { database, schema });\n  const alreadySent = await invitationsService.readByQuery({\n    filter: {\n      _and: [\n        { template_version: { _eq: `reminder-${window_key}` } },\n        { party: { _in: pendingParties.map(p => p.id) } },\n      ],\n    },\n    fields: ['party'],\n  });\n  const alreadySentIds = new Set(alreadySent.map(r => r.party));\n\n  const publicUrl = env.PUBLIC_URL ?? 'https://wedding.aazucena.com';\n  const directusUrl = env.PUBLIC_URL ? env.PUBLIC_URL.replace('wedding.', 'planner.') : 'https://planner.aazucena.com';\n  const constants = { public_url: publicUrl, directus_url: directusUrl };\n\n  const mailService = new MailService({ schema, knex: database });\n\n  let sent = 0;\n  let skipped = 0;\n\n  for (const party of pendingParties) {\n    if (alreadySentIds.has(party.id)) { skipped++; continue; }\n    if (!party.representative?.email) { skipped++; continue; }\n\n    try {\n      await mailService.send({\n        to: party.representative.email,\n        subject: `RSVP Reminder — ${settings.groom.first_name} & ${settings.bride.first_name} · ${settings.rsvp_deadline}`,\n        template: {\n          name: 'reminder',\n          data: {\n            read_guest: party,\n            read_wedding_settings: settings,\n            constants,\n          },\n        },\n      });\n\n      await invitationsService.createOne({\n        party: party.id,\n        channel: 'email',\n        status: 'sent',\n        template_version: `reminder-${window_key}`,\n      });\n\n      sent++;\n    } catch (err) {\n      await invitationsService.createOne({\n        party: party.id,\n        channel: 'email',\n        status: 'failed',\n        template_version: `reminder-${window_key}`,\n        error_message: String(err),\n      });\n    }\n  }\n\n  return { sent, skipped, window_key, total_pending: pendingParties.length };\n}"
+    },
+    "resolve": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e",
+    "reject": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e",
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "09556a52-e405-4ecb-bfbe-739bfa8fedae"
+  },
+  {
+    "name": "Log Result",
+    "key": "log_reminder_result",
+    "type": "log",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "message": "RSVP Reminder — window={{check_window.window_key}} should_send={{check_window.should_send}} sent={{send_reminders.sent}} skipped={{send_reminders.skipped}} reason={{check_window.reason}}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e"
   }
 ]
