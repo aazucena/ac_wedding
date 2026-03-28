@@ -28,6 +28,20 @@
     "_syncId": "86da0433-0e71-4b92-bb69-92acc14bbb81"
   },
   {
+    "name": "Build Trigger Payload",
+    "key": "build_payload",
+    "type": "exec",
+    "position_x": 91,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function(data) {\n  const parties  = data.read_pending_parties ?? [];\n  const settings = data.read_settings?.[0] ?? {};\n  const window_key = data.check_window.window_key;\n\n  return parties.map(party => ({ party, settings, window_key }));\n}"
+    },
+    "resolve": "d743df9d-1169-4dca-ad6f-9c331726edaf",
+    "reject": null,
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "64dd860a-fca9-42d9-8127-8d7fbfdccc62"
+  },
+  {
     "name": "Check Already Sent",
     "key": "check_already_sent",
     "type": "condition",
@@ -74,6 +88,43 @@
     "reject": "ef2442c4-0905-4a72-8b96-a6a3f02592b3",
     "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
     "_syncId": "f0fb6c64-0de9-469c-85e6-3780051e8831"
+  },
+  {
+    "name": "Check Not Already Sent",
+    "key": "check_not_sent",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "invitations",
+      "key": null,
+      "query": {
+        "filter": {
+          "_and": [
+            {
+              "party": {
+                "_eq": "{{$trigger.party.id}}"
+              }
+            },
+            {
+              "template_version": {
+                "_eq": "reminder-{{$trigger.window_key}}"
+              }
+            }
+          ]
+        },
+        "fields": [
+          "id"
+        ],
+        "limit": 1
+      }
+    },
+    "resolve": "1b2ba4e7-214f-441c-8792-522b18cce32e",
+    "reject": null,
+    "flow": "470344ed-786d-4837-b194-08d9e1c7fc5c",
+    "_syncId": "59bf23d4-297e-42e2-b5d8-ac4668c7fefa"
   },
   {
     "name": "Check Over Budget",
@@ -160,6 +211,20 @@
     "reject": null,
     "flow": "5499f98e-2875-4bc7-89b5-22e4871cedfb",
     "_syncId": "af1d883c-06bc-4bd5-a1ca-e4b2d7c91c1f"
+  },
+  {
+    "name": "Check Reminder Window",
+    "key": "check_window",
+    "type": "exec",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function(data) {\n  const settings = data.read_settings?.[0];\n\n  if (!settings?.rsvp_deadline) {\n    return { should_send: false, reason: 'No rsvp_deadline set' };\n  }\n\n  const now = new Date();\n  const deadline = new Date(settings.rsvp_deadline);\n\n  if (now >= deadline) {\n    return { should_send: false, reason: 'Deadline has already passed' };\n  }\n\n  // Strip time-of-day from both dates for a stable integer diff\n  const todayMs    = Date.UTC(now.getUTCFullYear(),      now.getUTCMonth(),      now.getUTCDate());\n  const deadlineMs = Date.UTC(deadline.getUTCFullYear(), deadline.getUTCMonth(), deadline.getUTCDate());\n  const daysUntil  = Math.round((deadlineMs - todayMs) / (1000 * 60 * 60 * 24));\n\n  let window_key = null;\n  if (daysUntil === 14) window_key = '14d';\n  else if (daysUntil === 3) window_key = '3d';\n\n  if (!window_key) {\n    return { should_send: false, reason: `Not a reminder day (${daysUntil} days until deadline)` };\n  }\n\n  return { should_send: true, window_key, days_until: daysUntil, deadline: settings.rsvp_deadline };\n}"
+    },
+    "resolve": "b6969542-a815-4859-8ed8-24a91eb2571c",
+    "reject": null,
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "0671df4b-f7aa-4c37-8aea-4c778534dfcc"
   },
   {
     "name": "Compute New Amount Paid",
@@ -400,6 +465,28 @@
     "_syncId": "0ba7cc00-e6b1-4d21-97a7-2d8c36ace7a5"
   },
   {
+    "name": "Log Failed",
+    "key": "log_failed",
+    "type": "item-create",
+    "position_x": 73,
+    "position_y": 19,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "invitations",
+      "payload": {
+        "party": "{{$trigger.party.id}}",
+        "channel": "email",
+        "status": "failed",
+        "template_version": "reminder-{{$trigger.window_key}}"
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "470344ed-786d-4837-b194-08d9e1c7fc5c",
+    "_syncId": "16de84d9-ea55-4186-8e72-6ef9386b12bc"
+  },
+  {
     "name": "Create Invitation Log",
     "key": "log_invitation",
     "type": "item-create",
@@ -423,6 +510,20 @@
   },
   {
     "name": "Log Result",
+    "key": "log_reminder_result",
+    "type": "log",
+    "position_x": 127,
+    "position_y": 1,
+    "options": {
+      "message": "RSVP Reminder — window={{check_window.window_key}} should_send={{check_window.should_send}} parties={{read_pending_parties.length}} reason={{check_window.reason}}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e"
+  },
+  {
+    "name": "Log Result",
     "key": "log_result",
     "type": "log",
     "position_x": 37,
@@ -434,6 +535,28 @@
     "reject": null,
     "flow": "c1be7af0-4b8b-4d6c-bcd7-5a03826481e3",
     "_syncId": "bcb61151-97c2-4c29-af32-42b4cdbe80b6"
+  },
+  {
+    "name": "Log Sent",
+    "key": "log_sent",
+    "type": "item-create",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "invitations",
+      "payload": {
+        "party": "{{$trigger.party.id}}",
+        "channel": "email",
+        "status": "sent",
+        "template_version": "reminder-{{$trigger.window_key}}"
+      }
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "470344ed-786d-4837-b194-08d9e1c7fc5c",
+    "_syncId": "5369d907-2134-4528-9c56-8c9f316f7f29"
   },
   {
     "name": "Mark Party as Invited",
@@ -502,6 +625,80 @@
     "reject": null,
     "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
     "_syncId": "de40a93e-ec6c-4aa3-8c41-e159bfe4c20b"
+  },
+  {
+    "name": "Read Pending Parties",
+    "key": "read_pending_parties",
+    "type": "item-read",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "parties",
+      "key": null,
+      "query": {
+        "filter": {
+          "_and": [
+            {
+              "status": {
+                "_nin": [
+                  "confirmed",
+                  "declined"
+                ],
+                "_nnull": true
+              }
+            },
+            {
+              "invitation_sent": {
+                "_eq": true
+              }
+            }
+          ]
+        },
+        "fields": [
+          "id",
+          "name",
+          "rsvp_token",
+          "representative.email",
+          "representative.first_name",
+          "representative.last_name"
+        ]
+      }
+    },
+    "resolve": "64dd860a-fca9-42d9-8127-8d7fbfdccc62",
+    "reject": null,
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "f41d496f-0b07-410a-b87a-6677b8152d98"
+  },
+  {
+    "name": "Read Settings",
+    "key": "read_settings",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "wedding_settings",
+      "key": null,
+      "query": {
+        "fields": [
+          "rsvp_deadline",
+          "hashtag",
+          "email",
+          "color_primary",
+          "color_secondary",
+          "insignia",
+          "groom.first_name",
+          "bride.first_name"
+        ]
+      }
+    },
+    "resolve": "0671df4b-f7aa-4c37-8aea-4c778534dfcc",
+    "reject": null,
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "29d62aac-e43d-44e1-9c66-19f96f9874f4"
   },
   {
     "name": "Read Updated Vendor",
@@ -639,6 +836,33 @@
     "_syncId": "dd7fb5eb-77ae-4cc8-b39f-1317c934489d"
   },
   {
+    "name": "Send Reminder Email",
+    "key": "send_email",
+    "type": "mail",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "type": "template",
+      "to": [
+        "{{$trigger.party.representative.email}}"
+      ],
+      "subject": "RSVP Reminder — {{$trigger.settings.groom.first_name}} & {{$trigger.settings.bride.first_name}} · {{$trigger.settings.rsvp_deadline}}",
+      "template": "reminder",
+      "data": {
+        "read_guest": "{{$trigger.party}}",
+        "read_wedding_settings": "{{$trigger.settings}}",
+        "constants": {
+          "public_url": "https://wedding.aazucena.com",
+          "directus_url": "https://planner.aazucena.com"
+        }
+      }
+    },
+    "resolve": "5369d907-2134-4528-9c56-8c9f316f7f29",
+    "reject": "16de84d9-ea55-4186-8e72-6ef9386b12bc",
+    "flow": "470344ed-786d-4837-b194-08d9e1c7fc5c",
+    "_syncId": "7131bfa3-2a0f-4933-92ad-675a12b4b254"
+  },
+  {
     "name": "Send Over-Budget Alert",
     "key": "send_over_budget_alert",
     "type": "mail",
@@ -658,6 +882,44 @@
     "_syncId": "c3ecb221-fec7-4c8d-ab83-0737ec82a9b2"
   },
   {
+    "name": "Should Send?",
+    "key": "should_send",
+    "type": "condition",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "check_window": {
+          "should_send": {
+            "_eq": true
+          }
+        }
+      }
+    },
+    "resolve": "f41d496f-0b07-410a-b87a-6677b8152d98",
+    "reject": null,
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "b6969542-a815-4859-8ed8-24a91eb2571c"
+  },
+  {
+    "name": "Skip If Already Sent",
+    "key": "skip_if_sent",
+    "type": "condition",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "filter": {
+        "check_not_sent": {
+          "_empty": true
+        }
+      }
+    },
+    "resolve": "7131bfa3-2a0f-4933-92ad-675a12b4b254",
+    "reject": null,
+    "flow": "470344ed-786d-4837-b194-08d9e1c7fc5c",
+    "_syncId": "1b2ba4e7-214f-441c-8792-522b18cce32e"
+  },
+  {
     "name": "Today",
     "key": "today",
     "type": "exec",
@@ -670,6 +932,21 @@
     "reject": null,
     "flow": "3b72c2eb-d428-4c56-a80e-ccf793f90740",
     "_syncId": "9c4bcaf8-3e25-4e84-a25a-a501add45c23"
+  },
+  {
+    "name": "Trigger Per Party",
+    "key": "trigger_per_party",
+    "type": "trigger",
+    "position_x": 109,
+    "position_y": 1,
+    "options": {
+      "flow": "470344ed-786d-4837-b194-08d9e1c7fc5c",
+      "payload": "{{build_payload}}"
+    },
+    "resolve": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e",
+    "reject": "a13f31c2-1f97-40a3-9c3c-b07f60d87f9e",
+    "flow": "64c6b050-955f-45e7-b8f4-3dac0cf05300",
+    "_syncId": "d743df9d-1169-4dca-ad6f-9c331726edaf"
   },
   {
     "name": "Update Amount Paid",

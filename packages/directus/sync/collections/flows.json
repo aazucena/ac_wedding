@@ -17,6 +17,20 @@
     "_syncId": "3b72c2eb-d428-4c56-a80e-ccf793f90740"
   },
   {
+    "name": "RSVP Reminder: Send Per Party",
+    "icon": "mail",
+    "color": "#6366F1",
+    "description": "Sub-flow triggered once per pending party by the RSVP Reminder scheduler. Checks if the reminder for this window was already sent, then sends the reminder email and logs the result to invitations.",
+    "status": "active",
+    "trigger": "operation",
+    "accountability": "all",
+    "options": {
+      "return": "$last"
+    },
+    "operation": "59bf23d4-297e-42e2-b5d8-ac4668c7fefa",
+    "_syncId": "470344ed-786d-4837-b194-08d9e1c7fc5c"
+  },
+  {
     "name": "Budget Payment Sync",
     "icon": "payments",
     "color": "#F7C948",
@@ -35,6 +49,20 @@
     },
     "operation": "b8ae2817-5208-482e-b354-5ab25203499e",
     "_syncId": "5499f98e-2875-4bc7-89b5-22e4871cedfb"
+  },
+  {
+    "name": "RSVP Reminder: Send Nudge Emails",
+    "icon": "notifications",
+    "color": "#6366F1",
+    "description": "Runs daily. Sends a reminder email to parties that haven't RSVPed yet, at 14 days and 3 days before the RSVP deadline. Deduplicates via the invitations table so each window is only sent once per party.",
+    "status": "active",
+    "trigger": "schedule",
+    "accountability": "all",
+    "options": {
+      "cron": "0 9 * * *"
+    },
+    "operation": "29d62aac-e43d-44e1-9c66-19f96f9874f4",
+    "_syncId": "64c6b050-955f-45e7-b8f4-3dac0cf05300"
   },
   {
     "name": "RSVP Token Generation",

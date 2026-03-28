@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <title>RSVP Reminder — {{ read_wedding_settings.groom.first_name }} & {{ read_wedding_settings.bride.first_name }}</title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; height: auto; line-height: 100%; outline: none; text-decoration: none; }
+    body { height: 100% !important; margin: 0 !important; padding: 0 !important; width: 100% !important; }
+    a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; }
+
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap');
+
+    body { background-color: #f4f0ec; font-family: 'Jost', Arial, sans-serif; }
+    .email-wrapper { background-color: #f4f0ec; padding: 40px 16px; }
+    .email-container { max-width: 600px; margin: 0 auto; background: #fdfaf7; border-radius: 2px; overflow: hidden; box-shadow: 0 8px 48px rgba(26,26,46,0.08), 0 2px 12px rgba(26,26,46,0.04); border: 1px solid rgba(196,186,220,0.25); }
+
+    .band-top    { height: 6px; background: linear-gradient(90deg, {{ read_wedding_settings.color_primary }} 0%, {{ read_wedding_settings.color_secondary }} 50%, {{ read_wedding_settings.color_primary }} 100%); }
+    .band-bottom { height: 4px; background: linear-gradient(90deg, {{ read_wedding_settings.color_secondary }} 0%, {{ read_wedding_settings.color_primary }} 50%, {{ read_wedding_settings.color_secondary }} 100%); }
+
+    /* ─── Compact hero ───────────────────────────── */
+    .hero-compact { background-color: #1a1a2e; padding: 36px 40px; text-align: center; }
+    .hero-eyebrow { font-family: 'Jost', Arial, sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 10px; }
+    .hero-names   { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 300; font-style: italic; color: #fdfaf7; line-height: 1.1; letter-spacing: -0.5px; }
+    .hero-names .ampersand { color: {{ read_wedding_settings.color_secondary }}; font-style: normal; }
+
+    /* ─── Greeting band ──────────────────────────── */
+    .greeting-band { background: linear-gradient(135deg, {{ read_wedding_settings.color_primary }} 0%, {{ read_wedding_settings.color_secondary }} 100%); padding: 18px 40px; text-align: center; }
+    .greeting-band p { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 18px; font-weight: 400; font-style: italic; color: #1a1a2e; letter-spacing: 0.3px; }
+
+    /* ─── Body ───────────────────────────────────── */
+    .body-section { padding: 40px 48px 28px; text-align: center; }
+    .nudge-eyebrow { display: inline-block; font-family: 'Jost', Arial, sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 3.5px; text-transform: uppercase; background: linear-gradient(135deg, #e9f4ed 0%, #f0edf7 100%); color: #565170; border: 1px solid #eeeaf6; border-radius: 999px; padding: 6px 16px; margin-bottom: 20px; }
+    .nudge-heading { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 30px; font-weight: 300; font-style: italic; color: #1a1a2e; line-height: 1.3; margin-bottom: 20px; }
+    .nudge-body { font-family: 'Jost', Arial, sans-serif; font-size: 14px; font-weight: 300; color: #5a5570; line-height: 1.8; max-width: 400px; margin: 0 auto 8px; }
+    .nudge-body strong { color: #3d3752; font-weight: 500; }
+
+    /* ─── RSVP Button ────────────────────────────── */
+    .rsvp-wrap { padding: 8px 48px 36px; text-align: center; }
+    .rsvp-btn { display: inline-block; background: linear-gradient(135deg, #1a1a2e 0%, #2d2248 100%); color: {{ read_wedding_settings.color_primary }} !important; text-decoration: none; padding: 18px 56px; font-family: 'Jost', Arial, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; border-radius: 14px; box-shadow: 0 8px 32px rgba(26,26,46,0.20); }
+    .rsvp-deadline { margin-top: 14px; font-family: 'Jost', Arial, sans-serif; font-size: 12px; font-weight: 300; color: #9a95a8; letter-spacing: 0.5px; }
+    .rsvp-deadline strong { color: {{ read_wedding_settings.color_secondary }}; font-weight: 500; }
+
+    /* ─── Footer ─────────────────────────────────── */
+    .footer { padding: 32px 48px; text-align: center; border-top: 1px solid rgba(196,186,220,0.45); }
+    .footer-hashtag { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; font-style: italic; color: {{ read_wedding_settings.color_secondary }}; margin-bottom: 16px; }
+    .footer-couple { font-family: 'Jost', Arial, sans-serif; font-size: 11px; font-weight: 300; letter-spacing: 0.5px; color: #9a95a8; line-height: 1.8; }
+    .footer-couple a { color: {{ read_wedding_settings.color_secondary }} !important; }
+    .footer-fine { margin-top: 20px; font-family: 'Jost', Arial, sans-serif; font-size: 10px; font-weight: 300; color: #bbb5c8; line-height: 1.6; }
+
+    @media only screen and (max-width: 480px) {
+      .body-section, .rsvp-wrap, .footer { padding-left: 24px; padding-right: 24px; }
+      .hero-names { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+<div class="email-wrapper">
+<table class="email-container" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+
+  <tr><td class="band-top"></td></tr>
+
+  <!-- ─── COMPACT HERO ─────────────────────────── -->
+  <tr>
+    <td class="hero-compact">
+      <p class="hero-eyebrow">Wedding Invitation</p>
+      <div class="hero-names">
+        {{ read_wedding_settings.groom.first_name }}
+        <span class="ampersand">&amp;</span>
+        {{ read_wedding_settings.bride.first_name }}
+      </div>
+    </td>
+  </tr>
+
+  <!-- ─── GREETING ─────────────────────────────── -->
+  <tr>
+    <td class="greeting-band">
+      <p>Dear <strong>{{ read_guest.name }}</strong>, a gentle reminder</p>
+    </td>
+  </tr>
+
+  <!-- ─── BODY ─────────────────────────────────── -->
+  <tr>
+    <td class="body-section">
+      <div class="nudge-eyebrow">RSVP Reminder</div>
+      <p class="nudge-heading">We'd love to know if you'll be joining us</p>
+      <p class="nudge-body">
+        We haven't received your RSVP yet and we'd hate for you to miss out.
+        Our deadline is <strong>{{ read_wedding_settings.rsvp_deadline }}</strong> —
+        please let us know if you can make it so we can save your seat.
+      </p>
+    </td>
+  </tr>
+
+  <!-- Accent bar -->
+  <tr>
+    <td style="height:5px; background:linear-gradient(90deg, {{ read_wedding_settings.color_primary }} 0%, {{ read_wedding_settings.color_secondary }} 100%);"></td>
+  </tr>
+
+  <!-- ─── RSVP BUTTON ───────────────────────────── -->
+  <tr>
+    <td class="rsvp-wrap" style="padding-top:32px;">
+      <a href="{{ constants.public_url }}/rsvp/{{ read_guest.rsvp_token }}" class="rsvp-btn">
+        Kindly Reply
+      </a>
+      <p class="rsvp-deadline">
+        Please respond by <strong>{{ read_wedding_settings.rsvp_deadline }}</strong>
+      </p>
+    </td>
+  </tr>
+
+  <!-- ─── FOOTER ────────────────────────────────── -->
+  <tr>
+    <td class="footer">
+      <img
+        src="{{ constants.directus_url }}/assets/{{ read_wedding_settings.insignia }}"
+        alt="Monogram"
+        width="56"
+        style="display:block; margin:0 auto 16px; width:56px; opacity:0.55;"
+      >
+
+      {% assign hashtag_first = read_wedding_settings.hashtag | slice: 0 %}
+      {% if hashtag_first == '#' %}
+      <div class="footer-hashtag">{{ read_wedding_settings.hashtag }}</div>
+      {% else %}
+      <div class="footer-hashtag">#{{ read_wedding_settings.hashtag }}</div>
+      {% endif %}
+
+      <p class="footer-couple">
+        With love, <strong>{{ read_wedding_settings.groom.first_name }} &amp; {{ read_wedding_settings.bride.first_name }}</strong><br>
+        <a href="mailto:{{ read_wedding_settings.email }}">{{ read_wedding_settings.email }}</a>
+      </p>
+      <p class="footer-fine">
+        You are receiving this reminder because you are on our wedding guest list.<br>
+        This email was sent personally — no unsubscribe needed.
+      </p>
+    </td>
+  </tr>
+
+  <tr><td class="band-bottom"></td></tr>
+
+</table>
+</div>
+</body>
+</html>
