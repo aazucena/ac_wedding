@@ -78,7 +78,7 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     hideSuggestions();
     if (nameConfirmTxt) nameConfirmTxt.textContent = name;
     nameConfirmed?.classList.remove('hidden');
-    nameInput.classList.add('hidden');
+    nameInput!.classList.add('hidden');
   }
 
   function resetName() {
@@ -86,9 +86,9 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     confirmedTableNumber = null;
     pendingGuest         = null;
     nameConfirmed?.classList.add('hidden');
-    nameInput.classList.remove('hidden');
-    nameInput.value = '';
-    nameInput.focus();
+    nameInput!.classList.remove('hidden');
+    nameInput!.value = '';
+    nameInput!.focus();
     hideTableVerify();
     hideSuggestions();
   }
@@ -149,7 +149,7 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     document.body.style.overflow = '';
   }
 
-  function closeTableVerify() { hideTableVerify(); hideSuggestions(); nameInput.focus(); }
+  function closeTableVerify() { hideTableVerify(); hideSuggestions(); nameInput!.focus(); }
 
   function showTableError(msg: string) {
     if (!tableError) return;

@@ -50,7 +50,7 @@ export async function buildFlowActions() {
 
 	const entries = Object.entries(keys).map(([key, _info]) => {
 		const action = defineAction({
-			input: z.record(z.unknown()),
+			input: z.record(z.string(), z.unknown()),
 			handler: async (payload) => {
 				const res = await fetch(`${DIRECTUS_URL}/api/v1/${key}`, {
 					method:  'POST',

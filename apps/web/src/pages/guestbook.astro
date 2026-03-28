@@ -193,15 +193,6 @@ const allMessages = messages.map(m => ({
 
   function updateTally(_shown: number) { /* tally removed from UI */ }
 
-  function showLoadMore(left: number) {
-    if (!loadWrap || !loadBtn) return;
-    if (left <= 0) {
-      loadWrap.remove();
-    } else {
-      if (countEl) countEl.textContent = `${left} remaining`;
-    }
-  }
-
   function showFadeHint(active: boolean) {
     listWrap!.classList.toggle('faded', active);
   }
@@ -236,7 +227,7 @@ const allMessages = messages.map(m => ({
   function loadMore() {
     const filtered = getFiltered();
     const batch = filtered.slice(offset, offset + BATCH);
-    let firstNew: HTMLElement | null = null;
+    let firstNew: Element | null = null;
     batch.forEach((entry, i) => {
       const card = buildCard(entry, 0.05 + i * 0.06);
       if (i === 0) firstNew = card;
@@ -245,7 +236,7 @@ const allMessages = messages.map(m => ({
     offset += batch.length;
 
     if (loadWrap) loadWrap.classList.remove('visible');
-    firstNew?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    (firstNew as Element | null)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
     const left = filtered.length - offset;
     updateTally(Math.min(offset, filtered.length));

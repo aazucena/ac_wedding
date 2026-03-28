@@ -47,10 +47,7 @@ function readerName(r: typeof readings[0]) {
 }
 function scriptureRef(r: typeof readings[0]) {
   if (r.label) return r.label;
-  const parts = [r.book, r.chapter ? `${r.chapter}` : null,
-    (r.verse_start && r.verse_end) ? `${r.verse_start}–${r.verse_end}` : r.verse_start ?? null
-  ].filter(Boolean);
-  return parts.join(':');
+  return r.scripture ?? r.book ?? '';
 }
 
 const firstReading  = readings.find((r: any) => r.type === 'first')  ?? null;

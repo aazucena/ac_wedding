@@ -38,9 +38,9 @@ const { id, label = 'Form Data' } = Astro.props;
       if (!toggle || !pre) return;
 
       toggle.addEventListener('click', () => {
-        var open = pre.style.display !== 'none';
-        pre.style.display      = open ? 'none' : 'block';
-        toggle.ariaExpanded    = String(!open);
+        var open = pre!.style.display !== 'none';
+        pre!.style.display      = open ? 'none' : 'block';
+        toggle!.ariaExpanded    = String(!open);
         if (chevron) chevron.style.transform = open ? 'rotate(-90deg)' : '';
       });
     });

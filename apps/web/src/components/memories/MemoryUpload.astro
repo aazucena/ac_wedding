@@ -128,16 +128,16 @@ const { defaultToken = '' } = Astro.props;
 
   // ── Open / close ─────────────────────────────────────────
   function openForm() {
-    cta.hidden    = true;
-    expand.hidden = false;
+    cta!.hidden    = true;
+    expand!.hidden = false;
     drop?.focus();
   }
 
   function closeForm() {
-    expand.hidden = false; // keep open briefly for transition
+    expand!.hidden = false; // keep open briefly for transition
     resetForm();
-    cta.hidden    = false;
-    expand.hidden = true;
+    cta!.hidden    = false;
+    expand!.hidden = true;
   }
 
   openBtn.addEventListener('click', openForm);
@@ -156,7 +156,7 @@ const { defaultToken = '' } = Astro.props;
   function clearFile() {
     if (previewImg?.src) URL.revokeObjectURL(previewImg.src);
     selectedFile       = null;
-    fileInput.value    = '';
+    fileInput!.value   = '';
     if (previewImg)  previewImg.src  = '';
     if (dropPh)      dropPh.hidden   = false;
     if (dropPrev)    dropPrev.hidden = true;
