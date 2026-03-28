@@ -46,6 +46,12 @@ export default defineConfig({
         optional: true,
         default: false,
       }),
+      PREVIEW_TOKEN: envField.string({
+        context: 'server',
+        access: 'secret',
+        optional: true,
+        default: '',
+      }),
     },
   },
 

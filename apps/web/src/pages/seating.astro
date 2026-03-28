@@ -6,8 +6,16 @@ import Hashtag          from '~/components/Hashtag.astro';
 import SeatingSearchCard from '../components/seating/SeatingSearchCard.astro';
 import { getSettings }  from '../lib/directus';
 import { formatDate }   from '../lib/utils/format';
+import { DateTime }     from 'luxon';
+import { toDateTime }   from '../lib/date';
 
 const settings         = await getSettings();
+
+// Seating is hidden until 14 days before the wedding
+const releaseDate = toDateTime(settings.wedding_date ?? '2099-12-31').minus({ days: 14 });
+if (!Astro.locals.isPreview && DateTime.now() < releaseDate) {
+  return Astro.redirect('/', 307);
+}
 const groom            = settings.groom?.first_name ?? 'Aldrin';
 const bride            = settings.bride?.first_name ?? 'Christine';
 const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');

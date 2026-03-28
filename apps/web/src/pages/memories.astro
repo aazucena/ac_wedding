@@ -23,7 +23,7 @@ const [settings, memories, entries] = await Promise.all([
 ]);
 
 // Post-wedding gate
-if (DateTime.now() < toDateTime(settings.wedding_date ?? '2099-12-31')) {
+if (!Astro.locals.isPreview && DateTime.now() < toDateTime(settings.wedding_date ?? '2099-12-31')) {
   return Astro.redirect('/', 307);
 }
 
