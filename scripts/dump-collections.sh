@@ -1,6 +1,7 @@
 #!/bin/bash
-# Dumps all non-Directus collection data from the local wedding database.
-# Outputs a plain SQL file with DELETE + INSERT statements, safe to re-run.
+# Dumps all non-Directus collection data from the local wedding database,
+# plus directus_files (file metadata — not the binaries).
+# Outputs a plain SQL file with TRUNCATE + INSERT statements, safe to re-run.
 #
 # Usage: pnpm dump:collections
 # Output: .docker/docker-entrypoint.d/collections.local.sql
@@ -15,9 +16,9 @@ OUTPUT=".docker/docker-entrypoint.d/collections.local.sql"
 
 echo "→ Fetching table list..."
 
-# Get all non-directus tables
+# Get all non-directus tables plus directus_files (file metadata)
 TABLES=$(psql -h "$HOST" -p "$PORT" -U "$USER" -d "$DB" -t -c \
-  "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename NOT LIKE 'directus_%' ORDER BY tablename;" \
+  "SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND (tablename NOT LIKE 'directus_%' OR tablename = 'directus_files') ORDER BY tablename;" \
   | tr -d ' '| grep -v '^$')
 
 echo "→ Writing TRUNCATE statement..."
@@ -35,7 +36,7 @@ echo "→ Writing TRUNCATE statement..."
   echo ""
 } > "$OUTPUT"
 
-echo "→ Appending data dump..."
+echo "→ Appending collection data dump..."
 pg_dump \
   -h "$HOST" \
   -p "$PORT" \
@@ -47,5 +48,23 @@ pg_dump \
   --disable-triggers \
   --exclude-table-data='directus_*' \
   -F p >> "$OUTPUT"
+
+echo "→ Appending directus_files dump..."
+pg_dump \
+  -h "$HOST" \
+  -p "$PORT" \
+  -U "$USER" \
+  -d "$DB" \
+  --data-only \
+  --no-owner \
+  --no-acl \
+  --disable-triggers \
+  --table='directus_files' \
+  -F p >> "$OUTPUT"
+
+echo "→ Patching directus_files storage: local → s3..."
+echo "" >> "$OUTPUT"
+echo "-- Remap local storage to s3 for production" >> "$OUTPUT"
+echo "UPDATE directus_files SET storage = 's3' WHERE storage = 'local';" >> "$OUTPUT"
 
 echo "→ Done. $(wc -l < "$OUTPUT") lines written to $OUTPUT"
