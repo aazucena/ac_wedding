@@ -29,18 +29,18 @@ function updatePlusOneUI() {
 }
 
 function showPlusOneForm() {
-  var form = document.getElementById('po-form');
-  if (!form) return;
-  form.style.display = '';
-  form.setAttribute('aria-hidden', 'false');
+  var backdrop = document.getElementById('po-modal-backdrop');
+  if (!backdrop) return;
+  backdrop.style.display = 'flex';
+  backdrop.setAttribute('aria-hidden', 'false');
   (document.getElementById('po-first') as HTMLInputElement | null)?.focus();
 }
 
 function hidePlusOneForm() {
-  var form = document.getElementById('po-form');
-  if (!form) return;
-  form.style.display = 'none';
-  form.setAttribute('aria-hidden', 'true');
+  var backdrop = document.getElementById('po-modal-backdrop');
+  if (!backdrop) return;
+  backdrop.style.display = 'none';
+  backdrop.setAttribute('aria-hidden', 'true');
   var fi = document.getElementById('po-first') as HTMLInputElement | null;
   var la = document.getElementById('po-last')  as HTMLInputElement | null;
   var ty = document.getElementById('po-type')  as HTMLSelectElement | null;
@@ -503,6 +503,14 @@ document.addEventListener('astro:page-load', () => {
     updatePlusOneUI();
     document.getElementById('po-add-btn')?.addEventListener('click', showPlusOneForm);
     document.getElementById('po-cancel')?.addEventListener('click', hidePlusOneForm);
+    // Close on backdrop click (outside the modal panel)
+    document.getElementById('po-modal-backdrop')?.addEventListener('click', function(e) {
+      if (e.target === e.currentTarget) hidePlusOneForm();
+    });
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && document.getElementById('po-modal-backdrop')?.style.display === 'flex') hidePlusOneForm();
+    });
     document.getElementById('po-confirm')?.addEventListener('click', function() {
       var firstName = ((document.getElementById('po-first') as HTMLInputElement | null)?.value ?? '').trim();
       var lastName  = ((document.getElementById('po-last')  as HTMLInputElement | null)?.value ?? '').trim();

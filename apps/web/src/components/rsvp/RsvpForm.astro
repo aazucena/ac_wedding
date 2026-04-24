@@ -5,7 +5,8 @@
 
 import type { Parties } from '@lib/types';
 import iconSrc from '~/assets/icon.png';
-import RsvpGuestRow    from './RsvpGuestRow.astro';
+import RsvpGuestRow       from './RsvpGuestRow.astro';
+import RsvpPlusOneModal   from './RsvpPlusOneModal.astro';
 import RsvpMemoryUpload from './RsvpMemoryUpload.astro';
 import RsvpStepContact from './RsvpStepContact.astro';
 import RsvpStepExtras  from './RsvpStepExtras.astro';
@@ -85,26 +86,6 @@ const guests = (party.members ?? []).map((g) => ({
               + Add Guest&ensp;<span class="po-badge" id="po-remaining">{plusOnesAllowed}</span>
             </button>
           </div>
-          <div class="po-form" id="po-form" aria-hidden="true" style="display:none">
-            <p class="po-form-title">Add a Plus-One</p>
-            <div class="po-form-fields">
-              <div class="field"><input type="text" id="po-first" class="po-input" placeholder="First name *" autocomplete="given-name" /></div>
-              <div class="field"><input type="text" id="po-last"  class="po-input" placeholder="Last name (optional)" autocomplete="family-name" /></div>
-              <div class="field field-select-wrap">
-                <select id="po-type" class="po-select">
-                  <option value="adult">Adult</option>
-                  <option value="teen">Teen (13–17)</option>
-                  <option value="child">Child (3–12)</option>
-                  <option value="infant">Infant (0–2)</option>
-                </select>
-              </div>
-            </div>
-            <div class="po-form-actions">
-              <button type="button" class="wizard-btn wizard-btn--next" id="po-confirm">Add Guest</button>
-              <button type="button" class="po-cancel-btn" id="po-cancel">Cancel</button>
-            </div>
-            <div class="error-banner" id="po-error"></div>
-          </div>
         </div>
       )}
 
@@ -147,6 +128,8 @@ const guests = (party.members ?? []).map((g) => ({
   />
 
 </div>
+
+<RsvpPlusOneModal plusOnesAllowed={plusOnesAllowed} />
 
 <Fragment set:html={`
 <script type="application/json" id="rsvp-data">

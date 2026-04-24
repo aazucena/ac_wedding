@@ -371,24 +371,45 @@
   color: color-mix(in srgb, var(--cp) 90%, #1a3a2a);
 }
 
-#rsvp-card .po-form {
-  margin-top: 12px; padding: 16px;
-  background: color-mix(in srgb, var(--warm) 60%, white);
-  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+/* Modal backdrop */
+.po-modal-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(26, 26, 46, 0.45);
+  backdrop-filter: blur(3px);
+  padding: 24px;
 }
-#rsvp-card .po-form-title {
+.po-modal {
+  background: var(--ivory); border-radius: var(--radius-sm);
+  box-shadow: 0 16px 48px rgba(26,26,46,0.22);
+  width: 100%; max-width: 380px;
+  display: flex; flex-direction: column;
+  animation: po-modal-in 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes po-modal-in {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);   }
+}
+.po-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.po-modal-title {
   font-family: var(--fb); font-size: 11px; font-weight: 600;
-  letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
 }
+.po-modal-close {
+  width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 300; line-height: 1;
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  border-radius: 50%; transition: background 0.15s, color 0.15s;
+}
+.po-modal-close:hover { background: color-mix(in srgb, #b06060 10%, white); color: #8b3a3a; }
+.po-modal-body  { padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.po-modal-footer { padding: 0 20px 20px; }
+.po-modal-footer .wizard-btn { width: 100%; display: block; text-align: center; }
 #rsvp-card .po-form-fields { display: flex; flex-direction: column; gap: 10px; }
-#rsvp-card .po-form-actions {
-  display: flex; align-items: center; gap: 12px; margin-top: 14px;
-}
-#rsvp-card .po-cancel-btn {
-  font-family: var(--fb); font-size: 12px; font-weight: 400; color: var(--muted);
-  background: none; border: none; cursor: pointer; padding: 0;
-}
-#rsvp-card .po-cancel-btn:hover { color: var(--dark); }
 
 #rsvp-card .plus-one-row { border-left: 3px solid color-mix(in srgb, var(--cp) 45%, transparent); }
 
