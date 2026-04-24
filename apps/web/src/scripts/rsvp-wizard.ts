@@ -77,6 +77,9 @@ function createPlusOneRow(tempId: string, displayName: string) {
   var header = document.createElement('div');
   header.className = 'guest-card-header';
 
+  var nameGroup = document.createElement('span');
+  nameGroup.className = 'po-name-group';
+
   var nameSpan = document.createElement('span');
   nameSpan.className = 'guest-name';
   nameSpan.textContent = displayName;
@@ -114,8 +117,9 @@ function createPlusOneRow(tempId: string, displayName: string) {
   noBtn.addEventListener('click', function() { window.onResponseChange(tempId, 'declined'); });
   seg.appendChild(yesBtn); seg.appendChild(divider); seg.appendChild(noBtn);
 
-  // Order: [trash] [name] [response seg]
-  header.appendChild(removeBtn); header.appendChild(nameSpan); header.appendChild(seg);
+  // Order: [trash + name] [response seg]
+  nameGroup.appendChild(removeBtn); nameGroup.appendChild(nameSpan);
+  header.appendChild(nameGroup); header.appendChild(seg);
   card.appendChild(header);
 
   // ── Attending panel ──

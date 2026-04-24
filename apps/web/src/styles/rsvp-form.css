@@ -413,6 +413,9 @@
 
 #rsvp-card .plus-one-row { border-left: 3px solid color-mix(in srgb, var(--cp) 45%, transparent); }
 
+#rsvp-card .po-name-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
+#rsvp-card .po-name-group .guest-name { flex: 1; min-width: 0; }
+
 #rsvp-card .po-remove-btn {
   flex-shrink: 0; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
