@@ -6,7 +6,7 @@ import PageHeader      from '../components/PageHeader.astro';
 import GalleryGrid     from '../components/gallery/GalleryGrid.astro';
 import GalleryLightbox from '../components/gallery/GalleryLightbox.astro';
 import { getSettings, getGalleryPhotos } from '../lib/directus';
-import { formatDate } from '../lib/utils/format';
+import { formatDate, assetUrl } from '../lib/utils/format';
 import Hashtag from '~/components/Hashtag.astro';
 
 const [settings, photos] = await Promise.all([getSettings(), getGalleryPhotos()]);
@@ -19,6 +19,9 @@ const placeholders = Array.from({ length: 9 }, (_, i) => ({
 }));
 
 const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders : []);
+const _photo = typeof settings.photographer === 'object'
+  ? (settings.photographer as { name?: string; subtitle?: string; website?: string; logo?: { id: string } })
+  : null;
 ---
 
 <Layout
@@ -43,6 +46,26 @@ const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders :
       <p class="gallery-empty">Photos will be added soon. Check back after the wedding!</p>
     )}
 
+    {_photo?.name && (
+      <div class="photographer-card">
+        {_photo.logo?.id && (
+          <img
+            src={assetUrl(_photo.logo, { height: 72 })}
+            alt={_photo.name}
+            class="photographer-logo"
+          />
+        )}
+        <p class="photographer-label">Official Photographer</p>
+        <p class="photographer-name">{_photo.name}</p>
+        {_photo.subtitle && <p class="photographer-subtitle">{_photo.subtitle}</p>}
+        {_photo.website && (
+          <a href={_photo.website} target="_blank" rel="noopener noreferrer" class="photographer-link">
+            Visit website ↗
+          </a>
+        )}
+      </div>
+    )}
+
   </div>
 
   <Fragment slot="footer-extra">
@@ -50,7 +73,7 @@ const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders :
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
-  <GalleryLightbox slot="overlay" />
+  <GalleryLightbox slot="overlay" photographer={_photo?.name ?? null} photographerLogo={_photo?.logo ?? null} />
 
 </Layout>
 
@@ -61,4 +84,38 @@ const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders :
   color: var(--muted); text-align: center; margin-top: 16px;
   font-style: italic;
 }
+
+.photographer-card {
+  margin-top: 40px; width: 100%;
+  background: var(--ivory); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-card);
+  padding: 40px 32px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.photographer-logo {
+  height: 72px; width: auto; max-width: 240px;
+  object-fit: contain; margin-bottom: 8px;
+}
+.photographer-label {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--cp);
+}
+.photographer-name {
+  font-family: var(--fd); font-size: 26px; font-weight: 300;
+  font-style: italic; color: var(--dark); line-height: 1.2;
+}
+.photographer-subtitle {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted);
+}
+.photographer-link {
+  margin-top: 4px;
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--cs); text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--cs) 40%, transparent);
+  padding-bottom: 1px; transition: opacity 0.2s;
+}
+.photographer-link:hover { opacity: 0.7; }
 </style>

@@ -32,6 +32,7 @@ export async function getSettings(): Promise<WeddingSettings> {
         'reception.id', 'reception.cocktail_hour_time', 'reception.start_time', 'reception.end_time',
         'reception.venue.name', 'reception.venue.maps_url',
         'return_address_line1', 'return_address_city', 'return_address_region', 'return_address_postal_code',
+        'photographer.id', 'photographer.name', 'photographer.subtitle', 'photographer.website', 'photographer.logo.id',
       ],
     });
   } catch {

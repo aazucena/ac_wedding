@@ -1,6 +1,13 @@
 ---
 // GalleryLightbox.astro — full-screen photo lightbox overlay
 // Reads .gallery-item buttons from DOM; functions exposed on window.*
+import { assetUrl } from '../../lib/utils/format';
+import type { DirectusFiles } from '../../lib/types';
+interface Props {
+  photographer?: string | null;
+  photographerLogo?: { id: string } | null;
+}
+const { photographer, photographerLogo } = Astro.props;
 ---
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
@@ -16,6 +23,14 @@
     <div class="lightbox-meta" id="lightbox-meta">
       <p class="lightbox-title"   id="lightbox-title"></p>
       <p class="lightbox-desc"    id="lightbox-desc"></p>
+      {(photographerLogo || photographer) && (
+        <p class="lightbox-credit">
+          {photographerLogo
+            ? <img src={assetUrl(photographerLogo as DirectusFiles, { height: 20 })} alt={photographer ?? 'Photographer'} class="lightbox-credit-logo" />
+            : <>📷 {photographer}</>
+          }
+        </p>
+      )}
       <div class="lightbox-footer">
         <p class="lightbox-counter" id="lightbox-counter"></p>
         <a class="lightbox-download" id="lightbox-download" href="#" download aria-label="Download photo">
@@ -141,7 +156,16 @@
 
 .lightbox-desc {
   font-family: var(--fb); font-size: 13px; font-weight: 300;
-  color: rgba(255,255,255,0.6); margin-bottom: 8px;
+  color: rgba(255,255,255,0.6); margin-bottom: 4px;
+}
+
+.lightbox-credit {
+  font-family: var(--fb); font-size: 11px; font-weight: 300;
+  font-style: italic; color: rgba(255,255,255,0.4); margin-bottom: 8px;
+}
+.lightbox-credit-logo {
+  height: 20px; width: auto; object-fit: contain;
+  opacity: 0.45; vertical-align: middle; filter: brightness(0) invert(1);
 }
 
 .lightbox-footer {
