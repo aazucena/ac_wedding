@@ -414,6 +414,7 @@ export interface Parties {
   members: Guests[];
   invitation_type?: 'guest' | 'sponsor' | 'entourage';
   invitation_label?: string;
+  plus_ones_allowed?: number | null;
 }
 
 export interface Payments {
@@ -685,6 +686,7 @@ export interface WeddingSettings {
   insignia?: DirectusFiles;
   logos?: any;
   photographer?: string | Vendors;
+  plus_ones_allowed?: number;
 }
 
 export interface Faqs {
