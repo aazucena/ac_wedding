@@ -42,6 +42,9 @@ const guests = (party.members ?? []).map((g) => ({
   <p class="card-header-greeting">
     Dear <span class="guest-name">{party.name}</span>
   </p>
+  {party.invitation_label && party.invitation_type !== 'guest' && (
+    <p class="card-header-role">You are invited as our {party.invitation_label}</p>
+  )}
   <p class="card-header-sub">Please respond for each member of your party.</p>
   <span class="deadline-badge">⏳ Due on {rsvpDeadline}</span>
 </div>

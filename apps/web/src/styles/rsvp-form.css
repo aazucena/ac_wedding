@@ -115,6 +115,10 @@
   font-family: var(--fb); font-size: 12px; font-weight: 300;
   color: var(--muted); margin-top: 6px; line-height: 1.5;
 }
+#rsvp-card .card-header-role {
+  font-family: var(--fd); font-size: 13px; font-style: italic;
+  color: var(--cp); margin-top: 6px;
+}
 #rsvp-card .guest-list {
   display: flex; flex-direction: column;
   border: 1.5px solid var(--border);
