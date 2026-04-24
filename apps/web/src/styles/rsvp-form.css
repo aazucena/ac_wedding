@@ -344,3 +344,60 @@
   transition: opacity 0.2s, transform 0.2s;
 }
 #rsvp-card .success-home-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
+/* ── Plus-ones ────────────────────────────────────────── */
+#rsvp-card #plus-one-zone { border-top: 1px solid var(--border); padding: 14px 18px; }
+
+#rsvp-card .po-add-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  font-family: var(--fb); font-size: 12px; font-weight: 500; letter-spacing: 0.3px;
+  color: color-mix(in srgb, var(--cp) 85%, #1a3a2a);
+  background: color-mix(in srgb, var(--cp) 8%, white);
+  border: 1.5px solid color-mix(in srgb, var(--cp) 40%, transparent);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: background 0.18s, border-color 0.18s;
+}
+#rsvp-card .po-add-btn:hover {
+  background: color-mix(in srgb, var(--cp) 14%, white);
+  border-color: color-mix(in srgb, var(--cp) 65%, transparent);
+}
+#rsvp-card .po-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  background: color-mix(in srgb, var(--cp) 20%, white);
+  border-radius: 10px;
+  font-size: 11px; font-weight: 600;
+  color: color-mix(in srgb, var(--cp) 90%, #1a3a2a);
+}
+
+#rsvp-card .po-form {
+  margin-top: 12px; padding: 16px;
+  background: color-mix(in srgb, var(--warm) 60%, white);
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+}
+#rsvp-card .po-form-title {
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+#rsvp-card .po-form-fields { display: flex; flex-direction: column; gap: 10px; }
+#rsvp-card .po-form-actions {
+  display: flex; align-items: center; gap: 12px; margin-top: 14px;
+}
+#rsvp-card .po-cancel-btn {
+  font-family: var(--fb); font-size: 12px; font-weight: 400; color: var(--muted);
+  background: none; border: none; cursor: pointer; padding: 0;
+}
+#rsvp-card .po-cancel-btn:hover { color: var(--dark); }
+
+#rsvp-card .plus-one-row { border-left: 3px solid color-mix(in srgb, var(--cp) 45%, transparent); }
+
+#rsvp-card .po-remove-btn {
+  flex-shrink: 0; width: 24px; height: 24px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; line-height: 1; font-weight: 300;
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+}
+#rsvp-card .po-remove-btn:hover { background: color-mix(in srgb, #b06060 10%, white); color: #8b3a3a; }

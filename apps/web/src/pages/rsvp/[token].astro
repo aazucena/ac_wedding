@@ -27,6 +27,7 @@ const bride = settings.bride?.first_name ?? 'Christine';
 const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
 
 const rsvpDeadline = formatDate(settings.rsvp_deadline ?? '2026-08-26');
+const plusOnesAllowed = (party?.plus_ones_allowed ?? settings.plus_ones_allowed) ?? 0;
 const deadlinePassed = new Date() > new Date((settings.rsvp_deadline ?? '2026-08-26') + 'T23:59:59');
 const weddingPassed = new Date() > new Date((settings.wedding_date ?? '2026-09-26') + 'T23:59:59');
 const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
@@ -58,6 +59,7 @@ const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
         brideName={bride}
         hashtag={settings.hashtag ?? '#AldrinAndChristine2026'}
         rsvpDeadline={rsvpDeadline}
+        plusOnesAllowed={plusOnesAllowed}
       />
     </div>
   ) : (

@@ -8,14 +8,15 @@ import RsvpMemoryUpload     from './rsvp/RsvpMemoryUpload.astro';
 import '../styles/rsvp-card.css';
 
 interface Props {
-  party:        Parties;
-  groomName:    string;
-  brideName:    string;
-  hashtag:      string;
-  rsvpDeadline: string;
+  party:           Parties;
+  groomName:       string;
+  brideName:       string;
+  hashtag:         string;
+  rsvpDeadline:    string;
+  plusOnesAllowed: number;
 }
 
-const { party, groomName, brideName, hashtag, rsvpDeadline } = Astro.props;
+const { party, groomName, brideName, hashtag, rsvpDeadline, plusOnesAllowed } = Astro.props;
 
 const alreadyResponded = party.status === 'confirmed' || party.status === 'declined';
 ---
@@ -48,6 +49,7 @@ const alreadyResponded = party.status === 'confirmed' || party.status === 'decli
       brideName={brideName}
       hashtag={hashtag}
       rsvpDeadline={rsvpDeadline}
+      plusOnesAllowed={plusOnesAllowed}
     />
   )}
 

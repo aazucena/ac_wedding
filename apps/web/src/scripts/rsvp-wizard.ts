@@ -13,9 +13,147 @@ var guestResponse: Record<string, string | null> = {};
 var currentStep = 1;
 // Populated on page-load; used by buildReview which runs after init
 var _guestList: Array<{ id: string; name: string; type: string }> = [];
+var _plusOnesAllowed = 0;
+var _plusOnes: Array<{ tempId: string; firstName: string; lastName: string; type: string }> = [];
 
 function anyAttending() { return Object.values(guestResponse).some(v => v === 'attending'); }
 function allResponded()  { return Object.values(guestResponse).every(v => v !== null); }
+
+// ── Plus-one UI ──────────────────────────────────────────
+function updatePlusOneUI() {
+  var remaining = _plusOnesAllowed - _plusOnes.length;
+  var badge  = document.getElementById('po-remaining');
+  var addRow = document.getElementById('po-add-row');
+  if (badge)  badge.textContent = String(remaining);
+  if (addRow) addRow.style.display = remaining > 0 ? '' : 'none';
+}
+
+function showPlusOneForm() {
+  var form = document.getElementById('po-form');
+  if (!form) return;
+  form.style.display = '';
+  form.setAttribute('aria-hidden', 'false');
+  (document.getElementById('po-first') as HTMLInputElement | null)?.focus();
+}
+
+function hidePlusOneForm() {
+  var form = document.getElementById('po-form');
+  if (!form) return;
+  form.style.display = 'none';
+  form.setAttribute('aria-hidden', 'true');
+  var fi = document.getElementById('po-first') as HTMLInputElement | null;
+  var la = document.getElementById('po-last')  as HTMLInputElement | null;
+  var ty = document.getElementById('po-type')  as HTMLSelectElement | null;
+  if (fi) fi.value = '';
+  if (la) la.value = '';
+  if (ty) ty.value = 'adult';
+  var errEl = document.getElementById('po-error');
+  if (errEl) { errEl.textContent = ''; errEl.classList.remove('visible'); }
+}
+
+function makeRadioOption(tempId: string, value: string, icon: string, label: string, checked: boolean): HTMLLabelElement {
+  var lbl = document.createElement('label');
+  lbl.className = 'card-option card-option--radio';
+  var input = document.createElement('input');
+  input.type = 'radio'; input.name = 'attendance_type_' + tempId; input.value = value;
+  if (checked) input.checked = true;
+  var iconSpan  = document.createElement('span'); iconSpan.className  = 'card-option-icon';  iconSpan.textContent = icon;
+  var bodySpan  = document.createElement('span'); bodySpan.className  = 'card-option-body';
+  var titleSpan = document.createElement('span'); titleSpan.className = 'card-option-title'; titleSpan.textContent = label;
+  var checkSpan = document.createElement('span'); checkSpan.className = 'card-option-check'; checkSpan.textContent = '✓';
+  bodySpan.appendChild(titleSpan);
+  lbl.appendChild(input); lbl.appendChild(iconSpan); lbl.appendChild(bodySpan); lbl.appendChild(checkSpan);
+  return lbl;
+}
+
+function createPlusOneRow(tempId: string, displayName: string) {
+  // ── Card shell ──
+  var card = document.createElement('div');
+  card.className = 'guest-card plus-one-row';
+  card.id = 'guest-' + tempId;
+  card.dataset.guestId = tempId;
+
+  // ── Header ──
+  var header = document.createElement('div');
+  header.className = 'guest-card-header';
+
+  var nameSpan = document.createElement('span');
+  nameSpan.className = 'guest-name';
+  nameSpan.textContent = displayName;
+
+  var removeBtn = document.createElement('button');
+  removeBtn.type = 'button'; removeBtn.className = 'po-remove-btn'; removeBtn.title = 'Remove';
+  removeBtn.textContent = '×';
+  removeBtn.addEventListener('click', function() { removePlusOne(tempId); });
+
+  var seg = document.createElement('div');
+  seg.className = 'response-seg'; seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'Response');
+  var yesBtn = document.createElement('button');
+  yesBtn.type = 'button'; yesBtn.className = 'seg seg--yes'; yesBtn.id = 'yes-' + tempId; yesBtn.textContent = '✓ Attending';
+  yesBtn.addEventListener('click', function() { window.onResponseChange(tempId, 'attending'); });
+  var divider = document.createElement('span');
+  divider.className = 'seg-divider'; divider.setAttribute('aria-hidden', 'true');
+  var noBtn = document.createElement('button');
+  noBtn.type = 'button'; noBtn.className = 'seg seg--no'; noBtn.id = 'no-' + tempId; noBtn.textContent = '✗ Declining';
+  noBtn.addEventListener('click', function() { window.onResponseChange(tempId, 'declined'); });
+  seg.appendChild(yesBtn); seg.appendChild(divider); seg.appendChild(noBtn);
+
+  header.appendChild(nameSpan); header.appendChild(removeBtn); header.appendChild(seg);
+  card.appendChild(header);
+
+  // ── Attending panel ──
+  var panel = document.createElement('div');
+  panel.className = 'attending-panel'; panel.id = 'panel-' + tempId;
+  var content = document.createElement('div'); content.className = 'attending-content';
+  var inner   = document.createElement('div'); inner.className   = 'attending-inner';
+
+  // Attendance choice field
+  var attField = document.createElement('div'); attField.className = 'field';
+  var attLabel = document.createElement('label'); attLabel.className = 'field-label'; attLabel.textContent = 'Attending';
+  var optList  = document.createElement('div');  optList.className  = 'card-option-list';
+  optList.appendChild(makeRadioOption(tempId, 'both',      '🎉', 'Ceremony & Reception', true));
+  optList.appendChild(makeRadioOption(tempId, 'ceremony',  '⛪', 'Ceremony Only',         false));
+  optList.appendChild(makeRadioOption(tempId, 'reception', '🥂', 'Reception Only',        false));
+  attField.appendChild(attLabel); attField.appendChild(optList);
+
+  // Dietary field
+  var dietField = document.createElement('div'); dietField.className = 'field';
+  var dietLabel = document.createElement('label');
+  dietLabel.className = 'field-label'; dietLabel.htmlFor = 'dietary-' + tempId;
+  var dietText = document.createTextNode('Dietary Restrictions ');
+  var optional = document.createElement('span'); optional.className = 'optional'; optional.textContent = 'optional';
+  dietLabel.appendChild(dietText); dietLabel.appendChild(optional);
+  var dietArea = document.createElement('textarea');
+  dietArea.id = 'dietary-' + tempId; dietArea.rows = 2;
+  dietArea.placeholder = 'Allergies, intolerances, or other requirements…';
+
+  dietField.appendChild(dietLabel); dietField.appendChild(dietArea);
+  inner.appendChild(attField); inner.appendChild(dietField);
+  content.appendChild(inner); panel.appendChild(content);
+  card.appendChild(panel);
+
+  // ── Append to the guest list (plus-one zone is a sibling outside it) ──
+  var guestList = document.getElementById('guest-list');
+  if (guestList) guestList.appendChild(card);
+
+  initCardOptions(card);
+  guestResponse[tempId] = null;
+  window.onResponseChange(tempId, 'attending');
+}
+
+function addPlusOne(firstName: string, lastName: string, type: string) {
+  var tempId = 'po_' + Math.random().toString(36).slice(2, 10);
+  _plusOnes.push({ tempId, firstName, lastName, type });
+  createPlusOneRow(tempId, lastName ? firstName + ' ' + lastName : firstName);
+  updatePlusOneUI();
+}
+
+function removePlusOne(tempId: string) {
+  _plusOnes = _plusOnes.filter(p => p.tempId !== tempId);
+  delete guestResponse[tempId];
+  document.getElementById('guest-' + tempId)?.remove();
+  updatePlusOneUI();
+}
 
 // ── Progress bar ─────────────────────────────────────────
 function getVisibleStep() {
@@ -238,6 +376,49 @@ function buildReview() {
     guestCards.appendChild(card);
   });
 
+  // Plus-one guests
+  _plusOnes.forEach(function(po) {
+    var poCard = document.createElement('div');
+    poCard.className = 'review-guest-card';
+
+    var poHeader = document.createElement('div');
+    poHeader.className = 'review-guest-header';
+
+    var poName = document.createElement('span');
+    poName.className = 'review-guest-name';
+    poName.textContent = (po.lastName ? po.firstName + ' ' + po.lastName : po.firstName) + ' ✦';
+
+    var isAttending = guestResponse[po.tempId] === 'attending';
+    var poBadge = document.createElement('span');
+    poBadge.className = 'review-badge ' + (isAttending ? 'review-badge--yes' : 'review-badge--no');
+    poBadge.textContent = isAttending ? 'Attending' : 'Not attending';
+
+    poHeader.appendChild(poName); poHeader.appendChild(poBadge);
+    poCard.appendChild(poHeader);
+
+    if (isAttending) {
+      var atTypeEl = document.querySelector<HTMLInputElement>('input[name="attendance_type_' + po.tempId + '"]:checked');
+      var atType   = atTypeEl?.value ?? 'both';
+      var atLabel  = atType === 'both' ? 'Ceremony & Reception' : atType === 'ceremony' ? 'Ceremony Only' : 'Reception Only';
+      var dietary  = ((document.getElementById('dietary-' + po.tempId) as HTMLTextAreaElement | null)?.value ?? '').trim();
+
+      var detailRow = document.createElement('div');
+      detailRow.className = 'review-guest-details';
+      var atPill = document.createElement('span');
+      atPill.className = 'review-guest-pill'; atPill.textContent = atLabel;
+      detailRow.appendChild(atPill);
+      poCard.appendChild(detailRow);
+
+      if (dietary) {
+        var dietEl = document.createElement('p');
+        dietEl.className = 'review-guest-dietary'; dietEl.textContent = dietary;
+        poCard.appendChild(dietEl);
+      }
+    }
+
+    guestCards.appendChild(poCard);
+  });
+
   guestsSec.appendChild(guestCards);
   content.appendChild(guestsSec);
 
@@ -301,18 +482,40 @@ function buildReview() {
 document.addEventListener('astro:page-load', () => {
   const dataEl = document.getElementById('rsvp-data');
   if (!dataEl) return;
-  const { partyId, guestList, rsvpToken } = JSON.parse(dataEl.textContent!) as {
-    partyId:   string;
-    guestList: Array<{ id: string; personId: string | null; name: string; type: string }>;
-    rsvpToken: string;
+  const { partyId, guestList, rsvpToken, plusOnesAllowed } = JSON.parse(dataEl.textContent!) as {
+    partyId:         string;
+    guestList:       Array<{ id: string; personId: string | null; name: string; type: string }>;
+    rsvpToken:       string;
+    plusOnesAllowed: number;
   };
   _guestList = guestList;
+  _plusOnesAllowed = plusOnesAllowed ?? 0;
+  _plusOnes = [];
 
   guestList.forEach(g => { guestResponse[g.id] = null; });
 
   // No auto-open needed — response buttons are always visible
 
   initCardOptions(document);
+
+  // ── Plus-one controls ──
+  if (_plusOnesAllowed > 0) {
+    updatePlusOneUI();
+    document.getElementById('po-add-btn')?.addEventListener('click', showPlusOneForm);
+    document.getElementById('po-cancel')?.addEventListener('click', hidePlusOneForm);
+    document.getElementById('po-confirm')?.addEventListener('click', function() {
+      var firstName = ((document.getElementById('po-first') as HTMLInputElement | null)?.value ?? '').trim();
+      var lastName  = ((document.getElementById('po-last')  as HTMLInputElement | null)?.value ?? '').trim();
+      var type      = (document.getElementById('po-type') as HTMLSelectElement | null)?.value ?? 'adult';
+      if (!firstName) {
+        var errEl = document.getElementById('po-error');
+        if (errEl) { errEl.textContent = 'First name is required.'; errEl.classList.add('visible'); }
+        return;
+      }
+      addPlusOne(firstName, lastName, type);
+      hidePlusOneForm();
+    });
+  }
 
   // Dismiss loader once JS is fully initialised
   const loader = document.getElementById('form-loader');
@@ -327,8 +530,10 @@ document.addEventListener('astro:page-load', () => {
       showError(1, 'Please select a response for each guest.');
       return;
     }
-    var anyMinorAttending = guestList.some(g => guestResponse[g.id] === 'attending' && g.type !== 'adult');
-    var anyAdultAttending = guestList.some(g => guestResponse[g.id] === 'attending' && g.type === 'adult');
+    var anyMinorAttending = guestList.some(g => guestResponse[g.id] === 'attending' && g.type !== 'adult')
+      || _plusOnes.some(p => guestResponse[p.tempId] === 'attending' && p.type !== 'adult');
+    var anyAdultAttending = guestList.some(g => guestResponse[g.id] === 'attending' && g.type === 'adult')
+      || _plusOnes.some(p => guestResponse[p.tempId] === 'attending' && p.type === 'adult');
     if (anyMinorAttending && !anyAdultAttending) {
       showError(1, 'Guests under 18 cannot attend without at least one adult.');
       return;
@@ -421,6 +626,25 @@ document.addEventListener('astro:page-load', () => {
 
       const representativeId = selectedGuest?.personId ?? guestList[0]?.personId ?? '';
 
+      var plusOnePayloads = _plusOnes.map(function(po) {
+        var isAttending    = guestResponse[po.tempId] === 'attending';
+        var attendanceType = isAttending
+          ? (document.querySelector<HTMLInputElement>('input[name="attendance_type_' + po.tempId + '"]:checked')?.value ?? 'both')
+          : '';
+        var attendance = [
+          ...(['ceremony', 'both'].includes(attendanceType) ? ['ceremony' as const] : []),
+          ...(['reception', 'both'].includes(attendanceType) ? ['reception' as const] : []),
+        ];
+        return {
+          firstName:            po.firstName,
+          lastName:             po.lastName || undefined,
+          type:                 po.type as 'adult' | 'teen' | 'child' | 'infant',
+          attending:            isAttending,
+          attendance,
+          dietary_restrictions: isAttending ? (document.getElementById('dietary-' + po.tempId) as HTMLTextAreaElement | null)?.value || null : null,
+        };
+      });
+
       const submitPayload = {
         token:  rsvpToken,
         partyId,
@@ -434,6 +658,7 @@ document.addEventListener('astro:page-load', () => {
           date_rsvp_submitted: new Date().toISOString(),
         },
         guestPayloads,
+        plusOnePayloads,
       };
       const { error: rsvpError } = await actions.submitRsvp(submitPayload);
       if (rsvpError) throw new Error(rsvpError.message ?? 'RSVP failed');

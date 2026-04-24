@@ -15,14 +15,15 @@ import Hashtag         from '../Hashtag.astro';
 import '~/styles/rsvp-form.css';
 
 interface Props {
-  party:        Parties;
-  groomName:    string;
-  brideName:    string;
-  hashtag:      string;
-  rsvpDeadline: string;
+  party:           Parties;
+  groomName:       string;
+  brideName:       string;
+  hashtag:         string;
+  rsvpDeadline:    string;
+  plusOnesAllowed: number;
 }
 
-const { party, groomName, brideName, hashtag, rsvpDeadline } = Astro.props;
+const { party, groomName, brideName, hashtag, rsvpDeadline, plusOnesAllowed } = Astro.props;
 
 type GuestType = 'adult' | 'teen' | 'child' | 'infant';
 
@@ -76,6 +77,37 @@ const guests = (party.members ?? []).map((g) => ({
           />
         ))}
       </div>
+
+      {plusOnesAllowed > 0 && (
+        <div id="plus-one-zone">
+          <div class="po-add-row" id="po-add-row">
+            <button type="button" class="po-add-btn" id="po-add-btn">
+              + Add Guest&ensp;<span class="po-badge" id="po-remaining">{plusOnesAllowed}</span>
+            </button>
+          </div>
+          <div class="po-form" id="po-form" aria-hidden="true" style="display:none">
+            <p class="po-form-title">Add a Plus-One</p>
+            <div class="po-form-fields">
+              <div class="field"><input type="text" id="po-first" class="po-input" placeholder="First name *" autocomplete="given-name" /></div>
+              <div class="field"><input type="text" id="po-last"  class="po-input" placeholder="Last name (optional)" autocomplete="family-name" /></div>
+              <div class="field field-select-wrap">
+                <select id="po-type" class="po-select">
+                  <option value="adult">Adult</option>
+                  <option value="teen">Teen (13–17)</option>
+                  <option value="child">Child (3–12)</option>
+                  <option value="infant">Infant (0–2)</option>
+                </select>
+              </div>
+            </div>
+            <div class="po-form-actions">
+              <button type="button" class="wizard-btn wizard-btn--next" id="po-confirm">Add Guest</button>
+              <button type="button" class="po-cancel-btn" id="po-cancel">Cancel</button>
+            </div>
+            <div class="error-banner" id="po-error"></div>
+          </div>
+        </div>
+      )}
+
       <div class="error-banner" id="error-1"></div>
       <div class="wizard-nav wizard-nav--right">
         <button type="button" class="wizard-btn wizard-btn--next" id="next-1">Continue</button>
@@ -119,9 +151,10 @@ const guests = (party.members ?? []).map((g) => ({
 <Fragment set:html={`
 <script type="application/json" id="rsvp-data">
   ${JSON.stringify({
-    partyId:   party.id,
-    guestList: guests.map(g => ({ id: g.id, personId: g.personId, name: g.name, type: g.type })),
-    rsvpToken: party.rsvp_token,
+    partyId:         party.id,
+    guestList:       guests.map(g => ({ id: g.id, personId: g.personId, name: g.name, type: g.type })),
+    rsvpToken:       party.rsvp_token,
+    plusOnesAllowed: plusOnesAllowed,
   })}
 </script>
 `}/>
