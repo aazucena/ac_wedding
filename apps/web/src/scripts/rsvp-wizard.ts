@@ -81,9 +81,25 @@ function createPlusOneRow(tempId: string, displayName: string) {
   nameSpan.className = 'guest-name';
   nameSpan.textContent = displayName;
 
+  // Trash icon button (prefix, before the name)
   var removeBtn = document.createElement('button');
-  removeBtn.type = 'button'; removeBtn.className = 'po-remove-btn'; removeBtn.title = 'Remove';
-  removeBtn.textContent = '×';
+  removeBtn.type = 'button'; removeBtn.className = 'po-remove-btn'; removeBtn.title = 'Remove plus-one';
+  removeBtn.setAttribute('aria-label', 'Remove plus-one');
+  var ns = 'http://www.w3.org/2000/svg';
+  var trashSvg = document.createElementNS(ns, 'svg');
+  trashSvg.setAttribute('width', '15'); trashSvg.setAttribute('height', '15');
+  trashSvg.setAttribute('viewBox', '0 0 24 24'); trashSvg.setAttribute('fill', 'none');
+  trashSvg.setAttribute('stroke', 'currentColor'); trashSvg.setAttribute('stroke-width', '1.8');
+  trashSvg.setAttribute('stroke-linecap', 'round'); trashSvg.setAttribute('stroke-linejoin', 'round');
+  trashSvg.setAttribute('aria-hidden', 'true');
+  function svgEl(tag: string, attr: string, val: string) {
+    var el = document.createElementNS(ns, tag); el.setAttribute(attr, val); return el;
+  }
+  trashSvg.appendChild(svgEl('polyline', 'points', '3 6 5 6 21 6'));
+  trashSvg.appendChild(svgEl('path', 'd', 'M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6'));
+  trashSvg.appendChild(svgEl('path', 'd', 'M10 11v6M14 11v6'));
+  trashSvg.appendChild(svgEl('path', 'd', 'M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2'));
+  removeBtn.appendChild(trashSvg);
   removeBtn.addEventListener('click', function() { removePlusOne(tempId); });
 
   var seg = document.createElement('div');
@@ -98,7 +114,8 @@ function createPlusOneRow(tempId: string, displayName: string) {
   noBtn.addEventListener('click', function() { window.onResponseChange(tempId, 'declined'); });
   seg.appendChild(yesBtn); seg.appendChild(divider); seg.appendChild(noBtn);
 
-  header.appendChild(nameSpan); header.appendChild(removeBtn); header.appendChild(seg);
+  // Order: [trash] [name] [response seg]
+  header.appendChild(removeBtn); header.appendChild(nameSpan); header.appendChild(seg);
   card.appendChild(header);
 
   // ── Attending panel ──

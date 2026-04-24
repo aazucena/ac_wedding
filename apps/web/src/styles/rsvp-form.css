@@ -414,11 +414,11 @@
 #rsvp-card .plus-one-row { border-left: 3px solid color-mix(in srgb, var(--cp) 45%, transparent); }
 
 #rsvp-card .po-remove-btn {
-  flex-shrink: 0; width: 24px; height: 24px;
+  flex-shrink: 0; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; line-height: 1; font-weight: 300;
   background: none; border: none; cursor: pointer;
-  color: var(--muted); border-radius: 50%;
+  color: var(--muted); border-radius: var(--radius-xs);
   transition: background 0.15s, color 0.15s;
 }
-#rsvp-card .po-remove-btn:hover { background: color-mix(in srgb, #b06060 10%, white); color: #8b3a3a; }
+#rsvp-card .po-remove-btn:hover { background: color-mix(in srgb, #b06060 12%, white); color: #8b3a3a; }
+#rsvp-card .po-remove-btn svg  { display: block; }
