@@ -1,43 +1,39 @@
 {
   "collection": "parties",
-  "field": "rsvp_token",
-  "type": "string",
+  "field": "plus_ones_allowed",
+  "type": "integer",
   "meta": {
     "collection": "parties",
     "conditions": null,
-    "display": "raw",
+    "display": null,
     "display_options": null,
-    "field": "rsvp_token",
+    "field": "plus_ones_allowed",
     "group": null,
     "hidden": false,
     "interface": "input",
-    "note": "Auto-generated token from creating this data",
+    "note": "Overrides global when set",
     "options": {
-      "placeholder": "Auto-generated token (e.g TEST-TH15)"
+      "max": 10,
+      "min": 0
     },
-    "readonly": true,
+    "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 7,
+    "sort": 6,
     "special": null,
-    "translations": [
-      {
-        "language": "en-US",
-        "translation": "Token"
-      }
-    ],
+    "translations": null,
     "validation": null,
     "validation_message": null,
     "width": "full"
   },
   "schema": {
-    "name": "rsvp_token",
+    "name": "plus_ones_allowed",
     "table": "parties",
-    "data_type": "character varying",
+    "data_type": "integer",
     "default_value": null,
-    "max_length": 255,
-    "numeric_precision": null,
-    "numeric_scale": null,
+    "max_length": null,
+    "numeric_precision": 32,
+    "numeric_scale": 0,
     "is_nullable": true,
     "is_unique": false,
     "is_indexed": false,

@@ -3,7 +3,7 @@
   "info": {
     "title": "Dynamic API Specification",
     "description": "This is a dynamically generated API specification for all endpoints existing on the current project.",
-    "version": "0041c864af7f1635f8df7914fcd1fc8130dd2c4b"
+    "version": "40ecc2847ec4bfc317c3297ddb3e2d00714a7911"
   },
   "servers": [
     {
@@ -26083,6 +26083,11 @@
             "description": "Label of the role based on the type of invitation",
             "type": "string"
           },
+          "plus_ones_allowed": {
+            "nullable": true,
+            "description": "Overrides global when set",
+            "type": "integer"
+          },
           "members": {
             "nullable": true,
             "type": "array",
@@ -30487,6 +30492,11 @@
                 "$ref": "#/components/schemas/ItemsVendors"
               }
             ]
+          },
+          "plus_ones_allowed": {
+            "nullable": true,
+            "description": "Applies to all parties that don't override",
+            "type": "integer"
           }
         },
         "x-collection": "wedding_settings",

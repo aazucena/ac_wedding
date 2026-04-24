@@ -2837,6 +2837,9 @@ type parties {
 
   """Label of the role based on the type of invitation"""
   invitation_label: String
+
+  """Overrides global when set"""
+  plus_ones_allowed: Int
   members(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [guests]
   members_func: count_functions
 }
@@ -3403,6 +3406,9 @@ type wedding_settings {
   emblem(filter: directus_files_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_files
   insignia(filter: directus_files_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_files
   photographer(filter: vendors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): vendors
+
+  """Applies to all parties that don't override"""
+  plus_ones_allowed: Int
 }
 
 type wedding_settings_mutated {
@@ -5386,6 +5392,7 @@ input parties_filter {
   representative: persons_filter
   invitation_type: string_filter_operators
   invitation_label: string_filter_operators
+  plus_ones_allowed: number_filter_operators
   members: guests_quantifier_filter
   members_func: count_function_filter_operators
   _and: [parties_filter]
@@ -5418,6 +5425,7 @@ input parties_quantifier_filter {
   representative: persons_filter
   invitation_type: string_filter_operators
   invitation_label: string_filter_operators
+  plus_ones_allowed: number_filter_operators
   members: guests_quantifier_filter
   members_func: count_function_filter_operators
   _and: [parties_filter]
