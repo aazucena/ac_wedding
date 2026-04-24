@@ -1,12 +1,13 @@
 ---
-export const prerender = true;
+export const prerender = false;
 // src/pages/print/invitation.astro
 // Two-sided duplex invitation card
 //   Front — names + date (cover-style)
 //   Back  — ceremony venue + reception venue + RSVP QR + hashtag
 
 import { getSettings, getCeremony, getReception, getPartyByToken } from '@lib/directus';
-import { formatTime } from '@lib/print';
+import { formatTime, formatLonghandDate } from '@lib/print';
+import { formatDate } from '@lib/utils/format';
 import PrintLayout          from '@layouts/PrintLayout.astro';
 import Hashtag              from '@components/Hashtag.astro';
 import CardWatermark        from '@components/CardWatermark.astro';
@@ -14,15 +15,25 @@ import QRCodeWidget         from '@components/QRCode.astro';
 import '../../styles/invitation.css';
 
 const token = Astro.url.searchParams.get('token') ?? undefined;
+const draft = Astro.url.searchParams.get('draft') as 'guest' | 'sponsor' | 'entourage' | null;
+
+const DRAFT_PARTIES = {
+  guest:     { id: 'draft', name: 'Plata Family',   rsvp_token: undefined, members: [], invitation_type: 'guest'     as const, invitation_label: undefined },
+  sponsor:   { id: 'draft', name: 'Ranada Family', rsvp_token: undefined, members: [], invitation_type: 'sponsor'   as const, invitation_label: 'Principal Sponsor (Ninong & Ninang)' },
+  entourage: { id: 'draft', name: 'Karl Plata',    rsvp_token: undefined, members: [], invitation_type: 'entourage' as const, invitation_label: 'Best Man' },
+};
 
 const [settings, ceremony, reception, party] = await Promise.all([
   getSettings(), getCeremony(), getReception(),
-  token ? getPartyByToken(token) : Promise.resolve(null),
+  draft        ? Promise.resolve(DRAFT_PARTIES[draft] ?? null)
+  : token      ? getPartyByToken(token)
+  : Promise.resolve(null),
 ]);
 
 const groom   = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
 const bride   = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
-const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://yourdomain.com';
+const { dayOfWeek, ordinalDate, yearInWords } = formatLonghandDate(settings.wedding_date);
+const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.com';
 const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
 ---
 
@@ -67,15 +78,19 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
           </div>
 
           <p class="request-copy">
-            request the honour of your presence<br />
+            request the honour of your presence
+            {party?.invitation_label && party.invitation_type !== 'guest'
+              ? <><br />as our {party.invitation_label}</>
+              : null
+            }<br />
             at the celebration of their Holy Matrimony
           </p>
 
           <div class="date-block">
             <p class="ornament">✦</p>
-            <p class="day-label">Saturday</p>
-            <p class="date-long">the Twenty-Sixth of September</p>
-            <p class="year-long">Two Thousand and Twenty-Six</p>
+            <p class="day-label">{dayOfWeek}</p>
+            <p class="date-long">{ordinalDate}</p>
+            <p class="year-long">{yearInWords}</p>
             <p class="time-label">at {formatTime(ceremony.start_time)}</p>
           </div>
 
@@ -140,7 +155,7 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
               <QRCodeWidget url={rsvpUrl} size={130} />
               <div class="rsvp-text">
                 <p class="rsvp-heading">Kindly Reply</p>
-                <p class="rsvp-deadline">by August 26, 2026</p>
+                <p class="rsvp-deadline">by {formatDate(settings.rsvp_deadline ?? '2026-08-26')}</p>
                 <p class="rsvp-note">Scan to RSVP or visit:</p>
                 <p class="rsvp-url">{rsvpUrl}</p>
                 <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />

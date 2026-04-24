@@ -48,7 +48,7 @@ function formatTime(t: string | undefined | null, fallback = 'TBD') {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
 }
 
-const BASE_URL         = import.meta.env.PUBLIC_SITE_URL ?? 'https://yourdomain.com';
+const BASE_URL         = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.com';
 const ceremonyTime     = formatTime(ceremony.start_time);
 const venueName        = ceremony.venue?.name ?? 'Lethbridge, Alberta';
 const receptionVenueName = reception.venue?.name ?? 'Reception Venue TBD';
