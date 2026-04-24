@@ -13,7 +13,9 @@ import {
   verifyGuestNameAndTable,
   createGuestbookEntry,
   getSettings,
+  get,
 } from '@lib/directus';
+import { createPerson, createGuest } from '@lib/api/rsvp';
 import { buildNameFilter } from '@lib/utils/search';
 import { buildFlowActions } from './flows';
 
@@ -40,8 +42,16 @@ export const server = {
         attendance: z.array(z.enum(['ceremony', 'reception'])),
         dietary_restrictions: z.string().nullable(),
       })),
+      plusOnePayloads: z.array(z.object({
+        firstName:            z.string().min(1).max(255),
+        lastName:             z.string().max(255).optional(),
+        type:                 z.enum(['adult', 'teen', 'child', 'infant']),
+        attending:            z.boolean(),
+        attendance:           z.array(z.enum(['ceremony', 'reception'])),
+        dietary_restrictions: z.string().nullable(),
+      })).optional().default([]),
     }),
-    handler: async ({ token, partyId, partyPayload, guestPayloads }) => {
+    handler: async ({ token, partyId, partyPayload, guestPayloads, plusOnePayloads }) => {
       // Validate token matches party — returns member IDs or null
       const memberIds = await validatePartyByIdAndToken(partyId, token);
       if (!memberIds) throw new Error('Invalid invitation token.');
@@ -62,6 +72,27 @@ export const server = {
           )
         );
       }
+
+      // Plus-ones: cap check then create Person + Guest records
+      if (plusOnePayloads.length > 0) {
+        const [partyMeta, settingsMeta] = await Promise.all([
+          get<{ plus_ones_allowed: number | null }>(`/items/parties/${partyId}`, { fields: ['plus_ones_allowed'] }),
+          getSettings(),
+        ]);
+        const cap = partyMeta.plus_ones_allowed ?? settingsMeta.plus_ones_allowed ?? 0;
+        if (plusOnePayloads.length > cap) throw new Error('Plus-one limit exceeded.');
+
+        await Promise.all(plusOnePayloads.map(async (p) => {
+          const { id: personId } = await createPerson(p.firstName, p.lastName);
+          const { id: guestId }  = await createGuest(personId, partyId, p.type);
+          await patchGuest(guestId, {
+            attending:            p.attending,
+            attendance:           p.attendance,
+            dietary_restrictions: p.dietary_restrictions,
+          });
+        }));
+      }
+
       return { success: true };
     },
   }),
