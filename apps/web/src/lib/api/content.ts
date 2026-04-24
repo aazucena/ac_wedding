@@ -46,7 +46,7 @@ export async function getSponsors(): Promise<Sponsors[]> {
 export async function getVendors(): Promise<Vendors[]> {
   try {
     return await get<Vendors[]>('/items/vendors', {
-      fields: ['id', 'name', 'subtitle', 'category', 'sort', 'featured', 'website', 'status', 'maps_url', 'email', 'phone', 'address_line1', 'city', 'image.id', 'contacts.first_name', 'contacts.last_name', 'contacts.preferred_name', 'contacts.email', 'contacts.phone', 'social_media'],
+      fields: ['id', 'name', 'subtitle', 'category', 'sort', 'featured', 'website', 'status', 'maps_url', 'email', 'phone', 'address_line1', 'city', 'image.id', 'logo.id', 'contacts.first_name', 'contacts.last_name', 'contacts.preferred_name', 'contacts.email', 'contacts.phone', 'social_media'],
       filter: { status: { _eq: 'booked' } },
       sort: ['-featured', 'sort', 'name'],
     });

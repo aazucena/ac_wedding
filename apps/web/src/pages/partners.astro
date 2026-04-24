@@ -30,6 +30,10 @@ function imgUrl(id: string): string {
   return `${DIRECTUS_URL}/assets/${id}?fit=cover&quality=82`;
 }
 
+function logoUrl(id: string): string {
+  return `${DIRECTUS_URL}/assets/${id}?format=webp&quality=95`;
+}
+
 const SOCIAL_ICONS: Record<string, string> = {
   instagram:  'simple-icons:instagram',
   facebook:   'simple-icons:facebook',
@@ -50,11 +54,7 @@ function socialIcon(platform: string): string {
 import type { Vendors } from '../lib/types';
 
 function isIndividual(v: Vendors): boolean {
-  const contacts = v.contacts ?? [];
-  if (contacts.length !== 1) return false;
-  const cName = contactName(contacts[0]!).toLowerCase().trim();
-  const vName = v.name.toLowerCase().trim();
-  return cName === vName || vName.includes(cName) || cName.includes(vName);
+  return (v.contacts ?? []).length === 1;
 }
 
 function socialLabel(platform: string): string {
@@ -141,7 +141,13 @@ function socialLabel(platform: string): string {
                     alt={v.name}
                     loading="lazy"
                     decoding="async"
+                    class:list={[v.logo?.id && 'modal-photo-blurred']}
                   />
+                  {v.logo?.id && (
+                    <div class="modal-photo-logo-overlay">
+                      <img src={logoUrl(v.logo.id)} alt={v.name} class="modal-photo-logo" />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div class="modal-photo modal-photo--placeholder">
@@ -430,6 +436,7 @@ function socialLabel(platform: string): string {
 .modal-close:hover { background: color-mix(in srgb, var(--dark) 15%, white); }
 
 .modal-photo {
+  position: relative;
   width: 100%; height: 220px;
   overflow: hidden; flex-shrink: 0;
   background: color-mix(in srgb, var(--cp) 12%, var(--warm));
@@ -438,6 +445,21 @@ function socialLabel(platform: string): string {
   width: 100%; height: 100%;
   object-fit: cover; object-position: center;
   display: block;
+}
+.modal-photo-blurred {
+  filter: blur(6px);
+  transform: scale(1.08);
+}
+.modal-photo-logo-overlay {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 32px; box-sizing: border-box;
+}
+.modal-photo-logo {
+  max-width: 100%; max-height: 100%;
+  width: auto; height: auto;
+  object-fit: contain !important;
+  filter: drop-shadow(0 2px 12px rgba(0,0,0,0.25));
 }
 .modal-photo--placeholder {
   display: flex; align-items: center; justify-content: center;

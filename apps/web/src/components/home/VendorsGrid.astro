@@ -1,5 +1,6 @@
 ---
 import type { Vendors } from '~/lib/types';
+import { assetUrl } from '~/lib/utils/format';
 
 // home/VendorsGrid.astro — vendor partners grid
 interface Props {
@@ -35,6 +36,20 @@ const {
   background: linear-gradient(90deg, var(--cp), var(--cs));
 }
 .vendor-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+.vendor-logo {
+  height: 48px; width: auto; max-width: 140px;
+  object-fit: contain; margin-bottom: 4px;
+}
+.vendor-logo-placeholder {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 30%, white),
+    color-mix(in srgb, var(--cs) 20%, white)
+  );
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 22px; font-style: italic;
+  color: var(--dark); margin-bottom: 4px;
+}
 .vendor-category {
   display: inline-block;
   font-family: var(--fb); font-size: 9px; font-weight: 600;
@@ -84,6 +99,10 @@ const {
 <div class="vendor-grid">
   {vendors.slice(0, 3).map((v) => (
     <div class="vendor-card">
+      {v.logo?.id
+        ? <img src={assetUrl(v.logo, { height: 48 })} alt={v.name} class="vendor-logo" />
+        : <div class="vendor-logo-placeholder">{v.name[0]}</div>
+      }
       <span class="vendor-category">{categoryLabel[v.category ?? ''] ?? v.category}</span>
       <p class="vendor-name">{v.name}</p>
       {v.subtitle && <p class="vendor-subtitle">{v.subtitle}</p>}
