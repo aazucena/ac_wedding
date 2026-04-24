@@ -1,38 +1,53 @@
 {
   "collection": "wedding_settings",
-  "field": "phone",
-  "type": "string",
+  "field": "photographer",
+  "type": "uuid",
   "meta": {
     "collection": "wedding_settings",
     "conditions": null,
-    "display": "extension-display-link",
+    "display": "related-values",
     "display_options": {
-      "kind": "tel"
+      "template": "{{name}}"
     },
-    "field": "phone",
+    "field": "photographer",
     "group": null,
     "hidden": false,
-    "interface": "input",
+    "interface": "select-dropdown-m2o",
     "note": null,
     "options": {
-      "template": "\\(999\\) 999-9999"
+      "enableLink": true,
+      "filter": {
+        "_and": [
+          {
+            "category": {
+              "_in": [
+                "photographer",
+                "videographer"
+              ]
+            }
+          }
+        ]
+      },
+      "template": "{{name}}"
     },
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 19,
-    "special": null,
+    "sort": 12,
+    "special": [
+      "m2o"
+    ],
     "translations": null,
     "validation": null,
     "validation_message": null,
-    "width": "half"
+    "width": "full"
   },
   "schema": {
-    "name": "phone",
+    "name": "photographer",
     "table": "wedding_settings",
-    "data_type": "character varying",
+    "data_type": "uuid",
     "default_value": null,
-    "max_length": 255,
+    "max_length": null,
     "numeric_precision": null,
     "numeric_scale": null,
     "is_nullable": true,
@@ -42,7 +57,7 @@
     "is_generated": false,
     "generation_expression": null,
     "has_auto_increment": false,
-    "foreign_key_table": null,
-    "foreign_key_column": null
+    "foreign_key_table": "vendors",
+    "foreign_key_column": "id"
   }
 }

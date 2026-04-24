@@ -317,6 +317,7 @@ type Subscription {
   honeymoon_events_mutated(event: EventEnum): honeymoon_events_mutated
   reception_program_mutated(event: EventEnum): reception_program_mutated
   readings_mutated(event: EventEnum): readings_mutated
+  wedding_settings_mutated(event: EventEnum): wedding_settings_mutated
   reception_staff_mutated(event: EventEnum): reception_staff_mutated
   tables_mutated(event: EventEnum): tables_mutated
   sponsors_mutated(event: EventEnum): sponsors_mutated
@@ -325,12 +326,11 @@ type Subscription {
   gallery_mutated(event: EventEnum): gallery_mutated
   stories_mutated(event: EventEnum): stories_mutated
   events_mutated(event: EventEnum): events_mutated
-  wedding_settings_mutated(event: EventEnum): wedding_settings_mutated
   accomodations_mutated(event: EventEnum): accomodations_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
-  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""
@@ -2833,6 +2833,10 @@ type parties {
   song_request: String
   group(filter: groups_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): groups
   representative(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): persons
+  invitation_type: String
+
+  """Label of the role based on the type of invitation"""
+  invitation_label: String
   members(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [guests]
   members_func: count_functions
 }
@@ -3398,6 +3402,7 @@ type wedding_settings {
   maintenance: Boolean
   emblem(filter: directus_files_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_files
   insignia(filter: directus_files_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): directus_files
+  photographer(filter: vendors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): vendors
 }
 
 type wedding_settings_mutated {
@@ -5379,6 +5384,8 @@ input parties_filter {
   song_request: string_filter_operators
   group: groups_filter
   representative: persons_filter
+  invitation_type: string_filter_operators
+  invitation_label: string_filter_operators
   members: guests_quantifier_filter
   members_func: count_function_filter_operators
   _and: [parties_filter]
@@ -5409,6 +5416,8 @@ input parties_quantifier_filter {
   song_request: string_filter_operators
   group: groups_filter
   representative: persons_filter
+  invitation_type: string_filter_operators
+  invitation_label: string_filter_operators
   members: guests_quantifier_filter
   members_func: count_function_filter_operators
   _and: [parties_filter]

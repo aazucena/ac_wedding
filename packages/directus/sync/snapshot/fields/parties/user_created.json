@@ -18,7 +18,7 @@
     "readonly": true,
     "required": false,
     "searchable": true,
-    "sort": 9,
+    "sort": 10,
     "special": [
       "user-created"
     ],
