@@ -220,6 +220,7 @@ export interface Guests {
   table?: Tables;
   party?: Parties;
   type?: string;
+  extra?: boolean;
 }
 
 export interface Honeymoon {

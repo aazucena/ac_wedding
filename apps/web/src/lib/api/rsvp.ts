@@ -1,5 +1,5 @@
 // lib/api/rsvp.ts
-import { get, patch, post } from '../directus';
+import { get, patch } from '../directus';
 import type { Parties } from '../types';
 
 export async function getPartyByToken(token: string): Promise<Parties | null> {
@@ -80,14 +80,6 @@ export async function patchParty(partyId: string, payload: object): Promise<void
 
 export async function patchGuest(guestId: string, payload: object): Promise<void> {
   await patch(`/items/guests/${guestId}`, payload);
-}
-
-export async function createPerson(firstName: string, lastName?: string): Promise<{ id: string }> {
-  return post<{ id: string }>('/items/persons', { first_name: firstName, last_name: lastName ?? null });
-}
-
-export async function createGuest(personId: string, partyId: string, type: string): Promise<{ id: string }> {
-  return post<{ id: string }>('/items/guests', { person: personId, party: partyId, type });
 }
 
 export async function getRsvpCount(): Promise<{ confirmed: number; total: number }> {

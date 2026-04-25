@@ -15,7 +15,6 @@ import {
   getSettings,
   get,
 } from '@lib/directus';
-import { createPerson, createGuest } from '@lib/api/rsvp';
 import { buildNameFilter } from '@lib/utils/search';
 import { buildFlowActions } from './flows';
 
@@ -42,16 +41,8 @@ export const server = {
         attendance: z.array(z.enum(['ceremony', 'reception'])),
         dietary_restrictions: z.string().nullable(),
       })),
-      plusOnePayloads: z.array(z.object({
-        firstName:            z.string().min(1).max(255),
-        lastName:             z.string().max(255).optional(),
-        type:                 z.enum(['adult', 'teen', 'child', 'infant']),
-        attending:            z.boolean(),
-        attendance:           z.array(z.enum(['ceremony', 'reception'])),
-        dietary_restrictions: z.string().nullable(),
-      })).optional().default([]),
     }),
-    handler: async ({ token, partyId, partyPayload, guestPayloads, plusOnePayloads }) => {
+    handler: async ({ token, partyId, partyPayload, guestPayloads }) => {
       // Validate token matches party — returns member IDs or null
       const memberIds = await validatePartyByIdAndToken(partyId, token);
       if (!memberIds) throw new Error('Invalid invitation token.');
@@ -73,24 +64,139 @@ export const server = {
         );
       }
 
-      // Plus-ones: cap check then create Person + Guest records
-      if (plusOnePayloads.length > 0) {
-        const [partyMeta, settingsMeta] = await Promise.all([
-          get<{ plus_ones_allowed: number | null }>(`/items/parties/${partyId}`, { fields: ['plus_ones_allowed'] }),
-          getSettings(),
-        ]);
-        const cap = partyMeta.plus_ones_allowed ?? settingsMeta.plus_ones_allowed ?? 0;
-        if (plusOnePayloads.length > cap) throw new Error('Plus-one limit exceeded.');
+      return { success: true };
+    },
+  }),
 
-        await Promise.all(plusOnePayloads.map(async (p) => {
-          const { id: personId } = await createPerson(p.firstName, p.lastName);
-          const { id: guestId }  = await createGuest(personId, partyId, p.type);
-          await patchGuest(guestId, {
+  checkPlusOne: defineAction({
+    input: z.object({
+      token:     z.string(),
+      partyId:   z.string(),
+      firstName: z.string().min(1).max(255),
+      lastName:  z.string().min(1).max(255),
+    }),
+    handler: async ({ token, partyId, firstName, lastName }) => {
+      const memberIds = await validatePartyByIdAndToken(partyId, token);
+      if (!memberIds) throw new Error('Invalid invitation token.');
+
+      const settings = await getSettings();
+      const norm     = (s: string | null | undefined) => (s ?? '').trim().toLowerCase();
+      const normFn   = norm(firstName);
+      const normLn   = norm(lastName);
+      const fullName = `${firstName} ${lastName}`;
+
+      // ── Blocked persons: groom, bride, and both sets of parents ──────────
+      const BLOCKED: Array<[string, string, string]> = [
+        [settings.groom?.preferred_name ?? '', settings.groom?.last_name ?? 'Azucena', 'the groom'],
+        [settings.groom?.first_name     ?? '', settings.groom?.last_name ?? 'Azucena', 'the groom'],
+        [settings.bride?.preferred_name ?? '', settings.bride?.last_name ?? 'Ranada',  'the bride'],
+        [settings.bride?.first_name     ?? '', settings.bride?.last_name ?? 'Ranada',  'the bride'],
+        ['Cesar',    'Azucena', "the groom's father"],
+        ['Amelia',   'Azucena', "the groom's mother"],
+        ['Benjamin', 'Aquino',  "the bride's father"],
+        ['Bengie',   'Aquino',  "the bride's father"],
+        ['Ceferina', 'Aquino',  "the bride's mother"],
+        ['Rina',     'Aquino',  "the bride's mother"],
+      ];
+      const blocked = BLOCKED.find(([fn, ln]) => norm(fn) === normFn && norm(ln) === normLn && fn !== '');
+      if (blocked) throw new Error(`${fullName} cannot be added as a plus-one (${blocked[2]}).`);
+
+      // ── Look up existing guests whose person matches by last name ─────────
+      // Use _icontains for a case-insensitive DB sweep, then exact-match in TS.
+      type GuestHit = { id: string; party: { id: string; status: string }; person: { id: string; first_name: string; preferred_name: string | null; last_name: string } };
+      const candidates = await get<GuestHit[]>('/items/guests', {
+        filter: { person: { last_name: { _icontains: lastName } } },
+        fields: ['id', 'party.id', 'party.status', 'person.id', 'person.first_name', 'person.preferred_name', 'person.last_name'],
+        limit: 50,
+      });
+
+      const existing = candidates.filter(g =>
+        norm(g.person.last_name) === normLn &&
+        (norm(g.person.first_name) === normFn || norm(g.person.preferred_name) === normFn)
+      );
+
+      // No guest records with this name → person either doesn't exist in
+      // Directus or exists but isn't tied to any party — both are allowed.
+      if (existing.length === 0) return { valid: true };
+
+      // Duplicate: already a guest of this party
+      if (existing.some(g => g.party.id === partyId)) {
+        throw new Error(`${fullName} is already in your party.`);
+      }
+
+      // Already a confirmed guest of a different party
+      if (existing.some(g => g.party.id !== partyId && g.party.status === 'confirmed')) {
+        throw new Error(`${fullName} is already a confirmed wedding guest.`);
+      }
+
+      // Registered under a different invitation (not yet confirmed)
+      throw new Error(`${fullName} is already registered under a different invitation.`);
+    },
+  }),
+
+  submitPlusOnes: defineAction({
+    input: z.object({
+      token:           z.string(),
+      partyId:         z.string(),
+      plusOnePayloads: z.array(z.object({
+        firstName:            z.string().min(1).max(255),
+        lastName:             z.string().min(1).max(255),
+        gender:               z.enum(['male', 'female']),
+        type:                 z.enum(['adult', 'teen', 'child', 'infant']),
+        attending:            z.boolean(),
+        attendance:           z.array(z.enum(['ceremony', 'reception'])),
+        dietary_restrictions: z.string().nullable(),
+      })),
+    }),
+    handler: async ({ token, partyId, plusOnePayloads }) => {
+      const memberIds = await validatePartyByIdAndToken(partyId, token);
+      if (!memberIds) throw new Error('Invalid invitation token.');
+
+      const [partyMeta, settingsMeta] = await Promise.all([
+        get<{ plus_ones_allowed: number | null }>(`/items/parties/${partyId}`, { fields: ['plus_ones_allowed'] }),
+        getSettings(),
+      ]);
+      const cap = partyMeta.plus_ones_allowed ?? settingsMeta.plus_ones_allowed ?? 0;
+      if (plusOnePayloads.length > cap) throw new Error('Plus-one limit exceeded.');
+
+      // Block bride, groom, and their parents from being added as plus-ones.
+      const groomFirst  = settingsMeta.groom?.preferred_name ?? settingsMeta.groom?.first_name ?? '';
+      const brideFirst  = settingsMeta.bride?.preferred_name ?? settingsMeta.bride?.first_name ?? '';
+      const BLOCKED = new Set(
+        [groomFirst, brideFirst, 'Eissa Aldrin', 'Ma Christine',
+         'Cesar', 'Amelia', 'Benjamin', 'Bengie', 'Ceferina', 'Rina']
+          .filter(Boolean).map(n => n.toLowerCase().trim())
+      );
+      for (const p of plusOnePayloads) {
+        if (BLOCKED.has(p.firstName.toLowerCase().trim())) {
+          throw new Error(`${p.firstName} ${p.lastName} cannot be added as a plus-one.`);
+        }
+      }
+
+      const res = await fetch(`${DIRECTUS_URL}/api/v1/extra_guest`, {
+        method:  'POST',
+        headers: {
+          Authorization:  `Bearer ${DIRECTUS_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token,
+          party:  partyId,
+          guests: plusOnePayloads.map(p => ({
+            first_name:           p.firstName,
+            last_name:            p.lastName,
+            gender:               p.gender,
+            type:                 p.type,
             attending:            p.attending,
             attendance:           p.attendance,
-            dietary_restrictions: p.dietary_restrictions,
-          });
-        }));
+            dietary_restrictions: p.dietary_restrictions ?? null,
+          })),
+        }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as any)?.error ?? 'Failed to add plus-one(s).');
       }
 
       return { success: true };
