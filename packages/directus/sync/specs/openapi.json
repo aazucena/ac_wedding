@@ -3,7 +3,7 @@
   "info": {
     "title": "Dynamic API Specification",
     "description": "This is a dynamically generated API specification for all endpoints existing on the current project.",
-    "version": "4288ac25339b37e8c45a0bd7df00b07280350a1c"
+    "version": "288394395972a9cc3929ece2adec48dcfd610bfd"
   },
   "servers": [
     {
@@ -26391,7 +26391,8 @@
             "type": "boolean"
           },
           "translations": {
-            "nullable": true
+            "nullable": true,
+            "description": "$t:field_options.directus_collections.collection_naming_translations_note"
           },
           "archive_field": {
             "nullable": true,

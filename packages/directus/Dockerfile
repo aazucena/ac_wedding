@@ -15,7 +15,7 @@ RUN for dir in extensions/*/; do \
     done
 
 # ── Stage 2: Runtime image ────────────────────────────────────────────────────
-FROM tractr/directus-sync:11.16.1
+FROM tractr/directus-sync:11.17.1
 
 USER root
 RUN npm install -g directus-sync

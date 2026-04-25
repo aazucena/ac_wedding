@@ -926,6 +926,10 @@ type directus_collections_meta {
   display_template: String
   hidden: Boolean!
   singleton: Boolean!
+
+  """
+  $t:field_options.directus_collections.collection_naming_translations_note
+  """
   translations: JSON
   archive_field: String
   archive_app_filter: Boolean!
@@ -3436,6 +3440,10 @@ type write_directus_collections_meta {
   display_template: String
   hidden: Boolean
   singleton: Boolean
+
+  """
+  $t:field_options.directus_collections.collection_naming_translations_note
+  """
   translations: JSON
   archive_field: String
   archive_app_filter: Boolean
@@ -6545,6 +6553,10 @@ input write_directus_collections_meta_input {
   display_template: String
   hidden: Boolean
   singleton: Boolean
+
+  """
+  $t:field_options.directus_collections.collection_naming_translations_note
+  """
   translations: JSON
   archive_field: String
   archive_app_filter: Boolean
