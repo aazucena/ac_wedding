@@ -85,6 +85,22 @@
     "_syncId": "9978a209-4a98-429c-b32e-d233ecef70b7"
   },
   {
+    "name": "RSVP Plus-One Create",
+    "icon": "person_add",
+    "color": "#6366F1",
+    "description": "Validates RSVP token, then creates a Person and Guest record for a plus-one. Runs with system-level access so no Website policy write permissions are required on persons or guests.",
+    "status": "active",
+    "trigger": "webhook",
+    "accountability": "all",
+    "options": {
+      "method": "POST",
+      "return": "$last",
+      "error_on_reject": true
+    },
+    "operation": "c8db2cf8-36c2-42ef-8e76-8f917f785634",
+    "_syncId": "9e6b96c2-6077-406d-92f7-4020cd40c5e0"
+  },
+  {
     "name": "RSVP Contact Details",
     "icon": "contact_phone",
     "color": "#6366F1",

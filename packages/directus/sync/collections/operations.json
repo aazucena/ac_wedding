@@ -153,6 +153,20 @@
     "options": {
       "code": "module.exports = async function(data) {\n\tif (!data.validate_party || !data.validate_party.length) {\n        throw new Error('Invalid or expired RSVP token.');\n    }\n    return true;\n}"
     },
+    "resolve": "6d4eeb9e-4f08-4b84-ab1b-cd57eb45e4b4",
+    "reject": "c4f6d2d3-bdc9-4766-bd48-d49b6b73fd2f",
+    "flow": "9e6b96c2-6077-406d-92f7-4020cd40c5e0",
+    "_syncId": "2ac87386-ca30-43b1-96c3-87863a95706e"
+  },
+  {
+    "name": "Check Party Valid",
+    "key": "check_party_valid",
+    "type": "exec",
+    "position_x": 37,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function(data) {\n\tif (!data.validate_party || !data.validate_party.length) {\n        throw new Error('Invalid or expired RSVP token.');\n    }\n    return true;\n}"
+    },
     "resolve": "c9630a61-9444-4f4a-a5ec-0284792ec59b",
     "reject": "2b565d63-3a6e-490b-b1a5-61b624771f4e",
     "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
@@ -290,6 +304,23 @@
     "_syncId": "233bb294-3e54-4e69-bd27-d64385c4fd65"
   },
   {
+    "name": "Create Guests",
+    "key": "create_guests",
+    "type": "item-create",
+    "position_x": 73,
+    "position_y": 1,
+    "options": {
+      "permissions": "$full",
+      "emitEvents": false,
+      "collection": "guests",
+      "payload": "{{guests}}"
+    },
+    "resolve": null,
+    "reject": "d5777f12-bea9-4eb4-b39e-167c1f302bd7",
+    "flow": "9e6b96c2-6077-406d-92f7-4020cd40c5e0",
+    "_syncId": "84fb1bed-bdb9-4c69-a302-a6c4c9416832"
+  },
+  {
     "name": "Error — Invalid Representative",
     "key": "error_invalid_representative",
     "type": "exec",
@@ -316,6 +347,34 @@
     "reject": null,
     "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
     "_syncId": "2b565d63-3a6e-490b-b1a5-61b624771f4e"
+  },
+  {
+    "name": "Error — Invalid Token",
+    "key": "error_invalid_token",
+    "type": "exec",
+    "position_x": 37,
+    "position_y": 19,
+    "options": {
+      "code": "module.exports = async function(data) {\n  throw new Error('Invalid or expired RSVP token.');\n}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "9e6b96c2-6077-406d-92f7-4020cd40c5e0",
+    "_syncId": "c4f6d2d3-bdc9-4766-bd48-d49b6b73fd2f"
+  },
+  {
+    "name": "Error — Invalid Representative",
+    "key": "error_unable_to_create",
+    "type": "exec",
+    "position_x": 89,
+    "position_y": 18,
+    "options": {
+      "code": "module.exports = async function({ guests, $trigger }) {\n  throw new Error(`Unable to create ${guests.length} guests for party #${$trigger.body.party}`);\n}"
+    },
+    "resolve": null,
+    "reject": null,
+    "flow": "9e6b96c2-6077-406d-92f7-4020cd40c5e0",
+    "_syncId": "d5777f12-bea9-4eb4-b39e-167c1f302bd7"
   },
   {
     "name": "Error — Invalid Representative",
@@ -421,6 +480,20 @@
     "reject": null,
     "flow": "e13a1d5a-0a9d-4964-85e4-45b18a01a76f",
     "_syncId": "926e4b42-fa2f-4f19-847e-621a354399b0"
+  },
+  {
+    "name": "Guests",
+    "key": "guests",
+    "type": "exec",
+    "position_x": 55,
+    "position_y": 1,
+    "options": {
+      "code": "module.exports = async function({ $trigger }) {\n    const party = $trigger.body.party;\n\treturn $trigger.body.guests.map((g) => ({\n      person: {\n        first_name: g.first_name,\n        last_name: g.last_name,\n        gender: g.gender,\n      },\n      party: party,\n      type: g.type,\n      attending: g.attending,\n      attendance: g.attendance,\n      dietary_restrictions: g.dietary_restrictions,\n      extra: true,\n    })) || [];\n}"
+    },
+    "resolve": "84fb1bed-bdb9-4c69-a302-a6c4c9416832",
+    "reject": null,
+    "flow": "9e6b96c2-6077-406d-92f7-4020cd40c5e0",
+    "_syncId": "6d4eeb9e-4f08-4b84-ab1b-cd57eb45e4b4"
   },
   {
     "name": "Log Already Sent (skip)",
@@ -1111,5 +1184,36 @@
     "reject": null,
     "flow": "b1dc8579-4d52-47af-861d-61707ac9851f",
     "_syncId": "9d101a4d-b93b-4b5a-a590-4b29df430b62"
+  },
+  {
+    "name": "Validate Party Token",
+    "key": "validate_party",
+    "type": "item-read",
+    "position_x": 19,
+    "position_y": 1,
+    "options": {
+      "collection": "parties",
+      "query": {
+        "filter": {
+          "_and": [
+            {
+              "id": {
+                "_eq": "{{$trigger.body.party}}"
+              }
+            },
+            {
+              "rsvp_token": {
+                "_eq": "{{$trigger.body.token}}"
+              }
+            }
+          ]
+        },
+        "limit": 1
+      }
+    },
+    "resolve": "2ac87386-ca30-43b1-96c3-87863a95706e",
+    "reject": null,
+    "flow": "9e6b96c2-6077-406d-92f7-4020cd40c5e0",
+    "_syncId": "c8db2cf8-36c2-42ef-8e76-8f917f785634"
   }
 ]
