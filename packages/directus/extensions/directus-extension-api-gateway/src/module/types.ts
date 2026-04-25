@@ -1,7 +1,7 @@
 import type { InjectionKey, Ref, ComputedRef } from 'vue';
-import type { SchemaField, FieldType, LangKey } from '../shared/schema-export';
+import type { SchemaField, SubField, FieldType, LangKey } from '../shared/schema-export';
 
-export type { SchemaField, LangKey };
+export type { SchemaField, SubField, LangKey };
 
 // ── Table ──────────────────────────────────────────────────────────────────
 export const TABLE = 'api_endpoints';
@@ -37,6 +37,7 @@ export interface SavedSnapshot {
 
 // ── Constants ──────────────────────────────────────────────────────────────
 export const FIELD_TYPES: FieldType[] = ['string', 'number', 'integer', 'boolean', 'array', 'object'];
+export const PRIMITIVE_FIELD_TYPES: FieldType[] = ['string', 'number', 'integer', 'boolean'];
 
 export const FORMAT_OPTIONS = [
 	{ text: 'TypeScript', value: 'typescript' },
@@ -131,8 +132,9 @@ export interface GatewayContext {
 	copied:          Ref<boolean>;
 	copyExport:      () => Promise<void>;
 	// constants
-	FORMAT_OPTIONS:      typeof FORMAT_OPTIONS;
-	FIELD_TYPE_OPTIONS:  Array<{ text: string; value: FieldType }>;
+	FORMAT_OPTIONS:          typeof FORMAT_OPTIONS;
+	FIELD_TYPE_OPTIONS:      Array<{ text: string; value: FieldType }>;
+	PRIMITIVE_TYPE_OPTIONS:  Array<{ text: string; value: FieldType }>;
 }
 
 export const GatewayContextKey: InjectionKey<GatewayContext> = Symbol('GatewayContext');

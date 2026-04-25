@@ -76,7 +76,7 @@ import { useApi } from '@directus/extensions-sdk';
 //@ts-ignore
 import formatTitle from '@directus/format-title';
 
-import { GatewayContextKey, FIELD_TYPES, FORMAT_OPTIONS } from './types';
+import { GatewayContextKey, FIELD_TYPES, PRIMITIVE_FIELD_TYPES, FORMAT_OPTIONS } from './types';
 import type { FlowRow } from './types';
 import { useFlows }    from './composables/useFlows';
 import { useMetadata } from './composables/useMetadata';
@@ -97,7 +97,8 @@ const xport    = useExport(selected);
 const { isDirty, saving, discardChanges, saveAll } = meta;
 
 // ── Provide context to FlowDetail ──────────────────────────────────────────
-const FIELD_TYPE_OPTIONS = FIELD_TYPES.map(t => ({ text: formatTitle(t), value: t }));
+const FIELD_TYPE_OPTIONS     = FIELD_TYPES.map(t => ({ text: formatTitle(t), value: t }));
+const PRIMITIVE_TYPE_OPTIONS = PRIMITIVE_FIELD_TYPES.map(t => ({ text: formatTitle(t), value: t }));
 
 provide(GatewayContextKey, {
 	// flows
@@ -143,6 +144,7 @@ provide(GatewayContextKey, {
 	// constants
 	FORMAT_OPTIONS,
 	FIELD_TYPE_OPTIONS,
+	PRIMITIVE_TYPE_OPTIONS,
 });
 
 // ── Flow selection ─────────────────────────────────────────────────────────

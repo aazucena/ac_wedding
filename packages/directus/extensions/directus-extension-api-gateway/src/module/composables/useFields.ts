@@ -30,7 +30,9 @@ export function useFields(
 	const drawerIndex = ref<number | null>(null);
 	const isNewField  = ref(false);
 	const drawerEdits = reactive<SchemaField>({
-		name: '', type: 'string', required: false, nullable: false, example: '', description: '',
+		name: '', type: 'string', itemType: undefined, valueType: undefined,
+		properties: undefined, itemSchema: undefined,
+		required: false, nullable: false, example: '', description: '',
 	});
 
 	const drawerOpen = computed(() => drawerIndex.value !== null);
@@ -58,6 +60,10 @@ export function useFields(
 		if (!f) return;
 		drawerEdits.name        = f.name;
 		drawerEdits.type        = f.type;
+		drawerEdits.itemType    = f.itemType    ?? undefined;
+		drawerEdits.valueType   = f.valueType   ?? undefined;
+		drawerEdits.itemSchema  = f.itemSchema  ? [...f.itemSchema.map(s => ({ ...s }))]  : undefined;
+		drawerEdits.properties  = f.properties  ? [...f.properties.map(s => ({ ...s }))]  : undefined;
 		drawerEdits.required    = f.required;
 		drawerEdits.nullable    = f.nullable    ?? false;
 		drawerEdits.example     = f.example     ?? '';
@@ -71,6 +77,10 @@ export function useFields(
 		const newIndex          = activeFields.value.length - 1;
 		drawerEdits.name        = '';
 		drawerEdits.type        = 'string';
+		drawerEdits.itemType    = undefined;
+		drawerEdits.valueType   = undefined;
+		drawerEdits.itemSchema  = undefined;
+		drawerEdits.properties  = undefined;
 		drawerEdits.required    = false;
 		drawerEdits.nullable    = false;
 		drawerEdits.example     = '';
@@ -92,6 +102,14 @@ export function useFields(
 		if (!f) return;
 		f.name        = drawerEdits.name.trim();
 		f.type        = drawerEdits.type;
+		f.itemSchema  = drawerEdits.type === 'array'  && drawerEdits.itemSchema?.length
+			? drawerEdits.itemSchema.filter(s => s.name.trim()).map(s => ({ ...s }))
+			: undefined;
+		f.properties  = drawerEdits.type === 'object' && drawerEdits.properties?.length
+			? drawerEdits.properties.filter(s => s.name.trim()).map(s => ({ ...s }))
+			: undefined;
+		f.itemType    = drawerEdits.type === 'array'  && !f.itemSchema?.length ? drawerEdits.itemType  : undefined;
+		f.valueType   = drawerEdits.type === 'object' && !f.properties?.length ? drawerEdits.valueType : undefined;
 		f.required    = drawerEdits.required;
 		f.nullable    = drawerEdits.nullable    || undefined;
 		f.example     = drawerEdits.example?.trim()     || undefined;

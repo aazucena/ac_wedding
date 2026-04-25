@@ -216,8 +216,104 @@
 					</div>
 					<div class="grid-element full">
 						<p class="type-label">Type</p>
-						<v-select v-model="ctx.drawerEdits.type" :items="ctx.FIELD_TYPE_OPTIONS" />
+						<v-select v-model="ctx.drawerEdits.type" :items="ctx.FIELD_TYPE_OPTIONS" @update:model-value="onTypeChange" />
 					</div>
+
+					<!-- Array sub-type controls -->
+					<template v-if="ctx.drawerEdits.type === 'array'">
+						<div class="grid-element full">
+							<p class="type-label">Item Schema</p>
+							<v-tabs
+								:model-value="[arrayMode]"
+								class="sub-schema-tabs"
+								@update:model-value="setArrayMode(($event as string[])[0] as 'simple' | 'nested')"
+							>
+								<v-tab value="simple">Typed</v-tab>
+								<v-tab value="nested">Object items</v-tab>
+							</v-tabs>
+							<v-select
+								v-if="arrayMode === 'simple'"
+								v-model="ctx.drawerEdits.itemType"
+								:items="ctx.PRIMITIVE_TYPE_OPTIONS"
+								placeholder="Any (unknown)"
+								show-deselect
+							/>
+							<template v-else>
+								<v-notice v-if="!ctx.drawerEdits.itemSchema?.length" type="info">
+									No properties defined yet.
+								</v-notice>
+								<draggable
+									v-else
+									v-model="ctx.drawerEdits.itemSchema"
+									tag="v-list"
+									item-key="name"
+									handle=".sub-drag-handle"
+									:force-fallback="true"
+								>
+									<template #item="{ element: sub, index: i }">
+										<v-list-item block clickable @click="openSubField('itemSchema', i)">
+											<v-icon name="drag_handle" class="sub-drag-handle" left @click.stop />
+											<v-chip small class="sub-prop-type">{{ sub.type }}</v-chip>
+											<span class="sub-prop-name">{{  sub.name ? formatTitle(sub.name) : 'Unnamed property/field' }}</span>
+											<div class="spacer" />
+											<v-icon name="close" small class="sub-prop-remove" @click.stop="removeSubField('itemSchema', i)" />
+										</v-list-item>
+									</template>
+								</draggable>
+								<div class="sub-prop-actions">
+									<v-button secondary @click="addSubField('itemSchema')">Add property</v-button>
+								</div>
+							</template>
+						</div>
+					</template>
+
+					<!-- Object sub-type controls -->
+					<template v-else-if="ctx.drawerEdits.type === 'object'">
+						<div class="grid-element full">
+							<p class="type-label">Object Schema</p>
+							<v-tabs
+								:model-value="[objectMode]"
+								class="sub-schema-tabs"
+								@update:model-value="setObjectMode(($event as string[])[0] as 'simple' | 'nested')"
+							>
+								<v-tab value="simple">Record</v-tab>
+								<v-tab value="nested">Named props</v-tab>
+							</v-tabs>
+							<v-select
+								v-if="objectMode === 'simple'"
+								v-model="ctx.drawerEdits.valueType"
+								:items="ctx.PRIMITIVE_TYPE_OPTIONS"
+								placeholder="Any (unknown)"
+								show-deselect
+							/>
+							<template v-else>
+								<v-notice v-if="!ctx.drawerEdits.properties?.length" type="info">
+									No properties defined yet.
+								</v-notice>
+								<draggable
+									v-else
+									v-model="ctx.drawerEdits.properties"
+									tag="v-list"
+									item-key="name"
+									handle=".sub-drag-handle"
+									:force-fallback="true"
+								>
+									<template #item="{ element: sub, index: i }">
+										<v-list-item block clickable @click="openSubField('properties', i)">
+											<v-icon name="drag_handle" class="sub-drag-handle" left @click.stop />
+											<v-chip small class="sub-prop-type">{{ sub.type }}</v-chip>
+											<span class="sub-prop-name">{{ sub.name ? formatTitle(sub.name) : 'Unnamed property/field' }}</span>
+											<div class="spacer" />
+											<v-icon name="close" small class="sub-prop-remove" @click.stop="removeSubField('properties', i)" />
+										</v-list-item>
+									</template>
+								</draggable>
+								<div class="sub-prop-actions">
+									<v-button secondary @click="addSubField('properties')">Add property</v-button>
+								</div>
+							</template>
+						</div>
+					</template>
 					<div class="grid-element half">
 						<p class="type-label">Required</p>
 						<v-checkbox
@@ -247,17 +343,204 @@
 				</div>
 			</div>
 		</v-drawer>
+
+		<!-- Sub-property nested drawer -->
+		<v-drawer
+			:model-value="subDrawerOpen"
+			:title="subEdits.name ? formatTitle(subEdits.name) : 'New Property'"
+			persistent
+			@cancel="closeSubDrawer"
+			@apply="saveSubField"
+		>
+			<template #actions>
+				<v-button
+					v-tooltip.bottom="'Save'"
+					icon rounded
+					:disabled="!subEdits.name?.trim()"
+					@click="saveSubField"
+				>
+					<v-icon name="check" />
+				</v-button>
+			</template>
+			<div class="drawer-content">
+				<div class="form-grid">
+					<div class="grid-element full">
+						<p class="type-label">Property Name</p>
+						<v-input v-model="subEdits.name" autofocus placeholder="property_name" font="monospace" db-safe />
+					</div>
+					<div class="grid-element full">
+						<p class="type-label">Type</p>
+						<v-select v-model="subEdits.type" :items="ctx.FIELD_TYPE_OPTIONS" @update:model-value="onSubTypeChange" />
+					</div>
+					<div v-if="subEdits.type === 'array'" class="grid-element full">
+						<p class="type-label">Item Type</p>
+						<v-select v-model="subEdits.itemType" :items="ctx.PRIMITIVE_TYPE_OPTIONS" placeholder="Any (unknown)" show-deselect />
+					</div>
+					<div v-else-if="subEdits.type === 'object'" class="grid-element full">
+						<p class="type-label">Value Type</p>
+						<v-select v-model="subEdits.valueType" :items="ctx.PRIMITIVE_TYPE_OPTIONS" placeholder="Any (unknown)" show-deselect />
+					</div>
+					<div class="grid-element half">
+						<p class="type-label">Required</p>
+						<v-checkbox
+							block icon-on="check_box" icon-off="check_box_outline_blank"
+							:model-value="subEdits.required"
+							label="Requires a value"
+							@update:model-value="subEdits.required = $event"
+						/>
+					</div>
+					<div class="grid-element half">
+						<p class="type-label">Nullable</p>
+						<v-checkbox
+							block icon-on="check_box" icon-off="check_box_outline_blank"
+							:model-value="subEdits.nullable"
+							label="Can be null"
+							@update:model-value="subEdits.nullable = $event"
+						/>
+					</div>
+					<div class="grid-element full">
+						<p class="type-label">Example</p>
+						<v-input v-model="subEdits.example" placeholder="e.g. john@example.com" font="monospace" />
+					</div>
+					<div class="grid-element full">
+						<p class="type-label">Description</p>
+						<v-textarea v-model="subEdits.description" placeholder="Describe what this field represents…" />
+					</div>
+				</div>
+			</div>
+		</v-drawer>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { inject } from 'vue';
+import { inject, ref, reactive, watch } from 'vue';
 //@ts-ignore
 import formatTitle from '@directus/format-title';
 import Draggable   from 'vuedraggable';
 import { GatewayContextKey } from '../types';
+import type { SubField } from '../types';
 
 const ctx = inject(GatewayContextKey)!;
+
+// ── Field-type mode (simple vs nested) ────────────────────────
+const arrayMode  = ref<'simple' | 'nested'>('simple');
+const objectMode = ref<'simple' | 'nested'>('simple');
+
+watch(() => ctx.drawerOpen.value, (open) => {
+	if (!open) return;
+	arrayMode.value  = (ctx.drawerEdits.itemSchema?.length  ?? 0) > 0 ? 'nested' : 'simple';
+	objectMode.value = (ctx.drawerEdits.properties?.length ?? 0) > 0 ? 'nested' : 'simple';
+});
+
+function onTypeChange() {
+	if (ctx.drawerEdits.type !== 'array')  { arrayMode.value  = 'simple'; ctx.drawerEdits.itemSchema  = undefined; }
+	if (ctx.drawerEdits.type !== 'object') { objectMode.value = 'simple'; ctx.drawerEdits.properties = undefined; }
+}
+
+function setArrayMode(mode: 'simple' | 'nested') {
+	arrayMode.value = mode;
+	if (mode === 'simple') {
+		ctx.drawerEdits.itemSchema = undefined;
+	} else {
+		ctx.drawerEdits.itemType = undefined;
+		if (!ctx.drawerEdits.itemSchema) ctx.drawerEdits.itemSchema = [];
+	}
+}
+
+function setObjectMode(mode: 'simple' | 'nested') {
+	objectMode.value = mode;
+	if (mode === 'simple') {
+		ctx.drawerEdits.properties = undefined;
+	} else {
+		ctx.drawerEdits.valueType = undefined;
+		if (!ctx.drawerEdits.properties) ctx.drawerEdits.properties = [];
+	}
+}
+
+// ── Sub-field nested drawer ────────────────────────────────────
+const subDrawerOpen   = ref(false);
+const isNewSubField   = ref(false);
+const subDrawerTarget = ref<'itemSchema' | 'properties' | null>(null);
+const subDrawerIndex  = ref<number | null>(null);
+const subEdits = reactive<{
+	name: string; type: SubField['type']; required: boolean;
+	itemType?: SubField['type']; valueType?: SubField['type'];
+	nullable?: boolean; description?: string; example?: string;
+}>({
+	name: '', type: 'string', required: false,
+	itemType: undefined, valueType: undefined,
+	nullable: false, description: '', example: '',
+});
+
+function openSubField(target: 'itemSchema' | 'properties', i: number) {
+	const item = (ctx.drawerEdits[target] as SubField[])?.[i];
+	if (!item) return;
+	subDrawerTarget.value = target;
+	subDrawerIndex.value  = i;
+	subEdits.name         = item.name;
+	subEdits.type         = item.type;
+	subEdits.required     = item.required     ?? false;
+	subEdits.itemType     = item.itemType;
+	subEdits.valueType    = item.valueType;
+	subEdits.nullable     = item.nullable     ?? false;
+	subEdits.description  = item.description  ?? '';
+	subEdits.example      = item.example      ?? '';
+	isNewSubField.value   = false;
+	subDrawerOpen.value   = true;
+}
+
+function addSubField(target: 'itemSchema' | 'properties') {
+	if (!ctx.drawerEdits[target]) ctx.drawerEdits[target] = [];
+	const arr = ctx.drawerEdits[target] as SubField[];
+	arr.push({ name: '', type: 'string', required: false });
+	subDrawerTarget.value = target;
+	subDrawerIndex.value  = arr.length - 1;
+	subEdits.name         = '';
+	subEdits.type         = 'string';
+	subEdits.required     = false;
+	subEdits.itemType     = undefined;
+	subEdits.valueType    = undefined;
+	subEdits.nullable     = false;
+	subEdits.description  = '';
+	subEdits.example      = '';
+	isNewSubField.value   = true;
+	subDrawerOpen.value   = true;
+}
+
+function onSubTypeChange() {
+	if (subEdits.type !== 'array')  subEdits.itemType  = undefined;
+	if (subEdits.type !== 'object') subEdits.valueType = undefined;
+}
+
+function saveSubField() {
+	if (!subEdits.name?.trim() || subDrawerTarget.value === null || subDrawerIndex.value === null) return;
+	const arr = ctx.drawerEdits[subDrawerTarget.value] as SubField[] | undefined;
+	if (!arr) return;
+	arr[subDrawerIndex.value] = {
+		name:        subEdits.name.trim(),
+		type:        subEdits.type,
+		required:    subEdits.required             || undefined,
+		itemType:    subEdits.type === 'array'  ? subEdits.itemType  : undefined,
+		valueType:   subEdits.type === 'object' ? subEdits.valueType : undefined,
+		nullable:    subEdits.nullable             || undefined,
+		description: subEdits.description?.trim()  || undefined,
+		example:     subEdits.example?.trim()      || undefined,
+	};
+	subDrawerOpen.value = false;
+	isNewSubField.value = false;
+}
+
+function closeSubDrawer() {
+	if (isNewSubField.value && subDrawerTarget.value !== null && subDrawerIndex.value !== null) {
+		(ctx.drawerEdits[subDrawerTarget.value] as SubField[])?.splice(subDrawerIndex.value, 1);
+	}
+	subDrawerOpen.value = false;
+	isNewSubField.value = false;
+}
+
+function removeSubField(target: 'itemSchema' | 'properties', i: number) {
+	ctx.drawerEdits[target]?.splice(i, 1);
+}
 </script>
 
 <style scoped>
@@ -481,4 +764,45 @@ const ctx = inject(GatewayContextKey)!;
 
 .grid-element.full { grid-column: span 2; }
 .grid-element.half { grid-column: span 1; }
+
+/* ── Sub-schema tabs + property list ─────────────────────────── */
+.sub-drag-handle {
+	cursor:     grab;
+	color:      var(--foreground-subdued);
+	transition: color var(--fast) var(--transition);
+}
+.sub-drag-handle:hover { color: var(--foreground-normal); }
+
+.sub-schema-tabs { margin-bottom: 10px; }
+
+.sub-schema-tabs :deep(.v-tab.horizontal) {
+	padding-bottom: 8px;
+	border-bottom:  2px solid transparent;
+	transition:     color var(--fast) var(--transition), border-color var(--fast) var(--transition);
+  white-space:    nowrap;
+}
+.sub-schema-tabs :deep(.v-tab.horizontal.active) {
+	color:         var(--theme--primary, var(--primary));
+	border-bottom: 2px solid var(--theme--primary, var(--primary));
+}
+
+.sub-prop-type { flex-shrink: 0; margin-right: 10px; }
+
+.sub-prop-name {
+	font-family:   var(--family-monospace);
+	font-size:     13px;
+	color:         var(--foreground-normal);
+	white-space:   nowrap;
+	overflow:      hidden;
+	text-overflow: ellipsis;
+}
+
+.sub-prop-remove {
+	color:      var(--foreground-subdued);
+	cursor:     pointer;
+	transition: color var(--fast) var(--transition);
+}
+.sub-prop-remove:hover { color: var(--danger); }
+
+.sub-prop-actions { padding-top: 10px; }
 </style>
