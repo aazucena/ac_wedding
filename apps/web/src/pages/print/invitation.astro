@@ -5,13 +5,14 @@ export const prerender = false;
 //   Front — names + date (cover-style)
 //   Back  — ceremony venue + reception venue + RSVP QR + hashtag
 
-import { getSettings, getCeremony, getReception, getPartyByToken } from '@lib/directus';
+import { getSettings, getCeremony, getReception, getPartyByToken, getClergies, getEntourage, getSponsorsFull } from '@lib/directus';
 import { formatTime, formatLonghandDate } from '@lib/print';
 import { formatDate } from '@lib/utils/format';
-import PrintLayout          from '@layouts/PrintLayout.astro';
-import Hashtag              from '@components/Hashtag.astro';
-import CardWatermark        from '@components/CardWatermark.astro';
-import QRCodeWidget         from '@components/QRCode.astro';
+import PrintLayout                   from '@layouts/PrintLayout.astro';
+import Hashtag                       from '@components/Hashtag.astro';
+import CardWatermark                 from '@components/CardWatermark.astro';
+import QRCodeWidget                  from '@components/QRCode.astro';
+import InvitationEntourageInsert     from '@components/InvitationEntourageInsert.astro';
 import '../../styles/invitation.css';
 
 const token = Astro.url.searchParams.get('token') ?? undefined;
@@ -29,6 +30,11 @@ const [settings, ceremony, reception, party] = await Promise.all([
   : token      ? getPartyByToken(token)
   : Promise.resolve(null),
 ]);
+
+const isSponsor = (party?.invitation_type ?? 'guest') === 'sponsor';
+const [clergies, entourage, sponsors] = isSponsor
+  ? await Promise.all([getClergies(), getEntourage(), getSponsorsFull()])
+  : [[], [], []] as [Awaited<ReturnType<typeof getClergies>>, Awaited<ReturnType<typeof getEntourage>>, Awaited<ReturnType<typeof getSponsorsFull>>];
 
 const groom   = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
 const bride   = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
@@ -51,6 +57,9 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
     <div class="seg-control">
       <button id="btn-front" class="seg-btn active" onclick="showFace('front')">Front</button>
       <button id="btn-back"  class="seg-btn"        onclick="showFace('back')">Back</button>
+      {isSponsor && (
+        <button id="btn-insert" class="seg-btn" onclick="showFace('insert')">Insert</button>
+      )}
     </div>
   </div>
 
@@ -170,6 +179,14 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
 
     </div><!-- /.flipper -->
   </div><!-- /.flip-container -->
+
+  {isSponsor && (
+    <InvitationEntourageInsert
+      clergies={clergies}
+      entourage={entourage}
+      sponsors={sponsors}
+    />
+  )}
 
 </PrintLayout>
 

@@ -2,8 +2,36 @@
   body.size-5x7 { @page { size: 5in 7in portrait; margin: 0; } }
   body.size-a4  { @page { size: A4 portrait; margin: 0; } }
 
-  .size-5x7 .card { width: 5in;   min-height: 7in;   }
-  .size-a4  .card { width: 210mm; min-height: 297mm; }
+  .size-5x7 .card { width: 5in;   height: 7in;   overflow: visible; }
+  .size-a4  .card { width: 210mm; height: 297mm; overflow: visible; }
+
+  .insert-container {
+    display: block !important;   /* show even when hidden via JS on screen */
+    page-break-before: always;
+    break-before: page;
+    margin-top: 0 !important;
+    height: auto !important;     /* let @page size + card min-height control dimensions */
+  }
+  .insert-card {
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .insert-back {
+    display: block !important;
+    break-before: page;
+    page-break-before: always;
+    margin-top: 0 !important;
+    width: auto !important;
+    height: auto !important;
+  }
+  .insert-back img {
+    object-fit: contain !important;
+  }
+  /* Print-accurate font sizes for the insert */
+  .insert-title    { font-size: 14pt !important; }
+  .ins-label       { font-size: 6pt !important; }
+  .ins-name        { font-size: 9pt !important; }
+  .ins-pair-name   { font-size: 9pt !important; }
 }
 
 /* ── Size-dependent flip-container widths ─────────────────── */
@@ -126,3 +154,76 @@
   font-family: 'Cormorant Garamond', serif;
   font-size: 18px; font-style: italic; color: #C5B8E0; margin-top: 4px; display: block;
 }
+
+/* ── ENTOURAGE INSERT ───────────────────────────────────── */
+/* Mirror flip-container sizing: explicit width + height so card's height:100% resolves */
+.insert-container { overflow: visible; }
+.insert-container.size-5x7 { width: 5in;   min-height: 7in;   }
+.insert-container.size-a4  { width: 210mm; min-height: 297mm; }
+
+/* .card already provides: background, border, shadow, display:flex column, width:100%, height:100% */
+/* .insert-card only adds: overflow visible (content may exceed 7in if many sponsors) */
+.insert-card { overflow: visible; position: relative; }
+
+/* Back face — decorative only, hidden on screen, prints on its own page */
+.insert-back { display: none; }
+.insert-back-inner {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 0.3in; padding: 0.5in 0.45in;
+}
+.insert-back-emblem {
+  width: 3.5in; height: 3.5in;
+  opacity: 0.18;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+.insert-inner {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  padding: 0.4in 0.45in; gap: 10px;
+  text-align: center;
+}
+.insert-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px; font-weight: 300; font-style: italic;
+  color: #1a1a2e; margin-bottom: 2px;
+}
+.insert-rule {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; margin-bottom: 4px;
+}
+.rule-line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.6), transparent);
+}
+.rule-ornament { font-size: 9px; color: #C5B8E0; flex-shrink: 0; }
+
+.ins-section        { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; }
+.ins-section--two-col {
+  display: flex; flex-direction: row; justify-content: center; align-items: flex-start;
+  gap: 6px;
+}
+.ins-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.ins-col-divider {
+  color: #C5B8E0; font-size: 8px; flex-shrink: 0;
+  padding-top: 13px; align-self: flex-start;
+}
+
+.ins-label {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 7px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: #C5B8E0; margin-bottom: 1px;
+}
+.ins-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px; font-weight: 400; color: #1a1a2e; line-height: 1.35;
+}
+.ins-pair {
+  display: flex; align-items: baseline; justify-content: center; gap: 6px;
+}
+.ins-pair-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 11px; font-weight: 400; color: #1a1a2e; line-height: 1.35;
+}
+.ins-divider { color: #C5B8E0; font-size: 8px; flex-shrink: 0; }

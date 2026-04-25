@@ -1,0 +1,267 @@
+---
+// InvitationEntourageInsert.astro — 5×7 entourage insert card for sponsor invitations.
+// Rendered below the main flip-card; prints on its own page via page-break-before.
+
+import type { Clergies, Entourage, Sponsors } from '@lib/types';
+import HeroEmblem from '@assets/hero_emblem.png';
+import { Image } from 'astro:assets';
+
+interface Props {
+  clergies:  Clergies[];
+  entourage: Entourage[];
+  sponsors:  Sponsors[];
+  sizeClass?: string;
+}
+
+const { clergies, entourage, sponsors, sizeClass = 'size-5x7' } = Astro.props;
+
+function displayName(
+  person: { first_name?: string; last_name?: string; preferred_name?: string | null } | undefined | null,
+): string {
+  if (!person) return '';
+  return `${person.preferred_name ?? person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
+}
+
+function memberSort(a: Entourage, b: Entourage) {
+  const pg = (a.pair_group ?? Infinity) - (b.pair_group ?? Infinity);
+  return pg !== 0 ? pg : (a.sequence_order ?? 0) - (b.sequence_order ?? 0);
+}
+
+// Build sponsor pairs: iterate `list` in order; look up each entry's partner in the full
+// sponsors map. Mark both as seen so the partner isn't rendered a second time.
+function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
+  const sponsorMap = new Map(sponsors.map(s => [s.id, s]));
+  const shown      = new Set<string>();
+  const pairs: Array<[Sponsors, Sponsors | undefined]> = [];
+  for (const s of list) {
+    if (shown.has(s.id)) continue;
+    shown.add(s.id);
+    const partner = s.partner?.id ? sponsorMap.get(s.partner.id) : undefined;
+    if (partner && !shown.has(partner.id)) {
+      shown.add(partner.id);
+      pairs.push([s, partner]);
+    } else {
+      pairs.push([s, undefined]);
+    }
+  }
+  return pairs;
+}
+
+// Clergy
+const priests = clergies;
+
+// Parents: from entourage by role name
+const parentsBride = entourage.filter(m =>
+  m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride',
+);
+const parentsGroom = entourage.filter(m =>
+  m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom',
+);
+
+// Wedding party
+const moh         = entourage.filter(m => m.role?.name === 'Maid of Honour').sort(memberSort);
+const bm          = entourage.filter(m => m.role?.name === 'Best Man').sort(memberSort);
+const bridesmaids = entourage.filter(m => m.role?.name === 'Bridesmaid').sort(memberSort);
+const groomsmen   = entourage.filter(m => m.role?.name === 'Groomsman').sort(memberSort);
+
+// Secondary sponsors (candle/veil/cord) — both partners have same role, use buildPairs
+const ninongs  = sponsors.filter(s => s.role === 'ninong');
+const ninangs  = sponsors.filter(s => s.role === 'ninang');
+// Iterate ninongs first so ninong appears on the left; orphan ninangs follow
+const principalPairs = buildPairs([...ninongs, ...ninangs]);
+const secondaryTypes = [
+  { label: 'Candle Sponsors', pairs: buildPairs(sponsors.filter(s => s.role === 'candle')) },
+  { label: 'Veil Sponsors',   pairs: buildPairs(sponsors.filter(s => s.role === 'veil'))   },
+  { label: 'Cord Sponsors',   pairs: buildPairs(sponsors.filter(s => s.role === 'cord'))   },
+].filter(t => t.pairs.length > 0);
+
+// Bearers & flower girls
+const ringBearers  = entourage.filter(m => m.role?.name === 'Ring Bearer').sort(memberSort);
+const coinBearers  = entourage.filter(m => m.role?.name === 'Coin Bearer').sort(memberSort);
+const bibleBearers = entourage.filter(m => m.role?.name === 'Bible Bearer').sort(memberSort);
+const flowerGirls  = entourage.filter(m => m.role?.name === 'Flower Girl').sort(memberSort);
+
+const hasParents  = parentsBride.length > 0 || parentsGroom.length > 0;
+const bearerTypes = [
+  { label: 'Ring Bearer',  members: ringBearers  },
+  { label: 'Coin Bearer',  members: coinBearers  },
+  { label: 'Bible Bearer', members: bibleBearers },
+].filter(b => b.members.length > 0);
+---
+
+<div class={`insert-container ${sizeClass}`} id="insert-container">
+  <div class="card insert-card">
+    <div class="card-accent"></div>
+
+    <div class="insert-inner">
+      <p class="insert-title">Wedding Entourage</p>
+      <div class="insert-rule">
+        <span class="rule-line"></span>
+        <span class="rule-ornament">✦</span>
+        <span class="rule-line"></span>
+      </div>
+
+      {/* ── Officiating Priest ──────────────────────────────── */}
+      {priests.length > 0 && (
+        <section class="ins-section">
+          <p class="ins-label">Officiating {priests.length === 1 ? 'Priest' : 'Priests'}</p>
+          {priests.map(c => (
+            <p class="ins-name">{c.title ? `${c.title} ` : ''}{displayName(c.person)}</p>
+          ))}
+        </section>
+      )}
+
+      {/* ── Parents ─────────────────────────────────────────── */}
+      {hasParents && (
+        <section class="ins-section ins-section--two-col">
+          {parentsBride.length > 0 && (
+            <div class="ins-col">
+              <p class="ins-label">Parents of the Bride</p>
+              {parentsBride.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+            </div>
+          )}
+          {parentsBride.length > 0 && parentsGroom.length > 0 && (
+            <span class="ins-col-divider" aria-hidden="true">✦</span>
+          )}
+          {parentsGroom.length > 0 && (
+            <div class="ins-col">
+              <p class="ins-label">Parents of the Groom</p>
+              {parentsGroom.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Principal Sponsors ──────────────────────────────── */}
+      {principalPairs.length > 0 && (
+        <section class="ins-section">
+          <p class="ins-label">Principal Sponsors</p>
+          {principalPairs.map(([left, right]) => (
+            <div class="ins-pair">
+              <span class="ins-pair-name">{displayName(left.person)}</span>
+              {right && (
+                <>
+                  <span class="ins-divider" aria-hidden="true">✦</span>
+                  <span class="ins-pair-name">{displayName(right.person)}</span>
+                </>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
+
+      {/* ── MoH & Best Man ──────────────────────────────────── */}
+      {(moh.length > 0 || bm.length > 0) && (
+        <section class="ins-section ins-section--two-col">
+          {moh.length > 0 && (
+            <div class="ins-col">
+              <p class="ins-label">Maid of Honour</p>
+              {moh.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+            </div>
+          )}
+          {moh.length > 0 && bm.length > 0 && (
+            <span class="ins-col-divider" aria-hidden="true">✦</span>
+          )}
+          {bm.length > 0 && (
+            <div class="ins-col">
+              <p class="ins-label">Best Man</p>
+              {bm.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Bridesmaids & Groomsmen ─────────────────────────── */}
+      {(bridesmaids.length > 0 || groomsmen.length > 0) && (
+        <section class="ins-section ins-section--two-col">
+          {bridesmaids.length > 0 && (
+            <div class="ins-col">
+              <p class="ins-label">{bridesmaids.length === 1 ? 'Bridesmaid' : 'Bridesmaids'}</p>
+              {bridesmaids.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+            </div>
+          )}
+          {bridesmaids.length > 0 && groomsmen.length > 0 && (
+            <span class="ins-col-divider" aria-hidden="true">✦</span>
+          )}
+          {groomsmen.length > 0 && (
+            <div class="ins-col">
+              <p class="ins-label">{groomsmen.length === 1 ? 'Groomsman' : 'Groomsmen'}</p>
+              {groomsmen.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Candle / Veil / Cord Sponsors ───────────────────── */}
+      {secondaryTypes.length > 0 && (
+        <section class="ins-section ins-section--two-col">
+          {secondaryTypes.map((st, i) => (
+            <>
+              {i > 0 && <span class="ins-col-divider" aria-hidden="true">✦</span>}
+              <div class="ins-col">
+                <p class="ins-label">{st.label}</p>
+                {st.pairs.map(([left, right]) => (
+                  <>
+                    <p class="ins-name">{displayName(left.person)}</p>
+                    {right && <p class="ins-name">{displayName(right.person)}</p>}
+                  </>
+                ))}
+              </div>
+            </>
+          ))}
+        </section>
+      )}
+
+      {/* ── Bearers & Flower Girls ──────────────────────────── */}
+      {bearerTypes.length > 0 && (
+        <section class="ins-section ins-section--two-col">
+          {bearerTypes.map((bt, i) => (
+            <>
+              {i > 0 && <span class="ins-col-divider" aria-hidden="true">✦</span>}
+              <div class="ins-col">
+                <p class="ins-label">{bt.label}</p>
+                {bt.members.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+              </div>
+            </>
+          ))}
+        </section>
+      )}
+      {flowerGirls.length > 0 && (
+        <section class="ins-section">
+          <p class="ins-label">{flowerGirls.length === 1 ? 'Flower Girl' : 'Flower Girls'}</p>
+          <div class="ins-pair">
+            {flowerGirls.map((m, i) => (
+              <>
+                {i > 0 && <span class="ins-divider" aria-hidden="true">✦</span>}
+                <span class="ins-pair-name">{displayName(m.person)}</span>
+              </>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+
+    <div class="card-accent-bottom"></div>
+  </div>
+</div>
+
+{/* ── Insert back — decorative only, print-only ── */}
+<div class={`insert-container insert-back ${sizeClass}`}>
+  <div class="card insert-card">
+    <div class="card-accent"></div>
+    <div class="insert-back-inner">
+      <div class="insert-rule">
+        <span class="rule-line"></span>
+        <span class="rule-ornament">✦</span>
+        <span class="rule-line"></span>
+      </div>
+      <Image src={HeroEmblem} alt="" class="insert-back-emblem" />
+      <div class="insert-rule">
+        <span class="rule-line"></span>
+        <span class="rule-ornament">✦</span>
+        <span class="rule-line"></span>
+      </div>
+    </div>
+    <div class="card-accent-bottom"></div>
+  </div>
+</div>
