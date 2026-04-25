@@ -20,9 +20,7 @@ Steps to migrate local data and schema changes to the production Railway environ
 Before touching anything, take a full PostgreSQL dump of the production database via Railway.
 
 ```bash
-railway connect postgres
-# Inside the Railway shell:
-pg_dump $DATABASE_URL --no-acl --no-owner -F c -f backup-$(date +%Y%m%d).dump
+railway run pg_dump $DATABASE_URL --no-acl --no-owner -F c -f backup-$(date +%Y%m%d).dump
 ```
 
 Or use the Railway dashboard: **PostgreSQL service → Backups → Create backup**.
@@ -49,11 +47,12 @@ Review the output file before proceeding to confirm it contains the expected dat
 Sync local Directus uploads to the Railway S3 bucket so that assets (images, documents) are available in production.
 
 ```bash
-aws s3 sync .docker/data/uploads/ s3://<railway-bucket-name>/uploads/ \
-  --endpoint-url <railway-s3-endpoint>
+aws s3 sync packages/directus/uploads/ s3://bucket-nlr-vxtjcarb10j0hj \
+  --endpoint-url https://t3.storageapi.dev \
+  --exclude ".gitkeep"
 ```
 
-Replace `<railway-bucket-name>` and `<railway-s3-endpoint>` with your Railway object storage values (found under **Variables** on the storage service).
+Requires `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` set in your shell (Railway Object Storage credentials). Run this **before** Step 5 so file metadata in the SQL dump never points to missing binaries.
 
 ---
 
@@ -76,9 +75,7 @@ This uses `packages/directus/directus-transfer.config.cjs` and requires `TRANSFE
 Run the SQL dump from Step 2 against the production PostgreSQL database.
 
 ```bash
-railway connect postgres
-# Inside the Railway shell:
-psql $DATABASE_URL < .docker/docker-entrypoint.d/collections.local.sql
+railway run psql $DATABASE_URL < .docker/docker-entrypoint.d/collections.local.sql
 ```
 
 The dump script uses `TRUNCATE ... CASCADE` followed by re-inserts, so it is safe to re-run if needed.
