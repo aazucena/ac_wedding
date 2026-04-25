@@ -11,6 +11,10 @@ type Query {
   persons_by_id(id: ID!, version: String): persons
   persons_aggregated(groupBy: [String], filter: persons_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [persons_aggregated!]!
   persons_by_version(version: String!, id: ID!): version_persons
+  guests(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [guests!]!
+  guests_by_id(id: ID!, version: String): guests
+  guests_aggregated(groupBy: [String], filter: guests_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [guests_aggregated!]!
+  guests_by_version(version: String!, id: ID!): version_guests
   clergies(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [clergies!]!
   clergies_by_id(id: ID!, version: String): clergies
   clergies_aggregated(groupBy: [String], filter: clergies_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [clergies_aggregated!]!
@@ -27,10 +31,6 @@ type Query {
   liturgical_ministers_by_id(id: ID!, version: String): liturgical_ministers
   liturgical_ministers_aggregated(groupBy: [String], filter: liturgical_ministers_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [liturgical_ministers_aggregated!]!
   liturgical_ministers_by_version(version: String!, id: ID!): version_liturgical_ministers
-  guests(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [guests!]!
-  guests_by_id(id: ID!, version: String): guests
-  guests_aggregated(groupBy: [String], filter: guests_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [guests_aggregated!]!
-  guests_by_version(version: String!, id: ID!): version_guests
   budget_categories(filter: budget_categories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [budget_categories!]!
   budget_categories_by_id(id: ID!, version: String): budget_categories
   budget_categories_aggregated(groupBy: [String], filter: budget_categories_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [budget_categories_aggregated!]!
@@ -127,6 +127,10 @@ type Query {
   readings_by_id(id: ID!, version: String): readings
   readings_aggregated(groupBy: [String], filter: readings_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [readings_aggregated!]!
   readings_by_version(version: String!, id: ID!): version_readings
+  sponsors(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [sponsors!]!
+  sponsors_by_id(id: ID!, version: String): sponsors
+  sponsors_aggregated(groupBy: [String], filter: sponsors_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [sponsors_aggregated!]!
+  sponsors_by_version(version: String!, id: ID!): version_sponsors
   wedding_settings(version: String): wedding_settings
   wedding_settings_by_version(version: String!): version_wedding_settings
   reception_staff(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [reception_staff!]!
@@ -137,10 +141,6 @@ type Query {
   tables_by_id(id: ID!, version: String): tables
   tables_aggregated(groupBy: [String], filter: tables_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [tables_aggregated!]!
   tables_by_version(version: String!, id: ID!): version_tables
-  sponsors(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [sponsors!]!
-  sponsors_by_id(id: ID!, version: String): sponsors
-  sponsors_aggregated(groupBy: [String], filter: sponsors_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [sponsors_aggregated!]!
-  sponsors_by_version(version: String!, id: ID!): version_sponsors
   story_chapters(filter: story_chapters_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [story_chapters!]!
   story_chapters_by_id(id: ID!, version: String): story_chapters
   story_chapters_aggregated(groupBy: [String], filter: story_chapters_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [story_chapters_aggregated!]!
@@ -190,6 +190,8 @@ type Mutation {
   create_ceremonies_item(data: create_ceremonies_input!): ceremonies
   create_persons_items(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_persons_input!]): [persons!]!
   create_persons_item(data: create_persons_input!): persons
+  create_guests_items(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_guests_input!]): [guests!]!
+  create_guests_item(data: create_guests_input!): guests
   create_clergies_items(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_clergies_input!]): [clergies!]!
   create_clergies_item(data: create_clergies_input!): clergies
   create_groups_items(filter: groups_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_groups_input!]): [groups!]!
@@ -198,8 +200,6 @@ type Mutation {
   create_entourage_item(data: create_entourage_input!): entourage
   create_liturgical_ministers_items(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_liturgical_ministers_input!]): [liturgical_ministers!]!
   create_liturgical_ministers_item(data: create_liturgical_ministers_input!): liturgical_ministers
-  create_guests_items(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_guests_input!]): [guests!]!
-  create_guests_item(data: create_guests_input!): guests
   create_budget_categories_items(filter: budget_categories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_budget_categories_input!]): [budget_categories!]!
   create_budget_categories_item(data: create_budget_categories_input!): budget_categories
   create_checklist_sections_items(filter: checklist_sections_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_checklist_sections_input!]): [checklist_sections!]!
@@ -248,12 +248,12 @@ type Mutation {
   create_reception_program_item(data: create_reception_program_input!): reception_program
   create_readings_items(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_readings_input!]): [readings!]!
   create_readings_item(data: create_readings_input!): readings
+  create_sponsors_items(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_sponsors_input!]): [sponsors!]!
+  create_sponsors_item(data: create_sponsors_input!): sponsors
   create_reception_staff_items(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_reception_staff_input!]): [reception_staff!]!
   create_reception_staff_item(data: create_reception_staff_input!): reception_staff
   create_tables_items(filter: tables_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_tables_input!]): [tables!]!
   create_tables_item(data: create_tables_input!): tables
-  create_sponsors_items(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_sponsors_input!]): [sponsors!]!
-  create_sponsors_item(data: create_sponsors_input!): sponsors
   create_story_chapters_items(filter: story_chapters_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_story_chapters_input!]): [story_chapters!]!
   create_story_chapters_item(data: create_story_chapters_input!): story_chapters
   create_registries_items(filter: registries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_registries_input!]): [registries!]!
@@ -283,6 +283,9 @@ type Mutation {
   update_persons_items(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_persons_input!): [persons!]!
   update_persons_batch(filter: persons_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_persons_input!]): [persons!]!
   update_persons_item(id: ID!, data: update_persons_input!): persons
+  update_guests_items(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_guests_input!): [guests!]!
+  update_guests_batch(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_guests_input!]): [guests!]!
+  update_guests_item(id: ID!, data: update_guests_input!): guests
   update_clergies_items(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_clergies_input!): [clergies!]!
   update_clergies_batch(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_clergies_input!]): [clergies!]!
   update_clergies_item(id: ID!, data: update_clergies_input!): clergies
@@ -295,9 +298,6 @@ type Mutation {
   update_liturgical_ministers_items(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_liturgical_ministers_input!): [liturgical_ministers!]!
   update_liturgical_ministers_batch(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_liturgical_ministers_input!]): [liturgical_ministers!]!
   update_liturgical_ministers_item(id: ID!, data: update_liturgical_ministers_input!): liturgical_ministers
-  update_guests_items(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_guests_input!): [guests!]!
-  update_guests_batch(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_guests_input!]): [guests!]!
-  update_guests_item(id: ID!, data: update_guests_input!): guests
   update_budget_categories_items(filter: budget_categories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_budget_categories_input!): [budget_categories!]!
   update_budget_categories_batch(filter: budget_categories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_budget_categories_input!]): [budget_categories!]!
   update_budget_categories_item(id: ID!, data: update_budget_categories_input!): budget_categories
@@ -370,6 +370,9 @@ type Mutation {
   update_readings_items(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_readings_input!): [readings!]!
   update_readings_batch(filter: readings_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_readings_input!]): [readings!]!
   update_readings_item(id: ID!, data: update_readings_input!): readings
+  update_sponsors_items(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_sponsors_input!): [sponsors!]!
+  update_sponsors_batch(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_sponsors_input!]): [sponsors!]!
+  update_sponsors_item(id: ID!, data: update_sponsors_input!): sponsors
   update_wedding_settings(data: update_wedding_settings_input!): wedding_settings
   update_reception_staff_items(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_reception_staff_input!): [reception_staff!]!
   update_reception_staff_batch(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_reception_staff_input!]): [reception_staff!]!
@@ -377,9 +380,6 @@ type Mutation {
   update_tables_items(filter: tables_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_tables_input!): [tables!]!
   update_tables_batch(filter: tables_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_tables_input!]): [tables!]!
   update_tables_item(id: ID!, data: update_tables_input!): tables
-  update_sponsors_items(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_sponsors_input!): [sponsors!]!
-  update_sponsors_batch(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_sponsors_input!]): [sponsors!]!
-  update_sponsors_item(id: ID!, data: update_sponsors_input!): sponsors
   update_story_chapters_items(filter: story_chapters_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_story_chapters_input!): [story_chapters!]!
   update_story_chapters_batch(filter: story_chapters_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_story_chapters_input!]): [story_chapters!]!
   update_story_chapters_item(id: ID!, data: update_story_chapters_input!): story_chapters
@@ -416,6 +416,8 @@ type Mutation {
   delete_ceremonies_item(id: ID!): delete_one
   delete_persons_items(ids: [ID]!): delete_many
   delete_persons_item(id: ID!): delete_one
+  delete_guests_items(ids: [ID]!): delete_many
+  delete_guests_item(id: ID!): delete_one
   delete_clergies_items(ids: [ID]!): delete_many
   delete_clergies_item(id: ID!): delete_one
   delete_groups_items(ids: [ID]!): delete_many
@@ -424,8 +426,6 @@ type Mutation {
   delete_entourage_item(id: ID!): delete_one
   delete_liturgical_ministers_items(ids: [ID]!): delete_many
   delete_liturgical_ministers_item(id: ID!): delete_one
-  delete_guests_items(ids: [ID]!): delete_many
-  delete_guests_item(id: ID!): delete_one
   delete_budget_categories_items(ids: [ID]!): delete_many
   delete_budget_categories_item(id: ID!): delete_one
   delete_checklist_sections_items(ids: [ID]!): delete_many
@@ -474,12 +474,12 @@ type Mutation {
   delete_reception_program_item(id: ID!): delete_one
   delete_readings_items(ids: [ID]!): delete_many
   delete_readings_item(id: ID!): delete_one
+  delete_sponsors_items(ids: [ID]!): delete_many
+  delete_sponsors_item(id: ID!): delete_one
   delete_reception_staff_items(ids: [ID]!): delete_many
   delete_reception_staff_item(id: ID!): delete_one
   delete_tables_items(ids: [ID]!): delete_many
   delete_tables_item(id: ID!): delete_one
-  delete_sponsors_items(ids: [ID]!): delete_many
-  delete_sponsors_item(id: ID!): delete_one
   delete_story_chapters_items(ids: [ID]!): delete_many
   delete_story_chapters_item(id: ID!): delete_one
   delete_registries_items(ids: [ID]!): delete_many
@@ -529,11 +529,11 @@ type Subscription {
   directus_comments_mutated(event: EventEnum): directus_comments_mutated
   directus_settings_mutated(event: EventEnum): directus_settings_mutated
   directus_deployments_mutated(event: EventEnum): directus_deployments_mutated
+  guests_mutated(event: EventEnum): guests_mutated
   clergies_mutated(event: EventEnum): clergies_mutated
   groups_mutated(event: EventEnum): groups_mutated
   entourage_mutated(event: EventEnum): entourage_mutated
   liturgical_ministers_mutated(event: EventEnum): liturgical_ministers_mutated
-  guests_mutated(event: EventEnum): guests_mutated
   budget_categories_mutated(event: EventEnum): budget_categories_mutated
   checklist_sections_mutated(event: EventEnum): checklist_sections_mutated
   mass_music_mutated(event: EventEnum): mass_music_mutated
@@ -558,10 +558,10 @@ type Subscription {
   honeymoon_events_mutated(event: EventEnum): honeymoon_events_mutated
   reception_program_mutated(event: EventEnum): reception_program_mutated
   readings_mutated(event: EventEnum): readings_mutated
+  sponsors_mutated(event: EventEnum): sponsors_mutated
   wedding_settings_mutated(event: EventEnum): wedding_settings_mutated
   reception_staff_mutated(event: EventEnum): reception_staff_mutated
   tables_mutated(event: EventEnum): tables_mutated
-  sponsors_mutated(event: EventEnum): sponsors_mutated
   story_chapters_mutated(event: EventEnum): story_chapters_mutated
   registries_mutated(event: EventEnum): registries_mutated
   gallery_mutated(event: EventEnum): gallery_mutated
@@ -1055,6 +1055,8 @@ type ceremonies {
   status: String
   dress_code_description: String
   estimated_duration: Int
+  sponsors(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [sponsors]
+  sponsors_func: count_functions
   liturgical_ministers(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [liturgical_ministers]
   liturgical_ministers_func: count_functions
   entourage(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [entourage]
@@ -1093,6 +1095,7 @@ type ceremonies_aggregated_count {
   status: Int
   dress_code_description: Int
   estimated_duration: Int
+  sponsors: Int
   liturgical_ministers: Int
   entourage: Int
   programs: Int
@@ -2498,6 +2501,9 @@ type guests {
   attendance: JSON
   attendance_func: count_functions
   table(filter: tables_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): tables
+
+  """Determines if this is a "plus-one" guest"""
+  extra: Boolean
 }
 
 type guests_aggregated {
@@ -2517,6 +2523,9 @@ type guests_aggregated_count {
   type: Int
   attendance: Int
   table: Int
+
+  """Determines if this is a "plus-one" guest"""
+  extra: Int
 }
 
 type guests_mutated {
@@ -4191,6 +4200,7 @@ type sponsors {
   confirmed: Boolean
   notes: String
   partner(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): sponsors
+  ceremony(filter: ceremonies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): ceremonies
 }
 
 type sponsors_aggregated {
@@ -4220,6 +4230,7 @@ type sponsors_aggregated_count {
   confirmed: Int
   notes: Int
   partner: Int
+  ceremony: Int
 }
 
 type sponsors_aggregated_fields {
@@ -4735,6 +4746,7 @@ type version_ceremonies {
   status: String
   dress_code_description: String
   estimated_duration: Int
+  sponsors: JSON
   liturgical_ministers: JSON
   entourage: JSON
   programs: JSON
@@ -4995,6 +5007,9 @@ type version_guests {
   type: String
   attendance: JSON
   table: JSON
+
+  """Determines if this is a "plus-one" guest"""
+  extra: Boolean
 }
 
 """"""
@@ -5616,6 +5631,7 @@ type version_sponsors {
   confirmed: Boolean
   notes: String
   partner: JSON
+  ceremony: JSON
 }
 
 """"""
@@ -6083,6 +6099,8 @@ input ceremonies_filter {
   status: string_filter_operators
   dress_code_description: string_filter_operators
   estimated_duration: number_filter_operators
+  sponsors: sponsors_quantifier_filter
+  sponsors_func: count_function_filter_operators
   liturgical_ministers: liturgical_ministers_quantifier_filter
   liturgical_ministers_func: count_function_filter_operators
   entourage: entourage_quantifier_filter
@@ -6408,6 +6426,7 @@ input create_ceremonies_input {
   status: String
   dress_code_description: String
   estimated_duration: Int
+  sponsors: [create_sponsors_input]
   liturgical_ministers: [create_liturgical_ministers_input]
   entourage: [create_entourage_input]
   programs: [create_ceremony_order_input]
@@ -6800,6 +6819,9 @@ input create_guests_input {
   type: String
   attendance: JSON
   table: create_tables_input
+
+  """Determines if this is a "plus-one" guest"""
+  extra: Boolean
 }
 
 input create_honeymoon_activities_input {
@@ -7399,6 +7421,7 @@ input create_sponsors_input {
   confirmed: Boolean
   notes: String
   partner: create_sponsors_input
+  ceremony: create_ceremonies_input
 }
 
 input create_stories_input {
@@ -8232,6 +8255,7 @@ input guests_filter {
   attendance: string_filter_operators
   attendance_func: count_function_filter_operators
   table: tables_filter
+  extra: boolean_filter_operators
   _and: [guests_filter]
   _or: [guests_filter]
 }
@@ -8248,6 +8272,7 @@ input guests_quantifier_filter {
   attendance: string_filter_operators
   attendance_func: count_function_filter_operators
   table: tables_filter
+  extra: boolean_filter_operators
   _and: [guests_filter]
   _or: [guests_filter]
   _some: guests_filter
@@ -8982,8 +9007,31 @@ input sponsors_filter {
   confirmed: boolean_filter_operators
   notes: string_filter_operators
   partner: sponsors_filter
+  ceremony: ceremonies_filter
   _and: [sponsors_filter]
   _or: [sponsors_filter]
+}
+
+""""""
+input sponsors_quantifier_filter {
+  id: id_filter_operators
+  sort: number_filter_operators
+  user_created: directus_users_filter
+  date_created: date_filter_operators
+  date_created_func: datetime_function_filter_operators
+  user_updated: directus_users_filter
+  date_updated: date_filter_operators
+  date_updated_func: datetime_function_filter_operators
+  person: persons_filter
+  role: string_filter_operators
+  confirmed: boolean_filter_operators
+  notes: string_filter_operators
+  partner: sponsors_filter
+  ceremony: ceremonies_filter
+  _and: [sponsors_filter]
+  _or: [sponsors_filter]
+  _some: sponsors_filter
+  _none: sponsors_filter
 }
 
 input stories_filter {
@@ -9272,6 +9320,7 @@ input update_ceremonies_input {
   status: String
   dress_code_description: String
   estimated_duration: Int
+  sponsors: [update_sponsors_input]
   liturgical_ministers: [update_liturgical_ministers_input]
   entourage: [update_entourage_input]
   programs: [update_ceremony_order_input]
@@ -9664,6 +9713,9 @@ input update_guests_input {
   type: String
   attendance: JSON
   table: update_tables_input
+
+  """Determines if this is a "plus-one" guest"""
+  extra: Boolean
 }
 
 input update_honeymoon_activities_input {
@@ -10263,6 +10315,7 @@ input update_sponsors_input {
   confirmed: Boolean
   notes: String
   partner: update_sponsors_input
+  ceremony: update_ceremonies_input
 }
 
 input update_stories_input {

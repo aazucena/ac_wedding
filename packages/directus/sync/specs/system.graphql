@@ -288,11 +288,11 @@ type Subscription {
   directus_comments_mutated(event: EventEnum): directus_comments_mutated
   directus_settings_mutated(event: EventEnum): directus_settings_mutated
   directus_deployments_mutated(event: EventEnum): directus_deployments_mutated
+  guests_mutated(event: EventEnum): guests_mutated
   clergies_mutated(event: EventEnum): clergies_mutated
   groups_mutated(event: EventEnum): groups_mutated
   entourage_mutated(event: EventEnum): entourage_mutated
   liturgical_ministers_mutated(event: EventEnum): liturgical_ministers_mutated
-  guests_mutated(event: EventEnum): guests_mutated
   budget_categories_mutated(event: EventEnum): budget_categories_mutated
   checklist_sections_mutated(event: EventEnum): checklist_sections_mutated
   mass_music_mutated(event: EventEnum): mass_music_mutated
@@ -317,10 +317,10 @@ type Subscription {
   honeymoon_events_mutated(event: EventEnum): honeymoon_events_mutated
   reception_program_mutated(event: EventEnum): reception_program_mutated
   readings_mutated(event: EventEnum): readings_mutated
+  sponsors_mutated(event: EventEnum): sponsors_mutated
   wedding_settings_mutated(event: EventEnum): wedding_settings_mutated
   reception_staff_mutated(event: EventEnum): reception_staff_mutated
   tables_mutated(event: EventEnum): tables_mutated
-  sponsors_mutated(event: EventEnum): sponsors_mutated
   story_chapters_mutated(event: EventEnum): story_chapters_mutated
   registries_mutated(event: EventEnum): registries_mutated
   gallery_mutated(event: EventEnum): gallery_mutated
@@ -593,6 +593,8 @@ type ceremonies {
   status: String
   dress_code_description: String
   estimated_duration: Int
+  sponsors(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [sponsors]
+  sponsors_func: count_functions
   liturgical_ministers(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [liturgical_ministers]
   liturgical_ministers_func: count_functions
   entourage(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [entourage]
@@ -2323,6 +2325,9 @@ type guests {
   attendance: JSON
   attendance_func: count_functions
   table(filter: tables_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): tables
+
+  """Determines if this is a "plus-one" guest"""
+  extra: Boolean
 }
 
 type guests_mutated {
@@ -3152,6 +3157,7 @@ type sponsors {
   confirmed: Boolean
   notes: String
   partner(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): sponsors
+  ceremony(filter: ceremonies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): ceremonies
 }
 
 type sponsors_mutated {
@@ -3630,6 +3636,8 @@ input ceremonies_filter {
   status: string_filter_operators
   dress_code_description: string_filter_operators
   estimated_duration: number_filter_operators
+  sponsors: sponsors_quantifier_filter
+  sponsors_func: count_function_filter_operators
   liturgical_ministers: liturgical_ministers_quantifier_filter
   liturgical_ministers_func: count_function_filter_operators
   entourage: entourage_quantifier_filter
@@ -5017,6 +5025,7 @@ input guests_filter {
   attendance: string_filter_operators
   attendance_func: count_function_filter_operators
   table: tables_filter
+  extra: boolean_filter_operators
   _and: [guests_filter]
   _or: [guests_filter]
 }
@@ -5033,6 +5042,7 @@ input guests_quantifier_filter {
   attendance: string_filter_operators
   attendance_func: count_function_filter_operators
   table: tables_filter
+  extra: boolean_filter_operators
   _and: [guests_filter]
   _or: [guests_filter]
   _some: guests_filter
@@ -5717,8 +5727,31 @@ input sponsors_filter {
   confirmed: boolean_filter_operators
   notes: string_filter_operators
   partner: sponsors_filter
+  ceremony: ceremonies_filter
   _and: [sponsors_filter]
   _or: [sponsors_filter]
+}
+
+""""""
+input sponsors_quantifier_filter {
+  id: id_filter_operators
+  sort: number_filter_operators
+  user_created: directus_users_filter
+  date_created: date_filter_operators
+  date_created_func: datetime_function_filter_operators
+  user_updated: directus_users_filter
+  date_updated: date_filter_operators
+  date_updated_func: datetime_function_filter_operators
+  person: persons_filter
+  role: string_filter_operators
+  confirmed: boolean_filter_operators
+  notes: string_filter_operators
+  partner: sponsors_filter
+  ceremony: ceremonies_filter
+  _and: [sponsors_filter]
+  _or: [sponsors_filter]
+  _some: sponsors_filter
+  _none: sponsors_filter
 }
 
 input stories_filter {

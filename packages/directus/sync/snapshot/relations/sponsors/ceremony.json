@@ -1,0 +1,25 @@
+{
+  "collection": "sponsors",
+  "field": "ceremony",
+  "related_collection": "ceremonies",
+  "meta": {
+    "junction_field": null,
+    "many_collection": "sponsors",
+    "many_field": "ceremony",
+    "one_allowed_collections": null,
+    "one_collection": "ceremonies",
+    "one_collection_field": null,
+    "one_deselect_action": "delete",
+    "one_field": "sponsors",
+    "sort_field": "sort"
+  },
+  "schema": {
+    "table": "sponsors",
+    "column": "ceremony",
+    "foreign_key_table": "ceremonies",
+    "foreign_key_column": "id",
+    "constraint_name": "sponsors_ceremony_foreign",
+    "on_update": "NO ACTION",
+    "on_delete": "NO ACTION"
+  }
+}
