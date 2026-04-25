@@ -43,6 +43,24 @@ export async function getSponsors(): Promise<Sponsors[]> {
   }
 }
 
+export async function getSponsorsFull(): Promise<Sponsors[]> {
+  try {
+    return await get<Sponsors[]>('/items/sponsors', {
+      fields: [
+        'id', 'sort', 'role', 'confirmed',
+        'person.id', 'person.first_name', 'person.last_name', 'person.preferred_name',
+        'partner.id',
+        'partner.person.id', 'partner.person.first_name',
+        'partner.person.last_name', 'partner.person.preferred_name',
+      ],
+      filter: { confirmed: { _eq: true } },
+      sort: ['role', 'sort'],
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function getVendors(): Promise<Vendors[]> {
   try {
     return await get<Vendors[]>('/items/vendors', {

@@ -72,7 +72,7 @@ export async function del(path: string): Promise<void> {
 export { getSettings, getFaqs, getContactDetails, getMaintenanceStatus } from './api/settings';
 export { getCeremony, getClergies, getReadings, getEntourage } from './api/ceremony';
 export { getReception, getTables, getGuests, getGuestsWithTables } from './api/reception';
-export { getGallery, getGalleryPhotos, getMemories, getSponsors, getVendors, getRegistries, getAccommodations, getEvents } from './api/content';
+export { getGallery, getGalleryPhotos, getMemories, getSponsors, getSponsorsFull, getVendors, getRegistries, getAccommodations, getEvents } from './api/content';
 export { getPartyByToken, searchPartiesByName, getRsvpCount, getGuestMessages, validatePartyToken, validatePartyByIdAndToken, patchParty, patchGuest } from './api/rsvp';
 export { searchGuestsForSeating, getTablemates } from './api/reception';
 export { getGameProofFiles } from './api/game';
