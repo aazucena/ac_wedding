@@ -45,6 +45,10 @@ export const onRequest = defineMiddleware(async ({ url, cookies, locals, redirec
     }
   }
 
+  if (url.pathname.startsWith('/print/') && !locals.isPreview) {
+    return redirect('/', 307);
+  }
+
   if (MAINTENANCE_MODE || await checkDirectusMaintenance()) {
     return redirect('/maintenance', 307);
   }
