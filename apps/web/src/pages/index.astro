@@ -138,7 +138,7 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
       <p class="section-eyebrow">Memories</p>
       <h2 class="section-title" id="gallery">Gallery</h2>
     </div>
-    <GalleryPreview photos={photos} directusUrl={DIRECTUS_URL} />
+    <GalleryPreview photos={photos} directusUrl={DIRECTUS_URL} photographer={settings.photographer} />
   </section>
   <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
 
