@@ -36,7 +36,7 @@ export function assetUrl(
   params?: { width?: number; height?: number; fit?: 'cover' | 'contain' | 'inside' | 'outside'; quality?: number; format?: string },
 ): string {
   const id   = typeof file === 'string' ? file : file.id;
-  const base = `/assets/${id}`;
+  const base = `/api/cms/assets/${id}`;
   return params && Object.keys(params).length
     ? `${base}?${qs.stringify(params, { encodeValuesOnly: true })}`
     : base;

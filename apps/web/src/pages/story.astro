@@ -5,8 +5,7 @@ import Layout        from '../layouts/Layout.astro';
 import PageHeader    from '../components/PageHeader.astro';
 import StoryChapter  from '../components/story/StoryChapter.astro';
 import { getSettings } from '../lib/directus';
-import { DIRECTUS_URL } from 'astro:env/server';
-import { formatDate } from '../lib/utils/format';
+import { assetUrl, formatDate } from '../lib/utils/format';
 import Hashtag from '~/components/Hashtag.astro';
 import { getYear } from '~/lib/date';
 
@@ -82,7 +81,7 @@ const chapters = (directusChapters && directusChapters.length > 0)
           headline={ch.headline ?? ''}
           title={ch.title ?? ''}
           content={ch.content ?? ''}
-          imageUrl={ch.image?.id ? `${DIRECTUS_URL}/assets/${ch.image.id}` : undefined}
+          imageUrl={ch.image?.id ? `${assetUrl(ch.image.id)}` : undefined}
           reverse={i % 2 === 1}
           animationDelay={`${0.2 + i * 0.1}s`}
         />

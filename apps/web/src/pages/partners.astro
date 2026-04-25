@@ -6,8 +6,7 @@ import Layout     from '../layouts/Layout.astro';
 import PageHeader from '../components/PageHeader.astro';
 import Hashtag    from '~/components/Hashtag.astro';
 import { getSettings, getVendors } from '../lib/directus';
-import { formatDate, toTelHref } from '../lib/utils/format';
-import { DIRECTUS_URL } from 'astro:env/server';
+import { assetUrl, formatDate, toTelHref } from '../lib/utils/format';
 
 const [settings, vendors] = await Promise.all([getSettings(), getVendors()]);
 
@@ -27,11 +26,11 @@ function contactName(p: { first_name?: string; last_name?: string; preferred_nam
 }
 
 function imgUrl(id: string): string {
-  return `${DIRECTUS_URL}/assets/${id}?fit=cover&quality=82`;
+  return assetUrl(id, { fit: "cover", quality: 82 });
 }
 
 function logoUrl(id: string): string {
-  return `${DIRECTUS_URL}/assets/${id}?format=webp&quality=95`;
+  return assetUrl(id, { format: "webp", quality: 95 });
 }
 
 const SOCIAL_ICONS: Record<string, string> = {
