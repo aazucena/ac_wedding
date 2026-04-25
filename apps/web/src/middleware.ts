@@ -22,11 +22,8 @@ async function checkDirectusMaintenance(): Promise<boolean> {
 export const onRequest = defineMiddleware(async ({ url, cookies, locals, redirect }, next) => {
   if (url.pathname === '/maintenance') return next();
   if (url.pathname.startsWith('/api/')) return next();
-  if (MAINTENANCE_MODE || await checkDirectusMaintenance()) {
-    return redirect('/maintenance', 307);
-  }
 
-  // Preview token — grants access to post-wedding gated pages
+  // Preview token — bypasses maintenance mode and grants access to gated pages
   const secret = PREVIEW_TOKEN;
   if (secret) {
     const tokenParam  = url.searchParams.get('preview');
@@ -44,7 +41,12 @@ export const onRequest = defineMiddleware(async ({ url, cookies, locals, redirec
 
     if (tokenCookie === secret) {
       locals.isPreview = true;
+      return next();
     }
+  }
+
+  if (MAINTENANCE_MODE || await checkDirectusMaintenance()) {
+    return redirect('/maintenance', 307);
   }
 
   return next();
