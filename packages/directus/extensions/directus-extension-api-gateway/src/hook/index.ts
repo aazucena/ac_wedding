@@ -1,7 +1,7 @@
 import { defineHook } from '@directus/extensions-sdk';
 import { randomUUID } from 'crypto';
-import { syncTable }  from './lib/sync';
-import { toFlowKey } from './lib/utils';
+import { syncTable }          from './lib/sync';
+import { toFlowKey, parseOptions } from './lib/utils';
 
 const TABLE = 'api_endpoints';
 
@@ -18,7 +18,7 @@ export default defineHook(({ filter, action }, { database, logger }) => {
 
 	// ── Auto-generate key before a webhook flow is created ────────────────
 	// Only fires on create — keys are stable once set, like Directus operation keys.
-	filter('items.create', (payload: Record<string, unknown>, meta: Record<string, any>) => {
+	filter('flows.create', (payload: Record<string, unknown>, meta: Record<string, any>) => {
 		const collection: string = meta['collection'];
 		if (collection !== 'directus_flows') return payload;
 		if (payload['trigger'] !== 'webhook') return payload;
@@ -36,7 +36,7 @@ export default defineHook(({ filter, action }, { database, logger }) => {
 	});
 
 	// ── Register flow in api_endpoints after creation ─────────────────────
-	action('items.create', async (meta: Record<string, any>) => {
+	action('flows.create', async (meta: Record<string, any>) => {
 		const payload:    Record<string, unknown> = meta['payload'];
 		const flowId:     string                  = meta['key'];
 		const collection: string                  = meta['collection'];
@@ -69,8 +69,52 @@ export default defineHook(({ filter, action }, { database, logger }) => {
 		}
 	});
 
+	// ── Sync api_endpoints when a flow is updated ────────────────────────
+	action('flows.update', async (meta: Record<string, any>) => {
+		const keys: string[] = meta['keys'];
+
+		const flows: Array<{ id: string; trigger: string; name: string; options: unknown }> =
+			await database('directus_flows')
+				.whereIn('id', keys)
+				.select('id', 'trigger', 'name', 'options');
+
+		for (const flow of flows) {
+			if (flow.trigger !== 'webhook') {
+				await database(TABLE).where({ flow: flow.id }).delete();
+				logger.info(`[api-gateway] Removed non-webhook flow ${flow.id} from gateway`);
+				continue;
+			}
+
+			const options  = parseOptions(flow.options);
+			const flowKey  = (options['key'] as string | undefined) ?? toFlowKey(flow.name ?? 'flow');
+			const method   = ((options['method'] as string | undefined) ?? 'GET').toUpperCase();
+			const existing = await database(TABLE).where({ flow: flow.id }).first();
+
+			if (existing) {
+				await database(TABLE).where({ flow: flow.id }).update({ method });
+				logger.info(`[api-gateway] Updated webhook flow "${flowKey}" (${flow.id})`);
+			} else {
+				await database(TABLE).insert({
+					id:              randomUUID(),
+					flow:            flow.id,
+					key:             flowKey,
+					method,
+					enabled:         true,
+					request_schema:  null,
+					response_schema: null,
+					description:     null,
+					auth_required:   false,
+					tags:            null,
+					deprecated:      false,
+					version:         'v1',
+				});
+				logger.info(`[api-gateway] Registered newly-webhookified flow "${flowKey}" (${flow.id})`);
+			}
+		}
+	});
+
 	// ── Clean up api_endpoints when a flow is deleted ─────────────────────
-	action('items.delete', async (meta: Record<string, any>) => {
+	action('flows.delete', async (meta: Record<string, any>) => {
 		const keys:       string[] = meta['keys'];
 		const collection: string   = meta['collection'];
 		if (collection !== 'directus_flows') return;
