@@ -12,9 +12,10 @@ declare global {
 var guestResponse: Record<string, string | null> = {};
 var currentStep = 1;
 // Populated on page-load; used by buildReview which runs after init
-var _guestList: Array<{ id: string; name: string; type: string }> = [];
+var _guestList: Array<{ id: string; name: string; firstName: string; lastName: string; type: string }> = [];
 var _plusOnesAllowed = 0;
-var _plusOnes: Array<{ tempId: string; firstName: string; lastName: string; type: string }> = [];
+var _plusOnes: Array<{ tempId: string; firstName: string; lastName: string; gender: string; type: string }> = [];
+var _blockedFirstNames: string[] = [];
 
 function anyAttending() { return Object.values(guestResponse).some(v => v === 'attending'); }
 function allResponded()  { return Object.values(guestResponse).every(v => v !== null); }
@@ -24,8 +25,14 @@ function updatePlusOneUI() {
   var remaining = _plusOnesAllowed - _plusOnes.length;
   var badge  = document.getElementById('po-remaining');
   var addRow = document.getElementById('po-add-row');
+  var zone = document.getElementById('plus-one-zone');
   if (badge)  badge.textContent = String(remaining);
-  if (addRow) addRow.style.display = remaining > 0 ? '' : 'none';
+  if (addRow) {
+     addRow.style.display = remaining > 0 ? '' : 'none';
+  }
+  if (zone) {
+     zone.style.display = remaining > 0 ? '' : 'none';
+  }
 }
 
 function showPlusOneForm() {
@@ -41,11 +48,13 @@ function hidePlusOneForm() {
   if (!backdrop) return;
   backdrop.style.display = 'none';
   backdrop.setAttribute('aria-hidden', 'true');
-  var fi = document.getElementById('po-first') as HTMLInputElement | null;
-  var la = document.getElementById('po-last')  as HTMLInputElement | null;
-  var ty = document.getElementById('po-type')  as HTMLSelectElement | null;
+  var fi = document.getElementById('po-first')  as HTMLInputElement  | null;
+  var la = document.getElementById('po-last')   as HTMLInputElement  | null;
+  var ge = document.getElementById('po-gender') as HTMLSelectElement | null;
+  var ty = document.getElementById('po-type')   as HTMLSelectElement | null;
   if (fi) fi.value = '';
   if (la) la.value = '';
+  if (ge) ge.value = '';
   if (ty) ty.value = 'adult';
   var errEl = document.getElementById('po-error');
   if (errEl) { errEl.textContent = ''; errEl.classList.remove('visible'); }
@@ -162,9 +171,9 @@ function createPlusOneRow(tempId: string, displayName: string) {
   window.onResponseChange(tempId, 'attending');
 }
 
-function addPlusOne(firstName: string, lastName: string, type: string) {
+function addPlusOne(firstName: string, lastName: string, gender: string, type: string) {
   var tempId = 'po_' + Math.random().toString(36).slice(2, 10);
-  _plusOnes.push({ tempId, firstName, lastName, type });
+  _plusOnes.push({ tempId, firstName, lastName, gender, type });
   createPlusOneRow(tempId, lastName ? firstName + ' ' + lastName : firstName);
   updatePlusOneUI();
 }
@@ -503,14 +512,16 @@ function buildReview() {
 document.addEventListener('astro:page-load', () => {
   const dataEl = document.getElementById('rsvp-data');
   if (!dataEl) return;
-  const { partyId, guestList, rsvpToken, plusOnesAllowed } = JSON.parse(dataEl.textContent!) as {
-    partyId:         string;
-    guestList:       Array<{ id: string; personId: string | null; name: string; type: string }>;
-    rsvpToken:       string;
-    plusOnesAllowed: number;
+  const { partyId, guestList, rsvpToken, plusOnesAllowed, blockedFirstNames } = JSON.parse(dataEl.textContent!) as {
+    partyId:           string;
+    guestList:         Array<{ id: string; personId: string | null; name: string; firstName: string; lastName: string; type: string }>;
+    rsvpToken:         string;
+    plusOnesAllowed:   number;
+    blockedFirstNames: string[];
   };
   _guestList = guestList;
   _plusOnesAllowed = plusOnesAllowed ?? 0;
+  _blockedFirstNames = blockedFirstNames ?? [];
   _plusOnes = [];
 
   guestList.forEach(g => { guestResponse[g.id] = null; });
@@ -532,16 +543,62 @@ document.addEventListener('astro:page-load', () => {
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape' && document.getElementById('po-modal-backdrop')?.style.display === 'flex') hidePlusOneForm();
     });
-    document.getElementById('po-confirm')?.addEventListener('click', function() {
-      var firstName = ((document.getElementById('po-first') as HTMLInputElement | null)?.value ?? '').trim();
-      var lastName  = ((document.getElementById('po-last')  as HTMLInputElement | null)?.value ?? '').trim();
-      var type      = (document.getElementById('po-type') as HTMLSelectElement | null)?.value ?? 'adult';
+    document.getElementById('po-confirm')?.addEventListener('click', async function() {
+      var firstName  = ((document.getElementById('po-first')  as HTMLInputElement | null)?.value ?? '').trim();
+      var lastName   = ((document.getElementById('po-last')   as HTMLInputElement | null)?.value ?? '').trim();
+      var gender     = (document.getElementById('po-gender')  as HTMLSelectElement | null)?.value ?? '';
+      var type       = (document.getElementById('po-type')    as HTMLSelectElement | null)?.value ?? 'adult';
+      var errEl      = document.getElementById('po-error');
+      var confirmBtn = document.getElementById('po-confirm') as HTMLButtonElement | null;
+      function norm(s: string) { return s.trim().toLowerCase(); }
+
       if (!firstName) {
-        var errEl = document.getElementById('po-error');
         if (errEl) { errEl.textContent = 'First name is required.'; errEl.classList.add('visible'); }
         return;
       }
-      addPlusOne(firstName, lastName, type);
+      if (!lastName) {
+        if (errEl) { errEl.textContent = 'Last name is required.'; errEl.classList.add('visible'); }
+        return;
+      }
+      if (!gender) {
+        if (errEl) { errEl.textContent = 'Please select a gender.'; errEl.classList.add('visible'); }
+        return;
+      }
+
+      var displayName = firstName + ' ' + lastName;
+      var errMsg = '';
+
+      // Blocked names — bride, groom, and their parents
+      if (_blockedFirstNames.includes(norm(firstName))) {
+        errMsg = displayName + ' cannot be added as a plus-one.';
+      }
+
+      // Duplicate against already-added plus-ones and pre-registered guests (client-side)
+      if (!errMsg) {
+        var fullNew = norm(firstName + ' ' + lastName);
+        if (_plusOnes.some(function(po) { return norm(po.firstName + ' ' + po.lastName) === fullNew; })) {
+          errMsg = displayName + ' has already been added.';
+        } else if (_guestList.some(function(g) { return norm(g.firstName + ' ' + g.lastName) === fullNew; })) {
+          errMsg = displayName + ' is already in your party\'s invitation.';
+        }
+      }
+
+      if (errMsg) {
+        if (errEl) { errEl.textContent = errMsg; errEl.classList.add('visible'); }
+        return;
+      }
+
+      // Server-side check: query Directus to see if this person is already in the party
+      if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Checking…'; }
+      const { error: checkError } = await actions.checkPlusOne({ token: rsvpToken, partyId, firstName, lastName });
+      if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = 'Add Guest'; }
+
+      if (checkError) {
+        if (errEl) { errEl.textContent = checkError.message; errEl.classList.add('visible'); }
+        return;
+      }
+
+      addPlusOne(firstName, lastName, gender, type);
       hidePlusOneForm();
     });
   }
@@ -666,7 +723,8 @@ document.addEventListener('astro:page-load', () => {
         ];
         return {
           firstName:            po.firstName,
-          lastName:             po.lastName || undefined,
+          lastName:             po.lastName,
+          gender:               po.gender as 'male' | 'female',
           type:                 po.type as 'adult' | 'teen' | 'child' | 'infant',
           attending:            isAttending,
           attendance,
@@ -687,10 +745,18 @@ document.addEventListener('astro:page-load', () => {
           date_rsvp_submitted: new Date().toISOString(),
         },
         guestPayloads,
-        plusOnePayloads,
       };
       const { error: rsvpError } = await actions.submitRsvp(submitPayload);
       if (rsvpError) throw new Error(rsvpError.message ?? 'RSVP failed');
+
+      if (plusOnePayloads.length > 0) {
+        const { error: plusOneError } = await actions.submitPlusOnes({
+          token:  rsvpToken,
+          partyId,
+          plusOnePayloads,
+        });
+        if (plusOneError) throw new Error(plusOneError.message ?? 'Failed to add plus-one(s).');
+      }
 
       // Only update contact details when at least one guest is attending
       if (attending && selectedGuest?.personId) {

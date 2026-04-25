@@ -24,7 +24,14 @@ const { plusOnesAllowed } = Astro.props;
             <input type="text" id="po-first" placeholder="First name *" autocomplete="given-name" />
           </div>
           <div class="field">
-            <input type="text" id="po-last" placeholder="Last name (optional)" autocomplete="family-name" />
+            <input type="text" id="po-last" placeholder="Last name *" autocomplete="family-name" />
+          </div>
+          <div class="field field-select-wrap">
+            <select id="po-gender">
+              <option value="" disabled selected>Gender *</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
           </div>
           <div class="field field-select-wrap">
             <select id="po-type">

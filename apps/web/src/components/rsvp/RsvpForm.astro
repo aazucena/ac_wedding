@@ -30,12 +30,27 @@ type GuestType = 'adult' | 'teen' | 'child' | 'infant';
 
 const TYPE_ORDER: Record<GuestType, number> = { adult: 0, teen: 1, child: 2, infant: 3 };
 
+// First names that may not be used for plus-ones.
+// Bride/groom come from settings; parents are fixed real people.
+const blockedFirstNames = [
+  groomName,          // preferred name from settings (e.g. "Aldrin")
+  brideName,          // preferred name from settings (e.g. "Christine")
+  'Eissa Aldrin',     // groom's formal first name
+  'Ma Christine',     // bride's formal first name
+  'Cesar',            // groom's father
+  'Amelia',           // groom's mother
+  'Benjamin', 'Bengie', // bride's father (formal + preferred)
+  'Ceferina', 'Rina',   // bride's mother (formal + preferred)
+].map(n => n.toLowerCase().trim());
+
 const guests = (party.members ?? []).map((g) => ({
-  id:       g.id,
-  personId: g.person?.id ?? null,
-  name:     g.person?.preferred_name ?? g.person?.first_name ?? '',
-  type:     (g.type ?? 'adult') as GuestType,
-  dietary:  g.dietary_restrictions ?? '',
+  id:        g.id,
+  personId:  g.person?.id ?? null,
+  name:      g.person?.preferred_name ?? g.person?.first_name ?? '',
+  firstName: g.person?.first_name ?? '',
+  lastName:  g.person?.last_name  ?? '',
+  type:      (g.type ?? 'adult') as GuestType,
+  dietary:   g.dietary_restrictions ?? '',
 })).sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
 ---
 
@@ -135,7 +150,8 @@ const guests = (party.members ?? []).map((g) => ({
 <script type="application/json" id="rsvp-data">
   ${JSON.stringify({
     partyId:         party.id,
-    guestList:       guests.map(g => ({ id: g.id, personId: g.personId, name: g.name, type: g.type })),
+    guestList:       guests.map(g => ({ id: g.id, personId: g.personId, name: g.name, firstName: g.firstName, lastName: g.lastName, type: g.type })),
+    blockedFirstNames,
     rsvpToken:       party.rsvp_token,
     plusOnesAllowed: plusOnesAllowed,
   })}

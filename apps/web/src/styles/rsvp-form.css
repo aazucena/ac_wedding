@@ -346,7 +346,7 @@
 #rsvp-card .success-home-btn:hover { opacity: 0.88; transform: translateY(-1px); }
 
 /* ── Plus-ones ────────────────────────────────────────── */
-#rsvp-card #plus-one-zone { border-top: 1px solid var(--border); padding: 14px 18px; }
+#rsvp-card #plus-one-zone { border-bottom: 1px solid var(--border); border-top: 1px solid var(--border); margin-top: 14px; padding: 14px 0px; }
 
 #rsvp-card .po-add-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
