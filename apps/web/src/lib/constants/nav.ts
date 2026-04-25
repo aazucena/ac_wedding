@@ -15,7 +15,7 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
       { id: 'ceremony', url: '/ceremony', text: 'Program' },
       { id: 'events',   url: '/events',   text: 'Events' },
       { id: 'guestbook', url: '/guestbook', text: 'Guestbook' },
-      { id: 'seating',  url: '/seating',  text: 'Seating' },
+      // { id: 'seating',  url: '/seating',  text: 'Seating' }, // hidden until ~1 week before wedding
     ],
   },
   { type: 'group', text: 'Explore',
