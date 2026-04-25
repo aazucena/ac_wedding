@@ -30,9 +30,6 @@ echo "→ Writing TRUNCATE statement..."
   TABLE_LIST=$(echo "$TABLES" | tr '\n' ',' | sed 's/,$//')
   QUOTED=$(echo "$TABLE_LIST" | sed 's/,/", "/g')
   echo "TRUNCATE \"${QUOTED}\" CASCADE;"
-
-  echo ""
-  echo "SET session_replication_role = DEFAULT;"
   echo ""
 } > "$OUTPUT"
 
@@ -45,7 +42,10 @@ pg_dump \
   --data-only \
   --no-owner \
   --no-acl \
-  --disable-triggers \
+  --exclude-schema=tiger \
+  --exclude-schema=tiger_data \
+  --exclude-schema=topology \
+  --exclude-table='spatial_ref_sys' \
   --exclude-table-data='directus_*' \
   -F p >> "$OUTPUT"
 
@@ -58,13 +58,16 @@ pg_dump \
   --data-only \
   --no-owner \
   --no-acl \
-  --disable-triggers \
   --table='directus_files' \
   -F p >> "$OUTPUT"
 
 echo "→ Patching directus_files storage: local → s3..."
-echo "" >> "$OUTPUT"
-echo "-- Remap local storage to s3 for production" >> "$OUTPUT"
-echo "UPDATE directus_files SET storage = 's3' WHERE storage = 'local';" >> "$OUTPUT"
+{
+  echo ""
+  echo "-- Remap local storage to s3 for production"
+  echo "UPDATE public.directus_files SET storage = 's3' WHERE storage = 'local';"
+  echo ""
+  echo "SET session_replication_role = DEFAULT;"
+} >> "$OUTPUT"
 
 echo "→ Done. $(wc -l < "$OUTPUT") lines written to $OUTPUT"
