@@ -1,5 +1,6 @@
 ---
 // home/GalleryPreview.astro — gallery preview strip (6 images)
+import { assetUrl } from '~/lib/utils/format';
 interface GalleryPhoto {
   image?: { id?: string } | string | null;
   title?: string | null;
@@ -10,10 +11,9 @@ interface Photographer {
 }
 interface Props {
   photos: GalleryPhoto[];
-  directusUrl: string;
   photographer?: Photographer | string | null;
 }
-const { photos, directusUrl, photographer } = Astro.props;
+const { photos, photographer } = Astro.props;
 const displayPhotos = photos.length > 0 ? photos.slice(0, 6) : Array.from({ length: 6 });
 const credit = photographer && typeof photographer === 'object' ? photographer : null;
 ---
@@ -71,7 +71,7 @@ const credit = photographer && typeof photographer === 'object' ? photographer :
     <a href="/gallery" class="gallery-item">
       {photo?.image ? (
         <img
-          src={`${directusUrl}/assets/${typeof photo.image === 'string' ? photo.image : photo.image?.id}?width=400&height=400&fit=cover`}
+          src={assetUrl(typeof photo.image === 'string' ? photo.image : photo.image?.id ?? '', { width: 400, height: 400, fit: 'cover' })}
           alt={photo.title ?? ''}
           loading="lazy"
           decoding="async"

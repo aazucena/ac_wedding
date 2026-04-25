@@ -17,7 +17,6 @@ import StoryPreviewCard from '../components/home/StoryPreviewCard.astro';
 import RsvpZone        from '../components/home/RsvpZone.astro';
 import HashtagShare    from '../components/home/HashtagShare.astro';
 import { getSettings, getVendors, getCeremony, getReception, getGalleryPhotos, getRsvpCount, getRegistries } from '../lib/directus';
-import { DIRECTUS_URL } from 'astro:env/server';
 import { formatTime, formatDate } from '../lib/utils/format';
 
 const [settings, vendors, ceremony, reception, photos, rsvpCount, registries] = await Promise.all([
@@ -138,7 +137,7 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
       <p class="section-eyebrow">Memories</p>
       <h2 class="section-title" id="gallery">Gallery</h2>
     </div>
-    <GalleryPreview photos={photos} directusUrl={DIRECTUS_URL} photographer={settings.photographer} />
+    <GalleryPreview photos={photos} photographer={settings.photographer} />
   </section>
   <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
 
