@@ -7,7 +7,7 @@ interface Props {
   weddingDate: string;
 }
 const { email, groom, bride, weddingDate } = Astro.props;
-const mailtoHref = `mailto:${email}?subject=Wedding Invitation Request&body=Hi ${groom} and ${bride},%0A%0AI would love to attend your wedding on ${weddingDate}.%0A%0AMy name is: %0A%0ALooking forward to hearing from you!`;
+const mailtoHref = `mailto:${email}?subject=Wedding Invitation Request&body=Hi ${bride} and ${groom},%0A%0AI would love to attend your wedding on ${weddingDate}.%0A%0AMy name is: %0A%0ALooking forward to hearing from you!`;
 ---
 
 <div class="not-invited-card">

@@ -34,7 +34,7 @@ const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
 ---
 
 <Layout
-  title={`RSVP — ${groom} & ${bride}`}
+  title={`RSVP — ${bride} & ${groom}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="rsvp"
@@ -80,7 +80,7 @@ const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>

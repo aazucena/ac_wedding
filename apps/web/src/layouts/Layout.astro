@@ -53,8 +53,8 @@ const weddingLocation  = envelopeData ? (envelopeData.location ?? 'Lethbridge, A
 
 const ogDescription = description
   ?? (weddingDateLabel
-      ? `Join us as ${groomFull} & ${brideFull} celebrate their wedding on ${weddingDateLabel} in ${weddingLocation}.`
-      : `${groomFull} & ${brideFull} — Wedding celebration`);
+      ? `Join us as ${brideFull} & ${groomFull} celebrate their wedding on ${weddingDateLabel} in ${weddingLocation}.`
+      : `${brideFull} & ${groomFull} — Wedding celebration`);
 const ogImage = new URL('/api/social/dm.png', Astro.site).href;
 ---
 
@@ -69,7 +69,7 @@ const ogImage = new URL('/api/social/dm.png', Astro.site).href;
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content={`${groomFull} & ${brideFull}`} />
+  <meta property="og:site_name" content={`${brideFull} & ${groomFull}`} />
   <meta property="og:title" content={title} />
   <meta property="og:description" content={ogDescription} />
   <meta property="og:url" content={Astro.url.href} />
@@ -104,7 +104,7 @@ const ogImage = new URL('/api/social/dm.png', Astro.site).href;
     <footer class="footer">
       <Image src={Insignia} class="footer-seal" alt="" />
       <slot name="footer-extra" />
-      <p class="footer-note footer-copyright">&copy; 2026 {groomFull} &amp; {brideFull}</p>
+      <p class="footer-note footer-copyright">&copy; 2026 {brideFull} &amp; {groomFull}</p>
     </footer>
   </main>
   <slot name="overlay" />

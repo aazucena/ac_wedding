@@ -29,7 +29,7 @@ const uploadUrl  = token ? `${BASE_URL}/game/upload?token=${encodeURIComponent(t
 
 const squares = GAME_SQUARES;
 
-const tieBreakerQ = `How many total days have ${groomFirst} & ${brideFirst} been a couple leading up to today? Closest/exact guest wins!`;
+const tieBreakerQ = `How many total days have ${brideFirst} & ${groomFirst} been a couple leading up to today? Closest/exact guest wins!`;
 
 const steps = [
   { label: 'Participation is Optional',  body: 'Join individually or as a table "team".' },
@@ -41,7 +41,7 @@ const steps = [
 ---
 
 <PrintLayout
-  title={`Find a Guest — ${groomFirst} & ${brideFirst}`}
+  title={`Find a Guest — ${brideFirst} & ${groomFirst}`}
   cardWidth="11in" cardHeight="8.5in"
   toolbarHint="11 × 8.5 in · Landscape · Click card to flip · print sends both sides"
 >
@@ -71,7 +71,7 @@ const steps = [
             <h1 class="f-title">Find a Guest</h1>
             <div class="f-accent-wrap f-accent-flip"><Image src={AccentMark} alt="" /></div>
           </div>
-          <p class="f-names">{groomFirst} &amp; {brideFirst} · {weddingDateLabel}</p>
+          <p class="f-names">{brideFirst} &amp; {groomFirst} · {weddingDateLabel}</p>
         </div>
 
         <div class="divider">

@@ -351,7 +351,7 @@ function buildStory(d: CardData, photo: string | null, t: Theme): El {
       fontFamily: 'CG', fontStyle: 'italic', fontWeight: 300,
       fontSize: 440, lineHeight: 1,
       color: t === THEMES.dark ? 'rgba(197,184,224,0.05)' : 'rgba(197,184,224,0.12)',
-    }, `${d.groom[0]}${d.bride[0]}`),
+    }, `${d.bride[0]}${d.groom[0]}`),
 
     h('div', {
       display: 'flex', flexDirection: 'column',

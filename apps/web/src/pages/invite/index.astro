@@ -15,7 +15,7 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
 ---
 
 <Layout
-  title={`Find Your Invitation — ${groom} & ${bride}`}
+  title={`Find Your Invitation — ${bride} & ${groom}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="invite"
@@ -43,7 +43,7 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>
