@@ -59,7 +59,7 @@ function displayName(person: { first_name?: string; last_name?: string } | undef
   return `${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
 }
 
-// Parent sections — real parents as primary, proxy as secondary "(Proxy)" line
+// Parent sections — real parents as primary, proxy as secondary "Represented by" line
 const parentSections = [
   { title: 'Parents of the Groom', id: 'parents-of-the-groom', roles: ['Father of the Groom', 'Mother of the Groom'] },
   { title: 'Parents of the Bride',  id: 'parents-of-the-bride',  roles: ['Father of the Bride',  'Mother of the Bride']  },
@@ -184,7 +184,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
                   <div class="member-name">{displayName(mother.person)}</div>
                   <div class="member-side">Mother</div>
                   {motherReal && motherProxy && (
-                    <div class="member-proxy">(Proxy) {displayName(motherProxy.person)}</div>
+                    <div class="member-proxy">Represented by {displayName(motherProxy.person)}</div>
                   )}
                 </div>
               </div>
@@ -196,7 +196,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
                   <div class="member-name">{displayName(father.person)}</div>
                   <div class="member-side">Father</div>
                   {fatherReal && fatherProxy && (
-                    <div class="member-proxy">(Proxy) {displayName(fatherProxy.person)}</div>
+                    <div class="member-proxy">Represented by {displayName(fatherProxy.person)}</div>
                   )}
                 </div>
               </div>

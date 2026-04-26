@@ -97,7 +97,7 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
                 <div class="parent-group">
                   <p class="parent-line">{BRIDE_PARENTS}</p>
                   {BRIDE_PARENTS_PROXY && (
-                    <p class="parent-line parent-line--proxy">(Proxy) {BRIDE_PARENTS_PROXY}</p>
+                    <p class="parent-line parent-line--proxy">Represented by {BRIDE_PARENTS_PROXY}</p>
                   )}
                 </div>
                 <div class="name-divider name-divider--sm">
@@ -108,7 +108,7 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
                 <div class="parent-group">
                   <p class="parent-line">{GROOM_PARENTS}</p>
                   {GROOM_PARENTS_PROXY && (
-                    <p class="parent-line parent-line--proxy">(Proxy) {GROOM_PARENTS_PROXY}</p>
+                    <p class="parent-line parent-line--proxy">Represented by {GROOM_PARENTS_PROXY}</p>
                   )}
                 </div>
               </div>
