@@ -20,6 +20,11 @@ function fullName(p: { first_name?: string; last_name?: string; middle_name?: st
   return `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
 }
 
+function withHonorific(s: typeof sponsors[0]): string {
+  const honorific = s.person?.gender === 'male' ? 'Mr.' : 'Mrs.';
+  return `${honorific} ${fullName(s.person)}`;
+}
+
 const paired = new Set<string>();
 const pairs: Array<{ role: string; a: typeof sponsors[0]; b: typeof sponsors[0] | null }> = [];
 
@@ -36,7 +41,11 @@ for (const s of sponsors) {
 
 pairs.sort((x, y) => {
   const ri = (r: string) => roleOrder.indexOf(r) >= 0 ? roleOrder.indexOf(r) : 99;
-  return ri(x.role) - ri(y.role) || fullName(x.a.person).localeCompare(fullName(y.a.person));
+  const maleLastName = (p: typeof pairs[0]) => {
+    const male = [p.a, p.b].find(s => s?.person?.gender === 'male') ?? p.a;
+    return (male?.person?.last_name ?? '').toLowerCase();
+  };
+  return ri(x.role) - ri(y.role) || maleLastName(x).localeCompare(maleLastName(y));
 });
 
 const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
@@ -46,7 +55,7 @@ const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
 ---
 
 <Layout
-  title={`Principal Sponsors — ${groom} & ${bride}`}
+  title={`Principal Sponsors — ${bride} & ${groom}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="sponsors"
@@ -65,17 +74,21 @@ const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
       <section class="sponsor-section">
         <h2 class="sponsor-role-title">{role}</h2>
         <div class="sponsor-grid">
-          {rolePairs.map(({ a, b }) => (
-            <div class="sponsor-pair">
-              <div class="sponsor-name ninong">{fullName(a.person)}</div>
-              {b && (
-                <>
-                  <div class="sponsor-sep">✦</div>
-                  <div class="sponsor-name ninang">{fullName(b.person)}</div>
-                </>
-              )}
-            </div>
-          ))}
+          {rolePairs.map(({ a, b }) => {
+            const husband = [a, b].find(s => s?.person?.gender === 'male') ?? a;
+            const wife    = [a, b].find(s => s?.person?.gender !== 'male') ?? null;
+            return (
+              <div class="sponsor-pair">
+                <div class="sponsor-name ninong">{withHonorific(husband)}</div>
+                {wife && (
+                  <>
+                    <div class="sponsor-sep">✦</div>
+                    <div class="sponsor-name ninang">{withHonorific(wife)}</div>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       </section>
     ))}
@@ -92,7 +105,7 @@ const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>
@@ -126,7 +139,7 @@ const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
   box-shadow: var(--shadow-card);
   display: flex; align-items: center;
   justify-content: center; gap: 14px;
-  flex-wrap: wrap; text-align: center;
+  white-space: nowrap; text-align: center;
   position: relative; overflow: hidden;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }

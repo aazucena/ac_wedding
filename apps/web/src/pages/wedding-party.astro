@@ -23,12 +23,13 @@ const WALK_PAIRS: Record<string, string> = {
 };
 const BRIDE_SIDE_ROLES = new Set(Object.keys(WALK_PAIRS));
 
+// Parent roles handled separately (real + proxy stacked display)
+const PARENT_ROLES = new Set(['Father of the Bride', 'Mother of the Bride', 'Father of the Groom', 'Mother of the Groom']);
+
 // Roles grouped into a combined section (shown as a flat grid with role subtitle)
 const GROUPED_SECTIONS = [
-  { title: 'Parents of the Groom', roles: ['Father of the Groom', 'Mother of the Groom'] },
-  { title: 'Parents of the Bride',  roles: ['Father of the Bride',  'Mother of the Bride']  },
-  { title: 'Bearers',               roles: ['Ring Bearer', 'Bible Bearer', 'Coin Bearer']   },
-  { title: 'Flower Girls',          roles: ['Flower Girl']                                  },
+  { title: 'Bearers',      roles: ['Ring Bearer', 'Bible Bearer', 'Coin Bearer'] },
+  { title: 'Flower Girls', roles: ['Flower Girl']                                },
 ] as const;
 const GROUPED_ROLE_NAMES = new Set(GROUPED_SECTIONS.flatMap(g => [...g.roles]));
 
@@ -53,12 +54,23 @@ function memberSort(a: Entourage, b: Entourage) {
   return pg !== 0 ? pg : (a.sequence_order ?? 0) - (b.sequence_order ?? 0);
 }
 
-function displayName(person: { first_name?: string; last_name?: string; preferred_name?: string | null } | undefined | null): string {
+function displayName(person: { first_name?: string; last_name?: string } | undefined | null): string {
   if (!person) return '';
-  return `${person.preferred_name ?? person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
+  return `${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
 }
 
-// Build grouped sections (parents, bearers, etc.)
+// Parent sections — real parents as primary, proxy as secondary "(Proxy)" line
+const parentSections = [
+  { title: 'Parents of the Groom', id: 'parents-of-the-groom', roles: ['Father of the Groom', 'Mother of the Groom'] },
+  { title: 'Parents of the Bride',  id: 'parents-of-the-bride',  roles: ['Father of the Bride',  'Mother of the Bride']  },
+].map(({ title, id, roles }) => ({
+  title,
+  id,
+  real:  entourage.filter(m => roles.includes(m.role?.name ?? '') && !m.proxy),
+  proxy: entourage.filter(m => roles.includes(m.role?.name ?? '') &&  m.proxy),
+})).filter(s => s.real.length > 0 || s.proxy.length > 0);
+
+// Build grouped sections (bearers, flower girls — not parents)
 const groupedSections = GROUPED_SECTIONS
   .map(g => ({
     title: g.title,
@@ -67,9 +79,9 @@ const groupedSections = GROUPED_SECTIONS
   }))
   .filter(s => s.members.length > 0);
 
-// Group remaining (non-grouped) members by role
+// Group remaining (non-grouped, non-parent) members by role
 const byRole = groupBy(
-  entourage.filter(m => !(GROUPED_ROLE_NAMES as Set<string>).has(m.role?.name ?? '')),
+  entourage.filter(m => !PARENT_ROLES.has(m.role?.name ?? '') && !(GROUPED_ROLE_NAMES as Set<string>).has(m.role?.name ?? '')),
   'role.name'
 );
 
@@ -84,7 +96,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
 ---
 
 <Layout
-  title={`Wedding Party — ${groom} & ${bride}`}
+  title={`Wedding Party — ${bride} & ${groom}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="wedding-party"
@@ -126,7 +138,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
                   <div class="paired-col">
                       <div class={`member-card ${isBrideSide ? 'member-card--bride' : 'member-card--groom'}`}>
                         <div class="member-name">{displayName(m.person)}</div>
-                        <div class="member-side">{isBrideSide ? bride : groom}'s side</div>
+                        {/* <div class="member-side">{isBrideSide ? bride : groom}'s side</div> */}
                       </div>
                   </div>
                   <div class="paired-divider" aria-hidden="true">✦</div>
@@ -134,7 +146,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
                   <div class="paired-col">
                       <div class={`member-card ${isBrideSide ? 'member-card--groom' : 'member-card--bride'}`}>
                         <div class="member-name">{displayName(pairMembers[i]!.person)}</div>
-                        <div class="member-side">{isBrideSide ? groom : bride}'s side</div>
+                        {/* <div class="member-side">{isBrideSide ? groom : bride}'s side</div> */}
                       </div>
                   </div>
                   )}
@@ -151,6 +163,45 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
               ))}
             </div>
           )}
+        </section>
+      );
+    })}
+
+    {parentSections.map(({ title, id, real, proxy }) => {
+      const fatherReal  = real.find(m => m.person?.gender === 'male');
+      const motherReal  = real.find(m => m.person?.gender !== 'male');
+      const fatherProxy = proxy.find(m => m.person?.gender === 'male');
+      const motherProxy = proxy.find(m => m.person?.gender !== 'male');
+      const father = fatherReal ?? fatherProxy;
+      const mother = motherReal ?? motherProxy;
+      return (
+        <section class="role-section" id={id}>
+          <h2 class="role-title">{title}</h2>
+          <div class="paired-grid">
+            {mother && (
+              <div class="paired-col">
+                <div class="member-card">
+                  <div class="member-name">{displayName(mother.person)}</div>
+                  <div class="member-side">Mother</div>
+                  {motherReal && motherProxy && (
+                    <div class="member-proxy">(Proxy) {displayName(motherProxy.person)}</div>
+                  )}
+                </div>
+              </div>
+            )}
+            {father && mother && <div class="paired-divider" aria-hidden="true">✦</div>}
+            {father && (
+              <div class="paired-col">
+                <div class="member-card">
+                  <div class="member-name">{displayName(father.person)}</div>
+                  <div class="member-side">Father</div>
+                  {fatherReal && fatherProxy && (
+                    <div class="member-proxy">(Proxy) {displayName(fatherProxy.person)}</div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </section>
       );
     })}
@@ -185,7 +236,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
   </Fragment>
 </Layout>
 
@@ -249,6 +300,10 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
   font-family: var(--fb); font-size: 10px; font-weight: 500;
   letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
   margin-top: 4px;
+}
+.member-proxy {
+  font-family: var(--fd); font-size: 13px; font-style: italic;
+  color: var(--muted); margin-top: 6px;
 }
 .grouped-grid { display: grid; gap: 16px 24px; align-items: start; }
 .grouped-grid[data-count="1"] { grid-template-columns: 1fr; }

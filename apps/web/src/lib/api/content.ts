@@ -34,7 +34,7 @@ export { getGallery as getGalleryPhotos };
 export async function getSponsors(): Promise<Sponsors[]> {
   try {
     return await get<Sponsors[]>('/items/sponsors', {
-      fields: ['id', 'role', 'confirmed', 'person.id', 'person.first_name', 'person.last_name', 'person.middle_name', 'person.preferred_name', 'partner.id'],
+      fields: ['id', 'role', 'confirmed', 'person.id', 'person.first_name', 'person.last_name', 'person.middle_name', 'person.preferred_name', 'person.gender', 'partner.id'],
       filter: { confirmed: { _eq: true } },
       sort: ['role'],
     });

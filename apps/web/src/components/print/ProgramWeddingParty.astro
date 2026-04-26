@@ -11,9 +11,9 @@ interface Props {
 
 const { clergies, entourage, readings, sponsors } = Astro.props;
 
-function getFullName(p: { first_name?: string | null; preferred_name?: string | null; last_name?: string | null } | null | undefined, fallback = 'TBD') {
+function getFullName(p: { first_name?: string | null; last_name?: string | null } | null | undefined, fallback = 'TBD') {
   if (!p) return fallback;
-  return [(p.preferred_name ?? p.first_name), p.last_name].filter(Boolean).join(' ') || fallback;
+  return [p.first_name, p.last_name].filter(Boolean).join(' ') || fallback;
 }
 
 const clergyList = clergies.map(c => {
@@ -50,7 +50,7 @@ for (const r of readings) {
 }
 const readerEntries = [...readersMap.entries()].map(([label, names]) => ({ label, names }));
 
-const paired: { him: string; her: string }[] = [];
+const paired: { him: string; her: string; himLastName: string }[] = [];
 const used = new Set<string>();
 for (const s of sponsors) {
   if (used.has(s.id)) continue;
@@ -59,13 +59,19 @@ for (const s of sponsors) {
   const pName = partnerObj ? getFullName(partnerObj.person) : '';
   if (partnerObj) {
     const g = s.person?.gender?.toLowerCase() ?? '';
-    paired.push({ him: g === 'female' ? pName : sName, her: g === 'female' ? sName : pName });
+    const maleObj = g === 'female' ? partnerObj : s;
+    paired.push({
+      him: g === 'female' ? pName : sName,
+      her: g === 'female' ? sName : pName,
+      himLastName: maleObj.person?.last_name ?? '',
+    });
     used.add(s.id); used.add(partnerObj.id);
   } else {
-    paired.push({ him: sName, her: '' });
+    paired.push({ him: sName, her: '', himLastName: s.person?.last_name ?? '' });
     used.add(s.id);
   }
 }
+paired.sort((a, b) => a.himLastName.toLowerCase().localeCompare(b.himLastName.toLowerCase()));
 ---
 
 <div class="panel p3">

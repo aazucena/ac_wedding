@@ -15,16 +15,21 @@ interface Props {
 
 const { clergies, entourage, sponsors, sizeClass = 'size-5x7' } = Astro.props;
 
+type Role = 'entourage' | 'sponsor' | 'clergy' | 'bearer' | 'flower';
+
 function honorific(gender: string | undefined | null, isSponsor: boolean): string {
   if (gender === 'male') return 'Mr.';
   return isSponsor ? 'Mrs.' : 'Ms.';
 }
 
+
 function displayName(
   person: { first_name?: string; last_name?: string; gender?: string | null } | undefined | null,
-  isSponsor = false,
+  role: Role = 'entourage',
 ): string {
+  const isSponsor = role === "sponsor";
   if (!person) return '';
+  if (role !== "entourage") return `${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
   return `${honorific(person.gender, isSponsor)} ${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
 }
 
@@ -39,7 +44,7 @@ function formatParentPair(members: Entourage[]): string {
 }
 
 function formatSponsorPair(left: Sponsors, right: Sponsors | undefined): string {
-  if (!right) return displayName(left.person, true);
+  if (!right) return displayName(left.person, 'sponsor');
   const male   = left.person?.gender === 'male' ? left : right;
   const female = left.person?.gender === 'male' ? right : left;
   const lastName = male.person?.last_name ?? female.person?.last_name ?? '';
@@ -54,13 +59,14 @@ function memberSort(a: Entourage, b: Entourage) {
 // Clergy
 const priests = clergies;
 
-// Parents: from entourage by role name
-const parentsBride = entourage.filter(m =>
-  m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride',
-);
-const parentsGroom = entourage.filter(m =>
-  m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom',
-);
+// Parents: real (formal) and proxy (physically attending)
+const parentsBrideReal  = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') && !m.proxy);
+const parentsBrideProxy = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') &&  m.proxy);
+const parentsGroomReal  = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') && !m.proxy);
+const parentsGroomProxy = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') &&  m.proxy);
+
+const parentsBride = parentsBrideReal.length ? parentsBrideReal : parentsBrideProxy;
+const parentsGroom = parentsGroomReal.length ? parentsGroomReal : parentsGroomProxy;
 
 // Wedding party
 const moh         = entourage.filter(m => m.role?.name === 'Maid of Honour').sort(memberSort);
@@ -72,7 +78,6 @@ const ninongs  = sponsors.filter(s => s.role === 'ninong');
 const ninangs  = sponsors.filter(s => s.role === 'ninang');
 
 function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
-
   const sponsorMap = new Map(sponsors.map(s => [s.id, s]));
   const shown      = new Set<string>();
   const pairs: Array<[Sponsors, Sponsors | undefined]> = [];
@@ -87,7 +92,14 @@ function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
       pairs.push([s, undefined]);
     }
   }
-  return pairs;
+  // Sort by the male sponsor's last name
+  return pairs.sort((a, b) => {
+    const maleLastName = ([left, right]: [Sponsors, Sponsors | undefined]) => {
+      const male = left.person?.gender === 'male' ? left : (right ?? left);
+      return (male.person?.last_name ?? '').toLowerCase();
+    };
+    return maleLastName(a).localeCompare(maleLastName(b));
+  });
 }
 
 const principalPairs = buildPairs([...ninongs, ...ninangs]);
@@ -128,7 +140,7 @@ const bearerTypes = [
         <section class="ins-section">
           <p class="ins-label">Officiating {priests.length === 1 ? 'Priest' : 'Priests'}</p>
           {priests.map(c => (
-            <p class="ins-name">{c.title ? `${c.title} ` : ''}{displayName(c.person)}</p>
+            <p class="ins-name">{c.title ? `${c.title} ` : ''}{displayName(c.person, 'clergy')}</p>
           ))}
         </section>
       )}
@@ -140,6 +152,9 @@ const bearerTypes = [
             <div class="ins-col">
               <p class="ins-label">Parents of the Bride</p>
               <p class="ins-name ins-name--nowrap">{formatParentPair(parentsBride)}</p>
+              {parentsBrideReal.length > 0 && parentsBrideProxy.length > 0 && (
+                <p class="ins-name ins-name--nowrap ins-name--proxy">(Proxy) {formatParentPair(parentsBrideProxy)}</p>
+              )}
             </div>
           )}
           {parentsBride.length > 0 && parentsGroom.length > 0 && (
@@ -149,6 +164,9 @@ const bearerTypes = [
             <div class="ins-col">
               <p class="ins-label">Parents of the Groom</p>
               <p class="ins-name ins-name--nowrap">{formatParentPair(parentsGroom)}</p>
+              {parentsGroomReal.length > 0 && parentsGroomProxy.length > 0 && (
+                <p class="ins-name ins-name--nowrap ins-name--proxy">(Proxy) {formatParentPair(parentsGroomProxy)}</p>
+              )}
             </div>
           )}
         </section>
@@ -233,7 +251,7 @@ const bearerTypes = [
               {i > 0 && <span class="ins-col-divider" aria-hidden="true">✦</span>}
               <div class="ins-col">
                 <p class="ins-label">{bt.label}</p>
-                {bt.members.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+                {bt.members.map(m => <p class="ins-name">{displayName(m.person, 'bearer')}</p>)}
               </div>
             </>
           ))}
@@ -244,7 +262,7 @@ const bearerTypes = [
           <p class="ins-label">{flowerGirls.length === 1 ? 'Flower Girl' : 'Flower Girls'}</p>
           <div class="ins-pair-grid">
             {flowerGirls.map(m => (
-              <p class="ins-name ins-name--nowrap">{displayName(m.person)}</p>
+              <p class="ins-name ins-name--nowrap">{displayName(m.person, 'flower')}</p>
             ))}
           </div>
         </section>

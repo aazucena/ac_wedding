@@ -160,6 +160,7 @@ export interface Entourage {
   person?: Persons;
   attire_override?: string;
   confirmed?: boolean;
+  proxy?: boolean;
   role?: WeddingRoles;
   contact_phone?: string;
   ceremony?: Ceremonies;

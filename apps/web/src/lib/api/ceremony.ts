@@ -51,7 +51,7 @@ export async function getReadings(): Promise<Readings[]> {
   try {
     return await get<Readings[]>('/items/readings', {
       fields: ['id', 'label', 'type', 'book', 'scripture', 'reader.id', 'reader.first_name', 'reader.last_name', 'reader.preferred_name'],
-      filter: { reader_confirmed: { _eq: true } },
+      // filter: { reader_confirmed: { _eq: true } },
       sort: ['type'],
     });
   } catch {
@@ -62,7 +62,7 @@ export async function getReadings(): Promise<Readings[]> {
 export async function getEntourage(): Promise<Entourage[]> {
   try {
     return await get<Entourage[]>('/items/entourage', {
-      fields: ['id', 'sequence_order', 'pair_group', 'confirmed', 'person.id', 'person.first_name', 'person.last_name', 'person.preferred_name', 'person.gender', 'role.id', 'role.name'],
+      fields: ['id', 'sequence_order', 'pair_group', 'confirmed', 'proxy', 'person.id', 'person.first_name', 'person.last_name', 'person.preferred_name', 'person.gender', 'role.id', 'role.name'],
       sort: ['role.name', 'sequence_order'],
     });
   } catch {

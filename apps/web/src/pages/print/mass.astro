@@ -37,13 +37,13 @@ const venueC = ceremony.venue?.city ?? '';
 
 const priest = clergies.find((c: any) => c.title?.toLowerCase().includes('father') || c.title?.toLowerCase().includes('priest'));
 const priestName = priest
-  ? `${priest.title ?? 'Rev. Fr.'} ${priest.person?.preferred_name ?? priest.person?.first_name ?? ''} ${priest.person?.last_name ?? ''}`.trim()
+  ? `${priest.title ?? 'Rev. Fr.'} ${priest.person?.first_name ?? ''} ${priest.person?.last_name ?? ''}`.trim()
   : 'Rev. Fr. [Name]';
 
 function readerName(r: typeof readings[0]) {
   const p = r.reader;
   if (!p) return null;
-  return `${p.preferred_name ?? p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
+  return `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
 }
 function scriptureRef(r: typeof readings[0]) {
   if (r.label) return r.label;

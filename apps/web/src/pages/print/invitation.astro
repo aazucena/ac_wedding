@@ -47,17 +47,22 @@ function formatParentPair(members: typeof entourage): string {
   return `Mr. & Mrs. ${father.person?.first_name ?? ''} and ${mother.person?.first_name ?? ''} ${lastName}`.trim();
 }
 
-const parentsBride = entourage.filter(m => m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride');
-const parentsGroom = entourage.filter(m => m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom');
-const BRIDE_PARENTS = formatParentPair(parentsBride);
-const GROOM_PARENTS = formatParentPair(parentsGroom);
+const parentsBrideReal  = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') && !m.proxy);
+const parentsBrideProxy = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') &&  m.proxy);
+const parentsGroomReal  = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') && !m.proxy);
+const parentsGroomProxy = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') &&  m.proxy);
+
+const BRIDE_PARENTS       = formatParentPair(parentsBrideReal.length ? parentsBrideReal : parentsBrideProxy);
+const BRIDE_PARENTS_PROXY = parentsBrideReal.length ? formatParentPair(parentsBrideProxy) : '';
+const GROOM_PARENTS       = formatParentPair(parentsGroomReal.length ? parentsGroomReal : parentsGroomProxy);
+const GROOM_PARENTS_PROXY = parentsGroomReal.length ? formatParentPair(parentsGroomProxy) : '';
 const { dayOfWeek, ordinalDate, yearInWords } = formatLonghandDate(settings.wedding_date);
 const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.com';
 const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
 ---
 
 <PrintLayout
-  title={`Invitation — ${groom} & ${bride}`}
+  title={`Invitation — ${bride} & ${groom}`}
   cardWidth="5in" cardHeight="7in"
   toolbarHint="Click the card to flip · print sends both sides"
 >
@@ -89,13 +94,23 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
           {isSponsor && (
             <div class="sponsor-header">
               <div class="parents-block">
-                <p class="parent-line">{BRIDE_PARENTS}</p>
+                <div class="parent-group">
+                  <p class="parent-line">{BRIDE_PARENTS}</p>
+                  {BRIDE_PARENTS_PROXY && (
+                    <p class="parent-line parent-line--proxy">(Proxy) {BRIDE_PARENTS_PROXY}</p>
+                  )}
+                </div>
                 <div class="name-divider name-divider--sm">
                   <span class="rule-r"></span>
                   <span class="inv-and">and</span>
                   <span class="rule-l"></span>
                 </div>
-                <p class="parent-line">{GROOM_PARENTS}</p>
+                <div class="parent-group">
+                  <p class="parent-line">{GROOM_PARENTS}</p>
+                  {GROOM_PARENTS_PROXY && (
+                    <p class="parent-line parent-line--proxy">(Proxy) {GROOM_PARENTS_PROXY}</p>
+                  )}
+                </div>
               </div>
               <p class="request-copy">
                 request the honour of your presence<br />
@@ -130,7 +145,6 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
             <p class="day-label">{dayOfWeek}</p>
             <p class="date-long">{ordinalDate}</p>
             <p class="year-long">{yearInWords}</p>
-            <p class="time-label">at {formatTime(ceremony.start_time)}</p>
           </div>
 
           <div class="front-hr">
