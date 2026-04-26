@@ -108,6 +108,13 @@
 .front-hr { display: flex; align-items: center; gap: 12px; width: 72%; }
 .ornament-sm { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: #C5B8E0; }
 .dress-code { font-size: 9.5px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #8a8499; }
+.dinner-note { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: #8a8499; letter-spacing: 0.3px; }
+.sponsor-header { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.parents-block { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 8px; }
+.name-divider--sm { width: 52%; }
+.name-divider--sm .inv-and { font-size: 11px; }
+
+.parent-line { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: #1a1a2e; letter-spacing: 0.3px; }
 
 /* ── BACK ───────────────────────────────────────────────── */
 .back-inner {
@@ -208,6 +215,12 @@
   color: #C5B8E0; font-size: 8px; flex-shrink: 0;
   padding-top: 13px; align-self: flex-start;
 }
+.ins-pair-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px 12px; width: 100%; text-align: center;
+}
+.ins-pair-grid .ins-name { white-space: nowrap; }
+.ins-name--nowrap { white-space: nowrap; }
 
 .ins-label {
   font-family: 'Cormorant Garamond', serif;

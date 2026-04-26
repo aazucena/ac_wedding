@@ -36,8 +36,21 @@ const [clergies, entourage, sponsors] = isSponsor
   ? await Promise.all([getClergies(), getEntourage(), getSponsorsFull()])
   : [[], [], []] as [Awaited<ReturnType<typeof getClergies>>, Awaited<ReturnType<typeof getEntourage>>, Awaited<ReturnType<typeof getSponsorsFull>>];
 
-const groom   = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
 const bride   = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
+const groom   = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
+
+function formatParentPair(members: typeof entourage): string {
+  const father = members.find(m => m.person?.gender === 'male');
+  const mother = members.find(m => m.person?.gender !== 'male');
+  if (!father || !mother) return members.map(m => `${m.person?.first_name ?? ''} ${m.person?.last_name ?? ''}`.trim()).join(' & ');
+  const lastName = father.person?.last_name ?? mother.person?.last_name ?? '';
+  return `Mr. & Mrs. ${father.person?.first_name ?? ''} and ${mother.person?.first_name ?? ''} ${lastName}`.trim();
+}
+
+const parentsBride = entourage.filter(m => m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride');
+const parentsGroom = entourage.filter(m => m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom');
+const BRIDE_PARENTS = formatParentPair(parentsBride);
+const GROOM_PARENTS = formatParentPair(parentsGroom);
 const { dayOfWeek, ordinalDate, yearInWords } = formatLonghandDate(settings.wedding_date);
 const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.com';
 const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
@@ -71,29 +84,46 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
         <div class="card-accent"></div>
 
         <div class="front-inner">
-          {party
-            ? <p class="party-name">{party.name}</p>
-            : <p class="together-note">Together with their families</p>
-          }
+          <p class="together-note">Together with their families</p>
+
+          {isSponsor && (
+            <div class="sponsor-header">
+              <div class="parents-block">
+                <p class="parent-line">{BRIDE_PARENTS}</p>
+                <div class="name-divider name-divider--sm">
+                  <span class="rule-r"></span>
+                  <span class="inv-and">and</span>
+                  <span class="rule-l"></span>
+                </div>
+                <p class="parent-line">{GROOM_PARENTS}</p>
+              </div>
+              <p class="request-copy">
+                request the honour of your presence<br />
+                at the celebration of their Holy Matrimony
+              </p>
+            </div>
+          )}
 
           <div class="names-block">
-            <h1 class="inv-name">{groom}</h1>
+            <h1 class="inv-name">{bride}</h1>
             <div class="name-divider">
               <span class="rule-r"></span>
               <span class="inv-and">and</span>
               <span class="rule-l"></span>
             </div>
-            <h1 class="inv-name">{bride}</h1>
+            <h1 class="inv-name">{groom}</h1>
           </div>
 
-          <p class="request-copy">
-            request the honour of your presence
-            {party?.invitation_label && party.invitation_type !== 'guest'
-              ? <><br />as our {party.invitation_label}</>
-              : null
-            }<br />
-            at the celebration of their Holy Matrimony
-          </p>
+          {!isSponsor && (
+            <p class="request-copy">
+              request the honour of your presence
+              {party?.invitation_label && party.invitation_type === 'entourage'
+                ? <><br />as our {party.invitation_label}</>
+                : null
+              }<br />
+              at the celebration of their Holy Matrimony
+            </p>
+          )}
 
           <div class="date-block">
             <p class="ornament">✦</p>
@@ -110,6 +140,7 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
           </div>
 
           <p class="dress-code">{ceremony.dress_code ?? 'Formal Attire'}</p>
+          <p class="dinner-note">Dinner, Dancing &amp; Merriment to Follow</p>
         </div>
 
         <div class="card-accent-bottom"></div>
@@ -149,9 +180,6 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
               </p>
             )}
             <p class="venue-time">{formatTime(reception.start_time)}</p>
-            {reception.cocktail_hour_time && (
-              <p class="cocktail-note">Cocktail hour at {formatTime(reception.cocktail_hour_time)}</p>
-            )}
           </section>
 
           <div class="hr">
