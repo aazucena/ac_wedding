@@ -161,6 +161,10 @@ type Query {
   events_by_id(id: ID!, version: String): events
   events_aggregated(groupBy: [String], filter: events_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [events_aggregated!]!
   events_by_version(version: String!, id: ID!): version_events
+  api_endpoints(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [api_endpoints!]!
+  api_endpoints_by_id(id: ID!, version: String): api_endpoints
+  api_endpoints_aggregated(groupBy: [String], filter: api_endpoints_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [api_endpoints_aggregated!]!
+  api_endpoints_by_version(version: String!, id: ID!): version_api_endpoints
   accomodations(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [accomodations!]!
   accomodations_by_id(id: ID!, version: String): accomodations
   accomodations_aggregated(groupBy: [String], filter: accomodations_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [accomodations_aggregated!]!
@@ -177,10 +181,6 @@ type Query {
   guestbook_entries_by_id(id: ID!, version: String): guestbook_entries
   guestbook_entries_aggregated(groupBy: [String], filter: guestbook_entries_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [guestbook_entries_aggregated!]!
   guestbook_entries_by_version(version: String!, id: ID!): version_guestbook_entries
-  api_endpoints(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [api_endpoints!]!
-  api_endpoints_by_id(id: ID!, version: String): api_endpoints
-  api_endpoints_aggregated(groupBy: [String], filter: api_endpoints_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [api_endpoints_aggregated!]!
-  api_endpoints_by_version(version: String!, id: ID!): version_api_endpoints
 }
 
 type Mutation {
@@ -264,6 +264,8 @@ type Mutation {
   create_stories_item(data: create_stories_input!): stories
   create_events_items(filter: events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_events_input!]): [events!]!
   create_events_item(data: create_events_input!): events
+  create_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_api_endpoints_input!]): [api_endpoints!]!
+  create_api_endpoints_item(data: create_api_endpoints_input!): api_endpoints
   create_accomodations_items(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_accomodations_input!]): [accomodations!]!
   create_accomodations_item(data: create_accomodations_input!): accomodations
   create_memories_items(filter: memories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_memories_input!]): [memories!]!
@@ -272,8 +274,6 @@ type Mutation {
   create_directus_sync_id_map_item(data: create_directus_sync_id_map_input!): directus_sync_id_map
   create_guestbook_entries_items(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_guestbook_entries_input!]): [guestbook_entries!]!
   create_guestbook_entries_item(data: create_guestbook_entries_input!): guestbook_entries
-  create_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_api_endpoints_input!]): [api_endpoints!]!
-  create_api_endpoints_item(data: create_api_endpoints_input!): api_endpoints
   update_parties_items(filter: parties_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_parties_input!): [parties!]!
   update_parties_batch(filter: parties_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_parties_input!]): [parties!]!
   update_parties_item(id: ID!, data: update_parties_input!): parties
@@ -395,6 +395,9 @@ type Mutation {
   update_events_items(filter: events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_events_input!): [events!]!
   update_events_batch(filter: events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_events_input!]): [events!]!
   update_events_item(id: ID!, data: update_events_input!): events
+  update_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_api_endpoints_input!): [api_endpoints!]!
+  update_api_endpoints_batch(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_api_endpoints_input!]): [api_endpoints!]!
+  update_api_endpoints_item(id: ID!, data: update_api_endpoints_input!): api_endpoints
   update_accomodations_items(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_accomodations_input!): [accomodations!]!
   update_accomodations_batch(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_accomodations_input!]): [accomodations!]!
   update_accomodations_item(id: ID!, data: update_accomodations_input!): accomodations
@@ -407,9 +410,6 @@ type Mutation {
   update_guestbook_entries_items(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_guestbook_entries_input!): [guestbook_entries!]!
   update_guestbook_entries_batch(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_guestbook_entries_input!]): [guestbook_entries!]!
   update_guestbook_entries_item(id: ID!, data: update_guestbook_entries_input!): guestbook_entries
-  update_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_api_endpoints_input!): [api_endpoints!]!
-  update_api_endpoints_batch(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_api_endpoints_input!]): [api_endpoints!]!
-  update_api_endpoints_item(id: ID!, data: update_api_endpoints_input!): api_endpoints
   delete_parties_items(ids: [ID]!): delete_many
   delete_parties_item(id: ID!): delete_one
   delete_ceremonies_items(ids: [ID]!): delete_many
@@ -490,6 +490,8 @@ type Mutation {
   delete_stories_item(id: ID!): delete_one
   delete_events_items(ids: [ID]!): delete_many
   delete_events_item(id: ID!): delete_one
+  delete_api_endpoints_items(ids: [ID]!): delete_many
+  delete_api_endpoints_item(id: ID!): delete_one
   delete_accomodations_items(ids: [ID]!): delete_many
   delete_accomodations_item(id: ID!): delete_one
   delete_memories_items(ids: [ID]!): delete_many
@@ -498,8 +500,6 @@ type Mutation {
   delete_directus_sync_id_map_item(id: ID!): delete_one
   delete_guestbook_entries_items(ids: [ID]!): delete_many
   delete_guestbook_entries_item(id: ID!): delete_one
-  delete_api_endpoints_items(ids: [ID]!): delete_many
-  delete_api_endpoints_item(id: ID!): delete_one
 }
 
 type Subscription {
@@ -567,11 +567,11 @@ type Subscription {
   gallery_mutated(event: EventEnum): gallery_mutated
   stories_mutated(event: EventEnum): stories_mutated
   events_mutated(event: EventEnum): events_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   accomodations_mutated(event: EventEnum): accomodations_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
   guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
-  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""
