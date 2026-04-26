@@ -23,7 +23,7 @@ const venueName = ceremony.venue?.name ?? null;
 const metaParts = [startTime, venueName, ceremony.dress_code].filter(Boolean);
 const metaLine  = metaParts.join(' · ') || null;
 
-const READING_ORDER = ['First Reading', 'Responsorial Psalm', 'Second Reading', 'Gospel Acclamation', 'Gospel', 'Prayer of the Faithful'];
+const READING_ORDER = ['first_reading', 'psalm', 'second_reading', 'gospel', 'petitions', 'prayers_of_the_faithful'];
 const sortedReadings = [...readings].sort((a, b) => {
   const ai = READING_ORDER.indexOf(a.type ?? '');
   const bi = READING_ORDER.indexOf(b.type ?? '');
@@ -39,17 +39,19 @@ const ministers = ceremony.liturgical_ministers ?? [];
 const venue = ceremony.venue ?? null;
 const venueAddress = [venue?.address_line1, venue?.city].filter(Boolean).join(', ') || null;
 
-// Order of service — top-level sections with children
-const programs = (ceremony.programs ?? [])
-  .filter(p => !p.parent)
-  .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
+// // Order of service — top-level sections with children
+// const programs = (ceremony.programs ?? [])
+//   .filter(p => !p.parent)
+//   .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
 
 // Dress code color palette
 const dressCodeColors = [
   { label: 'Mint Green', hex: '#A8D5C2' },
-  { label: 'White',      hex: '#F8F8F4' },
-  { label: 'Black',      hex: '#1A1A1A' },
   { label: 'Lavender',   hex: '#C9B8E8' },
+  { label: 'Dusty Blue', hex: '#ADC6EB' },
+  { label: 'Beige',      hex: '#F5E6D0' },
+  { label: 'Blush',      hex: '#F2C4CE' },
+  { label: 'Gold',       hex: '#E8D5A3' },
 ];
 
 const isHex = (v?: string) => /^#[0-9A-Fa-f]{6}$/.test(v ?? '');
@@ -64,15 +66,15 @@ const SLOT_LABELS: Record<string, string> = {
   communion: 'Communion', recessional: 'Recessional',
 };
 
-function personName(person?: { first_name?: string; last_name?: string; preferred_name?: string | null } | null): string {
+function personName(person?: { first_name?: string; last_name?: string } | null): string {
   if (!person) return '';
-  return `${person.preferred_name ?? person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
+  return `${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
 }
 
 ---
 
 <Layout
-  title={`Nuptial Mass — ${groom} & ${bride}`}
+  title={`Nuptial Mass — ${bride} & ${groom}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="ceremony"
@@ -118,7 +120,7 @@ function personName(person?: { first_name?: string; last_name?: string; preferre
                   <div class="swatch-wrap">
                     <span
                       class="swatch"
-                      style={`background:${c.hex};${c.hex === '#F8F8F4' ? 'border-color:var(--border);' : ''}`}
+                      style={`background:${c.hex};`}
                       title={c.label}
                     ></span>
                     <span class="swatch-label">{c.label}</span>
@@ -194,43 +196,6 @@ function personName(person?: { first_name?: string; last_name?: string; preferre
 
     {sortedReadings.length > 0 && <div class="section-divider" aria-hidden="true"><span class="spin-symbol">✦</span></div>}
 
-    <!-- ── Order of Service ───────────────────────────── -->
-    {programs.length > 0 && (
-      <section class="ceremony-section" id="order-of-service" style="animation-delay: 0.3s">
-        <h2 class="section-title">Order of Service</h2>
-        <ol class="oos-list">
-          {programs.map((section) => {
-            const children = (section.children ?? []).sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
-            return (
-              <li class="oos-section">
-                <span class="oos-section-label">{section.label}</span>
-                {children.length > 0 && (
-                  <ul class="oos-items">
-                    {children.map((item) => (
-                      <li class="oos-item">
-                        <span class="oos-item-dot"></span>
-                        <div class="oos-item-body">
-                          <span class="oos-item-label">{item.label}</span>
-                          {item.reading?.book && (
-                            <span class="oos-item-meta">{item.reading.book}</span>
-                          )}
-                          {item.music && (
-                            <span class="oos-item-meta">{item.music.title}{item.music.composer ? ` — ${item.music.composer}` : ''}</span>
-                          )}
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            );
-          })}
-        </ol>
-      </section>
-    )}
-
-    {programs.length > 0 && <div class="section-divider" aria-hidden="true"><span class="spin-symbol">✦</span></div>}
-
     <!-- ── Music ──────────────────────────────────────── -->
     {music.length > 0 && (
       <section class="ceremony-section" id="music" style="animation-delay: 0.35s">
@@ -251,19 +216,19 @@ function personName(person?: { first_name?: string; last_name?: string; preferre
 
     <!-- ── CTAs ───────────────────────────────────────── -->
     <div class="cta-row" style="animation-delay: 0.4s">
-      <a href="/print/program" class="cta-card">
+      <!-- <a href="/print/program" class="cta-card">
         <span class="cta-label">Ceremony Program</span>
-        <span class="cta-sub">Full order of service & reception details</span>
+        <span class="cta-sub">Order of service, readings & reception timeline</span>
         <span class="cta-arrow">→</span>
-      </a>
+      </a> -->
       <a href="/wedding-party" class="cta-card">
         <span class="cta-label">Wedding Party</span>
-        <span class="cta-sub">Entourage & principal sponsors</span>
+        <span class="cta-sub">Meet the entourage walking down the aisle</span>
         <span class="cta-arrow">→</span>
       </a>
       <a href="/sponsors" class="cta-card">
         <span class="cta-label">Sponsors</span>
-        <span class="cta-sub">Our cord, veil & candle sponsors</span>
+        <span class="cta-sub">The ninongs & ninangs honoring us with their blessing</span>
         <span class="cta-arrow">→</span>
       </a>
     </div>
@@ -272,7 +237,7 @@ function personName(person?: { first_name?: string; last_name?: string; preferre
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>
@@ -424,7 +389,7 @@ function personName(person?: { first_name?: string; last_name?: string; preferre
   color: var(--muted); line-height: 1.5;
 }
 .swatch-row {
-  display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 4px 0;
 }
 .swatch-wrap {
   display: flex; flex-direction: column; align-items: center; gap: 4px;
