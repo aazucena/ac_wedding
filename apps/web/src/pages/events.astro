@@ -42,19 +42,6 @@ if (settings.ceremony?.start_time) {
   });
 }
 
-if (settings.reception?.cocktail_hour_time) {
-  settingsTimelineEvents.push({
-    id:         '__cocktail',
-    status:     'published',
-    name:       'Cocktail Hour',
-    date:       weddingDate,
-    start_time: settings.reception.cocktail_hour_time,
-    end_time:   settings.reception.start_time ?? undefined,
-    venue:      settings.reception.venue ?? undefined,
-    public:     true,
-  });
-}
-
 if (settings.reception?.start_time) {
   settingsTimelineEvents.push({
     id:         '__reception',
@@ -62,7 +49,7 @@ if (settings.reception?.start_time) {
     name:       'Wedding Reception',
     date:       weddingDate,
     start_time: settings.reception.start_time,
-    end_time:   settings.reception.end_time ?? undefined,
+    end_time:   settings.reception.end_time ?? '21:00:00',
     venue:      settings.reception.venue ?? undefined,
     public:     true,
     icsKey:     'reception',
@@ -136,23 +123,12 @@ if (settings.ceremony?.start_time) {
   });
 }
 
-if (settings.reception?.cocktail_hour_time) {
-  settingsEvents.push({
-    id:         'cocktail',
-    title:      'Cocktail Hour',
-    start:      toCalendarTime(weddingDate, settings.reception.cocktail_hour_time),
-    end:        defaultEnd(weddingDate, settings.reception.cocktail_hour_time, settings.reception.start_time),
-    ...(settings.reception.venue?.name ? { location: settings.reception.venue.name } : {}),
-    calendarId: 'wedding',
-  });
-}
-
 if (settings.reception?.start_time) {
   settingsEvents.push({
     id:         'reception',
     title:      'Wedding Reception',
     start:      toCalendarTime(weddingDate, settings.reception.start_time),
-    end:        defaultEnd(weddingDate, settings.reception.start_time, settings.reception.end_time),
+    end:        defaultEnd(weddingDate, settings.reception.start_time, settings.reception.end_time ?? '21:00:00'),
     ...(settings.reception.venue?.name ? { location: settings.reception.venue.name } : {}),
     calendarId: 'wedding',
   });
@@ -162,7 +138,7 @@ const allCalendarEvents = [...settingsEvents, ...calendarEvents];
 ---
 
 <Layout
-  title={`Events — ${groom} & ${bride}`}
+  title={`Events — ${bride} & ${groom}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="events"
@@ -228,7 +204,7 @@ const allCalendarEvents = [...settingsEvents, ...calendarEvents];
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
+    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>

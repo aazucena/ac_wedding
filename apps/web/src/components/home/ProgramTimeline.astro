@@ -38,7 +38,6 @@ const ceremonyEnd = ceremony.estimated_duration && ceremony.start_time
 const openingItems = [
   { time: ceremonyTime,              icon: '⛪', label: 'Ceremony begins',       note: ceremonyVenue },
   { time: ceremonyEnd ?? '~3:30 PM', icon: '🕊️', label: 'Recessional & photos', note: 'Grounds' },
-  { time: ft(reception.cocktail_hour_time, '5:00 PM'), icon: '🥂', label: 'Cocktail hour', note: 'Pre-reception' },
 ];
 
 const receptionItems = (reception.programs ?? [])
@@ -64,7 +63,6 @@ const receptionPhaseItems = receptionItems.length > 0 ? receptionItems : fallbac
 const lastReceptionItem = receptionPhaseItems[receptionPhaseItems.length - 1];
 
 const ceremonyPhaseItems = openingItems.slice(0, 2); // ceremony begins + recessional
-const receptionPhaseWithCocktail = [openingItems[2]!, ...receptionPhaseItems]; // cocktail hour first
 
 const phases = [
   {
@@ -77,8 +75,8 @@ const phases = [
   {
     icon: '🎉',
     name: 'Reception',
-    timeRange: `${receptionPhaseWithCocktail[0]?.time ?? 'TBD'} – ${lastReceptionItem?.time ?? 'TBD'}`,
-    items: receptionPhaseWithCocktail,
+    timeRange: `${receptionPhaseItems[0]?.time ?? 'TBD'} – ${lastReceptionItem?.time ?? 'TBD'}`,
+    items: receptionPhaseItems,
     open: false,
   },
 ];

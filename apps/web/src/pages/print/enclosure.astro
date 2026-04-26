@@ -30,8 +30,8 @@ const receptionVenue = reception.venue;
 
 const weddingDate   = formatDate(settings.wedding_date ?? '2026-09-26', 'cccc, MMMM d, yyyy');
 const ceremonyTime  = ceremony.start_time ? formatTime(ceremony.start_time) : '2:00 PM';
-const receptionTime = (reception.cocktail_hour_time ?? reception.start_time)
-  ? formatTime((reception.cocktail_hour_time ?? reception.start_time)!)
+const receptionTime = reception.start_time
+  ? formatTime(reception.start_time)
   : '5:00 PM';
 
 const hotel     = settings.accomodation?.vendor;
@@ -84,7 +84,7 @@ const dressCode = ceremony.dress_code ?? 'Formal';
             <div class="front-col">
               <div class="col-eyebrow">Reception</div>
               <div class="col-venue-name">{receptionVenue?.name ?? 'Reception Venue'}</div>
-              <div class="col-time">Cocktails {receptionTime}</div>
+              <div class="col-time">{receptionTime}</div>
               {receptionVenue?.address_line1 && (
                 <div class="col-addr">
                   {receptionVenue.address_line1}<br/>
