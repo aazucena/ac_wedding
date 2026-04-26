@@ -15,36 +15,40 @@ interface Props {
 
 const { clergies, entourage, sponsors, sizeClass = 'size-5x7' } = Astro.props;
 
+function honorific(gender: string | undefined | null, isSponsor: boolean): string {
+  if (gender === 'male') return 'Mr.';
+  return isSponsor ? 'Mrs.' : 'Ms.';
+}
+
 function displayName(
-  person: { first_name?: string; last_name?: string; preferred_name?: string | null } | undefined | null,
+  person: { first_name?: string; last_name?: string; gender?: string | null } | undefined | null,
+  isSponsor = false,
 ): string {
   if (!person) return '';
-  return `${person.preferred_name ?? person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
+  return `${honorific(person.gender, isSponsor)} ${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
+}
+
+function formatParentPair(members: Entourage[]): string {
+  const father = members.find(m => m.person?.gender === 'male');
+  const mother = members.find(m => m.person?.gender !== 'male');
+  if (father && mother) {
+    const lastName = father.person?.last_name ?? mother.person?.last_name ?? '';
+    return `Mr. & Mrs. ${father.person?.first_name ?? ''} and ${mother.person?.first_name ?? ''} ${lastName}`.trim();
+  }
+  return members.map(m => displayName(m.person)).join(' & ');
+}
+
+function formatSponsorPair(left: Sponsors, right: Sponsors | undefined): string {
+  if (!right) return displayName(left.person, true);
+  const male   = left.person?.gender === 'male' ? left : right;
+  const female = left.person?.gender === 'male' ? right : left;
+  const lastName = male.person?.last_name ?? female.person?.last_name ?? '';
+  return `Mr. & Mrs. ${male.person?.first_name ?? ''} and ${female.person?.first_name ?? ''} ${lastName}`.trim();
 }
 
 function memberSort(a: Entourage, b: Entourage) {
   const pg = (a.pair_group ?? Infinity) - (b.pair_group ?? Infinity);
   return pg !== 0 ? pg : (a.sequence_order ?? 0) - (b.sequence_order ?? 0);
-}
-
-// Build sponsor pairs: iterate `list` in order; look up each entry's partner in the full
-// sponsors map. Mark both as seen so the partner isn't rendered a second time.
-function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
-  const sponsorMap = new Map(sponsors.map(s => [s.id, s]));
-  const shown      = new Set<string>();
-  const pairs: Array<[Sponsors, Sponsors | undefined]> = [];
-  for (const s of list) {
-    if (shown.has(s.id)) continue;
-    shown.add(s.id);
-    const partner = s.partner?.id ? sponsorMap.get(s.partner.id) : undefined;
-    if (partner && !shown.has(partner.id)) {
-      shown.add(partner.id);
-      pairs.push([s, partner]);
-    } else {
-      pairs.push([s, undefined]);
-    }
-  }
-  return pairs;
 }
 
 // Clergy
@@ -64,10 +68,28 @@ const bm          = entourage.filter(m => m.role?.name === 'Best Man').sort(memb
 const bridesmaids = entourage.filter(m => m.role?.name === 'Bridesmaid').sort(memberSort);
 const groomsmen   = entourage.filter(m => m.role?.name === 'Groomsman').sort(memberSort);
 
-// Secondary sponsors (candle/veil/cord) — both partners have same role, use buildPairs
 const ninongs  = sponsors.filter(s => s.role === 'ninong');
 const ninangs  = sponsors.filter(s => s.role === 'ninang');
-// Iterate ninongs first so ninong appears on the left; orphan ninangs follow
+
+function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
+
+  const sponsorMap = new Map(sponsors.map(s => [s.id, s]));
+  const shown      = new Set<string>();
+  const pairs: Array<[Sponsors, Sponsors | undefined]> = [];
+  for (const s of list) {
+    if (shown.has(s.id)) continue;
+    shown.add(s.id);
+    const partner = s.partner?.id ? sponsorMap.get(s.partner.id) : undefined;
+    if (partner && !shown.has(partner.id)) {
+      shown.add(partner.id);
+      pairs.push([s, partner]);
+    } else {
+      pairs.push([s, undefined]);
+    }
+  }
+  return pairs;
+}
+
 const principalPairs = buildPairs([...ninongs, ...ninangs]);
 const secondaryTypes = [
   { label: 'Candle Sponsors', pairs: buildPairs(sponsors.filter(s => s.role === 'candle')) },
@@ -117,7 +139,7 @@ const bearerTypes = [
           {parentsBride.length > 0 && (
             <div class="ins-col">
               <p class="ins-label">Parents of the Bride</p>
-              {parentsBride.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+              <p class="ins-name ins-name--nowrap">{formatParentPair(parentsBride)}</p>
             </div>
           )}
           {parentsBride.length > 0 && parentsGroom.length > 0 && (
@@ -126,7 +148,7 @@ const bearerTypes = [
           {parentsGroom.length > 0 && (
             <div class="ins-col">
               <p class="ins-label">Parents of the Groom</p>
-              {parentsGroom.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+              <p class="ins-name ins-name--nowrap">{formatParentPair(parentsGroom)}</p>
             </div>
           )}
         </section>
@@ -136,17 +158,11 @@ const bearerTypes = [
       {principalPairs.length > 0 && (
         <section class="ins-section">
           <p class="ins-label">Principal Sponsors</p>
-          {principalPairs.map(([left, right]) => (
-            <div class="ins-pair">
-              <span class="ins-pair-name">{displayName(left.person)}</span>
-              {right && (
-                <>
-                  <span class="ins-divider" aria-hidden="true">✦</span>
-                  <span class="ins-pair-name">{displayName(right.person)}</span>
-                </>
-              )}
-            </div>
-          ))}
+          <div class="ins-pair-grid">
+            {principalPairs.map(([left, right]) => (
+              <p class="ins-name">{formatSponsorPair(left, right)}</p>
+            ))}
+          </div>
         </section>
       )}
 
@@ -201,10 +217,7 @@ const bearerTypes = [
               <div class="ins-col">
                 <p class="ins-label">{st.label}</p>
                 {st.pairs.map(([left, right]) => (
-                  <>
-                    <p class="ins-name">{displayName(left.person)}</p>
-                    {right && <p class="ins-name">{displayName(right.person)}</p>}
-                  </>
+                  <p class="ins-name">{formatSponsorPair(left, right)}</p>
                 ))}
               </div>
             </>
@@ -229,12 +242,9 @@ const bearerTypes = [
       {flowerGirls.length > 0 && (
         <section class="ins-section">
           <p class="ins-label">{flowerGirls.length === 1 ? 'Flower Girl' : 'Flower Girls'}</p>
-          <div class="ins-pair">
-            {flowerGirls.map((m, i) => (
-              <>
-                {i > 0 && <span class="ins-divider" aria-hidden="true">✦</span>}
-                <span class="ins-pair-name">{displayName(m.person)}</span>
-              </>
+          <div class="ins-pair-grid">
+            {flowerGirls.map(m => (
+              <p class="ins-name ins-name--nowrap">{displayName(m.person)}</p>
             ))}
           </div>
         </section>
