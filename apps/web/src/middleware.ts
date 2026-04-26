@@ -45,7 +45,7 @@ export const onRequest = defineMiddleware(async ({ url, cookies, locals, redirec
     }
   }
 
-  if (url.pathname.startsWith('/print/') && !locals.isPreview) {
+  if (url.pathname.startsWith('/print/') && !locals.isPreview && !import.meta.env.DEV) {
     return redirect('/', 307);
   }
 
