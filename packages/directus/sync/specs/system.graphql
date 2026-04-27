@@ -289,9 +289,9 @@ type Subscription {
   directus_settings_mutated(event: EventEnum): directus_settings_mutated
   directus_deployments_mutated(event: EventEnum): directus_deployments_mutated
   guests_mutated(event: EventEnum): guests_mutated
+  entourage_mutated(event: EventEnum): entourage_mutated
   clergies_mutated(event: EventEnum): clergies_mutated
   groups_mutated(event: EventEnum): groups_mutated
-  entourage_mutated(event: EventEnum): entourage_mutated
   liturgical_ministers_mutated(event: EventEnum): liturgical_ministers_mutated
   budget_categories_mutated(event: EventEnum): budget_categories_mutated
   checklist_sections_mutated(event: EventEnum): checklist_sections_mutated
@@ -326,8 +326,8 @@ type Subscription {
   gallery_mutated(event: EventEnum): gallery_mutated
   stories_mutated(event: EventEnum): stories_mutated
   events_mutated(event: EventEnum): events_mutated
-  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   accomodations_mutated(event: EventEnum): accomodations_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
   guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
@@ -2206,6 +2206,9 @@ type entourage {
   Assign the same number to two people who are a couple. Leave empty for unpaired roles.
   """
   pair_group: Int
+
+  """Toggle if this person stands in for an absent family member"""
+  proxy: Boolean
 }
 
 type entourage_mutated {
@@ -4981,6 +4984,7 @@ input entourage_filter {
   contact_phone: string_filter_operators
   ceremony: ceremonies_filter
   pair_group: number_filter_operators
+  proxy: boolean_filter_operators
   _and: [entourage_filter]
   _or: [entourage_filter]
 }
@@ -4998,6 +5002,7 @@ input entourage_quantifier_filter {
   contact_phone: string_filter_operators
   ceremony: ceremonies_filter
   pair_group: number_filter_operators
+  proxy: boolean_filter_operators
   _and: [entourage_filter]
   _or: [entourage_filter]
   _some: entourage_filter

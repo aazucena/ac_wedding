@@ -15,6 +15,10 @@ type Query {
   guests_by_id(id: ID!, version: String): guests
   guests_aggregated(groupBy: [String], filter: guests_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [guests_aggregated!]!
   guests_by_version(version: String!, id: ID!): version_guests
+  entourage(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [entourage!]!
+  entourage_by_id(id: ID!, version: String): entourage
+  entourage_aggregated(groupBy: [String], filter: entourage_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [entourage_aggregated!]!
+  entourage_by_version(version: String!, id: ID!): version_entourage
   clergies(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [clergies!]!
   clergies_by_id(id: ID!, version: String): clergies
   clergies_aggregated(groupBy: [String], filter: clergies_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [clergies_aggregated!]!
@@ -23,10 +27,6 @@ type Query {
   groups_by_id(id: ID!, version: String): groups
   groups_aggregated(groupBy: [String], filter: groups_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [groups_aggregated!]!
   groups_by_version(version: String!, id: ID!): version_groups
-  entourage(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [entourage!]!
-  entourage_by_id(id: ID!, version: String): entourage
-  entourage_aggregated(groupBy: [String], filter: entourage_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [entourage_aggregated!]!
-  entourage_by_version(version: String!, id: ID!): version_entourage
   liturgical_ministers(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [liturgical_ministers!]!
   liturgical_ministers_by_id(id: ID!, version: String): liturgical_ministers
   liturgical_ministers_aggregated(groupBy: [String], filter: liturgical_ministers_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [liturgical_ministers_aggregated!]!
@@ -161,14 +161,14 @@ type Query {
   events_by_id(id: ID!, version: String): events
   events_aggregated(groupBy: [String], filter: events_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [events_aggregated!]!
   events_by_version(version: String!, id: ID!): version_events
-  api_endpoints(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [api_endpoints!]!
-  api_endpoints_by_id(id: ID!, version: String): api_endpoints
-  api_endpoints_aggregated(groupBy: [String], filter: api_endpoints_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [api_endpoints_aggregated!]!
-  api_endpoints_by_version(version: String!, id: ID!): version_api_endpoints
   accomodations(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [accomodations!]!
   accomodations_by_id(id: ID!, version: String): accomodations
   accomodations_aggregated(groupBy: [String], filter: accomodations_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [accomodations_aggregated!]!
   accomodations_by_version(version: String!, id: ID!): version_accomodations
+  api_endpoints(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [api_endpoints!]!
+  api_endpoints_by_id(id: ID!, version: String): api_endpoints
+  api_endpoints_aggregated(groupBy: [String], filter: api_endpoints_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [api_endpoints_aggregated!]!
+  api_endpoints_by_version(version: String!, id: ID!): version_api_endpoints
   memories(filter: memories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [memories!]!
   memories_by_id(id: ID!, version: String): memories
   memories_aggregated(groupBy: [String], filter: memories_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [memories_aggregated!]!
@@ -192,12 +192,12 @@ type Mutation {
   create_persons_item(data: create_persons_input!): persons
   create_guests_items(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_guests_input!]): [guests!]!
   create_guests_item(data: create_guests_input!): guests
+  create_entourage_items(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_entourage_input!]): [entourage!]!
+  create_entourage_item(data: create_entourage_input!): entourage
   create_clergies_items(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_clergies_input!]): [clergies!]!
   create_clergies_item(data: create_clergies_input!): clergies
   create_groups_items(filter: groups_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_groups_input!]): [groups!]!
   create_groups_item(data: create_groups_input!): groups
-  create_entourage_items(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_entourage_input!]): [entourage!]!
-  create_entourage_item(data: create_entourage_input!): entourage
   create_liturgical_ministers_items(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_liturgical_ministers_input!]): [liturgical_ministers!]!
   create_liturgical_ministers_item(data: create_liturgical_ministers_input!): liturgical_ministers
   create_budget_categories_items(filter: budget_categories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_budget_categories_input!]): [budget_categories!]!
@@ -264,10 +264,10 @@ type Mutation {
   create_stories_item(data: create_stories_input!): stories
   create_events_items(filter: events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_events_input!]): [events!]!
   create_events_item(data: create_events_input!): events
-  create_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_api_endpoints_input!]): [api_endpoints!]!
-  create_api_endpoints_item(data: create_api_endpoints_input!): api_endpoints
   create_accomodations_items(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_accomodations_input!]): [accomodations!]!
   create_accomodations_item(data: create_accomodations_input!): accomodations
+  create_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_api_endpoints_input!]): [api_endpoints!]!
+  create_api_endpoints_item(data: create_api_endpoints_input!): api_endpoints
   create_memories_items(filter: memories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_memories_input!]): [memories!]!
   create_memories_item(data: create_memories_input!): memories
   create_directus_sync_id_map_items(filter: directus_sync_id_map_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_sync_id_map_input!]): [directus_sync_id_map!]!
@@ -286,15 +286,15 @@ type Mutation {
   update_guests_items(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_guests_input!): [guests!]!
   update_guests_batch(filter: guests_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_guests_input!]): [guests!]!
   update_guests_item(id: ID!, data: update_guests_input!): guests
+  update_entourage_items(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_entourage_input!): [entourage!]!
+  update_entourage_batch(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_entourage_input!]): [entourage!]!
+  update_entourage_item(id: ID!, data: update_entourage_input!): entourage
   update_clergies_items(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_clergies_input!): [clergies!]!
   update_clergies_batch(filter: clergies_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_clergies_input!]): [clergies!]!
   update_clergies_item(id: ID!, data: update_clergies_input!): clergies
   update_groups_items(filter: groups_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_groups_input!): [groups!]!
   update_groups_batch(filter: groups_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_groups_input!]): [groups!]!
   update_groups_item(id: ID!, data: update_groups_input!): groups
-  update_entourage_items(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_entourage_input!): [entourage!]!
-  update_entourage_batch(filter: entourage_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_entourage_input!]): [entourage!]!
-  update_entourage_item(id: ID!, data: update_entourage_input!): entourage
   update_liturgical_ministers_items(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_liturgical_ministers_input!): [liturgical_ministers!]!
   update_liturgical_ministers_batch(filter: liturgical_ministers_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_liturgical_ministers_input!]): [liturgical_ministers!]!
   update_liturgical_ministers_item(id: ID!, data: update_liturgical_ministers_input!): liturgical_ministers
@@ -395,12 +395,12 @@ type Mutation {
   update_events_items(filter: events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_events_input!): [events!]!
   update_events_batch(filter: events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_events_input!]): [events!]!
   update_events_item(id: ID!, data: update_events_input!): events
-  update_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_api_endpoints_input!): [api_endpoints!]!
-  update_api_endpoints_batch(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_api_endpoints_input!]): [api_endpoints!]!
-  update_api_endpoints_item(id: ID!, data: update_api_endpoints_input!): api_endpoints
   update_accomodations_items(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_accomodations_input!): [accomodations!]!
   update_accomodations_batch(filter: accomodations_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_accomodations_input!]): [accomodations!]!
   update_accomodations_item(id: ID!, data: update_accomodations_input!): accomodations
+  update_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_api_endpoints_input!): [api_endpoints!]!
+  update_api_endpoints_batch(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_api_endpoints_input!]): [api_endpoints!]!
+  update_api_endpoints_item(id: ID!, data: update_api_endpoints_input!): api_endpoints
   update_memories_items(filter: memories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_memories_input!): [memories!]!
   update_memories_batch(filter: memories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_memories_input!]): [memories!]!
   update_memories_item(id: ID!, data: update_memories_input!): memories
@@ -418,12 +418,12 @@ type Mutation {
   delete_persons_item(id: ID!): delete_one
   delete_guests_items(ids: [ID]!): delete_many
   delete_guests_item(id: ID!): delete_one
+  delete_entourage_items(ids: [ID]!): delete_many
+  delete_entourage_item(id: ID!): delete_one
   delete_clergies_items(ids: [ID]!): delete_many
   delete_clergies_item(id: ID!): delete_one
   delete_groups_items(ids: [ID]!): delete_many
   delete_groups_item(id: ID!): delete_one
-  delete_entourage_items(ids: [ID]!): delete_many
-  delete_entourage_item(id: ID!): delete_one
   delete_liturgical_ministers_items(ids: [ID]!): delete_many
   delete_liturgical_ministers_item(id: ID!): delete_one
   delete_budget_categories_items(ids: [ID]!): delete_many
@@ -490,10 +490,10 @@ type Mutation {
   delete_stories_item(id: ID!): delete_one
   delete_events_items(ids: [ID]!): delete_many
   delete_events_item(id: ID!): delete_one
-  delete_api_endpoints_items(ids: [ID]!): delete_many
-  delete_api_endpoints_item(id: ID!): delete_one
   delete_accomodations_items(ids: [ID]!): delete_many
   delete_accomodations_item(id: ID!): delete_one
+  delete_api_endpoints_items(ids: [ID]!): delete_many
+  delete_api_endpoints_item(id: ID!): delete_one
   delete_memories_items(ids: [ID]!): delete_many
   delete_memories_item(id: ID!): delete_one
   delete_directus_sync_id_map_items(ids: [ID]!): delete_many
@@ -530,9 +530,9 @@ type Subscription {
   directus_settings_mutated(event: EventEnum): directus_settings_mutated
   directus_deployments_mutated(event: EventEnum): directus_deployments_mutated
   guests_mutated(event: EventEnum): guests_mutated
+  entourage_mutated(event: EventEnum): entourage_mutated
   clergies_mutated(event: EventEnum): clergies_mutated
   groups_mutated(event: EventEnum): groups_mutated
-  entourage_mutated(event: EventEnum): entourage_mutated
   liturgical_ministers_mutated(event: EventEnum): liturgical_ministers_mutated
   budget_categories_mutated(event: EventEnum): budget_categories_mutated
   checklist_sections_mutated(event: EventEnum): checklist_sections_mutated
@@ -567,8 +567,8 @@ type Subscription {
   gallery_mutated(event: EventEnum): gallery_mutated
   stories_mutated(event: EventEnum): stories_mutated
   events_mutated(event: EventEnum): events_mutated
-  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   accomodations_mutated(event: EventEnum): accomodations_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
   guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
@@ -2217,6 +2217,9 @@ type entourage {
   Assign the same number to two people who are a couple. Leave empty for unpaired roles.
   """
   pair_group: Int
+
+  """Toggle if this person stands in for an absent family member"""
+  proxy: Boolean
 }
 
 type entourage_aggregated {
@@ -2256,6 +2259,9 @@ type entourage_aggregated_count {
   Assign the same number to two people who are a couple. Leave empty for unpaired roles.
   """
   pair_group: Int
+
+  """Toggle if this person stands in for an absent family member"""
+  proxy: Int
 }
 
 type entourage_aggregated_fields {
@@ -4921,6 +4927,9 @@ type version_entourage {
   Assign the same number to two people who are a couple. Leave empty for unpaired roles.
   """
   pair_group: Int
+
+  """Toggle if this person stands in for an absent family member"""
+  proxy: Boolean
 }
 
 """"""
@@ -6738,6 +6747,9 @@ input create_entourage_input {
   Assign the same number to two people who are a couple. Leave empty for unpaired roles.
   """
   pair_group: Int
+
+  """Toggle if this person stands in for an absent family member"""
+  proxy: Boolean
 }
 
 input create_events_input {
@@ -8147,6 +8159,7 @@ input entourage_filter {
   contact_phone: string_filter_operators
   ceremony: ceremonies_filter
   pair_group: number_filter_operators
+  proxy: boolean_filter_operators
   _and: [entourage_filter]
   _or: [entourage_filter]
 }
@@ -8164,6 +8177,7 @@ input entourage_quantifier_filter {
   contact_phone: string_filter_operators
   ceremony: ceremonies_filter
   pair_group: number_filter_operators
+  proxy: boolean_filter_operators
   _and: [entourage_filter]
   _or: [entourage_filter]
   _some: entourage_filter
@@ -9632,6 +9646,9 @@ input update_entourage_input {
   Assign the same number to two people who are a couple. Leave empty for unpaired roles.
   """
   pair_group: Int
+
+  """Toggle if this person stands in for an absent family member"""
+  proxy: Boolean
 }
 
 input update_events_input {
