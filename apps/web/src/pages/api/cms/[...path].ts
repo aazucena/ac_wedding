@@ -72,6 +72,11 @@ async function handler({ request, params }: Parameters<APIRoute>[0]): Promise<Re
       if (v) responseHeaders.set(h, v);
     }
 
+    // Directus assets are content-addressed by UUID — safe to cache forever.
+    if (path.startsWith('assets/') && upstream.ok) {
+      responseHeaders.set('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+
     return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
   } catch (err) {
     const isTimeout = err instanceof Error && err.name === 'TimeoutError';
