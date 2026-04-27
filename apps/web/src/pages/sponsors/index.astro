@@ -34,7 +34,7 @@ for (const s of sponsors) {
 
   const partner = s.partner ? sponsors.find(x => x.id === s.partner!.id) ?? null : null;
   if (partner) paired.add(partner.id);
-  if (['ninong', 'ninang'].includes(s.role ?? '')) s.role = 'ninang & ninong';
+  if (['ninong', 'ninang'].includes(s.role ?? '')) s.role = 'principal sponsors';
 
   pairs.push({ role: s.role ?? '', a: s, b: partner });
 }
