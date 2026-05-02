@@ -2,12 +2,13 @@
 export const prerender = false;
 // src/pages/print/invitation.astro
 // Two-sided duplex invitation card
-//   Front — names + date (cover-style)
-//   Back  — ceremony venue + reception venue + RSVP QR + hashtag
+//   Front — names + date + venue (ceremony & reception)
+//   Back  — attire swatches · gift note · website QR
 
 import { getSettings, getCeremony, getReception, getPartyByToken, getClergies, getEntourage, getSponsorsFull } from '@lib/directus';
 import { formatTime, formatLonghandDate } from '@lib/print';
 import { formatDate } from '@lib/utils/format';
+import { ATTIRE_SWATCHES } from '@lib/constants';
 import PrintLayout                   from '@layouts/PrintLayout.astro';
 import Hashtag                       from '@components/Hashtag.astro';
 import CardWatermark                 from '@components/CardWatermark.astro';
@@ -58,11 +59,11 @@ const GROOM_PARENTS       = formatParentPair(parentsGroomReal.length ? parentsGr
 const GROOM_PARENTS_PROXY = parentsGroomReal.length ? formatParentPair(parentsGroomProxy) : '';
 const { dayOfWeek, ordinalDate, yearInWords } = formatLonghandDate(settings.wedding_date);
 const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.com';
-const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
+
 ---
 
 <PrintLayout
-  title={`Invitation — ${bride} & ${groom}`}
+  title={`Invitation — ${groom} & ${bride}`}
   cardWidth="5in" cardHeight="7in"
   toolbarHint="Click the card to flip · print sends both sides"
 >
@@ -95,9 +96,9 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
             <div class="sponsor-header">
               <div class="parents-block">
                 <div class="parent-group">
-                  <p class="parent-line">{BRIDE_PARENTS}</p>
-                  {BRIDE_PARENTS_PROXY && (
-                    <p class="parent-line parent-line--proxy">Represented by {BRIDE_PARENTS_PROXY}</p>
+                  <p class="parent-line">{GROOM_PARENTS}</p>
+                  {GROOM_PARENTS_PROXY && (
+                    <p class="parent-line parent-line--proxy">Represented by {GROOM_PARENTS_PROXY}</p>
                   )}
                 </div>
                 <div class="name-divider name-divider--sm">
@@ -106,9 +107,9 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
                   <span class="rule-l"></span>
                 </div>
                 <div class="parent-group">
-                  <p class="parent-line">{GROOM_PARENTS}</p>
-                  {GROOM_PARENTS_PROXY && (
-                    <p class="parent-line parent-line--proxy">Represented by {GROOM_PARENTS_PROXY}</p>
+                  <p class="parent-line">{BRIDE_PARENTS}</p>
+                  {BRIDE_PARENTS_PROXY && (
+                    <p class="parent-line parent-line--proxy">Represented by {BRIDE_PARENTS_PROXY}</p>
                   )}
                 </div>
               </div>
@@ -120,13 +121,13 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
           )}
 
           <div class="names-block">
-            <h1 class="inv-name">{bride}</h1>
+            <h1 class="inv-name">{groom}</h1>
             <div class="name-divider">
               <span class="rule-r"></span>
               <span class="inv-and">and</span>
               <span class="rule-l"></span>
             </div>
-            <h1 class="inv-name">{groom}</h1>
+            <h1 class="inv-name">{bride}</h1>
           </div>
 
           {!isSponsor && (
@@ -153,8 +154,30 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
             <span class="rule-l long"></span>
           </div>
 
-          <p class="dress-code">{ceremony.dress_code ?? 'Formal Attire'}</p>
-          <p class="dinner-note">Dinner, Dancing &amp; Merriment to Follow</p>
+          <div class="front-venues">
+            <section class="venue-section">
+              <p class="section-eye">Ceremony</p>
+              <p class="venue-name">{ceremony.venue?.name ?? 'Venue TBD'}</p>
+              <p class="venue-addr">
+                {ceremony.venue?.address_line1
+                  ? `${ceremony.venue.address_line1}, ${ceremony.venue.city ?? 'Lethbridge'}, Alberta`
+                  : 'Lethbridge, Alberta, Canada'}
+              </p>
+              <p class="venue-time">{formatTime(ceremony.start_time)}</p>
+            </section>
+            <span class="front-venue-rule" aria-hidden="true"></span>
+            <section class="venue-section">
+              <p class="section-eye">Reception</p>
+              <p class="venue-name">{reception.venue?.name ?? 'Venue TBD'}</p>
+              {reception.venue?.address_line1 && (
+                <p class="venue-addr">
+                  {reception.venue.address_line1}, {reception.venue.city ?? 'Lethbridge'}, Alberta
+                </p>
+              )}
+              <p class="venue-time">{formatTime(reception.start_time)}</p>
+            </section>
+          </div>
+
         </div>
 
         <div class="card-accent-bottom"></div>
@@ -168,50 +191,59 @@ const rsvpUrl = token ? `${BASE_URL}/rsvp/${token}` : `${BASE_URL}/invite`;
 
         <div class="back-inner">
 
-          <!-- Ceremony -->
-          <section class="venue-section">
-            <p class="section-eye">Ceremony</p>
-            <p class="venue-name">{ceremony.venue?.name ?? 'Venue TBD'}</p>
-            <p class="venue-addr">
-              {ceremony.venue?.address_line1
-                ? `${ceremony.venue.address_line1}, ${ceremony.venue.city ?? 'Lethbridge'}, Alberta`
-                : 'Lethbridge, Alberta, Canada'}
-            </p>
-            <p class="venue-time">{formatTime(ceremony.start_time)}</p>
-          </section>
-
-          <div class="hr">
-            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
-          </div>
-
-          <!-- Reception -->
-          <section class="venue-section">
-            <p class="section-eye">Reception</p>
-            <p class="venue-name">{reception.venue?.name ?? 'Venue TBD'}</p>
-            {reception.venue?.address_line1 && (
-              <p class="venue-addr">
-                {reception.venue.address_line1}, {reception.venue.city ?? 'Lethbridge'}, Alberta
-              </p>
-            )}
-            <p class="venue-time">{formatTime(reception.start_time)}</p>
-          </section>
-
-          <div class="hr">
-            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
-          </div>
-
-          <!-- RSVP QR -->
+          <!-- Website / QR -->
           <section class="rsvp-section">
-            <div class="rsvp-card">
-              <QRCodeWidget url={rsvpUrl} size={130} />
-              <div class="rsvp-text">
-                <p class="rsvp-heading">Kindly Reply</p>
-                <p class="rsvp-deadline">by {formatDate(settings.rsvp_deadline ?? '2026-08-26')}</p>
-                <p class="rsvp-note">Scan to RSVP or visit:</p>
-                <p class="rsvp-url">{rsvpUrl}</p>
-                <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />
+            <QRCodeWidget url={BASE_URL} size={170} />
+            <p class="rsvp-heading">Our Website</p>
+            <p class="rsvp-deadline">Kindly reply by {formatDate(settings.rsvp_deadline ?? '2026-08-26')}</p>
+            <p class="rsvp-url">{BASE_URL}</p>
+            <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />
+          </section>
+
+          {!isSponsor && (
+            <>
+              <div class="hr">
+                <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
               </div>
-            </div>
+
+              <!-- Attire -->
+              <section class="attire-section">
+                <p class="attire-label">Attire</p>
+                <p class="attire-dresscode">{ceremony.dress_code ?? 'Formal'}</p>
+                <div class="attire-row">
+                  <div class="attire-col">
+                    <p class="attire-gender">Gentlemen</p>
+                    <p class="attire-wear">Suits or Barong Tagalog</p>
+                  </div>
+                  <div class="attire-col">
+                    <p class="attire-gender">Ladies</p>
+                    <p class="attire-wear">Gowns or Cocktail Dresses</p>
+                  </div>
+                </div>
+                <div class="swatch-row">
+                  {ATTIRE_SWATCHES.map(s => (
+                    <div class="swatch-wrap">
+                      <span class="swatch-circle" style={`background:${s.hex}`}></span>
+                      <span class="swatch-name">{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+                <p class="attire-avoid">Guests — please avoid wearing white &amp; black</p>
+              </section>
+            </>
+          )}
+
+          <div class="hr">
+            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
+          </div>
+
+          <!-- Gift -->
+          <section class="gift-section">
+            <p class="attire-label">Gift Registry</p>
+            <p class="gift-note">
+              Your presence at our celebration is the greatest gift of all.
+              Should you wish to honour us further, please visit our website for more information.
+            </p>
           </section>
 
         </div>

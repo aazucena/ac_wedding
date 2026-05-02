@@ -28,10 +28,10 @@
     object-fit: contain !important;
   }
   /* Print-accurate font sizes for the insert */
-  .insert-title    { font-size: 14pt !important; }
-  .ins-label       { font-size: 6pt !important; }
-  .ins-name        { font-size: 9pt !important; }
-  .ins-pair-name   { font-size: 9pt !important; }
+  .insert-title    { font-size: 12pt !important; }
+  .ins-label       { font-size: 5pt !important; }
+  .ins-name        { font-size: 8pt !important; }
+  .ins-pair-name   { font-size: 8pt !important; }
 }
 
 /* ── Size-dependent flip-container widths ─────────────────── */
@@ -121,7 +121,7 @@
 /* ── BACK ───────────────────────────────────────────────── */
 .back-inner {
   flex: 1; display: flex; flex-direction: column;
-  justify-content: center; gap: 16px; padding: 28px 0;
+  justify-content: center; gap: 16px; padding: 28px 32px;
   position: relative; z-index: 1;
 }
 .venue-section {
@@ -134,34 +134,30 @@
 }
 .venue-name {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 22px; font-weight: 400; color: #1a1a2e;
+  font-size: 22px; font-weight: 400; color: #1a1a2e; white-space: nowrap;
 }
 .flip-container.size-a4 .venue-name { font-size: 26px; }
 .venue-addr { font-size: 9px; letter-spacing: 0.5px; color: #8a8499; }
 .venue-time { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #8a8499; margin-top: 2px; }
 .cocktail-note { font-size: 10px; font-style: italic; color: #8a8499; }
 
-/* ── RSVP card ──────────────────────────────────────────── */
-.rsvp-section { padding: 0 44px; }
-.rsvp-card {
-  display: flex; align-items: center; gap: 22px; padding: 16px 20px;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, #A8D4B8 10%, #fdfaf7),
-    color-mix(in srgb, #C5B8E0  8%, #fdfaf7));
-  border: 1px solid rgba(197,184,224,0.4); border-radius: 10px;
+/* ── RSVP section — vertical, QR-first ─────────────────── */
+.rsvp-section {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; text-align: center; width: 100%;
 }
-.rsvp-text { display: flex; flex-direction: column; gap: 4px; }
 .rsvp-heading {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 24px; font-weight: 300; font-style: italic; color: #1a1a2e;
+  font-size: 22px; font-weight: 300; font-style: italic; color: #1a1a2e;
+  margin-top: 4px;
 }
-.flip-container.size-a4 .rsvp-heading { font-size: 28px; }
+.flip-container.size-a4 .rsvp-heading { font-size: 26px; }
 .rsvp-deadline { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #8a8499; }
-.rsvp-note { font-size: 10px; color: #5a5470; margin-top: 4px; line-height: 1.5; }
+.rsvp-note { font-size: 10px; color: #5a5470; line-height: 1.5; }
 .rsvp-url { font-size: 10px; color: #8a8499; }
 .rsvp-hashtag {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 18px; font-style: italic; color: #C5B8E0; margin-top: 4px; display: block;
+  font-size: 18px; font-style: italic; color: #C5B8E0; display: block;
 }
 
 /* ── ENTOURAGE INSERT ───────────────────────────────────── */
@@ -243,3 +239,65 @@
   font-size: 11px; font-weight: 400; color: #1a1a2e; line-height: 1.35;
 }
 .ins-divider { color: #C5B8E0; font-size: 8px; flex-shrink: 0; }
+
+/* ── FRONT VENUES + BACK ATTIRE ─────────────────── */
+/* Venue on front — two-column row, smaller than back-face sizing */
+.front-venues               { display: flex; align-items: stretch; width: 100%; }
+.front-venue-rule           {
+  width: 1px; flex-shrink: 0;
+  background: color-mix(in srgb, var(--cp) 40%, transparent);
+  margin: 4px 0;
+}
+.front-inner .venue-section { flex: 1; padding: 0 12px; gap: 2px; }
+.front-inner .venue-name    { font-size: 14px; }
+.front-inner .section-eye   { font-size: 8px; letter-spacing: 3px; margin-bottom: 1px; }
+.front-inner .venue-time    { font-size: 8px; letter-spacing: 2px; }
+.front-inner .venue-addr    { font-size: 7.5px; }
+
+.attire-section { text-align: center; margin-bottom: 4px; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.attire-label   {
+  font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted);
+}
+.attire-dresscode {
+  font-family: var(--fd); font-size: 20px; font-weight: 400; font-style: italic;
+  color: var(--dark); letter-spacing: 1px; margin-bottom: 10px;
+}
+.attire-row     { display: flex; justify-content: center; gap: 28px; }
+.attire-col     { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.attire-gender  {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--cp);
+}
+.attire-wear    {
+  font-family: var(--fd); font-size: 14px; font-style: italic;
+  color: var(--dark); line-height: 1.3;
+}
+.attire-avoid   {
+  font-family: var(--fb); font-size: 9px; font-weight: 500;
+  letter-spacing: 0.5px; color: var(--muted); font-style: italic;
+}
+.attire-sub     {
+  font-family: var(--fb); font-size: 8px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin: 10px 0 8px;
+}
+.swatch-row     { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.swatch-wrap    { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.swatch-circle  { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.12); }
+.swatch-name    { font-family: var(--fb); font-size: 8px; color: var(--muted); letter-spacing: 0.3px; }
+.gift-section   {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  text-align: center; width: 100%;
+}
+.gift-note      {
+  font-family: var(--fd); font-size: 11px; font-style: italic;
+  color: var(--dark); text-align: center; line-height: 1.7;
+  border-left: 2px solid var(--cp);
+  border-right: 2px solid var(--cp);
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--cp) 8%, transparent);
+  border-radius: 2px;
+  margin: 0 4px;
+}
