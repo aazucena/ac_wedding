@@ -327,9 +327,9 @@ type Subscription {
   stories_mutated(event: EventEnum): stories_mutated
   events_mutated(event: EventEnum): events_mutated
   accomodations_mutated(event: EventEnum): accomodations_mutated
-  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
 }
 
