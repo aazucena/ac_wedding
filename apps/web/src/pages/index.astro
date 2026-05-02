@@ -38,7 +38,7 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
 ---
 
 <Layout
-  title={`${bride} & ${groom} — ${weddingDateLabel}`}
+  title={`${groom} & ${bride} — ${weddingDateLabel}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="home"
@@ -152,7 +152,7 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>
