@@ -14,6 +14,10 @@ import Hashtag                       from '@components/Hashtag.astro';
 import CardWatermark                 from '@components/CardWatermark.astro';
 import QRCodeWidget                  from '@components/QRCode.astro';
 import InvitationEntourageInsert     from '@components/InvitationEntourageInsert.astro';
+import Favicon                        from '@assets/favicon.svg';
+import AccentMark                    from '@assets/accent_mark.svg';
+import Insignia                      from '@assets/insignia.png';
+import { Image }                     from 'astro:assets';
 import '../../styles/invitation.css';
 
 const token = Astro.url.searchParams.get('token') ?? undefined;
@@ -37,8 +41,8 @@ const [clergies, entourage, sponsors] = isSponsor
   ? await Promise.all([getClergies(), getEntourage(), getSponsorsFull()])
   : [[], [], []] as [Awaited<ReturnType<typeof getClergies>>, Awaited<ReturnType<typeof getEntourage>>, Awaited<ReturnType<typeof getSponsorsFull>>];
 
-const bride   = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
-const groom   = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
+const bride      = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
+const groom      = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
 
 function formatParentPair(members: typeof entourage): string {
   const father = members.find(m => m.person?.gender === 'male');
@@ -150,7 +154,7 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
 
           <div class="front-hr">
             <span class="rule-r long"></span>
-            <span class="ornament-sm">❧</span>
+            <span class="ornament-sm"><Image src={AccentMark} width={20} height={20} alt="" /></span>
             <span class="rule-l long"></span>
           </div>
 
@@ -193,24 +197,22 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
 
           <!-- Website / QR -->
           <section class="rsvp-section">
-            <QRCodeWidget url={BASE_URL} size={170} />
-            <p class="rsvp-heading">Our Website</p>
-            <p class="rsvp-deadline">Kindly reply by {formatDate(settings.rsvp_deadline ?? '2026-08-26')}</p>
+            <p class="rsvp-heading">For RSVP & Details</p>
+            <div class="qr-embellish">
+              <Image src={Insignia} width={340} height={340} alt="" class="qr-bg-insignia" />
+              <span class="qr-corner qr-corner--tl"><Image src={AccentMark} width={22} height={22} alt="" /></span>
+              <span class="qr-corner qr-corner--tr"><Image src={AccentMark} width={22} height={22} alt="" /></span>
+              <span class="qr-corner qr-corner--bl"><Image src={AccentMark} width={22} height={22} alt="" /></span>
+              <span class="qr-corner qr-corner--br"><Image src={AccentMark} width={22} height={22} alt="" /></span>
+              <QRCodeWidget url={BASE_URL} size={170} logo={Favicon.src} />
+            </div>
             <p class="rsvp-url">{BASE_URL}</p>
-            <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />
-          </section>
-
-          <div class="hr">
-            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
-          </div>
-
-          <!-- Gift -->
-          <section class="gift-section">
-            <p class="attire-label">Gift Registry</p>
-            <p class="gift-note">
-              Your presence at our celebration is the greatest gift of all.
-              Should you wish to honour us further, please visit our website for more information.
+            <p class="rsvp-instruction">
+              Please scan the code or visit our wedding website
+              to RSVP and view full event details.
             </p>
+            <p class="rsvp-deadline">Kindly reply by <strong>{formatDate(settings.rsvp_deadline ?? '2026-08-26')}</strong></p>
+            <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />
           </section>
 
           {!isSponsor && (
@@ -226,7 +228,7 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
                 <div class="attire-row">
                   <div class="attire-col">
                     <p class="attire-gender">Gentlemen</p>
-                    <p class="attire-wear">Suits or Barong Tagalog</p>
+                    <p class="attire-wear">Suits or Dress Shirts</p>
                   </div>
                   <div class="attire-col">
                     <p class="attire-gender">Ladies</p>

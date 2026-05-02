@@ -106,7 +106,7 @@
 .year-long { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: #5a5470; }
 .time-label { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #8a8499; margin-top: 3px; }
 .front-hr { display: flex; align-items: center; gap: 12px; width: 72%; }
-.ornament-sm { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: #C5B8E0; }
+.ornament-sm { display: flex; align-items: center; justify-content: center; }
 .dress-code { font-size: 9.5px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #8a8499; }
 .dinner-note { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: #8a8499; letter-spacing: 0.3px; }
 .sponsor-header { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -141,6 +141,44 @@
 .venue-time { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #8a8499; margin-top: 2px; }
 .cocktail-note { font-size: 10px; font-style: italic; color: #8a8499; }
 
+/* ── QR embellishment frame ─────────────────────────────── */
+.qr-embellish {
+  position: relative;
+  padding: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.qr-embellish::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border: 1px solid color-mix(in srgb, var(--cs) 45%, transparent);
+  pointer-events: none;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.qr-bg-insignia {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.15;
+  z-index: 0;
+  pointer-events: none;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.qr-corner {
+  position: absolute;
+  background: #fdfaf7;
+  padding: 1px; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.qr-corner img { display: block; }
+.qr-corner--tl { top: 3px; left: 3px; transform: scale(-1); }
+.qr-corner--tr { top: 3px; right: 3px; transform: scaleY(-1); }
+.qr-corner--bl { bottom: 3px; left: 3px; transform: scaleX(-1); }
+.qr-corner--br { bottom: 3px; right: 3px; }
+
 /* ── RSVP section — vertical, QR-first ─────────────────── */
 .rsvp-section {
   display: flex; flex-direction: column; align-items: center;
@@ -148,13 +186,31 @@
 }
 .rsvp-heading {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 22px; font-weight: 300; font-style: italic; color: #1a1a2e;
+  font-size: 22px; font-weight: 300; font-style: italic; color: var(--cs);
   margin-top: 4px;
 }
+.rsvp-instruction {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 14px; font-weight: 400; color: #3a3040;
+  line-height: 1.7; text-align: center; max-width: 85%;
+}
 .flip-container.size-a4 .rsvp-heading { font-size: 26px; }
-.rsvp-deadline { font-size: 9px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #8a8499; }
+.rsvp-deadline {
+  font-family: var(--fb); font-size: 9px; font-weight: 400;
+  letter-spacing: 1px; text-transform: uppercase; color: #7a7490;
+}
+.rsvp-deadline strong {
+  font-weight: 700; color: var(--cs);
+}
 .rsvp-note { font-size: 10px; color: #5a5470; line-height: 1.5; }
-.rsvp-url { font-size: 10px; color: #8a8499; }
+.rsvp-url {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+  color: var(--cp);
+  background: color-mix(in srgb, var(--cp) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cp) 35%, transparent);
+  border-radius: 20px; padding: 3px 12px;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
 .rsvp-hashtag {
   font-family: 'Cormorant Garamond', serif;
   font-size: 18px; font-style: italic; color: #C5B8E0; display: block;
@@ -258,7 +314,7 @@
 .attire-label   {
   font-family: var(--fb); font-size: 10px; font-weight: 600;
   letter-spacing: 2.5px; text-transform: uppercase;
-  color: var(--muted);
+  color: var(--cs);
 }
 .attire-dresscode {
   font-family: var(--fd); font-size: 20px; font-weight: 400; font-style: italic;
@@ -287,17 +343,3 @@
 .swatch-wrap    { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .swatch-circle  { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.12); }
 .swatch-name    { font-family: var(--fb); font-size: 8px; color: var(--muted); letter-spacing: 0.3px; }
-.gift-section   {
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-  text-align: center; width: 100%;
-}
-.gift-note      {
-  font-family: var(--fd); font-size: 11px; font-style: italic;
-  color: var(--dark); text-align: center; line-height: 1.7;
-  border-left: 2px solid var(--cp);
-  border-right: 2px solid var(--cp);
-  padding: 8px 14px;
-  background: color-mix(in srgb, var(--cp) 8%, transparent);
-  border-radius: 2px;
-  margin: 0 4px;
-}
