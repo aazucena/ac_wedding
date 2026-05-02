@@ -148,24 +148,24 @@ const bearerTypes = [
       {/* ── Parents ─────────────────────────────────────────── */}
       {hasParents && (
         <section class="ins-section ins-section--two-col">
-          {parentsBride.length > 0 && (
-            <div class="ins-col">
-              <p class="ins-label">Parents of the Bride</p>
-              <p class="ins-name ins-name--nowrap">{formatParentPair(parentsBride)}</p>
-              {parentsBrideReal.length > 0 && parentsBrideProxy.length > 0 && (
-                <p class="ins-name ins-name--nowrap ins-name--proxy">Represented by {formatParentPair(parentsBrideProxy)}</p>
-              )}
-            </div>
-          )}
-          {parentsBride.length > 0 && parentsGroom.length > 0 && (
-            <span class="ins-col-divider" aria-hidden="true">✦</span>
-          )}
           {parentsGroom.length > 0 && (
             <div class="ins-col">
               <p class="ins-label">Parents of the Groom</p>
               <p class="ins-name ins-name--nowrap">{formatParentPair(parentsGroom)}</p>
               {parentsGroomReal.length > 0 && parentsGroomProxy.length > 0 && (
                 <p class="ins-name ins-name--nowrap ins-name--proxy">Represented by {formatParentPair(parentsGroomProxy)}</p>
+              )}
+            </div>
+          )}
+          {parentsBride.length > 0 && parentsGroom.length > 0 && (
+            <span class="ins-col-divider" aria-hidden="true">✦</span>
+          )}
+          {parentsBride.length > 0 && (
+            <div class="ins-col">
+              <p class="ins-label">Parents of the Bride</p>
+              <p class="ins-name ins-name--nowrap">{formatParentPair(parentsBride)}</p>
+              {parentsBrideReal.length > 0 && parentsBrideProxy.length > 0 && (
+                <p class="ins-name ins-name--nowrap ins-name--proxy">Represented by {formatParentPair(parentsBrideProxy)}</p>
               )}
             </div>
           )}
@@ -187,19 +187,19 @@ const bearerTypes = [
       {/* ── MoH & Best Man ──────────────────────────────────── */}
       {(moh.length > 0 || bm.length > 0) && (
         <section class="ins-section ins-section--two-col">
-          {moh.length > 0 && (
+          {bm.length > 0 && (
             <div class="ins-col">
-              <p class="ins-label">Maid of Honour</p>
-              {moh.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+              <p class="ins-label">Best Man</p>
+              {bm.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
             </div>
           )}
           {moh.length > 0 && bm.length > 0 && (
             <span class="ins-col-divider" aria-hidden="true">✦</span>
           )}
-          {bm.length > 0 && (
+          {moh.length > 0 && (
             <div class="ins-col">
-              <p class="ins-label">Best Man</p>
-              {bm.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+              <p class="ins-label">Maid of Honour</p>
+              {moh.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
             </div>
           )}
         </section>
@@ -208,19 +208,19 @@ const bearerTypes = [
       {/* ── Bridesmaids & Groomsmen ─────────────────────────── */}
       {(bridesmaids.length > 0 || groomsmen.length > 0) && (
         <section class="ins-section ins-section--two-col">
-          {bridesmaids.length > 0 && (
+          {groomsmen.length > 0 && (
             <div class="ins-col">
-              <p class="ins-label">{bridesmaids.length === 1 ? 'Bridesmaid' : 'Bridesmaids'}</p>
-              {bridesmaids.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+              <p class="ins-label">{groomsmen.length === 1 ? 'Groomsman' : 'Groomsmen'}</p>
+              {groomsmen.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
             </div>
           )}
           {bridesmaids.length > 0 && groomsmen.length > 0 && (
             <span class="ins-col-divider" aria-hidden="true">✦</span>
           )}
-          {groomsmen.length > 0 && (
+          {bridesmaids.length > 0 && (
             <div class="ins-col">
-              <p class="ins-label">{groomsmen.length === 1 ? 'Groomsman' : 'Groomsmen'}</p>
-              {groomsmen.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
+              <p class="ins-label">{bridesmaids.length === 1 ? 'Bridesmaid' : 'Bridesmaids'}</p>
+              {bridesmaids.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
             </div>
           )}
         </section>

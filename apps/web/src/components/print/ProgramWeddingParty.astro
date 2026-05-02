@@ -93,50 +93,50 @@ paired.sort((a, b) => a.himLastName.toLowerCase().localeCompare(b.himLastName.to
       </div>
     )}
 
-    <!-- Parents — two columns (bride's side | groom's side) -->
+    <!-- Parents — two columns (groom's side | bride's side) -->
     {(parentsOfBride.length > 0 || parentsOfGroom.length > 0) && (
       <div class="wp-paired">
-        <div class="wp-col">
-          <p class="wp-role">Parents of the Bride</p>
-          {parentsOfBride.map(n => <p class="wp-name">{n}</p>)}
-        </div>
         <div class="wp-col">
           <p class="wp-role">Parents of the Groom</p>
           {parentsOfGroom.map(n => <p class="wp-name">{n}</p>)}
         </div>
+        <div class="wp-col">
+          <p class="wp-role">Parents of the Bride</p>
+          {parentsOfBride.map(n => <p class="wp-name">{n}</p>)}
+        </div>
       </div>
     )}
 
-    <!-- Maid of Honour + Best Man — two columns -->
+    <!-- Best Man + Maid of Honour — two columns -->
     {(partyGroups.find(g => g.role === 'Maid of Honour') || partyGroups.find(g => g.role === 'Best Man')) && (
       <div class="wp-paired">
-        <div class="wp-col">
-          <p class="wp-role">Maid of Honour</p>
-          {(partyGroups.find(g => g.role === 'Maid of Honour')?.members ?? []).map(m => (
-            <p class="wp-name">{m}</p>
-          ))}
-        </div>
         <div class="wp-col">
           <p class="wp-role">Best Man</p>
           {(partyGroups.find(g => g.role === 'Best Man')?.members ?? []).map(m => (
             <p class="wp-name">{m}</p>
           ))}
         </div>
+        <div class="wp-col">
+          <p class="wp-role">Maid of Honour</p>
+          {(partyGroups.find(g => g.role === 'Maid of Honour')?.members ?? []).map(m => (
+            <p class="wp-name">{m}</p>
+          ))}
+        </div>
       </div>
     )}
 
-    <!-- Bridesmaids + Groomsmen — two columns -->
+    <!-- Groomsmen + Bridesmaids — two columns -->
     {(partyGroups.find(g => g.role === 'Bridesmaid') || partyGroups.find(g => g.role === 'Groomsman')) && (
       <div class="wp-paired">
         <div class="wp-col">
-          <p class="wp-role">Bridesmaids</p>
-          {(partyGroups.find(g => g.role === 'Bridesmaid')?.members ?? []).map(m => (
+          <p class="wp-role">Groomsmen</p>
+          {(partyGroups.find(g => g.role === 'Groomsman')?.members ?? []).map(m => (
             <p class="wp-name">{m}</p>
           ))}
         </div>
         <div class="wp-col">
-          <p class="wp-role">Groomsmen</p>
-          {(partyGroups.find(g => g.role === 'Groomsman')?.members ?? []).map(m => (
+          <p class="wp-role">Bridesmaids</p>
+          {(partyGroups.find(g => g.role === 'Bridesmaid')?.members ?? []).map(m => (
             <p class="wp-name">{m}</p>
           ))}
         </div>

@@ -15,13 +15,13 @@ const groom = settings.groom?.first_name ?? 'Aldrin';
 const bride = settings.bride?.first_name ?? 'Christine';
 const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
 
-// Procession walk-pairs: bride's side (left col) → groom's side (right col)
+// Procession walk-pairs: groom's side (left col) → bride's side (right col)
 const WALK_PAIRS: Record<string, string> = {
-  'Maid of Honour': 'Best Man',
-  'Bridesmaid':     'Groomsman',
-  'Bridesmaids':    'Groomsmen',
+  'Best Man':    'Maid of Honour',
+  'Groomsman':   'Bridesmaid',
+  'Groomsmen':   'Bridesmaids',
 };
-const BRIDE_SIDE_ROLES = new Set(Object.keys(WALK_PAIRS));
+const LEFT_SIDE_ROLES = new Set(Object.keys(WALK_PAIRS));
 
 // Parent roles handled separately (real + proxy stacked display)
 const PARENT_ROLES = new Set(['Father of the Bride', 'Mother of the Bride', 'Father of the Groom', 'Mother of the Groom']);
@@ -96,7 +96,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
 ---
 
 <Layout
-  title={`Wedding Party — ${bride} & ${groom}`}
+  title={`Wedding Party — ${groom} & ${bride}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="wedding-party"
@@ -121,7 +121,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
         && Object.keys(WALK_PAIRS).some(k => WALK_PAIRS[k] === role && (byRole[k] ?? []).length > 0);
       if (isRightOfPair) return null;
 
-      const isBrideSide = BRIDE_SIDE_ROLES.has(role);
+      const isGroomSide = LEFT_SIDE_ROLES.has(role);
 
       return (
         <section class="role-section" id={role.toLowerCase().replace(/\s+/g, '-')}>
@@ -136,17 +136,17 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
               {members.map((m, i) => (
                 <>
                   <div class="paired-col">
-                      <div class={`member-card ${isBrideSide ? 'member-card--bride' : 'member-card--groom'}`}>
+                      <div class={`member-card ${isGroomSide ? 'member-card--groom' : 'member-card--bride'}`}>
                         <div class="member-name">{displayName(m.person)}</div>
-                        {/* <div class="member-side">{isBrideSide ? bride : groom}'s side</div> */}
+                        {/* <div class="member-side">{isGroomSide ? groom : bride}'s side</div> */}
                       </div>
                   </div>
                   <div class="paired-divider" aria-hidden="true">✦</div>
                   {pairMembers[i] && (
                   <div class="paired-col">
-                      <div class={`member-card ${isBrideSide ? 'member-card--groom' : 'member-card--bride'}`}>
+                      <div class={`member-card ${isGroomSide ? 'member-card--bride' : 'member-card--groom'}`}>
                         <div class="member-name">{displayName(pairMembers[i]!.person)}</div>
-                        {/* <div class="member-side">{isBrideSide ? groom : bride}'s side</div> */}
+                        {/* <div class="member-side">{isGroomSide ? bride : groom}'s side</div> */}
                       </div>
                   </div>
                   )}
@@ -178,18 +178,6 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
         <section class="role-section" id={id}>
           <h2 class="role-title">{title}</h2>
           <div class="paired-grid">
-            {mother && (
-              <div class="paired-col">
-                <div class="member-card">
-                  <div class="member-name">{displayName(mother.person)}</div>
-                  <div class="member-side">Mother</div>
-                  {motherReal && motherProxy && (
-                    <div class="member-proxy">Represented by {displayName(motherProxy.person)}</div>
-                  )}
-                </div>
-              </div>
-            )}
-            {father && mother && <div class="paired-divider" aria-hidden="true">✦</div>}
             {father && (
               <div class="paired-col">
                 <div class="member-card">
@@ -197,6 +185,18 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
                   <div class="member-side">Father</div>
                   {fatherReal && fatherProxy && (
                     <div class="member-proxy">Represented by {displayName(fatherProxy.person)}</div>
+                  )}
+                </div>
+              </div>
+            )}
+            {father && mother && <div class="paired-divider" aria-hidden="true">✦</div>}
+            {mother && (
+              <div class="paired-col">
+                <div class="member-card">
+                  <div class="member-name">{displayName(mother.person)}</div>
+                  <div class="member-side">Mother</div>
+                  {motherReal && motherProxy && (
+                    <div class="member-proxy">Represented by {displayName(motherProxy.person)}</div>
                   )}
                 </div>
               </div>
@@ -236,7 +236,7 @@ const sortedRoles = Object.keys(byRole).sort((a, b) => {
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 </Layout>
 
