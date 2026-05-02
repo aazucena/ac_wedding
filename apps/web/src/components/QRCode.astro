@@ -1,31 +1,70 @@
 ---
 // src/components/QRCode.astro
-// Server-side QR code generator. Uses the `qrcode` npm package to produce
-// a base-64 PNG data URL rendered as an <img> tag.
+// Client-side styled QR code using qr-code-styling.
+// Props are passed via data-* attributes; the <script> block initialises all
+// instances on the page in a single querySelectorAll pass.
 
 interface Props {
-  url: string;
-  size?: number;   // px — default 120
-  label?: string;  // optional caption below the QR image
-  class?: string;
+  url:        string;
+  size?:      number;   // px — default 120
+  label?:     string;   // optional caption below
+  class?:     string;
+  logo?:      string;   // asset URL to overlay at centre
+  logoRatio?: number;   // logo size as fraction of QR width (default 0.45)
 }
 
-import QRCodeLib from 'qrcode';
-
-const { url, size = 120, label, class: className } = Astro.props;
-
-const src = await QRCodeLib.toDataURL(url, {
-  width: size,
-  margin: 1,
-  color: { dark: '#1a1a2e', light: '#fdfaf7' },
-  errorCorrectionLevel: 'H',
-});
+const { url, size = 120, label, class: className, logo, logoRatio = 0.45 } = Astro.props;
 ---
 
 <div class:list={['qr-wrap', className]}>
-  <img src={src} width={size} height={size} alt={label ?? 'QR code'} />
+  <div
+    class="qr-inner"
+    data-url={url}
+    data-size={String(size)}
+    data-logo={logo ?? ''}
+    data-logo-ratio={String(logoRatio)}
+    style={`width:${size}px;height:${size}px;`}
+  ></div>
   {label && <p class="qr-label">{label}</p>}
 </div>
+
+<script>
+  import QRCodeStyling from 'qr-code-styling';
+
+  function initQR(el: Element) {
+    const url       = el.getAttribute('data-url') ?? '';
+    const size      = parseInt(el.getAttribute('data-size') ?? '120');
+    const logo      = el.getAttribute('data-logo') || undefined;
+    const logoRatio = parseFloat(el.getAttribute('data-logo-ratio') ?? '0.22');
+
+    const qr = new QRCodeStyling({
+      type:   'svg',
+      width:  size,
+      height: size,
+      data:   url,
+      margin: 0,
+      qrOptions:            { errorCorrectionLevel: 'H' },
+      dotsOptions:          { type: 'dots',          color: '#5a9e7a' },
+      cornersSquareOptions: { type: 'extra-rounded', color: '#5a9e7a' },
+      cornersDotOptions:    { type: 'dot',           color: '#5a9e7a' },
+      backgroundOptions:    { color: 'transparent' },
+      ...(logo && {
+        image:        logo,
+        imageOptions: { margin: 8, imageSize: logoRatio, crossOrigin: 'anonymous' },
+      }),
+    });
+
+    qr.append(el as HTMLElement);
+  }
+
+  function init() {
+    document.querySelectorAll('.qr-inner[data-url]:not([data-qr-ready])')
+      .forEach(el => { el.setAttribute('data-qr-ready', '1'); initQR(el); });
+  }
+
+  document.addEventListener('astro:page-load', init);
+  init();
+</script>
 
 <style>
   .qr-wrap {
@@ -33,6 +72,10 @@ const src = await QRCodeLib.toDataURL(url, {
     flex-direction: column;
     align-items: center;
     gap: 4px;
+  }
+  .qr-inner {
+    position: relative;
+    display: inline-flex;
   }
   .qr-label {
     font-family: 'Jost', Arial, sans-serif;

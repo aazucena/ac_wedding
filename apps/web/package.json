@@ -37,6 +37,7 @@
     "luxon": "^3.7.2",
     "marked": "^17.0.5",
     "nanostores": "^1.2.0",
+    "qr-code-styling": "^1.9.2",
     "qrcode": "^1.5.4",
     "qs": "^6.15.0",
     "satori": "^0.26.0",
