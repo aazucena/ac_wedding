@@ -8,6 +8,7 @@ import RefTagger   from '~/components/ui/RefTagger.astro';
 import { getSettings, getCeremony, getReadings, getClergies } from '../lib/directus';
 import { getMassMusic } from '../lib/api/ceremony';
 import { formatDate, formatTime } from '../lib/utils/format';
+import { ATTIRE_SWATCHES } from '../lib/constants';
 
 const [settings, ceremony, readings, clergies, music] = await Promise.all([
   getSettings(), getCeremony(), getReadings(), getClergies(), getMassMusic(),
@@ -44,15 +45,6 @@ const venueAddress = [venue?.address_line1, venue?.city].filter(Boolean).join(',
 //   .filter(p => !p.parent)
 //   .sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0));
 
-// Dress code color palette
-const dressCodeColors = [
-  { label: 'Mint Green', hex: '#A8D5C2' },
-  { label: 'Lavender',   hex: '#C9B8E8' },
-  { label: 'Dusty Blue', hex: '#ADC6EB' },
-  { label: 'Beige',      hex: '#F5E6D0' },
-  { label: 'Blush',      hex: '#F2C4CE' },
-  { label: 'Gold',       hex: '#E8D5A3' },
-];
 
 const isHex = (v?: string) => /^#[0-9A-Fa-f]{6}$/.test(v ?? '');
 const cp = isHex(settings.color_primary)   ? settings.color_primary!.toLowerCase()  : undefined;
@@ -116,7 +108,7 @@ function personName(person?: { first_name?: string; last_name?: string } | null)
                 <span class="logistics-sub">{ceremony.dress_code_description}</span>
               )}
               <div class="swatch-row">
-                {dressCodeColors.map(c => (
+                {ATTIRE_SWATCHES.map(c => (
                   <div class="swatch-wrap">
                     <span
                       class="swatch"
