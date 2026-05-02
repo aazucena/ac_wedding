@@ -200,6 +200,19 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
             <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />
           </section>
 
+          <div class="hr">
+            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
+          </div>
+
+          <!-- Gift -->
+          <section class="gift-section">
+            <p class="attire-label">Gift Registry</p>
+            <p class="gift-note">
+              Your presence at our celebration is the greatest gift of all.
+              Should you wish to honour us further, please visit our website for more information.
+            </p>
+          </section>
+
           {!isSponsor && (
             <>
               <div class="hr">
@@ -228,23 +241,10 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
                     </div>
                   ))}
                 </div>
-                <p class="attire-avoid">Guests — please avoid wearing white &amp; black</p>
+                {/* <p class="attire-avoid">Please avoid wearing white &amp; black</p> */}
               </section>
             </>
           )}
-
-          <div class="hr">
-            <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
-          </div>
-
-          <!-- Gift -->
-          <section class="gift-section">
-            <p class="attire-label">Gift Registry</p>
-            <p class="gift-note">
-              Your presence at our celebration is the greatest gift of all.
-              Should you wish to honour us further, please visit our website for more information.
-            </p>
-          </section>
 
         </div>
 
