@@ -49,6 +49,14 @@
   print-color-adjust: exact;
 }
 
+.sticker-logo {
+  width: 75%;
+  height: auto;
+  opacity: 0.85;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
 .sticker-names {
   font-family: var(--fd);
   font-size: 15px;
@@ -89,10 +97,11 @@
 
 .sticker-hashtag {
   font-family: 'Cormorant Garamond', serif;
-  font-style: italic; color: #C5B8E0; margin-top: 4px; display: block;
+  font-style: italic;
+  color: #C5B8E0;
+  display: block;
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+  letter-spacing: 0.3px;
   margin-top: 2px;
 }
