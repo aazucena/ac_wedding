@@ -1,0 +1,132 @@
+@media print {
+  @page { size: letter portrait; margin: 0; }
+  body { background: white !important; padding: 0 !important; display: block !important; }
+  .no-print { display: none !important; }
+}
+
+/* ── Sheet grid ─────────────────────────────────────────────
+   Avery 5163: 2 cols × 5 rows, 4×2 in labels
+   Left margin: 0.15625in (≈ 0.156in), gap: 0.19in
+   Top margin: 0.5in, gap: 0.25in
+─────────────────────────────────────────────────────────── */
+.address-sheet {
+  display: grid;
+  grid-template-columns: repeat(2, 4in);
+  gap: 0.25in 0.19in;
+  padding: 0.5in 0.15625in;
+  width: 8.5in;
+  background: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Single label ──────────────────────────────────────────── */
+.address-label {
+  width: 4in;
+  height: 2in;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  border: 1px dashed rgba(0, 0, 0, 0.2);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.al-icon {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
+  opacity: 0.72;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.al-accent-bar {
+  height: 4px; width: 100%; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--cp) 0%, var(--cs) 50%, var(--cp) 100%);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.al-accent-bar-bottom {
+  height: 4px; width: 100%; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--cs) 0%, var(--cp) 50%, var(--cs) 100%);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+
+.al-inner {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 5px;
+  padding: 0.1in 0.28in;
+}
+
+/* ── "To" heading ───────────────────────────────────────────── */
+.al-to {
+  font-family: var(--fd);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 1.5px;
+  align-self: center;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Decorative rule ────────────────────────────────────────── */
+.al-rule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 55%;
+}
+.al-rule-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.8), transparent);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.al-rule-gem {
+  font-size: 6px;
+  color: var(--cs);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Field wrappers ─────────────────────────────────────────── */
+.al-field {
+  width: 92%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.al-field-label {
+  font-family: var(--fb);
+  font-size: 5.5px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  align-self: flex-start;
+  padding-left: 1px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Write-in lines ─────────────────────────────────────────── */
+.al-write-line {
+  width: 100%;
+  height: 18px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(168, 212, 184, 0.55);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* Name line is slightly bolder to visually anchor the label */
+.al-name-line {
+  border-bottom-color: rgba(168, 212, 184, 0.85);
+}
