@@ -13,7 +13,7 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
 ---
 
 <Layout
-  title={`Page Not Found — ${bride} & ${groom}`}
+  title={`Page Not Found — ${groom} & ${bride}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
 >
@@ -35,7 +35,7 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>

@@ -11,7 +11,7 @@ const { groomName, brideName } = Astro.props;
 
 <div class="wizard-step" id="step-4">
   <p class="step-eyebrow">Message to the Couple</p>
-  <p class="step-sub">Share your wishes for {brideName} &amp; {groomName}.<br />This will be posted on our Guestbook page.</p>
+  <p class="step-sub">Share your wishes for {groomName} &amp; {brideName}.<br />This will be posted on our Guestbook page.</p>
   <div class="step-fields">
     <!-- attending: required -->
     <div id="msg-attending-wrap">
@@ -19,7 +19,7 @@ const { groomName, brideName } = Astro.props;
         <label class="field-label" for="message">
           Message <span class="field-required">*</span>
         </label>
-        <TiptapEditor id="message" placeholder={`Share your wishes for ${brideName} & ${groomName}…`} />
+        <TiptapEditor id="message" placeholder={`Share your wishes for ${groomName} & ${brideName}…`} />
       </div>
     </div>
     <!-- declined: optional -->
@@ -29,7 +29,7 @@ const { groomName, brideName } = Astro.props;
         <label class="field-label" for="message-declined">
           Message <span class="optional">optional</span>
         </label>
-        <TiptapEditor id="message-declined" placeholder={`Share your wishes for ${brideName} & ${groomName}…`} />
+        <TiptapEditor id="message-declined" placeholder={`Share your wishes for ${groomName} & ${brideName}…`} />
       </div>
     </div>
   </div>

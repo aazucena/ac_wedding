@@ -66,7 +66,7 @@ function personName(person?: { first_name?: string; last_name?: string } | null)
 ---
 
 <Layout
-  title={`Nuptial Mass — ${bride} & ${groom}`}
+  title={`Nuptial Mass — ${groom} & ${bride}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="ceremony"
@@ -229,7 +229,7 @@ function personName(person?: { first_name?: string; last_name?: string } | null)
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
 </Layout>

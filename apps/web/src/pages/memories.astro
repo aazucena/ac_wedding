@@ -55,7 +55,7 @@ const items = memories.map(m => ({
 ---
 
 <Layout
-  title={`Wedding Memories — ${bride} & ${groom}`}
+  title={`Wedding Memories — ${groom} & ${bride}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="memories"
@@ -65,7 +65,7 @@ const items = memories.map(m => ({
     <!-- ── Header ────────────────────────────────────────────── -->
     <header class="header">
       <div class="header-eyebrow">Our Wedding Memories</div>
-      <h1 class="header-title font-display">{bride} & {groom}</h1>
+      <h1 class="header-title font-display">{groom} & {bride}</h1>
       <p class="header-subtitle">
         Photos and wishes shared by our guests on {weddingDateLabel}.
       </p>
@@ -118,7 +118,7 @@ const items = memories.map(m => ({
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
   <GalleryLightbox slot="overlay" />

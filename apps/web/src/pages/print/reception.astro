@@ -37,8 +37,8 @@ const fallbackTimeline = [
   { time: '',                                             label: 'Opening Prayer',         note: '',                           icon: '✝' },
   { time: '',                                             label: 'Dinner Is Served',       note: 'Multi-course dinner',        icon: '🍽' },
   { time: '',                                             label: 'Messages & Tributes',    note: 'From family & friends',      icon: '♡' },
-  { time: '',                                             label: 'First Dance',            note: `${brideFirst} & ${groomFirst}`, icon: '♫' },
-  { time: '',                                             label: 'Parent Dances',          note: 'Parents of bride & groom',   icon: '♫' },
+  { time: '',                                             label: 'First Dance',            note: `${groomFirst} & ${brideFirst}`, icon: '♫' },
+  { time: '',                                             label: 'Parent Dances',          note: 'Parents of groom & bride',   icon: '♫' },
   { time: '',                                             label: 'Cake Cutting',           note: '',                           icon: '✦' },
   { time: '',                                             label: 'Bouquet & Garter Toss',  note: '',                           icon: '✦' },
   { time: '',                                             label: 'Open Dancing',           note: 'Party starts here',          icon: '♫' },
@@ -71,7 +71,7 @@ const venueAddr = reception.venue?.address_line1
 ---
 
 <PrintLayout
-  title={`Reception Program — ${brideFirst} & ${groomFirst}`}
+  title={`Reception Program — ${groomFirst} & ${brideFirst}`}
   cardWidth="5in" cardHeight="7in"
   toolbarHint="Click the card to flip · print sends both sides"
 >
@@ -94,7 +94,7 @@ const venueAddr = reception.venue?.address_line1
         <header class="card-header">
           <Image src={AccentMark} class="header-accent" alt="" />
           <p class="header-eyebrow">Reception Programme</p>
-          <h1 class="header-names">{brideFirst} <span class="amp">&amp;</span> {groomFirst}</h1>
+          <h1 class="header-names">{groomFirst} <span class="amp">&amp;</span> {brideFirst}</h1>
           <p class="header-meta">
             {venueName}
             {venueAddr && <><br /><span class="header-addr">{venueAddr}</span></>}
@@ -143,7 +143,7 @@ const venueAddr = reception.venue?.address_line1
           <div class="back-content">
             <p class="back-eyebrow">{weddingDateLabel}</p>
 
-            <h2 class="back-names">{brideFirst} <span class="amp">&amp;</span> {groomFirst}</h2>
+            <h2 class="back-names">{groomFirst} <span class="amp">&amp;</span> {brideFirst}</h2>
 
             <div class="rule-row back-rule"><span class="rule-line"></span><span class="rule-gem">◆</span><span class="rule-line"></span></div>
 

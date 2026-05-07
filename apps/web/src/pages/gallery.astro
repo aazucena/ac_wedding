@@ -25,7 +25,7 @@ const _photo = typeof settings.photographer === 'object'
 ---
 
 <Layout
-  title={`Gallery — ${bride} & ${groom}`}
+  title={`Gallery — ${groom} & ${bride}`}
   colorPrimary={settings.color_primary}
   colorSecondary={settings.color_secondary}
   activeNav="gallery"
@@ -70,7 +70,7 @@ const _photo = typeof settings.photographer === 'object'
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-    <p class="footer-note">{bride} & {groom} · {weddingDateLabel}</p>
+    <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
   <GalleryLightbox slot="overlay" photographer={_photo?.name ?? null} photographerLogo={_photo?.logo ?? null} />
