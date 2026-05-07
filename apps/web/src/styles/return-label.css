@@ -27,16 +27,43 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 4px;
-  padding: 0.22in 0.3in;
+  align-items: stretch;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.rl-accent-bar {
+  height: 4px; width: 100%; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--cp) 0%, var(--cs) 50%, var(--cp) 100%);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.rl-accent-bar-bottom {
+  height: 4px; width: 100%; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--cs) 0%, var(--cp) 50%, var(--cs) 100%);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.rl-inner {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 4px;
+  padding: 0.12in 0.3in;
+}
+.return-label {
+  border: 1px dashed rgba(0, 0, 0, 0.2);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
 /* ── Label contents ─────────────────────────────────────────── */
+.rl-logo {
+  width: 38%;
+  height: auto;
+  opacity: 0.85;
+  margin-bottom: 2px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
 .rl-rule {
   display: flex;
   align-items: center;
@@ -58,15 +85,6 @@
   print-color-adjust: exact;
 }
 
-.rl-names {
-  font-family: var(--fd);
-  font-size: 17px;
-  font-weight: 300;
-  font-style: italic;
-  color: var(--dark);
-  line-height: 1.1;
-  letter-spacing: -0.2px;
-}
 
 .rl-address-line {
   font-family: var(--fb);

@@ -5,14 +5,13 @@
 
 import { getSettings }     from '@lib/directus';
 import PrintLayout          from '@layouts/PrintLayout.astro';
+import StackedImg           from '@assets/stacked.png';
+import { Image }            from 'astro:assets';
 import '../../styles/return-label.css';
 
 const showNames  = Astro.url.searchParams.get('names') !== 'false';
 
 const settings   = await getSettings();
-const groomFirst = settings.groom?.first_name ?? 'Aldrin';
-const brideFirst = settings.bride?.first_name ?? 'Christine';
-
 const line1       = settings.return_address_line1       ?? 'Street Address';
 const city        = settings.return_address_city        ?? 'City';
 const region      = settings.return_address_region      ?? 'AB';
@@ -29,14 +28,18 @@ const cityLine    = `${city}, ${region}  ${postalCode}`;
   <div class="return-sheet">
     {Array.from({ length: 10 }).map(() => (
       <div class="return-label">
-        <div class="rl-rule">
-          <div class="rl-rule-line"></div>
-          <span class="rl-rule-gem">✦</span>
-          <div class="rl-rule-line"></div>
+        <div class="rl-accent-bar"></div>
+        <div class="rl-inner">
+          {showNames && <Image src={StackedImg} class="rl-logo" alt="" />}
+          <div class="rl-rule">
+            <div class="rl-rule-line"></div>
+            <span class="rl-rule-gem">✦</span>
+            <div class="rl-rule-line"></div>
+          </div>
+          <div class="rl-address-line">{line1}</div>
+          <div class="rl-address-line">{cityLine}</div>
         </div>
-        {showNames && <div class="rl-names">{brideFirst} &amp; {groomFirst}</div>}
-        <div class="rl-address-line">{line1}</div>
-        <div class="rl-address-line">{cityLine}</div>
+        <div class="rl-accent-bar-bottom"></div>
       </div>
     ))}
   </div>
