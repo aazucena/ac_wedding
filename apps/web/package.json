@@ -13,8 +13,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.8",
-    "@astrojs/vercel": "10.0.5",
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/vercel": "10.0.6",
     "@fontsource/cormorant-garamond": "^5.2.11",
     "@fontsource/jost": "^5.2.8",
     "@iconify-json/simple-icons": "^1.2.75",
@@ -28,7 +28,7 @@
     "@tiptap/extension-placeholder": "^3.20.5",
     "@tiptap/extension-underline": "^3.20.5",
     "@tiptap/starter-kit": "^3.20.5",
-    "astro": "6.1.9",
+    "astro": "6.3.0",
     "astro-icon": "^1.1.5",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
