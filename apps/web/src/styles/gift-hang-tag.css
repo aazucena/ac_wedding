@@ -1,0 +1,141 @@
+@media print {
+  @page { size: 3.5in 3.5in; margin: 0; }
+  body { background: white !important; padding: 0 !important; display: block !important; }
+  .no-print { display: none !important; }
+}
+
+/* ── Diamond card ───────────────────────────────────────── */
+.ht-card {
+  width: 3.5in;
+  height: 3.5in;
+  position: relative;
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  background: var(--ivory);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Hole indicator at top tip (screen only) ────────────── */
+.ht-hole {
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1px dashed rgba(130, 130, 130, 0.5);
+}
+
+/* ── Body — centered in the diamond safe zone ───────────── */
+.ht-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  max-width: 54%;
+}
+
+/* ── FRONT ──────────────────────────────────────────────── */
+.ht-logo {
+  width: 100%;
+  height: auto;
+  opacity: 0.85;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.ht-rule {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 90%;
+}
+.ht-rule-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(197, 184, 224, 0.7), transparent);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.ht-rule-gem { font-size: 5px; color: var(--cs); }
+
+.ht-date {
+  font-family: var(--fd);
+  font-size: 10px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.ht-hashtag {
+  font-family: var(--fd);
+  font-style: italic;
+  color: var(--cs);
+  font-size: 9px;
+  letter-spacing: 0.2px;
+}
+
+/* ── BACK ───────────────────────────────────────────────── */
+.ht-body--back {
+  gap: 14px;
+}
+
+.ht-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+.ht-field-label {
+  font-family: var(--fb);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ht-field-line {
+  width: 100%;
+  height: 1px;
+  background: rgba(100, 100, 120, 0.22);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.ht-back-from {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.ht-from-label {
+  font-family: var(--fb);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ht-from-names {
+  font-family: var(--fd);
+  font-size: 17px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--dark);
+  line-height: 1.1;
+  letter-spacing: -0.2px;
+}
+
+.ht-back-emblem {
+  width: 50%;
+  height: auto;
+  opacity: 0.5;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
