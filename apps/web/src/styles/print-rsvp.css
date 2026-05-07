@@ -52,101 +52,53 @@
 .header-rule-gem { font-size: 6px; color: var(--cs); }
 .header-date { font-family: var(--fd); font-size: 10px; font-style: italic; color: var(--muted); line-height: 1.4; }
 
-/* ── Right fields column ──────────────────────────────────── */
+/* ── Right copy column ────────────────────────────────────── */
 .fields-col {
-  display: flex; flex-direction: column; justify-content: center;
-  padding: 14px 22px 10px 18px; gap: 14px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 14px 32px; gap: 10px; text-align: center;
 }
-.attend-options { display: flex; gap: 16px; align-self: center; }
-.check-opt { display: flex; align-items: center; gap: 5px; }
-.check-box {
-  width: 8px; height: 8px; border: 1px solid rgba(100,100,130,0.55);
-  flex-shrink: 0; background: white;
-  transform: rotate(45deg);
-  -webkit-print-color-adjust: exact; print-color-adjust: exact;
-}
-.check-label { font-family: var(--fb); font-size: 8px; font-weight: 400; color: var(--dark); }
-.field-divider {
-  height: 1px; width: 100%;
-  background: linear-gradient(90deg, rgba(197,184,224,0.5), transparent); flex-shrink: 0;
-}
-.write-line { flex: 1; height: 1px; border-bottom: 1px solid rgba(100,100,130,0.35); }
-
-/* M__ name line */
-.m-line-row { display: flex; align-items: flex-end; gap: 5px; }
-.m-prefix {
-  font-family: var(--fd); font-size: 22px; font-style: italic;
-  color: var(--dark); line-height: 1; flex-shrink: 0; padding-bottom: 2px;
-}
-.m-block { display: flex; flex-direction: column; gap: 3px; }
-.m-hint {
-  font-family: var(--fb); font-size: 6px; font-style: italic;
-  color: var(--muted); opacity: 0.7; text-align: right;
-}
-
-/* Seats reserved paragraph */
 .seats-para {
-  font-family: var(--fd); font-size: 9.5px; font-style: italic;
-  color: var(--dark); line-height: 1.75; margin: 0; letter-spacing: 0.15px;
+  font-family: var(--fd); font-size: 18px; font-style: italic;
+  color: var(--dark); line-height: 1.6; margin: 0;
 }
 .seats-blank-inline {
-  display: inline-block; width: 30px;
+  display: inline-block; width: 36px;
   border-bottom: 1px solid rgba(100,100,130,0.45);
   vertical-align: bottom; margin-bottom: 2px;
 }
-.field-row { display: flex; align-items: flex-end; gap: 8px; }
-.field-block { display: flex; flex-direction: column; gap: 18px; }
-.field-block-header { display: flex; flex-direction: column; gap: 2px; }
-.field-hint {
-  font-family: var(--fb); font-size: 6px; font-weight: 400;
-  color: var(--muted); font-style: italic; letter-spacing: 0.3px; opacity: 0.8;
+.rsvp-request {
+  font-family: var(--fd); font-size: 15px; font-style: italic;
+  color: var(--dark); line-height: 1.6; margin: 0;
 }
-.field-label {
-  font-family: var(--fb); font-size: 8px; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--muted); flex-shrink: 0; padding-bottom: 1px;
-}
-.footer {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  border-top: 1px solid rgba(197,184,224,0.5); padding-top: 6px; width: 100%;
-  margin-top: 8px;
-}
-.footer-deadline {
-  font-family: var(--fb); font-size: 7.5px; font-weight: 400;
-  color: var(--muted); letter-spacing: 0.3px; width: 100%; text-align: center;
-}
-.footer-deadline strong { font-weight: 600; color: var(--dark); }
-.footer-online-hint {
-  font-family: var(--fb); font-size: 6.5px; font-weight: 400;
-  color: var(--muted); letter-spacing: 0.5px; width: 100%; text-align: center;
-  opacity: 0.7;
+.rsvp-request strong { font-style: normal; font-weight: 600; color: var(--cs); }
+.rsvp-instruction {
+  font-family: var(--fb); font-size: 9px; font-weight: 400;
+  color: var(--muted); letter-spacing: 0.3px; line-height: 1.6; margin: 0;
 }
 
 /* ── Back face ────────────────────────────────────────────── */
 .back-card {
-  background: var(--ivory); border: 1px solid var(--border);
-  box-shadow: 0 8px 40px rgba(26,26,46,0.14);
   width: 6in; height: 4in;
   display: flex; flex-direction: column; overflow: hidden;
+  background: var(--ivory);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
-.qr-wrapper {
-  position: relative; z-index: 1; flex: 1;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+.back-body {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.back-insignia {
+  width: 72%; max-height: 100%; object-fit: contain; opacity: 0.3;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 
-/* ── QR embellishment (mirrors invitation.css) ────────────── */
-.rsvp-section {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 6px; text-align: center; width: 100%;
-}
-.rsvp-heading {
-  font-family: var(--fd); font-size: 18px; font-weight: 300; font-style: italic; color: var(--cs);
-}
+/* ── QR block (front) ─────────────────────────────────────── */
 .qr-embellish {
-  position: relative; padding: 18px;
+  position: relative; padding: 14px;
   display: inline-flex; align-items: center; justify-content: center;
 }
 .qr-embellish::before {
-  content: ''; position: absolute; inset: 6px;
+  content: ''; position: absolute; inset: 4px;
   border: 1px solid color-mix(in srgb, var(--cs) 45%, transparent);
   pointer-events: none;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
@@ -168,14 +120,18 @@
 .qr-corner--tr { top: 3px; right: 3px; transform: scaleY(-1); }
 .qr-corner--bl { bottom: 3px; left: 3px; transform: scaleX(-1); }
 .qr-corner--br { bottom: 3px; right: 3px; }
-.rsvp-url {
-  font-size: 9px; font-weight: 600; letter-spacing: 0.5px; color: var(--cp);
+.rsvp-footer {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.rsvp-url-pill {
+  font-family: var(--fb); font-size: 8px; font-weight: 600;
+  letter-spacing: 0.5px; color: var(--cp); margin: 0;
   background: color-mix(in srgb, var(--cp) 12%, transparent);
   border: 1px solid color-mix(in srgb, var(--cp) 35%, transparent);
   border-radius: 20px; padding: 2px 10px;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
-.rsvp-hashtag { font-family: var(--fd); font-size: 14px; font-style: italic; color: var(--muted); display: block; }
+.rsvp-hashtag { font-family: var(--fd); font-size: 14px; font-style: italic; color: var(--cs); display: block; }
 
 /* ── Print ────────────────────────────────────────────────── */
 @media print {

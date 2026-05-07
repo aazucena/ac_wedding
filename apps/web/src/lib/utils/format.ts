@@ -51,6 +51,20 @@ export function toTelHref(phone: string): string {
 }
 
 /**
+ * Normalize any 10-digit North American phone number to (XXX) XXX-XXXX.
+ * Returns the original string unchanged if it doesn't resolve to 10 digits.
+ * e.g. "4031234567" → "+1 (403) 123-4567"
+ */
+export function formatPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length === 10)
+    return `+1 (${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
+  if (digits.length === 11 && digits[0] === '1')
+    return `+1 (${digits.slice(1,4)}) ${digits.slice(4,7)}-${digits.slice(7)}`;
+  return phone;
+}
+
+/**
  * Calculate the countdown from now to a target date.
  * Returns { days, hours, minutes, seconds } or null if date is in the past.
  */
