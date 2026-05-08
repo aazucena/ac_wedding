@@ -2,11 +2,12 @@
 // invite/NotInvitedCard.astro — "not on the list yet" fallback card
 interface Props {
   email:       string;
+  phone?:      string;
   groom:       string;
   bride:       string;
   weddingDate: string;
 }
-const { email, groom, bride, weddingDate } = Astro.props;
+const { email, phone, groom, bride, weddingDate } = Astro.props;
 const mailtoHref = `mailto:${email}?subject=Wedding Invitation Request&body=Hi ${groom} and ${bride},%0A%0AI would love to attend your wedding on ${weddingDate}.%0A%0AMy name is: %0A%0ALooking forward to hearing from you!`;
 ---
 
@@ -17,7 +18,12 @@ const mailtoHref = `mailto:${email}?subject=Wedding Invitation Request&body=Hi $
     If you'd like to attend and haven't received an invitation, feel free to reach out to us directly.
     We'd love to hear from you.
   </p>
-  <a href={mailtoHref} class="not-invited-btn">Send us an email</a>
+  <div class="not-invited-actions">
+    <a href={mailtoHref} class="not-invited-btn">Send us an email</a>
+    {phone && (
+      <a href={`tel:${phone}`} class="not-invited-btn not-invited-btn--secondary">Call us</a>
+    )}
+  </div>
 </div>
 
 <style>
@@ -51,8 +57,10 @@ const mailtoHref = `mailto:${email}?subject=Wedding Invitation Request&body=Hi $
   color: var(--muted); line-height: 1.8; max-width: 420px;
 }
 
+.not-invited-actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 4px; }
+
 .not-invited-btn {
-  display: inline-block; margin-top: 4px; padding: 13px 32px;
+  display: inline-block; padding: 13px 32px;
   background: linear-gradient(135deg, var(--dark), var(--dark2));
   color: color-mix(in srgb, var(--cp) 80%, white);
   border-radius: var(--radius-sm); text-decoration: none;
@@ -62,4 +70,12 @@ const mailtoHref = `mailto:${email}?subject=Wedding Invitation Request&body=Hi $
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 .not-invited-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(26,26,46,0.26); }
+
+.not-invited-btn--secondary {
+  background: transparent;
+  color: var(--dark);
+  border: 1.5px solid var(--border);
+  box-shadow: none;
+}
+.not-invited-btn--secondary:hover { box-shadow: 0 4px 16px rgba(26,26,46,0.1); }
 </style>
