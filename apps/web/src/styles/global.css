@@ -54,11 +54,10 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; background: var(--warm); }
 
 body {
   font-family: var(--fb);
-  background: var(--warm);
   color: var(--dark);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
@@ -73,10 +72,10 @@ body {
   background: var(--warm);
 }
 
-body.tod-morning   { --warm: #fef9f3; }
-body.tod-afternoon { --warm: #f4f0ec; }
-body.tod-evening   { --warm: #f5eee8; }
-body.tod-night     { --warm: #ede8e3; }
+html.tod-morning   { --warm: #fef9f3; }
+html.tod-afternoon { --warm: #f4f0ec; }
+html.tod-evening   { --warm: #f5eee8; }
+html.tod-night     { --warm: #ede8e3; }
 
 #bokeh-canvas {
   position: fixed; inset: 0; z-index: -1;

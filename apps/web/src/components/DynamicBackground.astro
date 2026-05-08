@@ -43,12 +43,13 @@ const ORBS = [
 </div>
 
 <script>
-  // Apply time-of-day body class — same logic as before, no PixiJS needed
+  // Apply time-of-day class to <html> so --warm cascades into the html background
   const hour = new Date().getHours();
-  if      (hour >= 5  && hour < 12) document.body.classList.add('tod-morning');
-  else if (hour >= 12 && hour < 17) document.body.classList.add('tod-afternoon');
-  else if (hour >= 17 && hour < 20) document.body.classList.add('tod-evening');
-  else                              document.body.classList.add('tod-night');
+  const cl = document.documentElement.classList;
+  if      (hour >= 5  && hour < 12) cl.add('tod-morning');
+  else if (hour >= 12 && hour < 17) cl.add('tod-afternoon');
+  else if (hour >= 17 && hour < 20) cl.add('tod-evening');
+  else                              cl.add('tod-night');
 </script>
 
 <style is:global>
@@ -57,7 +58,7 @@ const ORBS = [
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0.625;
+    background: var(--warm);
   }
 
   .orb {
@@ -74,7 +75,6 @@ const ORBS = [
       transparent 70%
     );
     filter: blur(clamp(20px, calc(var(--sz) * 0.2), 80px));
-    mix-blend-mode: multiply;
     animation: orb-float var(--fx) ease-in-out var(--delay) infinite alternate;
     will-change: transform;
   }
