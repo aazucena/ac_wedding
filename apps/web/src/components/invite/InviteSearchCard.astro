@@ -34,23 +34,6 @@
       </div>
     </button>
 
-    <div class="token-fallback">
-      <p class="token-fallback-label">Have an invitation code instead?</p>
-      <div class="token-row">
-        <div class="field" style="flex:1">
-          <input
-            id="token-input"
-            type="text"
-            placeholder="Enter your code"
-            autocomplete="off"
-            autocorrect="off"
-            autocapitalize="none"
-          />
-        </div>
-        <button class="token-btn" onclick="handleToken()">Go →</button>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -60,7 +43,6 @@
   declare global {
     interface Window {
       handleSearch: () => Promise<void>;
-      handleToken:  () => void;
     }
   }
 
@@ -105,7 +87,7 @@
       const validParties = (data?.parties ?? []).filter(p => p.rsvp_token);
 
       if (error || !validParties.length) {
-        err.textContent = "We couldn't find your name on the guest list. Try a different spelling, or use your invitation code below.";
+        err.textContent = "We couldn't find your name on the guest list. Please try a different spelling or contact us directly.";
         err.classList.add('visible');
       } else if (validParties.length === 1) {
         navigating = true;
@@ -124,32 +106,9 @@
     }
   };
 
-  window.handleToken = function() {
-    const token   = (document.getElementById('token-input') as HTMLInputElement).value.trim();
-    const err     = document.getElementById('error-banner') as HTMLElement;
-    const goBtn   = document.querySelector('.token-btn') as HTMLButtonElement;
-
-    err.textContent = '';
-    err.classList.remove('visible');
-
-    if (!token) {
-      err.textContent = 'Please enter your invitation code.';
-      err.classList.add('visible');
-      return;
-    }
-
-    goBtn.disabled = true;
-    goBtn.textContent = '…';
-    window.location.href = `/rsvp/${token}`;
-  };
-
   document.addEventListener('astro:page-load', () => {
-
     document.getElementById('name-input')?.addEventListener('keydown', e => {
       if (e.key === 'Enter') window.handleSearch();
-    });
-    document.getElementById('token-input')?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') window.handleToken();
     });
   });
 </script>
@@ -191,24 +150,4 @@
   box-shadow: 0 4px 16px rgba(26,26,46,0.07);
 }
 
-.token-fallback { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 8px; }
-
-.token-fallback-label {
-  font-family: var(--fb); font-size: 11px; font-weight: 500;
-  color: var(--muted); margin-bottom: 10px; letter-spacing: 0.3px;
-}
-
-.token-row { display: flex; gap: 10px; align-items: flex-end; }
-
-.token-btn {
-  padding: 13px 20px;
-  background: linear-gradient(135deg, var(--dark), var(--dark2));
-  color: color-mix(in srgb, var(--cp) 80%, white);
-  border: none; border-radius: var(--radius-xs);
-  font-family: var(--fb); font-size: 13px; font-weight: 600;
-  cursor: pointer; white-space: nowrap;
-  transition: opacity 0.2s, transform 0.2s;
-  box-shadow: 0 4px 16px rgba(26,26,46,0.18);
-}
-.token-btn:hover { opacity: 0.9; transform: translateY(-1px); }
 </style>
