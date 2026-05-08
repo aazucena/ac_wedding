@@ -331,20 +331,21 @@ const allMessages = messages.map(m => ({
 
 /* ── Empty alert ───────────────────────────────────────── */
 .empty-alert {
-  display: flex; align-items: center; gap: 14px;
-  padding: 18px 22px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px; text-align: center;
+  padding: 40px 32px;
   background: color-mix(in srgb, var(--cp) 8%, var(--ivory));
-  border: 1px solid color-mix(in srgb, var(--cp) 30%, transparent);
-  border-left: 3px solid color-mix(in srgb, var(--cp) 60%, transparent);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border: 1px solid color-mix(in srgb, var(--cp) 35%, transparent);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 12px rgba(26,26,46,0.06);
 }
 .empty-alert-icon {
-  font-family: var(--fd); font-size: 14px;
-  color: var(--cs); flex-shrink: 0;
+  font-family: var(--fd); font-size: 22px;
+  color: var(--cs);
 }
 .empty-alert-text {
-  font-family: var(--fb); font-size: 13px; font-weight: 300;
-  color: var(--muted); margin: 0; line-height: 1.5;
+  font-family: var(--fd); font-size: 20px; font-weight: 300; font-style: italic;
+  color: var(--dark); margin: 0; line-height: 1.5;
 }
 
 /* ── Letter stack wrapper (scroll fade hint) ───────────── */
