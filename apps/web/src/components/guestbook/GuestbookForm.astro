@@ -69,27 +69,16 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
   const nameConfirmTxt = document.getElementById('name-confirmed-text') as HTMLElement       | null;
   const nameChangeBtn  = document.getElementById('name-change-btn')     as HTMLButtonElement | null;
   const nameSuggestions= document.getElementById('name-suggestions')    as HTMLElement       | null;
-  const tableVerify    = document.getElementById('table-verify')        as HTMLElement       | null;
-  const pendingNameEl  = document.getElementById('pending-name-display')as HTMLElement       | null;
-  const tableInput     = document.getElementById('table-number-input')  as HTMLInputElement  | null;
-  const tableVerifyBtn = document.getElementById('table-verify-btn')    as HTMLButtonElement | null;
-  const tableCancel    = document.getElementById('table-verify-cancel') as HTMLButtonElement | null;
-  const tableError     = document.getElementById('table-verify-error')  as HTMLElement       | null;
 
   if (!form || !nameInput || !msgTextarea) throw new Error('GuestbookForm: missing elements');
 
   // ── State ─────────────────────────────────────────────────────────────────
-  let confirmedName:        string | null = null;
-  let confirmedTableNumber: number | null = null;
-  let pendingGuest: { id: string; name: string } | null = null;
+  let confirmedName: string | null = null;
   let searchTimer: ReturnType<typeof setTimeout>;
 
   // ── Identity helpers ──────────────────────────────────────────────────────
-  function confirmIdentity(name: string, tableNumber: number) {
-    confirmedName        = name;
-    confirmedTableNumber = tableNumber;
-    pendingGuest         = null;
-    hideTableVerify();
+  function confirmIdentity(name: string) {
+    confirmedName = name;
     hideSuggestions();
     if (nameConfirmTxt) nameConfirmTxt.textContent = name;
     nameConfirmed?.classList.remove('hidden');
@@ -97,14 +86,11 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
   }
 
   function resetName() {
-    confirmedName        = null;
-    confirmedTableNumber = null;
-    pendingGuest         = null;
+    confirmedName = null;
     nameConfirmed?.classList.add('hidden');
     nameInput!.classList.remove('hidden');
     nameInput!.value = '';
     nameInput!.focus();
-    hideTableVerify();
     hideSuggestions();
   }
 
@@ -125,7 +111,7 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     } else {
       results.forEach(r => {
         const btn = document.createElement('button');
-        btn.type  = 'button';
+        btn.type      = 'button';
         btn.className = 'name-suggestion-item';
         btn.setAttribute('role', 'option');
         const nameSpan = document.createElement('span');
@@ -137,8 +123,7 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
         btn.appendChild(hint);
         btn.addEventListener('mousedown', (e) => {
           e.preventDefault();
-          hideSuggestions();
-          showTableVerify(r.name, r.id);
+          confirmIdentity(r.name);
         });
         nameSuggestions.appendChild(btn);
       });
@@ -146,72 +131,10 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     nameSuggestions.classList.remove('hidden');
   }
 
-  // ── Table verify modal ────────────────────────────────────────────────────
-  function showTableVerify(name: string, guestId: string) {
-    pendingGuest = { id: guestId, name };
-    if (pendingNameEl) pendingNameEl.textContent = name;
-    tableVerify?.classList.remove('hidden');
-    if (tableError)  { tableError.textContent = ''; tableError.classList.add('hidden'); }
-    if (tableInput)  { tableInput.value = ''; tableInput.focus(); }
-    document.body.style.overflow = 'hidden';
-  }
-
-  function hideTableVerify() {
-    pendingGuest = null;
-    tableVerify?.classList.add('hidden');
-    if (tableInput) tableInput.value = '';
-    if (tableError) { tableError.textContent = ''; tableError.classList.add('hidden'); }
-    document.body.style.overflow = '';
-  }
-
-  function closeTableVerify() { hideTableVerify(); hideSuggestions(); nameInput!.focus(); }
-
-  function showTableError(msg: string) {
-    if (!tableError) return;
-    tableError.textContent = msg;
-    tableError.classList.remove('hidden');
-  }
-
-  async function submitTableVerify() {
-    if (!pendingGuest) return;
-    const rawTable = tableInput?.value.trim() ?? '';
-    if (!rawTable) { showTableError('Please enter your table number.'); return; }
-    const tableNumber = parseInt(rawTable, 10);
-    if (isNaN(tableNumber) || tableNumber < 1) { showTableError('Please enter a valid table number.'); return; }
-
-    if (tableVerifyBtn) tableVerifyBtn.disabled = true;
-    if (tableError)     tableError.classList.add('hidden');
-
-    try {
-      const res  = await fetch('/api/game/verify', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ guestId: pendingGuest.id, tableNumber }),
-      });
-      const data = await res.json() as { ok: boolean; error?: string };
-      if (data.ok) {
-        confirmIdentity(pendingGuest.name, tableNumber);
-      } else {
-        showTableError(data.error ?? 'Table number does not match. Check your place card.');
-      }
-    } catch {
-      showTableError('Something went wrong. Please try again.');
-    } finally {
-      if (tableVerifyBtn) tableVerifyBtn.disabled = false;
-    }
-  }
-
-  tableVerifyBtn?.addEventListener('click', submitTableVerify);
-  tableCancel?.addEventListener('click', closeTableVerify);
-  tableVerify?.querySelectorAll('.js-table-cancel').forEach(btn => btn.addEventListener('click', closeTableVerify));
-  tableVerify?.addEventListener('click', (e) => { if (e.target === tableVerify) closeTableVerify(); });
-  tableInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submitTableVerify(); } });
-
   // ── Name search (debounced) ───────────────────────────────────────────────
   nameInput.addEventListener('input', () => {
     clearTimeout(searchTimer);
-    confirmedName        = null;
-    confirmedTableNumber = null;
+    confirmedName = null;
     const q = nameInput.value.trim();
     if (q.length < 2) { hideSuggestions(); return; }
     searchTimer = setTimeout(async () => {
@@ -252,11 +175,7 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     if (!message) { showError('Please write a message.'); return; }
 
     setLoading(true);
-    const { data, error } = await actions.submitGuestbookEntry({
-      name,
-      message,
-      tableNumber: confirmedTableNumber,
-    });
+    const { data, error } = await actions.submitGuestbookEntry({ name, message });
     setLoading(false);
 
     if (error) {

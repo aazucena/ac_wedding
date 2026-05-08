@@ -10,7 +10,7 @@ import {
   searchPartiesByName,
   searchGuestsForSeating,
   getTablemates,
-  verifyGuestNameAndTable,
+  lookupGuestIdByName,
   createGuestbookEntry,
   hasExistingGuestbookEntry,
   getSettings,
@@ -245,18 +245,12 @@ export const server = {
 
   submitGuestbookEntry: defineAction({
     input: z.object({
-      name:        z.string().min(1).max(255),
-      message:     z.string().min(1),
-      tableNumber: z.number().int().positive().nullable(),
+      name:    z.string().min(1).max(255),
+      message: z.string().min(1),
     }),
-    handler: async ({ name, message, tableNumber }) => {
-      let guestId: string | null = null;
-      let verified = false;
-
-      if (tableNumber !== null) {
-        guestId = await verifyGuestNameAndTable(name, tableNumber);
-        verified = guestId !== null;
-      }
+    handler: async ({ name, message }) => {
+      const guestId = await lookupGuestIdByName(name);
+      const verified = guestId !== null;
 
       if (guestId && await hasExistingGuestbookEntry(guestId)) {
         throw new ActionError({

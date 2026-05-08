@@ -23,35 +23,37 @@ export async function getGuestbookEntries(): Promise<GuestbookEntry[]> {
   }
 }
 
-/**
- * Find a guest by name. Returns found: true if any attending guest with a
- * table assignment matches — used to decide whether to prompt for table number.
- */
-export async function lookupGuestByName(name: string): Promise<{ found: boolean }> {
+function buildGuestNameFilter(name: string) {
   const parts = name.trim().split(/\s+/);
-  const nameFilter =
-    parts.length >= 2
-      ? {
-          _and: [
-            { person: { first_name: { _icontains: parts[0] } } },
-            { person: { last_name:  { _icontains: parts.slice(1).join(' ') } } },
-          ],
-        }
-      : {
-          _or: [
-            { person: { first_name: { _icontains: name } } },
-            { person: { last_name:  { _icontains: name } } },
-          ],
-        };
+  return parts.length >= 2
+    ? {
+        _and: [
+          { person: { first_name: { _icontains: parts[0] } } },
+          { person: { last_name:  { _icontains: parts.slice(1).join(' ') } } },
+        ],
+      }
+    : {
+        _or: [
+          { person: { first_name: { _icontains: name } } },
+          { person: { last_name:  { _icontains: name } } },
+        ],
+      };
+}
+
+/**
+ * Look up a guest by name alone. Returns their guest ID if found, or null.
+ * No table number required — works even before seating is assigned.
+ */
+export async function lookupGuestIdByName(name: string): Promise<string | null> {
   try {
     const items = await get<{ id: string }[]>('/items/guests', {
-      filter: { ...nameFilter, table: { _nnull: true } },
+      filter: buildGuestNameFilter(name),
       fields: ['id'],
       limit: 1,
     });
-    return { found: items.length > 0 };
+    return items[0]?.id ?? null;
   } catch {
-    return { found: false };
+    return null;
   }
 }
 
@@ -60,24 +62,9 @@ export async function lookupGuestByName(name: string): Promise<{ found: boolean 
  * Used server-side only — never expose raw guest IDs to the client response.
  */
 export async function verifyGuestNameAndTable(name: string, tableNumber: number): Promise<string | null> {
-  const parts = name.trim().split(/\s+/);
-  const nameFilter =
-    parts.length >= 2
-      ? {
-          _and: [
-            { person: { first_name: { _icontains: parts[0] } } },
-            { person: { last_name:  { _icontains: parts.slice(1).join(' ') } } },
-          ],
-        }
-      : {
-          _or: [
-            { person: { first_name: { _icontains: name } } },
-            { person: { last_name:  { _icontains: name } } },
-          ],
-        };
   try {
     const items = await get<{ id: string }[]>('/items/guests', {
-      filter: { ...nameFilter, table: { number: { _eq: tableNumber } } },
+      filter: { ...buildGuestNameFilter(name), table: { number: { _eq: tableNumber } } },
       fields: ['id'],
       limit: 1,
     });
