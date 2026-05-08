@@ -52,7 +52,7 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     if (formEl)    formEl.style.display    = 'none';
     if (successEl) successEl.style.display = '';
     if (titleEl)   titleEl.textContent     = 'Message received!';
-    if (bodyEl)    bodyEl.textContent      = 'You've already left a message. Thank you!';
+    if (bodyEl)    bodyEl.textContent      = "You've already left a message. Thank you!";
   }
 
   const form         = document.getElementById('gb-form')          as HTMLFormElement     | null;
@@ -180,7 +180,7 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
 
     if (error) {
       if (error.code === 'CONFLICT') {
-        showError('You've already left a message in the guestbook.');
+        showError("You've already left a message in the guestbook.");
       } else {
         showError('Something went wrong. Please try again.');
       }
