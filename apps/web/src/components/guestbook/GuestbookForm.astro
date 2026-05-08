@@ -40,6 +40,21 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
 <script>
   import { actions } from 'astro:actions';
 
+  const LS_KEY = 'gb_submitted';
+
+  // If already submitted this browser session, show success state immediately
+  const priorSubmit = localStorage.getItem(LS_KEY);
+  if (priorSubmit) {
+    const formEl    = document.getElementById('gb-form');
+    const successEl = document.getElementById('gb-success');
+    const titleEl   = document.getElementById('gb-success-title');
+    const bodyEl    = document.getElementById('gb-success-body');
+    if (formEl)    formEl.style.display    = 'none';
+    if (successEl) successEl.style.display = '';
+    if (titleEl)   titleEl.textContent     = 'Message received!';
+    if (bodyEl)    bodyEl.textContent      = 'You've already left a message. Thank you!';
+  }
+
   const form         = document.getElementById('gb-form')          as HTMLFormElement     | null;
   const msgTextarea  = document.getElementById('gb-message')       as HTMLTextAreaElement | null;
   const errorEl      = document.getElementById('gb-error')         as HTMLElement         | null;
@@ -244,8 +259,16 @@ import TiptapEditor    from '../ui/TiptapEditor.astro';
     });
     setLoading(false);
 
-    if (error) { showError('Something went wrong. Please try again.'); return; }
+    if (error) {
+      if (error.code === 'CONFLICT') {
+        showError('You've already left a message in the guestbook.');
+      } else {
+        showError('Something went wrong. Please try again.');
+      }
+      return;
+    }
 
+    localStorage.setItem(LS_KEY, '1');
     form.style.display = 'none';
     if (successEl)    successEl.style.display = '';
     if (successTitle) successTitle.textContent = data.verified ? 'Message published!' : 'Message received!';

@@ -1,6 +1,6 @@
 // src/actions/index.ts
 // Astro Actions — type-safe server mutations replacing api/rsvp.ts and api/parties.ts
-import { defineAction } from 'astro:actions';
+import { defineAction, ActionError } from 'astro:actions';
 import { z } from 'astro/zod';
 import { DIRECTUS_URL, DIRECTUS_TOKEN } from 'astro:env/server';
 import {
@@ -12,6 +12,7 @@ import {
   getTablemates,
   verifyGuestNameAndTable,
   createGuestbookEntry,
+  hasExistingGuestbookEntry,
   getSettings,
   get,
 } from '@lib/directus';
@@ -255,6 +256,13 @@ export const server = {
       if (tableNumber !== null) {
         guestId = await verifyGuestNameAndTable(name, tableNumber);
         verified = guestId !== null;
+      }
+
+      if (guestId && await hasExistingGuestbookEntry(guestId)) {
+        throw new ActionError({
+          code: 'CONFLICT',
+          message: 'You have already left a message in the guestbook.',
+        });
       }
 
       const settings = await getSettings();

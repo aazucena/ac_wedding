@@ -78,7 +78,7 @@ export { searchGuestsForSeating, getTablemates } from './api/reception';
 export { getGameProofFiles } from './api/game';
 export type { GameSubmission } from './api/game';
 export { uploadGuestFile, deleteFile, createMemoryRecord } from './api/media';
-export { getGuestbookEntries, lookupGuestByName, verifyGuestNameAndTable, createGuestbookEntry } from './api/guestbook';
+export { getGuestbookEntries, lookupGuestByName, verifyGuestNameAndTable, createGuestbookEntry, hasExistingGuestbookEntry } from './api/guestbook';
 export type { GuestbookEntry } from './api/guestbook';
 
 // ── Type re-exports ───────────────────────────────────────────────────────────

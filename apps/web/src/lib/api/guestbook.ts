@@ -87,6 +87,19 @@ export async function verifyGuestNameAndTable(name: string, tableNumber: number)
   }
 }
 
+export async function hasExistingGuestbookEntry(guestId: string): Promise<boolean> {
+  try {
+    const items = await get<{ id: string }[]>('/items/guestbook_entries', {
+      filter: { guest: { _eq: guestId } },
+      fields: ['id'],
+      limit: 1,
+    });
+    return items.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 export async function createGuestbookEntry(payload: {
   name: string;
   message: string;
