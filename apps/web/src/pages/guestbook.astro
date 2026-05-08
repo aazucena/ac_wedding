@@ -58,8 +58,9 @@ const allMessages = messages.map(m => ({
     {weddingIsOver && <GuestbookForm />}
 
     {messages.length === 0 ? (
-      <div class="empty-state">
-        <p class="empty-text">Messages will appear here once guests RSVP.</p>
+      <div class="empty-alert" role="status">
+        <span class="empty-alert-icon" aria-hidden="true">✦</span>
+        <p class="empty-alert-text">Messages will appear here once guests RSVP.</p>
       </div>
     ) : (
       <>
@@ -328,12 +329,22 @@ const allMessages = messages.map(m => ({
 
 .hidden-wrap { display: none !important; }
 
-/* ── Empty ─────────────────────────────────────────────── */
-.empty-state {
-  text-align: center; padding: 56px 32px;
+/* ── Empty alert ───────────────────────────────────────── */
+.empty-alert {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 22px;
+  background: color-mix(in srgb, var(--cp) 8%, var(--ivory));
+  border: 1px solid color-mix(in srgb, var(--cp) 30%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--cp) 60%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
-.empty-text {
-  font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--muted);
+.empty-alert-icon {
+  font-family: var(--fd); font-size: 14px;
+  color: var(--cs); flex-shrink: 0;
+}
+.empty-alert-text {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--muted); margin: 0; line-height: 1.5;
 }
 
 /* ── Letter stack wrapper (scroll fade hint) ───────────── */
