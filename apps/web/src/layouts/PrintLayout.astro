@@ -69,6 +69,52 @@ const nextPage  = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
     {toolbarHint && <p class="toolbar-hint">{toolbarHint}</p>}
   </div>
 
+
+  <script is:inline>
+    (function () {
+      const MAX = 10;
+      const P   = 1000;
+      const SEL = '.flip-container, .card:not(.flip-container .card), [data-tilt]';
+
+      function setup(host) {
+        if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+        const glare = document.createElement('div');
+        glare.className = 'tilt-glare no-print';
+        host.appendChild(glare);
+
+        let raf = null;
+
+        host.addEventListener('mouseenter', () => {
+          host.style.transition = 'transform 0.25s ease-out';
+        });
+
+        host.addEventListener('mousemove', e => {
+          if (raf) cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(() => {
+            const r  = host.getBoundingClientRect();
+            const rx = (((e.clientY - r.top)  / r.height) - 0.5) * -MAX * 2;
+            const ry = (((e.clientX - r.left) / r.width)  - 0.5) *  MAX * 2;
+            host.style.transition = 'transform 0.08s ease-out';
+            host.style.transform  = `perspective(${P}px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+            const gx = ((e.clientX - r.left) / r.width)  * 100;
+            const gy = ((e.clientY - r.top)  / r.height) * 100;
+            glare.style.opacity    = '1';
+            glare.style.background =
+              `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.2) 0%, transparent 65%)`;
+          });
+        });
+
+        host.addEventListener('mouseleave', () => {
+          if (raf) cancelAnimationFrame(raf);
+          host.style.transition = 'transform 0.6s cubic-bezier(0.2,0.8,0.3,1)';
+          host.style.transform  = `perspective(${P}px) rotateX(0deg) rotateY(0deg)`;
+          glare.style.opacity   = '0';
+        });
+      }
+
+      document.querySelectorAll(SEL).forEach(setup);
+    })();
+  </script>
 </body>
 </html>
 
@@ -177,6 +223,15 @@ const nextPage  = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
 
+  /* ── Tilt glare overlay ─────────────────────────────────── */
+  .flip-container, [data-tilt] { position: relative; }
+  .tilt-glare {
+    position: absolute; inset: 0;
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.3s ease-out;
+    z-index: 10; border-radius: inherit;
+  }
+
   /* ── Print base rules ─────────────────────────────────────── */
   @media print {
     /* @page size is set per-page, not here — each print page declares its own size */
@@ -186,6 +241,7 @@ const nextPage  = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
     .flip-container {
       display: block !important; width: auto !important;
       height: auto !important; cursor: default; overflow: visible;
+      transform: none !important;
     }
     .flipper {
       transform: none !important; transform-style: flat;
@@ -197,7 +253,9 @@ const nextPage  = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
       width: auto; min-height: auto;
     }
     .face.front { break-after: page; page-break-after: always; }
-    .card { box-shadow: none; break-inside: avoid; width: var(--card-w); min-height: var(--card-h); }
+    .card { box-shadow: none; break-inside: avoid; width: var(--card-w); min-height: var(--card-h); transform: none !important; }
     .card-accent-bottom { margin-top: 0; }
+    [data-tilt] { transform: none !important; }
+    .tilt-glare { display: none !important; }
   }
 </style>
