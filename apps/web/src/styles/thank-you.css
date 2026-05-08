@@ -60,6 +60,7 @@
   font-family: var(--fb); font-size: 9px; font-weight: 500;
   letter-spacing: 3px; text-transform: uppercase; color: var(--muted); opacity: 0.7;
 }
+.photo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .photo-area::before, .photo-area::after {
   content: '✦'; position: absolute; font-size: 8px; color: rgba(197,184,224,0.5); z-index: 1;
 }
