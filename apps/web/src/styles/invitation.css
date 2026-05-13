@@ -72,7 +72,7 @@
 }
 .together-note {
   font-size: 9px; font-weight: 600; letter-spacing: 3px;
-  text-transform: uppercase; color: #8a8499;
+  text-transform: uppercase; color: #524d6a;
 }
 .party-name {
   font-family: 'Cormorant Garamond', serif;
@@ -92,7 +92,7 @@
 .rule-l { flex: 1; height: 1px; background: linear-gradient(90deg, #C5B8E0, transparent); }
 .rule-r.long { flex: none; width: 38%; }
 .rule-l.long { flex: none; width: 38%; }
-.inv-and { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-style: italic; color: #C5B8E0; }
+.inv-and { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-style: italic; color: #4a3d6e; }
 .request-copy {
   font-family: 'Cormorant Garamond', serif;
   font-size: 16px; font-style: italic; color: #5a5470; line-height: 1.75;
@@ -100,15 +100,15 @@
 .flip-container.size-a4 .request-copy { font-size: 19px; }
 .date-block { display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .ornament { font-family: 'Cormorant Garamond', serif; font-size: 14px; color: #C5B8E0; letter-spacing: 6px; margin-bottom: 4px; }
-.day-label { font-size: 9px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #8a8499; }
+.day-label { font-size: 9px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; color: #524d6a; }
 .date-long { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; color: #1a1a2e; }
 .flip-container.size-a4 .date-long { font-size: 24px; }
 .year-long { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: #5a5470; }
-.time-label { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #8a8499; margin-top: 3px; }
+.time-label { font-size: 9px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #524d6a; margin-top: 3px; }
 .front-hr { display: flex; align-items: center; gap: 12px; width: 72%; }
 .ornament-sm { display: flex; align-items: center; justify-content: center; }
-.dress-code { font-size: 9.5px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #8a8499; }
-.dinner-note { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: #8a8499; letter-spacing: 0.3px; }
+.dress-code { font-size: 9.5px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #524d6a; }
+.dinner-note { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: #524d6a; letter-spacing: 0.3px; }
 .sponsor-header { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .parents-block { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 8px; }
 .name-divider--sm { width: 52%; }
@@ -116,7 +116,7 @@
 
 .parent-line { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-style: italic; color: #1a1a2e; letter-spacing: 0.3px; }
 .parent-group { display: flex; flex-direction: column; align-items: center; gap: 1px; }
-.parent-line--proxy { font-family: 'Cormorant Garamond', serif; font-size: 10px; font-style: italic; color: #8a8499; letter-spacing: 0.3px; }
+.parent-line--proxy { font-family: 'Cormorant Garamond', serif; font-size: 10px; font-style: italic; color: #2e2a3d; letter-spacing: 0.3px; }
 
 /* ── BACK ───────────────────────────────────────────────── */
 .back-inner {
@@ -130,16 +130,16 @@
 }
 .section-eye {
   font-size: 9px; font-weight: 600; letter-spacing: 3.5px;
-  text-transform: uppercase; color: #C5B8E0; margin-bottom: 2px;
+  text-transform: uppercase; color: #4a3d6e; margin-bottom: 2px;
 }
 .venue-name {
   font-family: 'Cormorant Garamond', serif;
   font-size: 22px; font-weight: 400; color: #1a1a2e; white-space: nowrap;
 }
 .flip-container.size-a4 .venue-name { font-size: 26px; }
-.venue-addr { font-size: 9px; letter-spacing: 0.5px; color: #8a8499; }
-.venue-time { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #8a8499; margin-top: 2px; }
-.cocktail-note { font-size: 10px; font-style: italic; color: #8a8499; }
+.venue-addr { font-size: 9px; letter-spacing: 0.5px; color: #524d6a; }
+.venue-time { font-size: 9px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; color: #524d6a; margin-top: 2px; }
+.cocktail-note { font-size: 10px; font-style: italic; color: #524d6a; }
 
 /* ── QR embellishment frame ─────────────────────────────── */
 .qr-embellish {
@@ -186,7 +186,7 @@
 }
 .rsvp-heading {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 22px; font-weight: 300; font-style: italic; color: var(--cs);
+  font-size: 22px; font-weight: 300; font-style: italic; color: #4a3d6e;
   margin-top: 4px;
 }
 .rsvp-instruction {
@@ -197,23 +197,23 @@
 .flip-container.size-a4 .rsvp-heading { font-size: 26px; }
 .rsvp-deadline {
   font-family: var(--fb); font-size: 9px; font-weight: 400;
-  letter-spacing: 1px; text-transform: uppercase; color: #7a7490;
+  letter-spacing: 1px; text-transform: uppercase; color: #524d6a;
 }
 .rsvp-deadline strong {
-  font-weight: 700; color: var(--cs);
+  font-weight: 700; color: #4a3d6e; text-decoration: underline;
 }
 .rsvp-note { font-size: 10px; color: #5a5470; line-height: 1.5; }
 .rsvp-url {
   font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
-  color: var(--cp);
-  background: color-mix(in srgb, var(--cp) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--cp) 35%, transparent);
+  color: #5a9e7a;
+  background: color-mix(in srgb, #5a9e7a 12%, transparent);
+  border: 1px solid color-mix(in srgb, #5a9e7a 35%, transparent);
   border-radius: 20px; padding: 3px 12px;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 .rsvp-hashtag {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 18px; font-style: italic; color: #C5B8E0; display: block;
+  font-size: 18px; font-style: italic; color: #4a3d6e; display: block;
 }
 
 /* ── ENTOURAGE INSERT ───────────────────────────────────── */
@@ -280,13 +280,13 @@
   font-family: 'Cormorant Garamond', serif;
   font-size: 7px; font-weight: 600;
   letter-spacing: 2px; text-transform: uppercase;
-  color: #C5B8E0; margin-bottom: 1px;
+  color: #4a3d6e; margin-bottom: 1px;
 }
 .ins-name {
   font-family: 'Cormorant Garamond', serif;
   font-size: 11px; font-weight: 400; color: #1a1a2e; line-height: 1.35;
 }
-.ins-name--proxy { font-size: 9px; color: #8a8499; font-style: italic; }
+.ins-name--proxy { font-size: 9px; color: #2e2a3d; font-style: italic; }
 .ins-pair {
   display: flex; align-items: baseline; justify-content: center; gap: 6px;
 }
@@ -314,7 +314,7 @@
 .attire-label   {
   font-family: var(--fb); font-size: 10px; font-weight: 600;
   letter-spacing: 2.5px; text-transform: uppercase;
-  color: var(--cs);
+  color: #4a3d6e;
 }
 .attire-dresscode {
   font-family: var(--fd); font-size: 20px; font-weight: 400; font-style: italic;
@@ -324,7 +324,7 @@
 .attire-col     { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .attire-gender  {
   font-family: var(--fb); font-size: 9px; font-weight: 600;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--cp);
+  letter-spacing: 2px; text-transform: uppercase; color: #5a9e7a;
 }
 .attire-wear    {
   font-family: var(--fd); font-size: 14px; font-style: italic;
@@ -332,14 +332,14 @@
 }
 .attire-avoid   {
   font-family: var(--fb); font-size: 9px; font-weight: 500;
-  letter-spacing: 0.5px; color: var(--muted); font-style: italic;
+  letter-spacing: 0.5px; color: #524d6a; font-style: italic;
 }
 .attire-sub     {
   font-family: var(--fb); font-size: 8px; font-weight: 600;
   letter-spacing: 2px; text-transform: uppercase;
-  color: var(--muted); margin: 10px 0 8px;
+  color: #524d6a; margin: 10px 0 8px;
 }
 .swatch-row     { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .swatch-wrap    { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .swatch-circle  { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.12); }
-.swatch-name    { font-family: var(--fb); font-size: 8px; color: var(--muted); letter-spacing: 0.3px; }
+.swatch-name    { font-family: var(--fb); font-size: 8px; color: #524d6a; letter-spacing: 0.3px; }
