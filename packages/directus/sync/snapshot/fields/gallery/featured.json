@@ -1,37 +1,35 @@
 {
   "collection": "gallery",
-  "field": "date_created",
-  "type": "timestamp",
+  "field": "featured",
+  "type": "boolean",
   "meta": {
     "collection": "gallery",
     "conditions": null,
-    "display": "datetime",
-    "display_options": {
-      "relative": true
-    },
-    "field": "date_created",
+    "display": null,
+    "display_options": null,
+    "field": "featured",
     "group": null,
-    "hidden": true,
-    "interface": "datetime",
-    "note": null,
+    "hidden": false,
+    "interface": "boolean",
+    "note": "Toggle to display the image on the homepage slideshow",
     "options": null,
-    "readonly": true,
+    "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 12,
+    "sort": 4,
     "special": [
-      "date-created"
+      "cast-boolean"
     ],
     "translations": null,
     "validation": null,
     "validation_message": null,
-    "width": "half"
+    "width": "full"
   },
   "schema": {
-    "name": "date_created",
+    "name": "featured",
     "table": "gallery",
-    "data_type": "timestamp with time zone",
-    "default_value": null,
+    "data_type": "boolean",
+    "default_value": false,
     "max_length": null,
     "numeric_precision": null,
     "numeric_scale": null,

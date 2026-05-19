@@ -12,11 +12,13 @@
     "hidden": false,
     "interface": "input",
     "note": "Optional caption",
-    "options": null,
+    "options": {
+      "placeholder": "e.g. \"Bride Getting Ready\""
+    },
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 4,
+    "sort": 7,
     "special": null,
     "translations": null,
     "validation": null,

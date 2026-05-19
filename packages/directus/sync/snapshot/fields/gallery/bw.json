@@ -1,37 +1,40 @@
 {
   "collection": "gallery",
-  "field": "date_created",
-  "type": "timestamp",
+  "field": "bw",
+  "type": "boolean",
   "meta": {
     "collection": "gallery",
     "conditions": null,
-    "display": "datetime",
-    "display_options": {
-      "relative": true
-    },
-    "field": "date_created",
+    "display": null,
+    "display_options": null,
+    "field": "bw",
     "group": null,
-    "hidden": true,
-    "interface": "datetime",
-    "note": null,
+    "hidden": false,
+    "interface": "boolean",
+    "note": "Mark as true if this photo was delivered in black & white.",
     "options": null,
-    "readonly": true,
+    "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 12,
+    "sort": 6,
     "special": [
-      "date-created"
+      "cast-boolean"
     ],
-    "translations": null,
+    "translations": [
+      {
+        "language": "en-US",
+        "translation": "Black & White"
+      }
+    ],
     "validation": null,
     "validation_message": null,
-    "width": "half"
+    "width": "full"
   },
   "schema": {
-    "name": "date_created",
+    "name": "bw",
     "table": "gallery",
-    "data_type": "timestamp with time zone",
-    "default_value": null,
+    "data_type": "boolean",
+    "default_value": false,
     "max_length": null,
     "numeric_precision": null,
     "numeric_scale": null,

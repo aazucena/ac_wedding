@@ -5,7 +5,7 @@
   "meta": {
     "collection": "gallery",
     "conditions": null,
-    "display": null,
+    "display": "image",
     "display_options": null,
     "field": "image",
     "group": null,
@@ -23,7 +23,7 @@
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 6,
+    "sort": 9,
     "special": [
       "file"
     ],

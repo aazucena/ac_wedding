@@ -1,0 +1,138 @@
+{
+  "collection": "gallery",
+  "field": "category",
+  "type": "string",
+  "meta": {
+    "collection": "gallery",
+    "conditions": null,
+    "display": "labels",
+    "display_options": {
+      "choices": [
+        {
+          "text": "Engagement",
+          "value": "engagement"
+        },
+        {
+          "text": "Details",
+          "value": "details"
+        },
+        {
+          "text": "Preparation",
+          "value": "preparation"
+        },
+        {
+          "text": "Bridesmaids",
+          "value": "bridesmaids"
+        },
+        {
+          "text": "Groomsmen",
+          "value": "groomsmen"
+        },
+        {
+          "text": "Ceremony",
+          "value": "ceremony"
+        },
+        {
+          "text": "Group Photos",
+          "value": "group_photos"
+        },
+        {
+          "text": "Reception",
+          "value": "reception"
+        },
+        {
+          "text": "Portraits",
+          "value": "portraits"
+        },
+        {
+          "text": "Candids",
+          "value": "candids"
+        },
+        {
+          "text": "Family Formals",
+          "value": "family_formals"
+        }
+      ]
+    },
+    "field": "category",
+    "group": null,
+    "hidden": false,
+    "interface": "select-dropdown",
+    "note": "The type/moment of the photo. Used to filter the gallery on the website.",
+    "options": {
+      "choices": [
+        {
+          "text": "Engagement",
+          "value": "engagement"
+        },
+        {
+          "text": "Details",
+          "value": "details"
+        },
+        {
+          "text": "Preparation",
+          "value": "preparation"
+        },
+        {
+          "text": "Bridesmaids",
+          "value": "bridesmaids"
+        },
+        {
+          "text": "Groomsmen",
+          "value": "groomsmen"
+        },
+        {
+          "text": "Ceremony",
+          "value": "ceremony"
+        },
+        {
+          "text": "Group Photos",
+          "value": "group_photos"
+        },
+        {
+          "text": "Reception",
+          "value": "reception"
+        },
+        {
+          "text": "Portraits",
+          "value": "portraits"
+        },
+        {
+          "text": "Candids",
+          "value": "candids"
+        },
+        {
+          "text": "Family Formals",
+          "value": "family_formals"
+        }
+      ]
+    },
+    "readonly": false,
+    "required": false,
+    "searchable": true,
+    "sort": 5,
+    "special": null,
+    "translations": null,
+    "validation": null,
+    "validation_message": null,
+    "width": "full"
+  },
+  "schema": {
+    "name": "category",
+    "table": "gallery",
+    "data_type": "character varying",
+    "default_value": null,
+    "max_length": 255,
+    "numeric_precision": null,
+    "numeric_scale": null,
+    "is_nullable": true,
+    "is_unique": false,
+    "is_indexed": false,
+    "is_primary_key": false,
+    "is_generated": false,
+    "generation_expression": null,
+    "has_auto_increment": false,
+    "foreign_key_table": null,
+    "foreign_key_column": null
+  }
+}

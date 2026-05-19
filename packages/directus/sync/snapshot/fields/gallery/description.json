@@ -12,11 +12,13 @@
     "hidden": false,
     "interface": "input-multiline",
     "note": null,
-    "options": null,
+    "options": {
+      "placeholder": "Extended context or story behind the photo, shown in the lightbox below the title "
+    },
     "readonly": false,
     "required": false,
     "searchable": true,
-    "sort": 5,
+    "sort": 8,
     "special": null,
     "translations": null,
     "validation": null,

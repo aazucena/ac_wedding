@@ -18,7 +18,7 @@
     "readonly": true,
     "required": false,
     "searchable": true,
-    "sort": 10,
+    "sort": 13,
     "special": [
       "user-updated"
     ],
