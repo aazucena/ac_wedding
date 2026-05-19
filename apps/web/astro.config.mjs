@@ -70,6 +70,7 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
+        '@lib/social-cards': resolve(__dirname, 'src/lib/social-cards/index.ts'),
         '@lib':        resolve(__dirname, 'src/lib'),
         '@components': resolve(__dirname, 'src/components'),
         '@styles':     resolve(__dirname, 'src/styles'),
