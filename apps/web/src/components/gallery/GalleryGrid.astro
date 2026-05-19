@@ -27,6 +27,8 @@ const padCount = (3 - (items.length % 3)) % 3;
       data-src={photo.image ? assetUrl(photo.image) : null}
       data-title={photo.title}
       data-desc={photo.description}
+      data-category={photo.category ?? ''}
+      data-bw={photo.bw ? 'true' : 'false'}
       onclick="openLightbox(this)"
       aria-label={photo.title ?? `Photo ${i + 1}`}
     >
