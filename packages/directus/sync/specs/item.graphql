@@ -173,14 +173,14 @@ type Query {
   directus_sync_id_map_by_id(id: ID!, version: String): directus_sync_id_map
   directus_sync_id_map_aggregated(groupBy: [String], filter: directus_sync_id_map_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [directus_sync_id_map_aggregated!]!
   directus_sync_id_map_by_version(version: String!, id: ID!): version_directus_sync_id_map
-  api_endpoints(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [api_endpoints!]!
-  api_endpoints_by_id(id: ID!, version: String): api_endpoints
-  api_endpoints_aggregated(groupBy: [String], filter: api_endpoints_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [api_endpoints_aggregated!]!
-  api_endpoints_by_version(version: String!, id: ID!): version_api_endpoints
   guestbook_entries(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [guestbook_entries!]!
   guestbook_entries_by_id(id: ID!, version: String): guestbook_entries
   guestbook_entries_aggregated(groupBy: [String], filter: guestbook_entries_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [guestbook_entries_aggregated!]!
   guestbook_entries_by_version(version: String!, id: ID!): version_guestbook_entries
+  api_endpoints(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [api_endpoints!]!
+  api_endpoints_by_id(id: ID!, version: String): api_endpoints
+  api_endpoints_aggregated(groupBy: [String], filter: api_endpoints_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [api_endpoints_aggregated!]!
+  api_endpoints_by_version(version: String!, id: ID!): version_api_endpoints
 }
 
 type Mutation {
@@ -270,10 +270,10 @@ type Mutation {
   create_memories_item(data: create_memories_input!): memories
   create_directus_sync_id_map_items(filter: directus_sync_id_map_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_directus_sync_id_map_input!]): [directus_sync_id_map!]!
   create_directus_sync_id_map_item(data: create_directus_sync_id_map_input!): directus_sync_id_map
-  create_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_api_endpoints_input!]): [api_endpoints!]!
-  create_api_endpoints_item(data: create_api_endpoints_input!): api_endpoints
   create_guestbook_entries_items(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_guestbook_entries_input!]): [guestbook_entries!]!
   create_guestbook_entries_item(data: create_guestbook_entries_input!): guestbook_entries
+  create_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_api_endpoints_input!]): [api_endpoints!]!
+  create_api_endpoints_item(data: create_api_endpoints_input!): api_endpoints
   update_parties_items(filter: parties_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_parties_input!): [parties!]!
   update_parties_batch(filter: parties_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_parties_input!]): [parties!]!
   update_parties_item(id: ID!, data: update_parties_input!): parties
@@ -404,12 +404,12 @@ type Mutation {
   update_directus_sync_id_map_items(filter: directus_sync_id_map_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_directus_sync_id_map_input!): [directus_sync_id_map!]!
   update_directus_sync_id_map_batch(filter: directus_sync_id_map_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_directus_sync_id_map_input!]): [directus_sync_id_map!]!
   update_directus_sync_id_map_item(id: ID!, data: update_directus_sync_id_map_input!): directus_sync_id_map
-  update_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_api_endpoints_input!): [api_endpoints!]!
-  update_api_endpoints_batch(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_api_endpoints_input!]): [api_endpoints!]!
-  update_api_endpoints_item(id: ID!, data: update_api_endpoints_input!): api_endpoints
   update_guestbook_entries_items(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_guestbook_entries_input!): [guestbook_entries!]!
   update_guestbook_entries_batch(filter: guestbook_entries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_guestbook_entries_input!]): [guestbook_entries!]!
   update_guestbook_entries_item(id: ID!, data: update_guestbook_entries_input!): guestbook_entries
+  update_api_endpoints_items(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_api_endpoints_input!): [api_endpoints!]!
+  update_api_endpoints_batch(filter: api_endpoints_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_api_endpoints_input!]): [api_endpoints!]!
+  update_api_endpoints_item(id: ID!, data: update_api_endpoints_input!): api_endpoints
   delete_parties_items(ids: [ID]!): delete_many
   delete_parties_item(id: ID!): delete_one
   delete_ceremonies_items(ids: [ID]!): delete_many
@@ -496,10 +496,10 @@ type Mutation {
   delete_memories_item(id: ID!): delete_one
   delete_directus_sync_id_map_items(ids: [ID]!): delete_many
   delete_directus_sync_id_map_item(id: ID!): delete_one
-  delete_api_endpoints_items(ids: [ID]!): delete_many
-  delete_api_endpoints_item(id: ID!): delete_one
   delete_guestbook_entries_items(ids: [ID]!): delete_many
   delete_guestbook_entries_item(id: ID!): delete_one
+  delete_api_endpoints_items(ids: [ID]!): delete_many
+  delete_api_endpoints_item(id: ID!): delete_one
 }
 
 type Subscription {
@@ -570,8 +570,8 @@ type Subscription {
   accomodations_mutated(event: EventEnum): accomodations_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
-  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""

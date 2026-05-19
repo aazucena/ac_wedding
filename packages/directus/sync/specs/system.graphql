@@ -329,8 +329,8 @@ type Subscription {
   accomodations_mutated(event: EventEnum): accomodations_mutated
   memories_mutated(event: EventEnum): memories_mutated
   directus_sync_id_map_mutated(event: EventEnum): directus_sync_id_map_mutated
-  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
   guestbook_entries_mutated(event: EventEnum): guestbook_entries_mutated
+  api_endpoints_mutated(event: EventEnum): api_endpoints_mutated
 }
 
 """The `Boolean` scalar type represents `true` or `false`."""
