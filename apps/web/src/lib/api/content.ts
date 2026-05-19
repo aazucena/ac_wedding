@@ -21,7 +21,7 @@ export async function getGallery(): Promise<Gallery[]> {
       fields: ['id', 'title', 'description', 'image.id', 'sort', 'status'],
       filter: { status: { _eq: 'published' } },
       sort: ['sort', 'date_created'],
-      limit: 50,
+      limit: -1,
     });
   } catch {
     return [];
