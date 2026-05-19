@@ -23,6 +23,29 @@ const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders :
 const _photo = typeof settings.photographer === 'object'
   ? (settings.photographer as Vendors)
   : null;
+
+const CATEGORY_ORDER = [
+  'engagement', 'details', 'preparation', 'bridesmaids', 'groomsmen',
+  'ceremony', 'group_photos', 'reception', 'portraits', 'candids', 'family_formals',
+];
+const CATEGORY_LABELS: Record<string, string> = {
+  engagement:     'Engagement',
+  details:        'Details',
+  preparation:    'Preparation',
+  bridesmaids:    'Bridesmaids',
+  groomsmen:      'Groomsmen',
+  ceremony:       'Ceremony',
+  group_photos:   'Group Photos',
+  reception:      'Reception',
+  portraits:      'Portraits',
+  candids:        'Candids',
+  family_formals: 'Family Formals',
+};
+
+const categoriesInUse = new Set(photos.map(p => p.category).filter(Boolean));
+const activeCategories = CATEGORY_ORDER.filter(c => categoriesInUse.has(c));
+const hasBW      = photos.some(p => p.bw);
+const showFilter = activeCategories.length > 1 || hasBW;
 ---
 
 <Layout
@@ -41,7 +64,28 @@ const _photo = typeof settings.photographer === 'object'
       date={`Our Gallery · ${weddingDateLabel}`}
     />
 
+    {showFilter && (
+      <div class="gallery-filter" id="gallery-filter" role="group" aria-label="Filter photos">
+        <button class="gallery-filter-btn active" data-filter="all">All</button>
+        {activeCategories.map(cat => (
+          <button class="gallery-filter-btn" data-filter={cat}>
+            {CATEGORY_LABELS[cat]}
+          </button>
+        ))}
+        {hasBW && (
+          <>
+            <span class="gallery-filter-sep" aria-hidden="true"></span>
+            <button class="gallery-filter-bw" id="gallery-filter-bw" aria-pressed="false">
+              B&amp;W
+            </button>
+          </>
+        )}
+      </div>
+    )}
+
     {items.length > 0 && <GalleryGrid items={items} />}
+
+    <p class="gallery-filter-empty" id="gallery-filter-empty" aria-live="polite"></p>
 
     {photos.length === 0 && (
       <p class="gallery-empty">Photos will be added soon. Check back after the wedding!</p>
@@ -98,6 +142,72 @@ const _photo = typeof settings.photographer === 'object'
   font-family: var(--fb); font-size: 14px; font-weight: 300;
   color: var(--muted); text-align: center; margin-top: 16px;
   font-style: italic;
+}
+
+/* ── Category filter ─────────────────────────────────────── */
+.gallery-filter {
+  display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: center;
+  gap: 2px; width: 100%; margin-bottom: 32px;
+}
+
+.gallery-filter-btn {
+  position: relative;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--fb); font-size: 9.5px; font-weight: 500;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 14px;
+  transition: color 0.2s ease;
+}
+.gallery-filter-btn::after {
+  content: '';
+  position: absolute; bottom: 4px; left: 14px; right: 14px;
+  height: 1px;
+  background: var(--cp);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+.gallery-filter-btn:hover { color: var(--dark); }
+.gallery-filter-btn.active {
+  color: var(--dark); font-weight: 600;
+}
+.gallery-filter-btn.active::after { transform: scaleX(1); }
+
+.gallery-filter-sep {
+  width: 1px; height: 12px; align-self: center;
+  background: var(--border); margin: 0 6px; flex-shrink: 0;
+}
+
+.gallery-filter-bw {
+  position: relative;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--fb); font-size: 9.5px; font-weight: 500;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 14px;
+  transition: color 0.2s ease;
+}
+.gallery-filter-bw::after {
+  content: '';
+  position: absolute; bottom: 4px; left: 14px; right: 14px;
+  height: 1px;
+  background: var(--dark);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+.gallery-filter-bw:hover { color: var(--dark); }
+.gallery-filter-bw.active {
+  color: var(--dark); font-weight: 600;
+}
+.gallery-filter-bw.active::after { transform: scaleX(1); }
+
+.gallery-filter-empty {
+  font-family: var(--fd); font-size: 18px; font-weight: 300;
+  font-style: italic; color: var(--muted);
+  text-align: center; margin: 24px 0; min-height: 0;
 }
 
 .photographer-card {
@@ -171,3 +281,54 @@ const _photo = typeof settings.photographer === 'object'
 }
 .pictime-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(26,26,46,0.25); }
 </style>
+
+<script>
+  const filterBtns  = document.querySelectorAll<HTMLButtonElement>('.gallery-filter-btn');
+  const bwBtn       = document.getElementById('gallery-filter-bw') as HTMLButtonElement | null;
+  const gridItems   = document.querySelectorAll<HTMLElement>('.gallery-item:not(.gallery-item--pad)');
+  const padItems    = document.querySelectorAll<HTMLElement>('.gallery-item--pad');
+  const emptyMsg    = document.getElementById('gallery-filter-empty');
+
+  let activeCategory = 'all';
+  let bwOnly = false;
+
+  function applyFilter() {
+    let visible = 0;
+
+    gridItems.forEach(item => {
+      const cat   = item.dataset.category ?? '';
+      const isBW  = item.dataset.bw === 'true';
+      const catOk = activeCategory === 'all' || cat === activeCategory;
+      const bwOk  = !bwOnly || isBW;
+      const show  = catOk && bwOk;
+      item.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    // Only show pad cells in the unfiltered all-photos view
+    const showPads = activeCategory === 'all' && !bwOnly;
+    padItems.forEach(p => { p.style.display = showPads ? '' : 'none'; });
+
+    if (emptyMsg) {
+      emptyMsg.textContent = visible === 0
+        ? 'No photos in this category yet — check back soon.'
+        : '';
+    }
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory = btn.dataset.filter ?? 'all';
+      applyFilter();
+    });
+  });
+
+  bwBtn?.addEventListener('click', () => {
+    bwOnly = !bwOnly;
+    bwBtn.classList.toggle('active', bwOnly);
+    bwBtn.setAttribute('aria-pressed', String(bwOnly));
+    applyFilter();
+  });
+</script>
