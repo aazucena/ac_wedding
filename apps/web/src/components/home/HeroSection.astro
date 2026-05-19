@@ -494,12 +494,12 @@ for (let i = slides.length - 1; i > 0; i--) {
   const nav      = document.getElementById('site-nav');
 
   function enterFocus() {
-    hero.classList.add('hero--immersive');
+    if (hero) { hero.classList.add('hero--immersive'); }
     focusBtn?.setAttribute('aria-pressed', 'true');
     if (nav) { nav.style.opacity = '0'; nav.style.pointerEvents = 'none'; }
   }
   function exitFocus() {
-    hero.classList.remove('hero--immersive');
+    if (hero) { hero.classList.remove('hero--immersive'); }
     focusBtn?.setAttribute('aria-pressed', 'false');
     if (nav) { nav.style.opacity = ''; nav.style.pointerEvents = ''; }
   }
