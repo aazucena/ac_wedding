@@ -34,6 +34,7 @@ import '@fontsource/jost/400.css';
 import '@fontsource/jost/500.css';
 import '@fontsource/jost/600.css';
 import { MAIN_NAV_ITEMS as NAV_ITEMS } from '@lib/constants';
+import { PREVIEW_TOKEN } from 'astro:env/server';
 import '@styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import DynamicBackground from '../components/DynamicBackground.astro';
@@ -44,6 +45,9 @@ import TableOfContents from '../components/ui/TableOfContents.astro';
 import EnvelopePreloader from '../components/home/EnvelopePreloader.astro';
 import { getSettings } from '@lib/directus';
 import { formatDate } from '@lib/utils/format';
+
+const isPreview     = Astro.locals.isPreview ?? false;
+const previewSuffix = isPreview && PREVIEW_TOKEN ? `?preview=${PREVIEW_TOKEN}` : '';
 
 const envelopeData = envelope ? await getSettings() : null;
 const groomFull        = envelopeData ? `${envelopeData.groom?.first_name ?? 'Aldrin'} ${envelopeData.groom?.last_name ?? 'Azucena'}` : 'Aldrin Azucena';
@@ -97,7 +101,7 @@ const ogImage = new URL('/api/social/dm.png', Astro.site).href;
   <div class="grain" aria-hidden="true"></div>
 
 
-  <Navbar items={NAV_ITEMS} activeNav={activeNav} scrollSpy={activeNav === 'home'} />
+  <Navbar items={NAV_ITEMS} activeNav={activeNav} scrollSpy={activeNav === 'home'} previewSuffix={previewSuffix} />
 
   <main class="page">
     <slot />
