@@ -51,8 +51,9 @@ const receptionItems = (reception.programs ?? [])
   }));
 
 const fallbackItems = [
-  { time: receptionTime, icon: '🎉', label: 'Reception begins',        note: receptionVenue },
-  { time: '',            icon: '✦',  label: 'Program to be announced', note: 'Details coming soon — check back closer to the wedding day' },
+  { time: receptionTime, icon: '🚪', label: 'Reception starts',      note: receptionVenue },
+  { time: '7:00 PM',     icon: '💃', label: 'First dance & program', note: 'Dinner & celebrations' },
+  { time: '10:00 PM',    icon: '🎉', label: 'Last dance',            note: 'End of evening' },
 ];
 
 const items = [...openingItems, ...(receptionItems.length > 0 ? receptionItems : fallbackItems)];
@@ -62,10 +63,6 @@ const receptionPhaseItems = receptionItems.length > 0 ? receptionItems : fallbac
 const lastReceptionItem = receptionPhaseItems[receptionPhaseItems.length - 1];
 
 const ceremonyPhaseItems = openingItems.slice(0, 2); // ceremony begins + recessional
-
-const receptionTimeRange = receptionItems.length > 0
-  ? `${receptionPhaseItems[0]?.time ?? 'TBD'} – ${lastReceptionItem?.time ?? 'TBD'}`
-  : `${receptionPhaseItems[0]?.time ?? 'TBD'} · Details TBA`;
 
 const phases = [
   {
@@ -78,7 +75,7 @@ const phases = [
   {
     icon: '🎉',
     name: 'Reception',
-    timeRange: receptionTimeRange,
+    timeRange: `${receptionPhaseItems[0]?.time ?? 'TBD'} – ${lastReceptionItem?.time ?? 'TBD'}`,
     items: receptionPhaseItems,
     open: false,
   },
