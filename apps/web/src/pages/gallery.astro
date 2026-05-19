@@ -290,7 +290,7 @@ const showFilter = activeCategories.length > 1 || hasBW;
     const padItems    = document.querySelectorAll<HTMLElement>('.gallery-item--pad');
     const emptyMsg    = document.getElementById('gallery-filter-empty');
 
-    if (!filterBtns.length && !gridItems.length) return;
+    if (!filterBtns.length || !gridItems.length) return;
 
     let activeCategory = 'all';
     let bwOnly = false;

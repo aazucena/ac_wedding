@@ -473,17 +473,18 @@ for (let i = slides.length - 1; i > 0; i--) {
 </style>
 
 <script>
-  // Module-level handles so astro:before-swap can cancel them before each nav
   let _rafId: number | null = null;
   const _slideTimers: ReturnType<typeof setTimeout>[] = [];
   let _keydownHandler: ((e: KeyboardEvent) => void) | null = null;
   let _heroObserver: IntersectionObserver | null = null;
+  let _deviceOrientationHandler: ((e: DeviceOrientationEvent) => void) | null = null;
 
   function cleanup() {
     if (_rafId !== null) { cancelAnimationFrame(_rafId); _rafId = null; }
     _slideTimers.splice(0).forEach(clearTimeout);
     if (_keydownHandler) { document.removeEventListener('keydown', _keydownHandler); _keydownHandler = null; }
     if (_heroObserver)   { _heroObserver.disconnect(); _heroObserver = null; }
+    if (_deviceOrientationHandler) { window.removeEventListener('deviceorientation', _deviceOrientationHandler); _deviceOrientationHandler = null; }
   }
 
   function initHero() {
@@ -571,39 +572,31 @@ for (let i = slides.length - 1; i > 0; i--) {
     const CNT_STR =  4;
 
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const bg  = heroBg;
-      const cnt = heroCnt;
-
       let tx = 0, ty = 0;
       let cx = 0, cy = 0;
 
-      function setTarget(nx: number, ny: number) { tx = nx; ty = ny; }
-
       hero.addEventListener('mousemove', (e: MouseEvent) => {
         const r = hero.getBoundingClientRect();
-        setTarget(
-          ((e.clientX - r.left) / r.width  - 0.5) * 2,
-          ((e.clientY - r.top)  / r.height - 0.5) * 2,
-        );
+        tx = ((e.clientX - r.left) / r.width  - 0.5) * 2;
+        ty = ((e.clientY - r.top)  / r.height - 0.5) * 2;
       });
       hero.addEventListener('mouseleave', () => { tx = 0; ty = 0; });
 
       if (typeof DeviceOrientationEvent !== 'undefined') {
-        window.addEventListener('deviceorientation', (e: DeviceOrientationEvent) => {
+        _deviceOrientationHandler = (e: DeviceOrientationEvent) => {
           if (e.gamma == null && e.beta == null) return;
-          setTarget(
-            Math.max(-1, Math.min(1, (e.gamma ?? 0) / 25)),
-            Math.max(-1, Math.min(1, ((e.beta ?? 45) - 45) / 25)),
-          );
-        }, { passive: true });
+          tx = Math.max(-1, Math.min(1, (e.gamma ?? 0) / 25));
+          ty = Math.max(-1, Math.min(1, ((e.beta ?? 45) - 45) / 25));
+        };
+        window.addEventListener('deviceorientation', _deviceOrientationHandler, { passive: true });
       }
 
       function tick() {
         cx += (tx - cx) * 0.025;
         cy += (ty - cy) * 0.025;
-        bg.style.transform  = `translate3d(${cx * -BG_STR}px,  ${cy * -BG_STR  * 0.5}px, 0)`;
+        heroBg.style.transform  = `translate3d(${cx * -BG_STR}px,  ${cy * -BG_STR  * 0.5}px, 0)`;
         if (heroOrb) heroOrb.style.transform = `translate3d(${cx * -ORB_STR}px, ${cy * -ORB_STR * 0.5}px, 0)`;
-        cnt.style.transform = `translate3d(${cx *  CNT_STR}px, ${cy *  CNT_STR * 0.5}px, 0)`;
+        heroCnt.style.transform = `translate3d(${cx *  CNT_STR}px, ${cy *  CNT_STR * 0.5}px, 0)`;
         _rafId = requestAnimationFrame(tick);
       }
       _rafId = requestAnimationFrame(tick);

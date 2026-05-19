@@ -131,8 +131,10 @@ const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 </style>
 
 <script>
-  document.querySelectorAll<HTMLImageElement>('.chapter-photo[data-download-protected="true"]').forEach(img => {
-    img.addEventListener('contextmenu', e => e.preventDefault());
-    img.addEventListener('dragstart', e => e.preventDefault());
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLImageElement>('.chapter-photo[data-download-protected="true"]').forEach(img => {
+      img.addEventListener('contextmenu', e => e.preventDefault());
+      img.addEventListener('dragstart', e => e.preventDefault());
+    });
   });
 </script>

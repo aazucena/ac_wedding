@@ -188,8 +188,10 @@ const chapters = (directusChapters && directusChapters.length > 0)
 </style>
 
 <script>
-  document.querySelectorAll<HTMLImageElement>('[data-download-protected="true"]').forEach(img => {
-    img.addEventListener('contextmenu', e => e.preventDefault());
-    img.addEventListener('dragstart', e => e.preventDefault());
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLImageElement>('[data-download-protected="true"]').forEach(img => {
+      img.addEventListener('contextmenu', e => e.preventDefault());
+      img.addEventListener('dragstart', e => e.preventDefault());
+    });
   });
 </script>
