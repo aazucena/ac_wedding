@@ -31,6 +31,19 @@ export async function getGallery(): Promise<Gallery[]> {
 // alias for backward compat
 export { getGallery as getGalleryPhotos };
 
+export async function getHeroPhotos(): Promise<Gallery[]> {
+  try {
+    return await get<Gallery[]>('/items/gallery', {
+      fields: ['id', 'image.id', 'image.width', 'image.height', 'image.focal_point_x', 'image.focal_point_y', 'sort'],
+      filter: { status: { _eq: 'published' }, featured: { _eq: true } },
+      sort: ['sort'],
+      limit: 20,
+    });
+  } catch {
+    return [];
+  }
+}
+
 export async function getSponsors(): Promise<Sponsors[]> {
   try {
     return await get<Sponsors[]>('/items/sponsors', {

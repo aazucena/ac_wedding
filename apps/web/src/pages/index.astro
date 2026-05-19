@@ -16,11 +16,11 @@ import GalleryPreview  from '../components/home/GalleryPreview.astro';
 import StoryPreviewCard from '../components/home/StoryPreviewCard.astro';
 import RsvpZone        from '../components/home/RsvpZone.astro';
 import HashtagShare    from '../components/home/HashtagShare.astro';
-import { getSettings, getVendors, getCeremony, getReception, getGalleryPhotos, getRsvpCount, getRegistries } from '../lib/directus';
+import { getSettings, getVendors, getCeremony, getReception, getGalleryPhotos, getHeroPhotos, getRsvpCount, getRegistries } from '../lib/directus';
 import { formatTime, formatDate } from '../lib/utils/format';
 
-const [settings, vendors, ceremony, reception, photos, rsvpCount, registries] = await Promise.all([
-  getSettings(), getVendors(), getCeremony(), getReception(), getGalleryPhotos(), getRsvpCount(), getRegistries(),
+const [settings, vendors, ceremony, reception, photos, heroPhotos, rsvpCount, registries] = await Promise.all([
+  getSettings(), getVendors(), getCeremony(), getReception(), getGalleryPhotos(), getHeroPhotos(), getRsvpCount(), getRegistries(),
 ]);
 
 const groom           = settings.groom?.first_name ?? 'Aldrin';
@@ -52,6 +52,8 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
     weddingDateLabel={weddingDateLabel}
     weddingLocation={weddingLocation}
     weddingDate={weddingDate}
+    heroPhotos={heroPhotos}
+    photographer={settings.photographer}
   />
 
   <div id="main-content"></div>

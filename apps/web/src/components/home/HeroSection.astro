@@ -1,8 +1,10 @@
 ---
-// home/HeroSection.astro — hero + countdown
+// home/HeroSection.astro — hero + countdown  (2.5D parallax + motion graphics)
 import Stacked       from '@assets/stacked.png';
 import { Image } from 'astro:assets';
 import CountdownBar  from './CountdownBar.astro';
+import { assetUrl, focalPoint } from '~/lib/utils/format';
+import type { Gallery, Vendors } from '~/lib/types';
 
 interface Props {
   groomFull: string;
@@ -10,37 +12,84 @@ interface Props {
   weddingDateLabel: string;
   weddingLocation: string;
   weddingDate: string;
+  heroPhotos?: Gallery[];
+  photographer?: Vendors | string | null;
 }
-const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate } = Astro.props;
+const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate, heroPhotos = [], photographer } = Astro.props;
+
+const credit = photographer && typeof photographer === 'object' ? photographer : null;
+
+const slides = heroPhotos.filter(p => p.image?.id);
+for (let i = slides.length - 1; i > 0; i--) {
+  const j = Math.floor(Math.random() * (i + 1));
+  const tmp = slides[i]!; slides[i] = slides[j]!; slides[j] = tmp;
+}
+
 ---
 
-<section class="hero">
-  <div class="hero-bg">
-    <div class="hero-bg-placeholder"></div>
-  </div>
-  <div class="hero-overlay"></div>
-  <div class="hero-content">
-    <p class="hero-eyebrow">{weddingDateLabel} · {weddingLocation}</p>
-    <div class="hero-emblem-wrap">
-      <Image src={Stacked} class="hero-emblem" alt={`${groomFull} & ${brideFull}`} />
-    </div>
-    <p class="hero-sub">Nuptial Mass &amp; Reception</p>
+<section class="hero" id="hero-parallax">
 
-    <CountdownBar weddingDate={weddingDate} />
+  <!-- ▸ Depth 0 — photo crossfade (moves most, opposite to cursor) -->
+  <div class="hero-bg" id="hero-bg">
+    {slides.length > 0
+      ? slides.map((photo, i) => (
+          <img
+            class="hero-slide"
+            src={i === 0 ? assetUrl(photo.image!, { width: 1920, height: 1080, quality: 80, fit: 'cover', format: 'auto' }) : undefined}
+            data-src={i > 0 ? assetUrl(photo.image!, { width: 1920, height: 1080, quality: 80, fit: 'cover', format: 'auto' }) : undefined}
+            alt=""
+            loading={i === 0 ? 'eager' : undefined}
+            style={`object-position: ${focalPoint(photo.image)}`}
+          />
+        ))
+      : <div class="hero-bg-placeholder"></div>
+    }
   </div>
+
+  <!-- ▸ Depth 1 — vignette overlay (static, no parallax) -->
+  <div class="hero-overlay"></div>
+
+  <!-- ▸ Depth 2 — bokeh orbs, motion graphics (mid-speed parallax) -->
+  <div class="hero-orbs" id="hero-orbs" aria-hidden="true">
+    <span class="hero-orb hero-orb--1"></span>
+    <span class="hero-orb hero-orb--2"></span>
+    <span class="hero-orb hero-orb--3"></span>
+    <span class="hero-orb hero-orb--4"></span>
+    <span class="hero-orb hero-orb--5"></span>
+  </div>
+
+  <!-- ▸ Depth 3 — foreground content (floats toward viewer) -->
+  <div class:list={['hero-content', { 'hero-content--with-photos': slides.length > 0 }]} id="hero-content">
+    <CountdownBar weddingDate={weddingDate} />
+    <p class="hero-eyebrow">{weddingDateLabel} · {weddingLocation}</p>
+    <p class="hero-sub">Nuptial Mass &amp; Reception</p>
+    <div class="hero-emblem-wrap">
+      <Image src={Stacked} class:list={['hero-emblem', { 'hero-emblem--over-photo': slides.length > 0 }]} alt={`${groomFull} & ${brideFull}`} />
+    </div>
+  </div>
+
+  {slides.length > 0 && credit && (
+    <p class="hero-photo-credit" aria-label={`Photography by ${credit.name}`}>
+      {credit.website
+        ? <a href={credit.website} target="_blank" rel="noopener noreferrer">Photography by {credit.name}</a>
+        : <>Photography by {credit.name}</>
+      }
+    </p>
+  )}
 
   <button
     class="hero-scroll-cue"
     aria-label="Scroll down"
     onclick="document.getElementById('main-content').scrollIntoView({ behavior: 'smooth' })"
   >
-    <span class="hero-scroll-text">Scroll</span>
+    <span class="hero-scroll-text hero-scroll-text--mouse">Scroll</span>
+    <span class="hero-scroll-text hero-scroll-text--touch">Swipe</span>
     <span class="hero-scroll-arrow">↓</span>
   </button>
 </section>
 
 <style>
-/* ── Hero ──────────────────────────────────────────────────── */
+/* ── Shell ──────────────────────────────────────────────────── */
 .hero {
   position: relative;
   width: 100vw;
@@ -54,8 +103,15 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate } =
   opacity: 0;
   animation: fadeUp 0.9s 0.1s ease forwards;
 }
+
+/* ── Depth 0: photo layer ───────────────────────────────────── */
+/* inset: -10% gives a 10% bleed on all sides so JS             */
+/* translations never expose the hero edge (overflow: hidden     */
+/* clips it). No transform needed in CSS — JS sets translate.   */
 .hero-bg {
-  position: absolute; inset: 0; top: 0;
+  position: absolute;
+  inset: -15%;
+  will-change: transform;
 }
 .hero-bg-placeholder {
   width: 100%; height: 100%;
@@ -65,35 +121,129 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate } =
     color-mix(in srgb, var(--cp) 25%, var(--warm)) 100%
   );
 }
+
+/* ── Photo crossfade animation ──────────────────────────────── */
+/* @keyframes hero-crossfade is injected dynamically above      */
+/* so stop percentages match the actual slide count.            */
+@keyframes hero-kb {
+  from { transform: scale(1.00) translate(  0%,  0%); }
+  to   { transform: scale(1.10) translate(-3%, -1%); }
+}
+@keyframes hero-pan-left  { from { transform: translateX(0); } to { transform: translateX(-10%); } }
+@keyframes hero-pan-right { from { transform: translateX(0); } to { transform: translateX( 10%); } }
+@keyframes hero-pan-up    { from { transform: translateY(0); } to { transform: translateY(-7%); } }
+@keyframes hero-pan-down  { from { transform: translateY(0); } to { transform: translateY( 7%); } }
+
+.hero-slide {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  animation: hero-pan-left 30s ease-in-out infinite alternate;
+  will-change: opacity, transform;
+}
+.hero-slide:nth-child(2) { animation-name: hero-pan-right; }
+.hero-slide:nth-child(3) { animation-name: hero-pan-up;    }
+.hero-slide:nth-child(4) { animation-name: hero-pan-down;  }
+.hero-slide:nth-child(5) { animation-name: hero-pan-right; }
+.hero-slide:only-child {
+  opacity: 1;
+  animation: hero-kb 20s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-slide             { animation: none; opacity: 0; }
+  .hero-slide:first-child { opacity: 1; }
+}
+
+/* ── Depth 1: vignette ──────────────────────────────────────── */
 .hero-overlay {
   position: absolute; inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(26,26,46,0.08) 0%,
-    rgba(26,26,46,0.20) 40%,
-    rgba(26,26,46,0.65) 80%,
-    rgba(26,26,46,0.82) 100%
+    rgba(26,26,46,0.18) 0%,
+    rgba(26,26,46,0.35) 40%,
+    rgba(26,26,46,0.75) 80%,
+    rgba(26,26,46,0.90) 100%
   );
+  pointer-events: none;
 }
+
+/* ── Depth 2: bokeh orbs ────────────────────────────────────── */
+.hero-orbs {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  /* screen blend adds orb colour as light on top of the dark   */
+  /* overlay — the motion-graphics "light bloom" look.           */
+  mix-blend-mode: screen;
+}
+
+@keyframes hero-orb-drift {
+  0%, 100% { transform: translateY(0)    scale(1.00); }
+  50%       { transform: translateY(-16px) scale(1.03); }
+}
+
+.hero-orb--1 {
+  width: 220px; height: 220px; top: 12%; left: 6%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cs) 50%, transparent) 0%, transparent 70%);
+  filter: blur(55px);
+  animation: hero-orb-drift 20s ease-in-out infinite;
+}
+.hero-orb--2 {
+  width: 140px; height: 140px; top: 55%; right: 8%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cp) 55%, transparent) 0%, transparent 70%);
+  filter: blur(40px);
+  animation: hero-orb-drift 15s ease-in-out infinite 2.5s;
+}
+.hero-orb--3 {
+  width: 300px; height: 300px; top: 20%; right: 10%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cs) 30%, transparent) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: hero-orb-drift 26s ease-in-out infinite 5s;
+}
+.hero-orb--4 {
+  width: 100px; height: 100px; top: 72%; left: 22%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cp) 60%, transparent) 0%, transparent 70%);
+  filter: blur(30px);
+  animation: hero-orb-drift 13s ease-in-out infinite 1s;
+}
+.hero-orb--5 {
+  width: 180px; height: 180px; top: 16%; left: 44%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cs) 40%, transparent) 0%, transparent 70%);
+  filter: blur(60px);
+  animation: hero-orb-drift 18s ease-in-out infinite 7s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-orb { animation: none; }
+}
+
+/* ── Depth 3: foreground content ────────────────────────────── */
 .hero-content {
   position: relative; z-index: 1;
   flex: 1;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 80px 40px 24px;
+  padding: 80px 40px 32px;
   text-align: center;
+  will-change: transform;
 }
 .hero-eyebrow {
   font-family: var(--fb); font-size: 10px; font-weight: 600;
   letter-spacing: 4px; text-transform: uppercase;
-  color: rgba(255,255,255,0.70); margin-bottom: 20px;
+  color: rgba(255,255,255,0.70); margin-top: 20px; margin-bottom: 0;
+}
+.hero-content--with-photos {
+  justify-content: flex-end;
 }
 .hero-emblem-wrap {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   margin: 8px 0 4px;
+  order: -1;
 }
 .hero-emblem-wrap::before {
   content: '';
@@ -111,19 +261,71 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate } =
   pointer-events: none;
   filter: blur(16px);
 }
+.hero-content--with-photos .hero-emblem-wrap {
+  order: 0;
+}
+.hero-content--with-photos .hero-emblem-wrap::before {
+  display: none;
+}
 .hero-emblem {
   position: relative;
-  width: clamp(240px, 55vw, 420px);
+  width: clamp(220px, 42vw, 380px);
   height: auto;
+  filter: drop-shadow(0 0 40px rgba(255,255,255,0.35)) drop-shadow(0 4px 32px rgba(0,0,0,0.30));
+}
+.hero-emblem.hero-emblem--over-photo {
+  width: clamp(60px, 10vw, 88px);
+  margin-top: 16px;
   filter: drop-shadow(0 4px 32px rgba(0,0,0,0.30));
+  animation: emblem-pulse 4s ease-in-out infinite;
+}
+@keyframes emblem-pulse {
+  0%, 100% { opacity: 0.50; }
+  50%       { opacity: 1.00; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-emblem.hero-emblem--over-photo { animation: none; opacity: 1; }
 }
 .hero-sub {
   font-family: var(--fb); font-size: 10px; font-weight: 400;
   letter-spacing: 3.5px; text-transform: uppercase;
-  color: rgba(255,255,255,0.60); margin-top: 18px;
+  color: rgba(255,255,255,0.60); margin-top: 5px;
 }
 
-/* Scroll cue */
+/* ── Photo credit ───────────────────────────────────────────── */
+.hero-photo-credit {
+  position: absolute;
+  bottom: 0px; right: 0px;
+  z-index: 12;
+  margin: 0;
+  padding: 8px 16px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 6px 0px 0px 0px;
+  font-family: var(--fb); font-size: 11px;
+  font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase;
+  color: rgba(255,255,255,0.90);
+  pointer-events: none;
+}
+.hero-photo-credit a {
+  color: inherit; text-decoration: none;
+  pointer-events: auto;
+  transition: color 0.2s ease;
+}
+.hero-photo-credit a:hover { color: rgba(255,255,255,1); }
+@media (max-width: 640px) {
+  .hero-photo-credit {
+    bottom: auto; right: auto;
+    top: 0; left: 0;
+    border-radius: 0px 0px 6px 0px;
+    padding: 5px 10px;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+}
+
+/* ── Scroll cue ─────────────────────────────────────────────── */
 .hero-scroll-cue {
   position: relative; z-index: 2;
   display: flex; flex-direction: column;
@@ -139,6 +341,11 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate } =
   font-family: var(--fb); font-size: 8px;
   font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
 }
+.hero-scroll-text--touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .hero-scroll-text--mouse { display: none; }
+  .hero-scroll-text--touch { display: inline; }
+}
 .hero-scroll-arrow {
   font-size: 14px;
   animation: scrollBounce 2s ease-in-out infinite;
@@ -151,12 +358,126 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate } =
   .hero-scroll-arrow { animation: none; }
 }
 
-/* Responsive */
+/* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .hero { min-height: 380px; }
+  .hero-content { padding: 60px 24px 24px; }
+  .hero-eyebrow { font-size: 8px; letter-spacing: 2.5px; }
+  .hero-sub     { font-size: 8px; letter-spacing: 2px; }
 }
 
 /* Countdown margin when inside hero */
-:global(.hero-content .countdown-bar) { margin-top: 80px; }
+:global(.hero-content .countdown-bar) { margin-top: 24px; }
 </style>
 
+<script>
+  // ── Slideshow crossfade (JS-driven, CSS handles pan only) ──────
+  const allSlides = Array.from(
+    document.querySelectorAll<HTMLImageElement>('#hero-bg .hero-slide')
+  );
+
+  if (allSlides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const SHOW_MS = 6000; // ms each slide is fully visible
+    const FADE_MS = 2000; // ms for the cross-dissolve
+
+    let current = 0;
+
+    // Show first slide (src already set server-side)
+    allSlides[0]!.style.opacity = '1';
+
+    function loadSlide(img: HTMLImageElement) {
+      if (img.dataset.src && !img.src) img.src = img.dataset.src;
+    }
+
+    // Preload slide 1 immediately
+    loadSlide(allSlides[1]!);
+
+    function crossfadeTo(next: number) {
+      const from = allSlides[current]!;
+      const to   = allSlides[next]!;
+
+      loadSlide(to);
+
+      // Fade both simultaneously — linear keeps opacity sum at 1 throughout
+      from.style.transition = `opacity ${FADE_MS / 1000}s linear`;
+      to.style.transition   = `opacity ${FADE_MS / 1000}s linear`;
+
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        from.style.opacity = '0';
+        to.style.opacity   = '1';
+      }));
+
+      current = next;
+
+      // Preload the slide after next
+      const preloadIdx = (next + 1) % allSlides.length;
+      setTimeout(() => loadSlide(allSlides[preloadIdx]!), SHOW_MS / 2);
+
+      setTimeout(() => crossfadeTo((next + 1) % allSlides.length), SHOW_MS + FADE_MS);
+    }
+
+    setTimeout(() => crossfadeTo(1), SHOW_MS);
+  }
+
+  const hero   = document.getElementById('hero-parallax') as HTMLElement | null;
+  const heroBg = document.getElementById('hero-bg')       as HTMLElement | null;
+  const heroOrb = document.getElementById('hero-orbs')    as HTMLElement | null;
+  const heroCnt = document.getElementById('hero-content') as HTMLElement | null;
+
+  if (!hero || !heroBg || !heroCnt) throw new Error('HeroSection: missing parallax elements');
+
+  // Parallax strengths (px) — bg moves most (it's "furthest back")
+  const BG_STR  = 16;
+  const ORB_STR =  8;
+  const CNT_STR =  4;
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    // No motion — elements stay in place (inset: -10% handles the bleed gap)
+  } else {
+    // Rebind as non-nullable — the throw above guarantees these are set
+    const bg  = heroBg  as HTMLElement;
+    const cnt = heroCnt as HTMLElement;
+
+    let tx = 0, ty = 0; // target  (normalised -1..1)
+    let cx = 0, cy = 0; // current (lerped)
+
+    function setTarget(nx: number, ny: number) { tx = nx; ty = ny; }
+
+    // Mouse parallax
+    hero.addEventListener('mousemove', (e: MouseEvent) => {
+      const r = hero.getBoundingClientRect();
+      setTarget(
+        ((e.clientX - r.left) / r.width  - 0.5) * 2,
+        ((e.clientY - r.top)  / r.height - 0.5) * 2,
+      );
+    });
+    hero.addEventListener('mouseleave', () => { tx = 0; ty = 0; });
+
+    // Gyroscope fallback for mobile
+    if (typeof DeviceOrientationEvent !== 'undefined') {
+      window.addEventListener('deviceorientation', (e: DeviceOrientationEvent) => {
+        if (e.gamma == null && e.beta == null) return;
+        setTarget(
+          Math.max(-1, Math.min(1, (e.gamma ?? 0) / 25)),
+          Math.max(-1, Math.min(1, ((e.beta ?? 45) - 45) / 25)),
+        );
+      }, { passive: true });
+    }
+
+    function tick() {
+      // Lerp toward target each frame
+      cx += (tx - cx) * 0.025;
+      cy += (ty - cy) * 0.025;
+
+      // Background: opposite to cursor, Y movement halved (feels natural)
+      bg.style.transform  = `translate3d(${cx * -BG_STR}px,  ${cy * -BG_STR  * 0.5}px, 0)`;
+      // Orbs: mid-depth
+      if (heroOrb) heroOrb.style.transform = `translate3d(${cx * -ORB_STR}px, ${cy * -ORB_STR * 0.5}px, 0)`;
+      // Content: floats toward viewer
+      cnt.style.transform = `translate3d(${cx *  CNT_STR}px, ${cy *  CNT_STR * 0.5}px, 0)`;
+
+      requestAnimationFrame(tick);
+    }
+    tick();
+  }
+</script>

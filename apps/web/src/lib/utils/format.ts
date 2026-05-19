@@ -1,6 +1,16 @@
 // utils/format.ts — date/time formatting via luxon
 import qs from 'qs';
 import type { DirectusFiles } from '../types';
+
+/**
+ * Convert a Directus file's focal point (0–1 floats) to a CSS object-position value.
+ * Falls back to 'center' when no focal point is set.
+ */
+export function focalPoint(file?: DirectusFiles | null): string {
+  if (file?.focal_point_x == null || file?.focal_point_y == null) return 'center';
+  if (!file.width || !file.height) return 'center';
+  return `${Math.round(file.focal_point_x / file.width * 100)}% ${Math.round(file.focal_point_y / file.height * 100)}%`;
+}
 import { DateTime } from 'luxon';
 import { toDateTime } from '../date';
 
@@ -33,7 +43,7 @@ export function formatDate(date: string, format = 'MMMM d, yyyy', timezone = 'Am
  */
 export function assetUrl(
   file: string | DirectusFiles,
-  params?: { width?: number; height?: number; fit?: 'cover' | 'contain' | 'inside' | 'outside'; quality?: number; format?: string },
+  params?: { width?: number; height?: number; fit?: 'cover' | 'contain' | 'inside' | 'outside'; quality?: number; format?: 'auto' | 'jpg' | 'png' | 'webp' | 'tiff'; withoutEnlargement?: boolean },
 ): string {
   const id   = typeof file === 'string' ? file : file.id;
   const base = `/api/cms/assets/${id}`;

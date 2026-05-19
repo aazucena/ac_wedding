@@ -196,6 +196,7 @@ export interface Gallery {
   image?: DirectusFiles;
   uploaded_by_token?: string;
   status?: string;
+  featured?: boolean;
 }
 
 export interface Groups {
