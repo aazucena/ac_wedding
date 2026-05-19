@@ -161,25 +161,26 @@ const padCount = (3 - (items.length % 3)) % 3;
 </style>
 
 <script>
-  const grid = document.getElementById('gallery-grid') as HTMLElement;
-  const allowDownload = grid.dataset.allowDownload === 'true';
+  document.addEventListener('astro:page-load', () => {
+    const grid = document.getElementById('gallery-grid') as HTMLElement | null;
+    if (!grid) return;
+    const allowDownload = grid.dataset.allowDownload === 'true';
 
-  document.querySelectorAll<HTMLElement>('.gallery-item').forEach(item => {
-    const img    = item.querySelector<HTMLImageElement>('img.gallery-img');
-    const loader = item.querySelector<HTMLElement>('.gallery-loader');
-    if (!img || !loader) return;
+    document.querySelectorAll<HTMLElement>('.gallery-item').forEach(item => {
+      const img    = item.querySelector<HTMLImageElement>('img.gallery-img');
+      const loader = item.querySelector<HTMLElement>('.gallery-loader');
+      if (!img || !loader) return;
 
-    // Loading state
-    const dismiss = () => loader.classList.add('loaded');
-    if (img.complete && img.naturalWidth > 0) { dismiss(); return; }
-    img.addEventListener('load',  dismiss, { once: true });
-    img.addEventListener('error', dismiss, { once: true });
+      const dismiss = () => loader.classList.add('loaded');
+      if (img.complete && img.naturalWidth > 0) { dismiss(); return; }
+      img.addEventListener('load',  dismiss, { once: true });
+      img.addEventListener('error', dismiss, { once: true });
 
-    // Download protection
-    if (!allowDownload) {
-      img.classList.add('protected');
-      img.addEventListener('contextmenu', e => e.preventDefault());
-      img.addEventListener('dragstart',   e => e.preventDefault());
-    }
+      if (!allowDownload) {
+        img.classList.add('protected');
+        img.addEventListener('contextmenu', e => e.preventDefault());
+        img.addEventListener('dragstart',   e => e.preventDefault());
+      }
+    });
   });
 </script>
