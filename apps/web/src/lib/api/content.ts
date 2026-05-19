@@ -90,7 +90,7 @@ export async function getRegistries(): Promise<Registries[]> {
   try {
     return await get<Registries[]>('/items/registries', {
       fields: ['id', 'name', 'url', 'notes', 'sort'],
-      filter: { status: { _neq: 'archived' } },
+      filter: { status: { _eq: 'published' } },
       sort: ['sort'],
     });
   } catch {
