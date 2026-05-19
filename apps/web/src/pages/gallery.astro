@@ -5,9 +5,10 @@ import Layout          from '../layouts/Layout.astro';
 import PageHeader      from '../components/PageHeader.astro';
 import GalleryGrid     from '../components/gallery/GalleryGrid.astro';
 import GalleryLightbox from '../components/gallery/GalleryLightbox.astro';
-import { getSettings, getGalleryPhotos } from '../lib/directus';
+import { getSettings, getGalleryPhotos, type Vendors } from '../lib/directus';
 import { formatDate, assetUrl } from '../lib/utils/format';
 import Hashtag from '~/components/Hashtag.astro';
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
 
 const [settings, photos] = await Promise.all([getSettings(), getGalleryPhotos()]);
 const groom = settings.groom?.first_name ?? 'Aldrin';
@@ -20,7 +21,7 @@ const placeholders = Array.from({ length: 9 }, (_, i) => ({
 
 const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders : []);
 const _photo = typeof settings.photographer === 'object'
-  ? (settings.photographer as { name?: string; subtitle?: string; website?: string; logo?: { id: string } })
+  ? (settings.photographer as Vendors)
   : null;
 ---
 
@@ -73,7 +74,7 @@ const _photo = typeof settings.photographer === 'object'
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
-  <GalleryLightbox slot="overlay" photographer={_photo?.name ?? null} photographerLogo={_photo?.logo ?? null} />
+  <GalleryLightbox slot="overlay" photographer={_photo?.name ?? null} photographerLogo={_photo?.logo ?? null} showDownload={PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false} />
 
 </Layout>
 

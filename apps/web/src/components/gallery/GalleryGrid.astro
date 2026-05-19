@@ -1,6 +1,8 @@
 ---
 import type { DirectusFiles } from '../../lib/types';
 import { assetUrl } from '../../lib/utils/format';
+import logoSrc from '@assets/favicon.png';
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
 
 interface GalleryItem {
   id: string;
@@ -13,9 +15,10 @@ interface Props {
   items: GalleryItem[];
 }
 const { items } = Astro.props;
+const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 ---
 
-<div class="gallery-grid" id="gallery-grid">
+<div class="gallery-grid" id="gallery-grid" data-allow-download={String(allowDownload)}>
   {items.map((photo, i) => (
     <button
       class="gallery-item"
@@ -27,12 +30,18 @@ const { items } = Astro.props;
       aria-label={photo.title ?? `Photo ${i + 1}`}
     >
       {photo.image ? (
-        <img
-          src={assetUrl(photo.image, { width: 600, height: 600, fit: 'cover' })}
-          alt={photo.title ?? `Photo ${i + 1}`}
-          loading="lazy"
-          decoding="async"
-        />
+        <>
+          <img
+            src={assetUrl(photo.image, { width: 600, height: 600, fit: 'cover' })}
+            alt={photo.title ?? `Photo ${i + 1}`}
+            loading="lazy"
+            decoding="async"
+            class="gallery-img"
+          />
+          <div class="gallery-loader" aria-hidden="true">
+            <img src={logoSrc.src} alt="" class="gallery-loader-logo" />
+          </div>
+        </>
       ) : (
         <div class="gallery-placeholder">
           <span class="gallery-placeholder-icon">📷</span>
@@ -69,12 +78,40 @@ const { items } = Astro.props;
   z-index: 1;
 }
 
-.gallery-item img {
+.gallery-img {
   width: 100%; height: 100%; object-fit: cover;
   display: block; transition: transform 0.4s ease;
 }
 
-.gallery-item:hover img { transform: scale(1.05); }
+.gallery-img.protected {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.gallery-item:hover .gallery-img { transform: scale(1.05); }
+
+.gallery-loader {
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 18%, var(--warm)),
+    color-mix(in srgb, var(--cs) 14%, var(--warm))
+  );
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.gallery-loader.loaded { opacity: 0; pointer-events: none; }
+
+.gallery-loader-logo {
+  width: 120px; height: auto;
+  animation: gallery-logo-pulse 2s ease-in-out infinite;
+}
+
+@keyframes gallery-logo-pulse {
+  0%, 100% { opacity: 0.20; transform: scale(0.92); }
+  50%       { opacity: 0.50; transform: scale(1.06); }
+}
 
 .gallery-placeholder {
   width: 100%; height: 100%;
@@ -105,3 +142,27 @@ const { items } = Astro.props;
   .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
 }
 </style>
+
+<script>
+  const grid = document.getElementById('gallery-grid') as HTMLElement;
+  const allowDownload = grid.dataset.allowDownload === 'true';
+
+  document.querySelectorAll<HTMLElement>('.gallery-item').forEach(item => {
+    const img    = item.querySelector<HTMLImageElement>('img.gallery-img');
+    const loader = item.querySelector<HTMLElement>('.gallery-loader');
+    if (!img || !loader) return;
+
+    // Loading state
+    const dismiss = () => loader.classList.add('loaded');
+    if (img.complete && img.naturalWidth > 0) { dismiss(); return; }
+    img.addEventListener('load',  dismiss, { once: true });
+    img.addEventListener('error', dismiss, { once: true });
+
+    // Download protection
+    if (!allowDownload) {
+      img.classList.add('protected');
+      img.addEventListener('contextmenu', e => e.preventDefault());
+      img.addEventListener('dragstart',   e => e.preventDefault());
+    }
+  });
+</script>

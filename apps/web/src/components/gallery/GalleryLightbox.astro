@@ -3,40 +3,51 @@
 // Reads .gallery-item buttons from DOM; functions exposed on window.*
 import { assetUrl } from '../../lib/utils/format';
 import type { DirectusFiles } from '../../lib/types';
+import logoSrc from '@assets/favicon.png';
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
 interface Props {
   photographer?: string | null;
   photographerLogo?: { id: string } | null;
+  showDownload?: boolean;
 }
-const { photographer, photographerLogo } = Astro.props;
+const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
+const { photographer, photographerLogo, showDownload = allowDownload } = Astro.props;
 ---
 
-<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer" data-allow-download={String(allowDownload)}>
   <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
   <button class="lightbox-prev"  onclick="prevPhoto()"    aria-label="Previous">‹</button>
   <button class="lightbox-next"  onclick="nextPhoto()"    aria-label="Next">›</button>
 
   <div class="lightbox-content">
-    <img class="lightbox-img" id="lightbox-img" src="" alt="" />
+    <div class="lightbox-img-wrap" id="lightbox-img-wrap">
+      <img class="lightbox-img" id="lightbox-img" src="" alt="" />
+      <div class="lightbox-loader" id="lightbox-loader" aria-hidden="true">
+        <img src={logoSrc.src} alt="" class="lightbox-loader-logo" />
+      </div>
+    </div>
     <div class="lightbox-placeholder" id="lightbox-placeholder">
       <span>📷</span>
     </div>
     <div class="lightbox-meta" id="lightbox-meta">
       <p class="lightbox-title"   id="lightbox-title"></p>
       <p class="lightbox-desc"    id="lightbox-desc"></p>
-      {(photographerLogo || photographer) && (
+      {photographer && (
         <p class="lightbox-credit">
-          {photographerLogo
-            ? <img src={assetUrl(photographerLogo as DirectusFiles, { height: 20 })} alt={photographer ?? 'Photographer'} class="lightbox-credit-logo" />
-            : <>📷 {photographer}</>
-          }
+          {photographerLogo && (
+            <img src={assetUrl(photographerLogo as DirectusFiles, { height: 16 })} alt="" class="lightbox-credit-logo" />
+          )}
+          📷 {photographer}
         </p>
       )}
       <div class="lightbox-footer">
         <p class="lightbox-counter" id="lightbox-counter"></p>
-        <a class="lightbox-download" id="lightbox-download" href="#" download aria-label="Download photo">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download
-        </a>
+        {showDownload && (
+          <a class="lightbox-download" id="lightbox-download" href="#" download aria-label="Download photo">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download
+          </a>
+        )}
       </div>
     </div>
   </div>
@@ -59,26 +70,38 @@ const { photographer, photographerLogo } = Astro.props;
   }
 
   function showPhoto(i) {
-    const btn      = items[i];
-    const src      = btn.dataset.src;
-    const img      = document.getElementById('lightbox-img');
-    const ph       = document.getElementById('lightbox-placeholder');
-    const title    = document.getElementById('lightbox-title');
-    const desc     = document.getElementById('lightbox-desc');
-    const ctr      = document.getElementById('lightbox-counter');
-    const dlBtn    = document.getElementById('lightbox-download');
+    const btn    = items[i];
+    const src    = btn.dataset.src;
+    const img    = document.getElementById('lightbox-img');
+    const loader = document.getElementById('lightbox-loader');
+    const ph     = document.getElementById('lightbox-placeholder');
+    const title  = document.getElementById('lightbox-title');
+    const desc   = document.getElementById('lightbox-desc');
+    const ctr    = document.getElementById('lightbox-counter');
+    const dlBtn  = document.getElementById('lightbox-download');
 
     if (src && src !== 'null') {
-      img.src = src;
+      img.classList.remove('revealed');
+      if (loader) loader.classList.remove('hidden');
       img.alt = btn.dataset.title ?? '';
       img.style.display = 'block';
       ph.style.display  = 'none';
-      dlBtn.href = src + (src.includes('?') ? '&' : '?') + 'download';
-      dlBtn.style.display = 'inline-flex';
+      // If revisiting a cached image, reveal immediately — otherwise wait for load
+      if (img.getAttribute('src') === src && img.complete && img.naturalWidth > 0) {
+        img.classList.add('revealed');
+        if (loader) loader.classList.add('hidden');
+      } else {
+        img.addEventListener('load',  () => { img.classList.add('revealed'); if (loader) loader.classList.add('hidden'); }, { once: true });
+        img.addEventListener('error', () => { if (loader) loader.classList.add('hidden'); }, { once: true });
+        img.src = src;
+      }
+      if (dlBtn) { dlBtn.href = src + (src.includes('?') ? '&' : '?') + 'download'; dlBtn.style.display = 'inline-flex'; }
     } else {
-      img.style.display   = 'none';
-      ph.style.display    = 'flex';
-      dlBtn.style.display = 'none';
+      img.classList.remove('revealed');
+      img.style.display = 'none';
+      ph.style.display  = 'flex';
+      if (loader) loader.classList.add('hidden');
+      if (dlBtn) dlBtn.style.display = 'none';
     }
 
     title.textContent = btn.dataset.title && btn.dataset.title !== 'null' ? btn.dataset.title : '';
@@ -109,6 +132,13 @@ const { photographer, photographerLogo } = Astro.props;
     if (e.target === document.getElementById('lightbox')) closeLightbox();
   });
 
+  // Download protection
+  if (document.getElementById('lightbox').dataset.allowDownload !== 'true') {
+    const lbImg = document.getElementById('lightbox-img');
+    lbImg.addEventListener('contextmenu', e => e.preventDefault());
+    lbImg.addEventListener('dragstart',   e => e.preventDefault());
+  }
+
   window.openLightbox  = openLightbox;
   window.closeLightbox = closeLightbox;
   window.prevPhoto     = prevPhoto;
@@ -132,11 +162,47 @@ const { photographer, photographerLogo } = Astro.props;
   display: flex; flex-direction: column; align-items: center; gap: 16px;
 }
 
+.lightbox-img-wrap {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  min-width: min(480px, 90vw); min-height: min(320px, 70vh);
+  border-radius: var(--radius);
+}
+
 .lightbox-img {
   max-width: 90vw; max-height: 70vh;
   object-fit: contain;
   border-radius: var(--radius);
   box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  position: relative; z-index: 1;
+  opacity: 0; transition: opacity 0.35s ease;
+}
+.lightbox-img.revealed { opacity: 1; }
+
+[data-allow-download="false"] .lightbox-img {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.lightbox-loader {
+  position: absolute; inset: 0;
+  border-radius: var(--radius);
+  background: rgba(26, 26, 46, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 1; transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.lightbox-loader.hidden { opacity: 0; }
+
+.lightbox-loader-logo {
+  width: 120px; height: auto;
+  animation: lb-logo-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lb-logo-pulse {
+  0%, 100% { opacity: 0.20; transform: scale(0.92); }
+  50%       { opacity: 0.55; transform: scale(1.06); }
 }
 
 .lightbox-placeholder {
@@ -160,12 +226,13 @@ const { photographer, photographerLogo } = Astro.props;
 }
 
 .lightbox-credit {
-  font-family: var(--fb); font-size: 11px; font-weight: 300;
-  font-style: italic; color: rgba(255,255,255,0.4); margin-bottom: 8px;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--fb); font-size: 12px; font-weight: 400;
+  font-style: italic; color: rgba(255,255,255,0.70); margin-bottom: 8px;
 }
 .lightbox-credit-logo {
-  height: 20px; width: auto; object-fit: contain;
-  opacity: 0.45; vertical-align: middle; filter: brightness(0) invert(1);
+  height: 16px; width: auto; object-fit: contain;
+  opacity: 0.70; vertical-align: middle;
 }
 
 .lightbox-footer {

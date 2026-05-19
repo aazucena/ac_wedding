@@ -52,6 +52,12 @@ export default defineConfig({
         optional: true,
         default: '',
       }),
+      PUBLIC_DOWNLOAD_GALLERY_IMAGES: envField.boolean({
+        context: 'client',
+        access: 'public',
+        optional: true,
+        default: false,
+      }),
     },
   },
 
