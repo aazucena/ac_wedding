@@ -1,0 +1,143 @@
+.gallery-page { display: flex; flex-direction: column; align-items: center; }
+.gallery-empty {
+  font-family: var(--fb); font-size: 14px; font-weight: 300;
+  color: var(--muted); text-align: center; margin-top: 16px;
+  font-style: italic;
+}
+
+/* ── Category filter ─────────────────────────────────────── */
+.gallery-filter {
+  display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: center;
+  gap: 2px; width: 100%; margin-bottom: 32px;
+}
+
+.gallery-filter-btn {
+  position: relative;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--fb); font-size: 9.5px; font-weight: 500;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 14px;
+  transition: color 0.2s ease;
+}
+.gallery-filter-btn::after {
+  content: '';
+  position: absolute; bottom: 4px; left: 14px; right: 14px;
+  height: 1px;
+  background: var(--cp);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+.gallery-filter-btn:hover { color: var(--dark); }
+.gallery-filter-btn.active {
+  color: var(--dark); font-weight: 600;
+}
+.gallery-filter-btn.active::after { transform: scaleX(1); }
+
+.gallery-filter-sep {
+  width: 1px; height: 12px; align-self: center;
+  background: var(--border); margin: 0 6px; flex-shrink: 0;
+}
+
+.gallery-filter-bw {
+  position: relative;
+  background: none; border: none; cursor: pointer;
+  font-family: var(--fb); font-size: 9.5px; font-weight: 500;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 14px;
+  transition: color 0.2s ease;
+}
+.gallery-filter-bw::after {
+  content: '';
+  position: absolute; bottom: 4px; left: 14px; right: 14px;
+  height: 1px;
+  background: var(--dark);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.25s ease;
+}
+.gallery-filter-bw:hover { color: var(--dark); }
+.gallery-filter-bw.active {
+  color: var(--dark); font-weight: 600;
+}
+.gallery-filter-bw.active::after { transform: scaleX(1); }
+
+.gallery-filter-empty {
+  font-family: var(--fd); font-size: 18px; font-weight: 300;
+  font-style: italic; color: var(--muted);
+  text-align: center; margin: 24px 0; min-height: 0;
+}
+
+.photographer-card {
+  margin-top: 40px; width: 100%;
+  background: var(--ivory); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-card);
+  padding: 40px 32px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.photographer-logo {
+  height: 72px; width: auto; max-width: 240px;
+  object-fit: contain; margin-bottom: 8px;
+}
+.photographer-label {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--cp);
+}
+.photographer-name {
+  font-family: var(--fd); font-size: 26px; font-weight: 300;
+  font-style: italic; color: var(--dark); line-height: 1.2;
+}
+.photographer-subtitle {
+  font-family: var(--fb); font-size: 12px; font-weight: 300;
+  color: var(--muted);
+}
+.photographer-link {
+  margin-top: 4px;
+  font-family: var(--fb); font-size: 11px; font-weight: 500;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--cs); text-decoration: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--cs) 40%, transparent);
+  padding-bottom: 1px; transition: opacity 0.2s;
+}
+.photographer-link:hover { opacity: 0.7; }
+
+.pictime-card {
+  margin-top: 16px; width: 100%;
+  background: linear-gradient(135deg,
+    color-mix(in srgb, var(--cp) 12%, var(--ivory)),
+    color-mix(in srgb, var(--cs) 10%, var(--ivory))
+  );
+  border: 1px solid color-mix(in srgb, var(--cp) 30%, var(--border));
+  border-radius: var(--radius); box-shadow: var(--shadow-card);
+  padding: 40px 32px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.pictime-label {
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--cp);
+}
+.pictime-heading {
+  font-family: var(--fd); font-size: 26px; font-weight: 300;
+  font-style: italic; color: var(--dark); line-height: 1.2;
+}
+.pictime-desc {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--muted); max-width: 420px; line-height: 1.7;
+}
+.pictime-btn {
+  margin-top: 6px;
+  display: inline-block; padding: 14px 36px;
+  background: linear-gradient(135deg, var(--dark), var(--dark2));
+  color: color-mix(in srgb, var(--cp) 80%, white);
+  border-radius: var(--radius-sm); text-decoration: none;
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  letter-spacing: 3px; text-transform: uppercase;
+  box-shadow: 0 8px 24px rgba(26,26,46,0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pictime-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(26,26,46,0.25); }

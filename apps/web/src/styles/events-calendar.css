@@ -1,0 +1,148 @@
+/* ── Skeleton ── */
+@keyframes sk-shimmer {
+  from { background-position: -400px 0; }
+  to   { background-position:  400px 0; }
+}
+
+.cal-skeleton {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--ivory);
+}
+
+.cal-sk-bar,
+.cal-sk-circle,
+.cal-sk-event {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--border) 80%, transparent) 25%,
+    color-mix(in srgb, var(--border) 30%, white)        50%,
+    color-mix(in srgb, var(--border) 80%, transparent) 75%
+  );
+  background-size: 800px 100%;
+  animation: sk-shimmer 1.6s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.cal-sk-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.cal-sk-bar { height: 14px; }
+
+.cal-sk-header {
+  display: grid; grid-template-columns: 52px repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.cal-sk-axis-spacer { border-right: 1px solid var(--border); }
+.cal-sk-day-head {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px; padding: 10px 0;
+  border-right: 1px solid var(--border);
+}
+.cal-sk-circle { width: 28px; height: 28px; border-radius: 50%; }
+
+.cal-sk-body {
+  display: grid; grid-template-columns: 52px 1fr; height: 480px;
+}
+
+@media (max-width: 600px) {
+  .cal-sk-header { grid-template-columns: repeat(7, 1fr); }
+  .cal-sk-axis-spacer { display: none; }
+  .cal-sk-body { grid-template-columns: 1fr; height: 360px; }
+  .cal-sk-time-col { display: none; }
+}
+.cal-sk-time-col {
+  display: flex; flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+.cal-sk-time-row {
+  flex: 1; display: flex; align-items: flex-start;
+  padding: 4px 8px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+}
+.cal-sk-grid-cols {
+  display: grid; grid-template-columns: repeat(7, 1fr); position: relative;
+}
+.cal-sk-col { position: relative; border-right: 1px solid var(--border); }
+.cal-sk-event { position: absolute; left: 6px; right: 6px; border-radius: 4px; }
+
+/* schedule-x CSS vars wired to wedding palette */
+.calendar-wrap {
+  width: 100%;
+  --sx-color-primary:            var(--cp);
+  --sx-color-primary-container:  color-mix(in srgb, var(--cp) 20%, white);
+  --sx-color-on-primary:         white;
+  --sx-color-surface:            var(--ivory);
+  --sx-color-surface-variant:    color-mix(in srgb, var(--border) 60%, white);
+  --sx-font-family:              var(--fb);
+  --sx-border-radius:            8px;
+}
+
+/* Height set via JS in mountCalendar: 700px for grid view, auto for agenda */
+
+/* Override schedule-x's overflow:hidden which clips event chips */
+.calendar-wrap .sx__calendar { overflow: visible; }
+
+/* Pointer cursor on event chips */
+.calendar-wrap [data-event-id] { cursor: pointer; }
+
+/* ── Event dot in month-agenda mini calendar ── */
+.sx__month-agenda-day__event-icon {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--cp, #c9a8b8); filter: brightness(1.1);
+}
+
+.sx__month-agenda-events {
+  border-top: var(--sx-border);
+}
+
+.sx__month-agenda-events__empty {
+  margin-bottom:  var(--sx-spacing-padding4);
+}
+
+/* ── Event hover tooltip ── */
+#cal-tooltip {
+  position: absolute;
+  z-index: 9999;
+  width: 240px;
+  background: var(--ivory, #fdfaf6);
+  border: 1px solid var(--border, #e8e0d8);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06);
+  padding: 12px 14px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+#cal-tooltip.ct-visible {
+  pointer-events: auto;
+  opacity: 1;
+  transform: translateY(0);
+}
+#cal-tooltip .ct-title {
+  font-family: var(--fd, serif);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--dark, #2a1a28);
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+#cal-tooltip .ct-time {
+  font-family: var(--fb, sans-serif);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--cp, #c9a8b8);
+  margin: 0 0 4px;
+}
+#cal-tooltip .ct-loc {
+  font-family: var(--fb, sans-serif);
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--muted, #9a8a94);
+  margin: 0;
+}

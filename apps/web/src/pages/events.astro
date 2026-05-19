@@ -8,6 +8,7 @@ import EventsCalendar  from '../components/EventsCalendar.astro';
 import EventsTimeline  from '../components/EventsTimeline.astro';
 import { getSettings, getEvents } from '../lib/directus';
 import { formatDate } from '../lib/utils/format';
+import '../styles/events.css';
 
 const [settings, events] = await Promise.all([getSettings(), getEvents()]);
 
@@ -209,77 +210,5 @@ const allCalendarEvents = [...settingsEvents, ...calendarEvents];
 
 </Layout>
 
-<script>
-  const STORAGE_KEY = 'events-view';
-  let ctrl: AbortController | null = null;
+<script>import '../scripts/events-view';</script>
 
-  function init() {
-    const btnTimeline  = document.getElementById('btn-timeline');
-    const btnCalendar  = document.getElementById('btn-calendar');
-    const viewTimeline = document.getElementById('view-timeline');
-    const viewCalendar = document.getElementById('view-calendar');
-    if (!btnTimeline || !btnCalendar || !viewTimeline || !viewCalendar) return;
-
-    ctrl?.abort();
-    ctrl = new AbortController();
-    const { signal } = ctrl;
-
-    function setView(view: 'timeline' | 'calendar') {
-      const isCalendar = view === 'calendar';
-      btnTimeline!.classList.toggle('active', !isCalendar);
-      btnCalendar!.classList.toggle('active', isCalendar);
-      btnTimeline!.setAttribute('aria-pressed', String(!isCalendar));
-      btnCalendar!.setAttribute('aria-pressed', String(isCalendar));
-      viewTimeline!.classList.toggle('hidden', isCalendar);
-      viewCalendar!.classList.toggle('hidden', !isCalendar);
-      try { localStorage.setItem(STORAGE_KEY, view); } catch {}
-    }
-
-    btnTimeline.addEventListener('click', () => setView('timeline'), { signal });
-    btnCalendar.addEventListener('click', () => setView('calendar'), { signal });
-
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as 'timeline' | 'calendar' | null;
-      setView(saved === 'timeline' ? 'timeline' : 'calendar');
-    } catch {
-      setView('calendar');
-    }
-  }
-
-  document.addEventListener('astro:page-load', init);
-</script>
-
-<style>
-.events-page { display: flex; flex-direction: column; align-items: center; }
-
-/* ── Toggle ── */
-.view-toggle {
-  display: flex; gap: 4px; margin-bottom: 36px;
-  background: var(--ivory); border: 1px solid var(--border);
-  border-radius: 999px; padding: 4px;
-  box-shadow: var(--shadow-card);
-}
-
-.toggle-btn {
-  display: flex; align-items: center; gap: 7px;
-  font-family: var(--fb); font-size: 12px; font-weight: 500;
-  letter-spacing: 0.5px;
-  color: var(--muted); background: transparent;
-  border: none; border-radius: 999px;
-  padding: 8px 18px; cursor: pointer;
-  transition: background 0.18s ease, color 0.18s ease;
-}
-.toggle-btn.active {
-  background: linear-gradient(135deg, var(--cp), var(--cs));
-  color: white;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--cp) 40%, transparent);
-}
-.toggle-btn:not(.active):hover { color: var(--dark); }
-
-.hidden, .hidden > * { display: none !important; }
-
-#view-timeline,
-#view-calendar {
-  width: 100%;
-}
-</style>
