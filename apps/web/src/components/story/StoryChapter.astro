@@ -1,5 +1,6 @@
 ---
 import { marked } from 'marked';
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
 
 export interface Props {
   headline: string;
@@ -14,12 +15,13 @@ export interface Props {
 
 const { headline, icon, title, content, imageUrl, objectPosition = 'center', reverse = false, animationDelay = '0.2s' } = Astro.props;
 const contentHtml = await marked.parse(content);
+const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 ---
 
 <div class={`chapter ${reverse ? 'chapter-reverse' : ''}`} style={`animation-delay: ${animationDelay}`}>
   <div class="chapter-photo-placeholder">
     {imageUrl
-      ? <img src={imageUrl} alt={title} class="chapter-photo" style={`object-position: ${objectPosition}`} />
+      ? <img src={imageUrl} alt={title} class="chapter-photo" style={`object-position: ${objectPosition}`} data-download-protected={String(!allowDownload)} />
       : <span>📷</span>
     }
   </div>
@@ -68,6 +70,12 @@ const contentHtml = await marked.parse(content);
 .chapter-photo {
   width: 100%; height: 100%; object-fit: cover;
   display: block; opacity: 1;
+}
+
+.chapter-photo[data-download-protected="true"] {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 .chapter-reverse .chapter-photo-placeholder { order: 1; }
@@ -121,3 +129,10 @@ const contentHtml = await marked.parse(content);
   .chapter-content { padding: 28px 24px; }
 }
 </style>
+
+<script>
+  document.querySelectorAll<HTMLImageElement>('.chapter-photo[data-download-protected="true"]').forEach(img => {
+    img.addEventListener('contextmenu', e => e.preventDefault());
+    img.addEventListener('dragstart', e => e.preventDefault());
+  });
+</script>
