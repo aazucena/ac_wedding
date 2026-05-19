@@ -18,6 +18,7 @@
     "rsvp:build": "pnpm --filter rsvp build",
     "rsvp:check": "pnpm --filter rsvp check",
     "dump:collections": "bash scripts/dump-collections.sh",
+    "gallery:import": "node scripts/import-gallery.js",
     "test": "pnpm --filter rsvp test",
     "lint": "eslint .",
     "format": "prettier --write ."
