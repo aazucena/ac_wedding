@@ -133,6 +133,10 @@ type Query {
   sponsors_by_version(version: String!, id: ID!): version_sponsors
   wedding_settings(version: String): wedding_settings
   wedding_settings_by_version(version: String!): version_wedding_settings
+  gallery(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [gallery!]!
+  gallery_by_id(id: ID!, version: String): gallery
+  gallery_aggregated(groupBy: [String], filter: gallery_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [gallery_aggregated!]!
+  gallery_by_version(version: String!, id: ID!): version_gallery
   reception_staff(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [reception_staff!]!
   reception_staff_by_id(id: ID!, version: String): reception_staff
   reception_staff_aggregated(groupBy: [String], filter: reception_staff_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [reception_staff_aggregated!]!
@@ -149,10 +153,6 @@ type Query {
   registries_by_id(id: ID!, version: String): registries
   registries_aggregated(groupBy: [String], filter: registries_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [registries_aggregated!]!
   registries_by_version(version: String!, id: ID!): version_registries
-  gallery(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [gallery!]!
-  gallery_by_id(id: ID!, version: String): gallery
-  gallery_aggregated(groupBy: [String], filter: gallery_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [gallery_aggregated!]!
-  gallery_by_version(version: String!, id: ID!): version_gallery
   stories(filter: stories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [stories!]!
   stories_by_id(id: ID!, version: String): stories
   stories_aggregated(groupBy: [String], filter: stories_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [stories_aggregated!]!
@@ -250,6 +250,8 @@ type Mutation {
   create_readings_item(data: create_readings_input!): readings
   create_sponsors_items(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_sponsors_input!]): [sponsors!]!
   create_sponsors_item(data: create_sponsors_input!): sponsors
+  create_gallery_items(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_gallery_input!]): [gallery!]!
+  create_gallery_item(data: create_gallery_input!): gallery
   create_reception_staff_items(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_reception_staff_input!]): [reception_staff!]!
   create_reception_staff_item(data: create_reception_staff_input!): reception_staff
   create_tables_items(filter: tables_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_tables_input!]): [tables!]!
@@ -258,8 +260,6 @@ type Mutation {
   create_story_chapters_item(data: create_story_chapters_input!): story_chapters
   create_registries_items(filter: registries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_registries_input!]): [registries!]!
   create_registries_item(data: create_registries_input!): registries
-  create_gallery_items(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_gallery_input!]): [gallery!]!
-  create_gallery_item(data: create_gallery_input!): gallery
   create_stories_items(filter: stories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_stories_input!]): [stories!]!
   create_stories_item(data: create_stories_input!): stories
   create_events_items(filter: events_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [create_events_input!]): [events!]!
@@ -374,6 +374,9 @@ type Mutation {
   update_sponsors_batch(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_sponsors_input!]): [sponsors!]!
   update_sponsors_item(id: ID!, data: update_sponsors_input!): sponsors
   update_wedding_settings(data: update_wedding_settings_input!): wedding_settings
+  update_gallery_items(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_gallery_input!): [gallery!]!
+  update_gallery_batch(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_gallery_input!]): [gallery!]!
+  update_gallery_item(id: ID!, data: update_gallery_input!): gallery
   update_reception_staff_items(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_reception_staff_input!): [reception_staff!]!
   update_reception_staff_batch(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_reception_staff_input!]): [reception_staff!]!
   update_reception_staff_item(id: ID!, data: update_reception_staff_input!): reception_staff
@@ -386,9 +389,6 @@ type Mutation {
   update_registries_items(filter: registries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_registries_input!): [registries!]!
   update_registries_batch(filter: registries_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_registries_input!]): [registries!]!
   update_registries_item(id: ID!, data: update_registries_input!): registries
-  update_gallery_items(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_gallery_input!): [gallery!]!
-  update_gallery_batch(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_gallery_input!]): [gallery!]!
-  update_gallery_item(id: ID!, data: update_gallery_input!): gallery
   update_stories_items(filter: stories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_stories_input!): [stories!]!
   update_stories_batch(filter: stories_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_stories_input!]): [stories!]!
   update_stories_item(id: ID!, data: update_stories_input!): stories
@@ -476,6 +476,8 @@ type Mutation {
   delete_readings_item(id: ID!): delete_one
   delete_sponsors_items(ids: [ID]!): delete_many
   delete_sponsors_item(id: ID!): delete_one
+  delete_gallery_items(ids: [ID]!): delete_many
+  delete_gallery_item(id: ID!): delete_one
   delete_reception_staff_items(ids: [ID]!): delete_many
   delete_reception_staff_item(id: ID!): delete_one
   delete_tables_items(ids: [ID]!): delete_many
@@ -484,8 +486,6 @@ type Mutation {
   delete_story_chapters_item(id: ID!): delete_one
   delete_registries_items(ids: [ID]!): delete_many
   delete_registries_item(id: ID!): delete_one
-  delete_gallery_items(ids: [ID]!): delete_many
-  delete_gallery_item(id: ID!): delete_one
   delete_stories_items(ids: [ID]!): delete_many
   delete_stories_item(id: ID!): delete_one
   delete_events_items(ids: [ID]!): delete_many
@@ -560,11 +560,11 @@ type Subscription {
   readings_mutated(event: EventEnum): readings_mutated
   sponsors_mutated(event: EventEnum): sponsors_mutated
   wedding_settings_mutated(event: EventEnum): wedding_settings_mutated
+  gallery_mutated(event: EventEnum): gallery_mutated
   reception_staff_mutated(event: EventEnum): reception_staff_mutated
   tables_mutated(event: EventEnum): tables_mutated
   story_chapters_mutated(event: EventEnum): story_chapters_mutated
   registries_mutated(event: EventEnum): registries_mutated
-  gallery_mutated(event: EventEnum): gallery_mutated
   stories_mutated(event: EventEnum): stories_mutated
   events_mutated(event: EventEnum): events_mutated
   accomodations_mutated(event: EventEnum): accomodations_mutated
@@ -2355,6 +2355,17 @@ type gallery {
 
   """Only published photos appear in the gallery"""
   status: String
+
+  """Toggle to display the image on the homepage slideshow"""
+  featured: Boolean
+
+  """
+  The type/moment of the photo. Used to filter the gallery on the website.
+  """
+  category: String
+
+  """Mark as true if this photo was delivered in black & white."""
+  bw: Boolean
 }
 
 type gallery_aggregated {
@@ -2388,6 +2399,17 @@ type gallery_aggregated_count {
 
   """Only published photos appear in the gallery"""
   status: Int
+
+  """Toggle to display the image on the homepage slideshow"""
+  featured: Int
+
+  """
+  The type/moment of the photo. Used to filter the gallery on the website.
+  """
+  category: Int
+
+  """Mark as true if this photo was delivered in black & white."""
+  bw: Int
 }
 
 type gallery_aggregated_fields {
@@ -4969,6 +4991,17 @@ type version_gallery {
 
   """Only published photos appear in the gallery"""
   status: String
+
+  """Toggle to display the image on the homepage slideshow"""
+  featured: Boolean
+
+  """
+  The type/moment of the photo. Used to filter the gallery on the website.
+  """
+  category: String
+
+  """Mark as true if this photo was delivered in black & white."""
+  bw: Boolean
 }
 
 """"""
@@ -6787,6 +6820,17 @@ input create_gallery_input {
 
   """Only published photos appear in the gallery"""
   status: String
+
+  """Toggle to display the image on the homepage slideshow"""
+  featured: Boolean
+
+  """
+  The type/moment of the photo. Used to filter the gallery on the website.
+  """
+  category: String
+
+  """Mark as true if this photo was delivered in black & white."""
+  bw: Boolean
 }
 
 input create_groups_input {
@@ -8222,6 +8266,9 @@ input gallery_filter {
   image: directus_files_filter
   uploaded_by_token: string_filter_operators
   status: string_filter_operators
+  featured: boolean_filter_operators
+  category: string_filter_operators
+  bw: boolean_filter_operators
   _and: [gallery_filter]
   _or: [gallery_filter]
 }
@@ -9686,6 +9733,17 @@ input update_gallery_input {
 
   """Only published photos appear in the gallery"""
   status: String
+
+  """Toggle to display the image on the homepage slideshow"""
+  featured: Boolean
+
+  """
+  The type/moment of the photo. Used to filter the gallery on the website.
+  """
+  category: String
+
+  """Mark as true if this photo was delivered in black & white."""
+  bw: Boolean
 }
 
 input update_groups_input {

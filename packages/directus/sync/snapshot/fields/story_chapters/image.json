@@ -5,7 +5,7 @@
   "meta": {
     "collection": "story_chapters",
     "conditions": null,
-    "display": null,
+    "display": "image",
     "display_options": null,
     "field": "image",
     "group": null,
