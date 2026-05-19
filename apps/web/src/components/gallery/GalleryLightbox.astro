@@ -29,6 +29,12 @@ const { photographer, photographerLogo, showDownload = allowDownload } = Astro.p
     <div class="lightbox-placeholder" id="lightbox-placeholder">
       <span>📷</span>
     </div>
+
+    <div class="lightbox-mobile-nav" aria-label="Photo navigation">
+      <button onclick="prevPhoto()" class="lightbox-mob-btn" aria-label="Previous">‹</button>
+      <button onclick="nextPhoto()" class="lightbox-mob-btn" aria-label="Next">›</button>
+    </div>
+
     <div class="lightbox-meta" id="lightbox-meta">
       <p class="lightbox-title"   id="lightbox-title"></p>
       <p class="lightbox-desc"    id="lightbox-desc"></p>
@@ -54,7 +60,7 @@ const { photographer, photographerLogo, showDownload = allowDownload } = Astro.p
 </div>
 
 <script is:inline>
-  const items = Array.from(document.querySelectorAll('.gallery-item'));
+  const items = Array.from(document.querySelectorAll('.gallery-item:not(.gallery-item--pad)'));
   let current = 0;
 
   function openLightbox(btn) {
@@ -130,6 +136,16 @@ const { photographer, photographerLogo, showDownload = allowDownload } = Astro.p
   // Click outside to close
   document.getElementById('lightbox').addEventListener('click', e => {
     if (e.target === document.getElementById('lightbox')) closeLightbox();
+  });
+
+  // Swipe navigation (mobile)
+  let _touchStartX = 0;
+  const lb = document.getElementById('lightbox');
+  lb.addEventListener('touchstart', e => { _touchStartX = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    if (!lb.classList.contains('open')) return;
+    const delta = e.changedTouches[0].clientX - _touchStartX;
+    if (Math.abs(delta) > 50) delta < 0 ? nextPhoto() : prevPhoto();
   });
 
   // Download protection
@@ -283,8 +299,28 @@ const { photographer, photographerLogo, showDownload = allowDownload } = Astro.p
 .lightbox-prev { left: 16px; }
 .lightbox-next { right: 16px; }
 
+/* Mobile inline nav row — hidden on desktop */
+.lightbox-mobile-nav {
+  display: none;
+  align-items: center; justify-content: center; gap: 16px;
+}
+.lightbox-mob-btn {
+  background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25);
+  border-radius: var(--radius-xs); width: 52px; height: 44px;
+  color: #fff; font-size: 26px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s ease;
+}
+.lightbox-mob-btn:hover { background: rgba(255,255,255,0.22); }
+
 @media (max-width: 640px) {
-  .lightbox-prev { left: 8px; }
-  .lightbox-next { right: 8px; }
+  .lightbox-prev,
+  .lightbox-next { display: none; }
+
+  .lightbox-mobile-nav { display: flex; }
+
+  .lightbox-img { max-height: 52vh; }
+  .lightbox-img-wrap { min-height: unset; min-width: unset; }
+  .lightbox-placeholder { height: 52vw; width: 90vw; }
 }
 </style>

@@ -16,6 +16,7 @@ interface Props {
 }
 const { items } = Astro.props;
 const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
+const padCount = (3 - (items.length % 3)) % 3;
 ---
 
 <div class="gallery-grid" id="gallery-grid" data-allow-download={String(allowDownload)}>
@@ -51,6 +52,13 @@ const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
         {photo.title && <p class="gallery-item-title">{photo.title}</p>}
       </div>
     </button>
+  ))}
+  {Array.from({ length: padCount }, () => (
+    <div class="gallery-item gallery-item--pad" aria-hidden="true">
+      <div class="gallery-placeholder">
+        <span class="gallery-placeholder-icon">📷</span>
+      </div>
+    </div>
   ))}
 </div>
 
@@ -138,8 +146,15 @@ const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 }
 
 
+.gallery-item--pad {
+  cursor: default; pointer-events: none;
+  opacity: 0.35;
+}
+.gallery-item--pad:hover { transform: none; box-shadow: var(--shadow-card); }
+
 @media (max-width: 640px) {
   .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .gallery-item--pad { display: none; }
 }
 </style>
 
