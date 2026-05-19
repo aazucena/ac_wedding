@@ -86,6 +86,24 @@ for (let i = slides.length - 1; i > 0; i--) {
     <span class="hero-scroll-text hero-scroll-text--touch">Swipe</span>
     <span class="hero-scroll-arrow">↓</span>
   </button>
+
+  {slides.length > 0 && (
+    <button class="hero-focus-btn" id="hero-focus-btn" aria-label="Toggle focus mode" aria-pressed="false">
+      <!-- Eye open — shown when NOT in immersive mode -->
+      <svg class="hero-focus-icon hero-focus-icon--expand" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+      <!-- Eye off — shown when IN immersive mode -->
+      <svg class="hero-focus-icon hero-focus-icon--compress" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>
+      <span class="hero-focus-label hero-focus-label--on">Focus</span>
+      <span class="hero-focus-label hero-focus-label--off">Exit</span>
+    </button>
+  )}
 </section>
 
 <style>
@@ -358,12 +376,57 @@ for (let i = slides.length - 1; i > 0; i--) {
   .hero-scroll-arrow { animation: none; }
 }
 
+/* ── Focus / immersive mode ─────────────────────────────────── */
+.hero-content,
+.hero-overlay,
+.hero-orbs,
+.hero-scroll-cue {
+  transition: opacity 0.6s ease;
+}
+
+.hero--immersive .hero-content,
+.hero--immersive .hero-orbs,
+.hero--immersive .hero-scroll-cue {
+  opacity: 0;
+  pointer-events: none;
+}
+.hero--immersive .hero-overlay { opacity: 0.08; }
+
+/* Focus toggle button */
+.hero-focus-btn {
+  position: absolute; bottom: 0; left: 0; z-index: 12;
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 24px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: none; border-radius: 0 6px 0 0;
+  color: rgba(255,255,255,0.65); cursor: pointer;
+  font-family: var(--fb); font-size: 9px; font-weight: 600;
+  letter-spacing: 2px; text-transform: uppercase;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+.hero-focus-btn:hover { color: rgba(255,255,255,1); background: rgba(0,0,0,0.6); }
+
+.hero-focus-icon--compress,
+.hero-focus-label--off { display: none; }
+
+.hero--immersive .hero-focus-icon--expand,
+.hero--immersive .hero-focus-label--on  { display: none; }
+.hero--immersive .hero-focus-icon--compress,
+.hero--immersive .hero-focus-label--off { display: inline; }
+
 /* ── Responsive ─────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .hero { min-height: 380px; }
   .hero-content { padding: 60px 24px 24px; }
   .hero-eyebrow { font-size: 8px; letter-spacing: 2.5px; }
   .hero-sub     { font-size: 8px; letter-spacing: 2px; }
+
+  /* Focus button: icon only on mobile, no label */
+  .hero-focus-btn { padding: 8px 10px; gap: 0; }
+  .hero-focus-label--on,
+  .hero-focus-label--off { display: none !important; }
 }
 
 /* Countdown margin when inside hero */
@@ -425,6 +488,35 @@ for (let i = slides.length - 1; i > 0; i--) {
   const heroCnt = document.getElementById('hero-content') as HTMLElement | null;
 
   if (!hero || !heroBg || !heroCnt) throw new Error('HeroSection: missing parallax elements');
+
+  // ── Focus / immersive mode ─────────────────────────────────
+  const focusBtn = document.getElementById('hero-focus-btn');
+  const nav      = document.getElementById('site-nav');
+
+  function enterFocus() {
+    hero.classList.add('hero--immersive');
+    focusBtn?.setAttribute('aria-pressed', 'true');
+    if (nav) { nav.style.opacity = '0'; nav.style.pointerEvents = 'none'; }
+  }
+  function exitFocus() {
+    hero.classList.remove('hero--immersive');
+    focusBtn?.setAttribute('aria-pressed', 'false');
+    if (nav) { nav.style.opacity = ''; nav.style.pointerEvents = ''; }
+  }
+
+  focusBtn?.addEventListener('click', () => {
+    hero.classList.contains('hero--immersive') ? exitFocus() : enterFocus();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && hero.classList.contains('hero--immersive')) exitFocus();
+  });
+
+  // Exit focus if user scrolls away from the hero
+  const heroObserver = new IntersectionObserver(([entry]) => {
+    if (!entry!.isIntersecting) exitFocus();
+  }, { threshold: 0 });
+  heroObserver.observe(hero);
 
   // Parallax strengths (px) — bg moves most (it's "furthest back")
   const BG_STR  = 16;
