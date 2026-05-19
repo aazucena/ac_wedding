@@ -1,7 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "baseUrl": ".",
     "target": "ESNext",
     "allowJs": true,
     "esModuleInterop": true,
@@ -30,7 +29,7 @@
     "skipLibCheck": true,
     "incremental": true,
     "paths": {
-      "~/*": ["src/*"],
+      "~/*": ["./src/*"],
       "@/*": ["./src/*"],
       "@*": ["./src/*"]
     },
