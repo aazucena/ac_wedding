@@ -1,21 +1,25 @@
 ---
+import { marked } from 'marked';
+
 export interface Props {
   headline: string;
   icon: string;
   title: string;
   content: string;
   imageUrl?: string;
+  objectPosition?: string;
   reverse?: boolean;
   animationDelay?: string;
 }
 
-const { headline, icon, title, content, imageUrl, reverse = false, animationDelay = '0.2s' } = Astro.props;
+const { headline, icon, title, content, imageUrl, objectPosition = 'center', reverse = false, animationDelay = '0.2s' } = Astro.props;
+const contentHtml = await marked.parse(content);
 ---
 
 <div class={`chapter ${reverse ? 'chapter-reverse' : ''}`} style={`animation-delay: ${animationDelay}`}>
   <div class="chapter-photo-placeholder">
     {imageUrl
-      ? <img src={imageUrl} alt={title} class="chapter-photo" />
+      ? <img src={imageUrl} alt={title} class="chapter-photo" style={`object-position: ${objectPosition}`} />
       : <span>📷</span>
     }
   </div>
@@ -25,7 +29,7 @@ const { headline, icon, title, content, imageUrl, reverse = false, animationDela
       <span class="chapter-headline">{headline}</span>
     </div>
     <h2 class="chapter-title">{title}</h2>
-    <p class="chapter-body">{content}</p>
+    <div class="chapter-body" set:html={contentHtml} />
   </div>
 </div>
 
@@ -101,6 +105,14 @@ const { headline, icon, title, content, imageUrl, reverse = false, animationDela
   font-family: var(--fb); font-size: 15px; font-weight: 300;
   color: var(--muted); line-height: 1.9;
 }
+.chapter-body :global(p)      { margin: 0 0 0.9em; }
+.chapter-body :global(p:last-child) { margin-bottom: 0; }
+.chapter-body :global(strong) { font-weight: 600; color: var(--dark); }
+.chapter-body :global(em)     { font-style: italic; }
+.chapter-body :global(a)      { color: var(--cs); text-decoration: underline; text-underline-offset: 2px; }
+.chapter-body :global(ul),
+.chapter-body :global(ol)     { padding-left: 1.4em; margin: 0.6em 0; }
+.chapter-body :global(li)     { margin-bottom: 0.3em; }
 
 @media (max-width: 700px) {
   .chapter { grid-template-columns: 1fr; }

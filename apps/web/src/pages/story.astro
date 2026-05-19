@@ -5,7 +5,7 @@ import Layout        from '../layouts/Layout.astro';
 import PageHeader    from '../components/PageHeader.astro';
 import StoryChapter  from '../components/story/StoryChapter.astro';
 import { getSettings } from '../lib/directus';
-import { assetUrl, formatDate } from '../lib/utils/format';
+import { assetUrl, formatDate, focalPoint } from '../lib/utils/format';
 import Hashtag from '~/components/Hashtag.astro';
 import { getYear } from '~/lib/date';
 
@@ -65,12 +65,20 @@ const chapters = (directusChapters && directusChapters.length > 0)
       date={`${weddingLocation} · Est. ${year}`}
     />
 
-    <!-- ── Hero photo placeholder ────────────────────────── -->
+    <!-- ── Hero cover image ─────────────────────────────── -->
     <div class="story-hero">
-      <div class="story-hero-inner">
-        <span class="story-hero-icon">📷</span>
-        <span class="story-hero-label">Photo coming soon</span>
-      </div>
+      {settings.story?.cover_image?.id
+        ? <img
+            src={assetUrl(settings.story.cover_image, { width: 1400, height: 480, fit: 'cover', quality: 85, format: 'auto' })}
+            alt=""
+            class="story-hero-img"
+            style={`object-position: ${focalPoint(settings.story.cover_image)}`}
+          />
+        : <div class="story-hero-inner">
+            <span class="story-hero-icon">📷</span>
+            <span class="story-hero-label">Photo coming soon</span>
+          </div>
+      }
     </div>
 
     <!-- ── Chapters ──────────────────────────────────────── -->
@@ -81,7 +89,8 @@ const chapters = (directusChapters && directusChapters.length > 0)
           headline={ch.headline ?? ''}
           title={ch.title ?? ''}
           content={ch.content ?? ''}
-          imageUrl={ch.image?.id ? `${assetUrl(ch.image.id)}` : undefined}
+          imageUrl={ch.image?.id ? assetUrl(ch.image, { width: 800, height: 560, fit: 'cover', quality: 85, format: 'auto' }) : undefined}
+          objectPosition={focalPoint(ch.image)}
           reverse={i % 2 === 1}
           animationDelay={`${0.2 + i * 0.1}s`}
         />
@@ -114,6 +123,10 @@ const chapters = (directusChapters && directusChapters.length > 0)
   overflow: hidden; margin-bottom: 56px;
   border: 1px solid var(--border); box-shadow: var(--shadow-card);
   opacity: 0; animation: fadeUp 0.8s 0.2s ease forwards;
+}
+.story-hero-img {
+  width: 100%; height: 400px;
+  object-fit: cover; display: block;
 }
 .story-hero-inner {
   min-height: 320px;
