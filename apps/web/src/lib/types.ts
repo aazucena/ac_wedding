@@ -683,6 +683,7 @@ export interface WeddingSettings {
   email?: string;
   mc_token?: string;
   maintenance?: boolean;
+  show_program?: boolean;
   return_address_line1?:       string;
   return_address_city?:        string;
   return_address_region?:      string;

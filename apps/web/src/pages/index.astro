@@ -89,7 +89,16 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
       <p class="section-eyebrow">The Big Day</p>
       <h2 class="section-title" id="program">Program</h2>
     </div>
-    <ProgramTimeline ceremony={ceremony} reception={reception} />
+    {settings.show_program
+      ? <ProgramTimeline ceremony={ceremony} reception={reception} />
+      : (
+        <div class="program-coming-soon">
+          <span class="program-cs-icon">✦</span>
+          <p class="program-cs-heading">Program coming soon</p>
+          <p class="program-cs-note">We're finalizing the evening's program with our MC — check back closer to the wedding day.</p>
+        </div>
+      )
+    }
   </section>
   <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
 
@@ -158,6 +167,35 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
   </Fragment>
 
 </Layout>
+
+<style>
+.program-coming-soon {
+  width: 100%;
+  background: var(--ivory);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 56px 32px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.program-coming-soon::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--cp), var(--cs));
+}
+.program-cs-icon {
+  font-size: 22px; color: var(--cp); opacity: 0.7;
+}
+.program-cs-heading {
+  font-family: var(--fd); font-size: 26px; font-weight: 400;
+  font-style: italic; color: var(--dark); line-height: 1.2;
+}
+.program-cs-note {
+  font-family: var(--fb); font-size: 13px; font-weight: 300;
+  color: var(--muted); max-width: 380px; line-height: 1.7;
+}
+</style>
 
 <!-- Confetti — separate module script, never mixed with define:vars -->
 <script>
