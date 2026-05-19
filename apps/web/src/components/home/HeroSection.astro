@@ -5,6 +5,7 @@ import { Image } from 'astro:assets';
 import CountdownBar  from './CountdownBar.astro';
 import { assetUrl, focalPoint } from '~/lib/utils/format';
 import type { Gallery, Vendors } from '~/lib/types';
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
 
 interface Props {
   groomFull: string;
@@ -19,6 +20,7 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate, he
 
 const credit = photographer && typeof photographer === 'object' ? photographer : null;
 
+const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 const slides = heroPhotos.filter(p => p.image?.id);
 for (let i = slides.length - 1; i > 0; i--) {
   const j = Math.floor(Math.random() * (i + 1));
@@ -40,6 +42,7 @@ for (let i = slides.length - 1; i > 0; i--) {
             alt=""
             loading={i === 0 ? 'eager' : undefined}
             style={`object-position: ${focalPoint(photo.image)}`}
+            data-download-protected={String(!allowDownload)}
           />
         ))
       : <div class="hero-bg-placeholder"></div>
@@ -49,14 +52,16 @@ for (let i = slides.length - 1; i > 0; i--) {
   <!-- ▸ Depth 1 — vignette overlay (static, no parallax) -->
   <div class="hero-overlay"></div>
 
-  <!-- ▸ Depth 2 — bokeh orbs, motion graphics (mid-speed parallax) -->
-  <div class="hero-orbs" id="hero-orbs" aria-hidden="true">
-    <span class="hero-orb hero-orb--1"></span>
-    <span class="hero-orb hero-orb--2"></span>
-    <span class="hero-orb hero-orb--3"></span>
-    <span class="hero-orb hero-orb--4"></span>
-    <span class="hero-orb hero-orb--5"></span>
-  </div>
+  <!-- ▸ Depth 2 — bokeh orbs (only shown for gradient placeholder, not over photos) -->
+  {slides.length === 0 && (
+    <div class="hero-orbs" id="hero-orbs" aria-hidden="true">
+      <span class="hero-orb hero-orb--1"></span>
+      <span class="hero-orb hero-orb--2"></span>
+      <span class="hero-orb hero-orb--3"></span>
+      <span class="hero-orb hero-orb--4"></span>
+      <span class="hero-orb hero-orb--5"></span>
+    </div>
+  )}
 
   <!-- ▸ Depth 3 — foreground content (floats toward viewer) -->
   <div class:list={['hero-content', { 'hero-content--with-photos': slides.length > 0 }]} id="hero-content">
@@ -190,50 +195,78 @@ for (let i = slides.length - 1; i > 0; i--) {
 .hero-orbs {
   position: absolute; inset: 0;
   pointer-events: none;
-  will-change: transform;
+  /* No will-change here — it creates an isolated stacking context
+     that breaks mix-blend-mode: screen on child orbs.
+     The JS parallax transform still works without it. */
 }
 .hero-orb {
   position: absolute;
   border-radius: 50%;
-  /* screen blend adds orb colour as light on top of the dark   */
-  /* overlay — the motion-graphics "light bloom" look.           */
-  mix-blend-mode: screen;
+  opacity: 0.55;
 }
 
-@keyframes hero-orb-drift {
-  0%, 100% { transform: translateY(0)    scale(1.00); }
-  50%       { transform: translateY(-16px) scale(1.03); }
+@keyframes orb-drift-1 {
+  0%   { transform: translate(  0px,   0px) scale(1.00); }
+  25%  { transform: translate(-55px, -45px) scale(1.04); }
+  50%  { transform: translate( 30px, -70px) scale(1.07); }
+  75%  { transform: translate( 60px, -25px) scale(1.03); }
+  100% { transform: translate(  0px,   0px) scale(1.00); }
+}
+@keyframes orb-drift-2 {
+  0%   { transform: translate(  0px,   0px) scale(1.00); }
+  30%  { transform: translate( 50px, -55px) scale(0.96); }
+  60%  { transform: translate(-40px, -65px) scale(1.05); }
+  100% { transform: translate(  0px,   0px) scale(1.00); }
+}
+@keyframes orb-drift-3 {
+  0%   { transform: translate(  0px,   0px) scale(1.00); }
+  40%  { transform: translate( 65px, -40px) scale(1.05); }
+  70%  { transform: translate( 30px, -75px) scale(0.95); }
+  100% { transform: translate(  0px,   0px) scale(1.00); }
+}
+@keyframes orb-drift-4 {
+  0%   { transform: translate(  0px,   0px) scale(1.00); }
+  20%  { transform: translate( 45px, -35px) scale(1.07); }
+  50%  { transform: translate(-30px, -60px) scale(0.93); }
+  80%  { transform: translate( 40px, -15px) scale(1.03); }
+  100% { transform: translate(  0px,   0px) scale(1.00); }
+}
+@keyframes orb-drift-5 {
+  0%   { transform: translate(  0px,   0px) scale(1.00); }
+  35%  { transform: translate(-60px, -50px) scale(1.04); }
+  65%  { transform: translate( 50px, -30px) scale(0.96); }
+  100% { transform: translate(  0px,   0px) scale(1.00); }
 }
 
 .hero-orb--1 {
-  width: 220px; height: 220px; top: 12%; left: 6%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--cs) 50%, transparent) 0%, transparent 70%);
-  filter: blur(55px);
-  animation: hero-orb-drift 20s ease-in-out infinite;
+  width: 260px; height: 260px; top: 8%; left: 5%;
+  background: radial-gradient(circle, var(--cp) 0%, transparent 70%);
+  filter: blur(60px);
+  animation: orb-drift-1 20s ease-in-out infinite;
 }
 .hero-orb--2 {
-  width: 140px; height: 140px; top: 55%; right: 8%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--cp) 55%, transparent) 0%, transparent 70%);
-  filter: blur(40px);
-  animation: hero-orb-drift 15s ease-in-out infinite 2.5s;
+  width: 160px; height: 160px; top: 60%; right: 6%;
+  background: radial-gradient(circle, var(--cp) 0%, transparent 70%);
+  filter: blur(44px);
+  animation: orb-drift-2 15s ease-in-out infinite 2.5s;
 }
 .hero-orb--3 {
-  width: 300px; height: 300px; top: 20%; right: 10%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--cs) 30%, transparent) 0%, transparent 70%);
+  width: 320px; height: 320px; top: 22%; left: 28%;
+  background: radial-gradient(circle, var(--cp) 0%, transparent 70%);
   filter: blur(80px);
-  animation: hero-orb-drift 26s ease-in-out infinite 5s;
+  animation: orb-drift-3 26s ease-in-out infinite 5s;
 }
 .hero-orb--4 {
-  width: 100px; height: 100px; top: 72%; left: 22%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--cp) 60%, transparent) 0%, transparent 70%);
-  filter: blur(30px);
-  animation: hero-orb-drift 13s ease-in-out infinite 1s;
+  width: 120px; height: 120px; top: 74%; left: 16%;
+  background: radial-gradient(circle, var(--cp) 0%, transparent 70%);
+  filter: blur(32px);
+  animation: orb-drift-4 13s ease-in-out infinite 1s;
 }
 .hero-orb--5 {
-  width: 180px; height: 180px; top: 16%; left: 44%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--cs) 40%, transparent) 0%, transparent 70%);
-  filter: blur(60px);
-  animation: hero-orb-drift 18s ease-in-out infinite 7s;
+  width: 200px; height: 200px; top: 44%; right: 22%;
+  background: radial-gradient(circle, var(--cp) 0%, transparent 70%);
+  filter: blur(64px);
+  animation: orb-drift-5 18s ease-in-out infinite 7s;
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-orb { animation: none; }
@@ -429,6 +462,12 @@ for (let i = slides.length - 1; i > 0; i--) {
   .hero-focus-label--off { display: none !important; }
 }
 
+.hero-slide[data-download-protected="true"] {
+  -webkit-user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
 /* Countdown margin when inside hero */
 :global(.hero-content .countdown-bar) { margin-top: 24px; }
 </style>
@@ -438,6 +477,12 @@ for (let i = slides.length - 1; i > 0; i--) {
   const allSlides = Array.from(
     document.querySelectorAll<HTMLImageElement>('#hero-bg .hero-slide')
   );
+
+  // Download protection for hero slides
+  document.querySelectorAll<HTMLImageElement>('.hero-slide[data-download-protected="true"]').forEach(img => {
+    img.addEventListener('contextmenu', e => e.preventDefault());
+    img.addEventListener('dragstart',   e => e.preventDefault());
+  });
 
   if (allSlides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const SHOW_MS = 6000; // ms each slide is fully visible
