@@ -18,7 +18,7 @@ export async function getMemories(): Promise<Memories[]> {
 export async function getGallery(): Promise<Gallery[]> {
   try {
     return await get<Gallery[]>('/items/gallery', {
-      fields: ['id', 'title', 'description', 'image.id', 'sort', 'status'],
+      fields: ['id', 'title', 'description', 'image.id', 'sort', 'status', 'category', 'bw'],
       filter: { status: { _eq: 'published' } },
       sort: ['sort', 'date_created'],
       limit: -1,

@@ -197,6 +197,8 @@ export interface Gallery {
   uploaded_by_token?: string;
   status?: string;
   featured?: boolean;
+  category?: string | null;
+  bw?: boolean | null;
 }
 
 export interface Groups {
