@@ -22,7 +22,7 @@ const { fixed = true, className } = Astro.props;
       </a>
       <span class="spotify-player-hint-dot"></span>
       <span class="spotify-player-hint-text">Our Wedding Playlist</span>
-      <button class="spotify-player-toggle" aria-label={fixed ? 'Expand player' : 'Minimize player'} aria-expanded={String(!fixed)}>
+      <button class="spotify-player-toggle" aria-label={fixed ? 'Expand player' : 'Minimize player'} aria-expanded={!fixed}>
         <svg viewBox="0 0 10 6" width="10" height="6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M1 1l4 4 4-4"/>
         </svg>
@@ -72,7 +72,7 @@ const { fixed = true, className } = Astro.props;
       if (!player) return;
 
       function toggle() {
-        const minimized = player.classList.toggle('spotify-player--minimized');
+        const minimized = player!.classList.toggle('spotify-player--minimized');
         btn.setAttribute('aria-expanded', String(!minimized));
         btn.setAttribute('aria-label', minimized ? 'Expand player' : 'Minimize player');
       }
