@@ -7,6 +7,7 @@ import StoryChapter  from '../components/story/StoryChapter.astro';
 import { getSettings } from '../lib/directus';
 import { assetUrl, formatDate, focalPoint } from '../lib/utils/format';
 import Hashtag from '~/components/Hashtag.astro';
+import SpotifyPlayer from '~/components/SpotifyPlayer.astro';
 import { getYear } from '~/lib/date';
 import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
 
@@ -100,6 +101,8 @@ const chapters = (directusChapters && directusChapters.length > 0)
         />
       ))}
     </div>
+    <!-- ── Fixed soundtrack player ─────────────────────────── -->
+    <SpotifyPlayer fixed />
 
     <!-- ── CTA ───────────────────────────────────────────── -->
     <div class="story-cta">
@@ -111,6 +114,7 @@ const chapters = (directusChapters && directusChapters.length > 0)
     </div>
 
   </div>
+
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />

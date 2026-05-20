@@ -16,6 +16,7 @@ import GalleryPreview  from '../components/home/GalleryPreview.astro';
 import StoryPreviewCard from '../components/home/StoryPreviewCard.astro';
 import RsvpZone        from '../components/home/RsvpZone.astro';
 import HashtagShare    from '../components/home/HashtagShare.astro';
+import SpotifyPlayer   from '../components/SpotifyPlayer.astro';
 import { getSettings, getVendors, getCeremony, getReception, getGalleryPhotos, getHeroPhotos, getRsvpCount, getRegistries } from '../lib/directus';
 import { formatTime, formatDate } from '../lib/utils/format';
 
@@ -160,6 +161,8 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
   <div class="page-narrow">
     <HashtagShare hashtag={hashtag} weddingDateLabel={weddingDateLabel} />
   </div>
+
+  <SpotifyPlayer className="page-wide section-block" fixed={true} />
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
