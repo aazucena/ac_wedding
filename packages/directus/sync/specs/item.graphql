@@ -131,12 +131,12 @@ type Query {
   sponsors_by_id(id: ID!, version: String): sponsors
   sponsors_aggregated(groupBy: [String], filter: sponsors_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [sponsors_aggregated!]!
   sponsors_by_version(version: String!, id: ID!): version_sponsors
-  wedding_settings(version: String): wedding_settings
-  wedding_settings_by_version(version: String!): version_wedding_settings
   gallery(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [gallery!]!
   gallery_by_id(id: ID!, version: String): gallery
   gallery_aggregated(groupBy: [String], filter: gallery_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [gallery_aggregated!]!
   gallery_by_version(version: String!, id: ID!): version_gallery
+  wedding_settings(version: String): wedding_settings
+  wedding_settings_by_version(version: String!): version_wedding_settings
   reception_staff(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String): [reception_staff!]!
   reception_staff_by_id(id: ID!, version: String): reception_staff
   reception_staff_aggregated(groupBy: [String], filter: reception_staff_filter, limit: Int, offset: Int, page: Int, search: String, sort: [String]): [reception_staff_aggregated!]!
@@ -373,10 +373,10 @@ type Mutation {
   update_sponsors_items(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_sponsors_input!): [sponsors!]!
   update_sponsors_batch(filter: sponsors_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_sponsors_input!]): [sponsors!]!
   update_sponsors_item(id: ID!, data: update_sponsors_input!): sponsors
-  update_wedding_settings(data: update_wedding_settings_input!): wedding_settings
   update_gallery_items(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_gallery_input!): [gallery!]!
   update_gallery_batch(filter: gallery_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_gallery_input!]): [gallery!]!
   update_gallery_item(id: ID!, data: update_gallery_input!): gallery
+  update_wedding_settings(data: update_wedding_settings_input!): wedding_settings
   update_reception_staff_items(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, ids: [ID]!, data: update_reception_staff_input!): [reception_staff!]!
   update_reception_staff_batch(filter: reception_staff_filter, sort: [String], limit: Int, offset: Int, page: Int, search: String, data: [update_reception_staff_input!]): [reception_staff!]!
   update_reception_staff_item(id: ID!, data: update_reception_staff_input!): reception_staff
@@ -559,8 +559,8 @@ type Subscription {
   reception_program_mutated(event: EventEnum): reception_program_mutated
   readings_mutated(event: EventEnum): readings_mutated
   sponsors_mutated(event: EventEnum): sponsors_mutated
-  wedding_settings_mutated(event: EventEnum): wedding_settings_mutated
   gallery_mutated(event: EventEnum): gallery_mutated
+  wedding_settings_mutated(event: EventEnum): wedding_settings_mutated
   reception_staff_mutated(event: EventEnum): reception_staff_mutated
   tables_mutated(event: EventEnum): tables_mutated
   story_chapters_mutated(event: EventEnum): story_chapters_mutated
@@ -5872,6 +5872,11 @@ type version_wedding_settings {
 
   """Applies to all parties that don't override"""
   plus_ones_allowed: Int
+
+  """
+  Show the reception program on the homepage. Keep off until the program is confirmed with the MC.
+  """
+  show_program: Boolean
 }
 
 type wedding_roles {
@@ -5999,6 +6004,11 @@ type wedding_settings {
 
   """Applies to all parties that don't override"""
   plus_ones_allowed: Int
+
+  """
+  Show the reception program on the homepage. Keep off until the program is confirmed with the MC.
+  """
+  show_program: Boolean
 }
 
 type wedding_settings_mutated {
@@ -10583,6 +10593,11 @@ input update_wedding_settings_input {
 
   """Applies to all parties that don't override"""
   plus_ones_allowed: Int
+
+  """
+  Show the reception program on the homepage. Keep off until the program is confirmed with the MC.
+  """
+  show_program: Boolean
 }
 
 input vendors_filter {
