@@ -65,16 +65,19 @@ function initHero() {
   // ── Focus / immersive mode ─────────────────────────────────
   const focusBtn = document.getElementById('hero-focus-btn');
   const nav      = document.getElementById('site-nav');
+  const player   = document.querySelector<HTMLElement>('.spotify-player--fixed');
 
   function enterFocus() {
     hero.classList.add('hero--immersive');
     focusBtn?.setAttribute('aria-pressed', 'true');
-    if (nav) { nav.style.opacity = '0'; nav.style.pointerEvents = 'none'; }
+    if (nav)    { nav.style.opacity = '0'; nav.style.pointerEvents = 'none'; }
+    if (player) player.classList.add('spotify-player--hidden');
   }
   function exitFocus() {
     hero.classList.remove('hero--immersive');
     focusBtn?.setAttribute('aria-pressed', 'false');
-    if (nav) { nav.style.opacity = ''; nav.style.pointerEvents = ''; }
+    if (nav)    { nav.style.opacity = ''; nav.style.pointerEvents = ''; }
+    if (player) player.classList.remove('spotify-player--hidden');
   }
 
   focusBtn?.addEventListener('click', () => {
