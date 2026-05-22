@@ -35,14 +35,19 @@ export const onRequest = defineMiddleware(
       const tokenCookie = cookies.get(PREVIEW_COOKIE)?.value;
 
       if (tokenParam === secret) {
-        locals.isPreview = true;
-        cookies.set(PREVIEW_COOKIE, secret, {
-          path: "/",
-          httpOnly: true,
-          sameSite: "lax",
-          maxAge: PREVIEW_COOKIE_TTL,
+        // Redirect to the same URL without ?preview= so the cookie lands
+        // on a fresh response we fully control. cookies.set() + next() does
+        // not serialise into the response for prerendered (static) pages on
+        // the Vercel adapter — only a response we construct ourselves does.
+        const cleanUrl = new URL(url);
+        cleanUrl.searchParams.delete("preview");
+        return new Response(null, {
+          status: 302,
+          headers: {
+            Location: cleanUrl.toString(),
+            "Set-Cookie": `${PREVIEW_COOKIE}=${secret}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${PREVIEW_COOKIE_TTL}`,
+          },
         });
-        return next();
       }
 
       if (tokenCookie === secret) {
