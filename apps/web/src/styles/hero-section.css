@@ -4,6 +4,7 @@
   width: 100vw;
   margin-left: calc(50% - 50vw);
   height: 100vh;
+  height: 100dvh; /* Dynamic viewport — excludes browser chrome on mobile */
   min-height: 560px;
   overflow: hidden;
   display: flex;
