@@ -319,4 +319,58 @@
     box-shadow: none;
     margin: 0 0 32px;
   }
+
+  /* On mobile the player is in the page flow — minimized makes no sense.
+     Force it to always render fully expanded. */
+  .spotify-player--fixed.spotify-player--minimized {
+    width: 100%;
+    border-radius: 12px;
+  }
+  .spotify-player--fixed.spotify-player--minimized .spotify-player-hint {
+    border-radius: 8px 8px 0 0;
+    margin-bottom: -10px;
+    padding: 8px 12px;
+    width: auto;
+    height: auto;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  /* Logo link stays hidden on mobile (it was only visible in circle mode) */
+  .spotify-player--fixed.spotify-player--minimized .spotify-logo-link {
+    opacity: 0;
+    width: 0;
+  }
+  .spotify-player--fixed.spotify-player--minimized .spotify-player-hint-dot {
+    opacity: 1;
+    width: 7px;
+    overflow: visible;
+  }
+  .spotify-player--fixed.spotify-player--minimized .spotify-player-hint-text {
+    opacity: 1;
+    width: auto;
+    overflow: visible;
+    flex: 1;
+  }
+  /* Always hide the toggle on mobile — body is never collapsed */
+  .spotify-player--fixed .spotify-player-toggle {
+    display: none;
+  }
+  /* Always show the body on mobile, regardless of --minimized class */
+  .spotify-player--fixed .spotify-player-body {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 520px) {
+  /* .page-wide adds padding: 0 16px internally, but .spotify-player has
+     overflow: hidden so that padding indents the content rather than creating
+     external spacing. Fix: reset padding and use margin instead, matching the
+     16px side-spacing every other page-wide section gets. Higher specificity
+     (3 classes) beats the global .page .page-wide rule (2 classes). */
+  .page .page-wide.spotify-player--fixed {
+    padding: 0;
+    margin-left: 16px;
+    margin-right: 16px;
+    width: calc(100% - 32px);
+  }
 }
