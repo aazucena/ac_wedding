@@ -7,129 +7,158 @@
 
 // Canonical ordered list — drives automatic prev/next pagination.
 const PRINT_PAGES = [
-  { href: '/print/mass',         label: 'Mass Booklet' },
-  { href: '/print/program',      label: 'Program' },
-  { href: '/print/reception',    label: 'Reception' },
-  { href: '/print/menu',         label: 'Menu' },
-  { href: '/print/tables',       label: 'Tables' },
-  { href: '/print/place-cards',  label: 'Place Cards' },
-  { href: '/print/escort-cards', label: 'Escort Cards' },
-  { href: '/print/invitation',   label: 'Invitation' },
-  { href: '/print/enclosure',    label: 'Enclosure' },
-  { href: '/print/rsvp',         label: 'RSVP' },
-  { href: '/print/thank-you',    label: 'Thank You' },
-  { href: '/print/game',         label: 'Game' },
-  { href: '/print/gift-tag',     label: 'Gift Sticker' },
-  { href: '/print/gift-hang-tag',     label: 'Gift Tag' },
-  { href: '/print/return-label',   label: 'Return Label' },
-  { href: '/print/address-label', label: 'Address Label' },
-  { href: '/print/social',         label: 'Social Cards' },
+  { href: "/print/mass", label: "Mass Booklet" },
+  { href: "/print/program", label: "Program" },
+  { href: "/print/reception", label: "Reception" },
+  { href: "/print/menu", label: "Menu" },
+  { href: "/print/tables", label: "Tables" },
+  { href: "/print/place-cards", label: "Place Cards" },
+  { href: "/print/escort-cards", label: "Escort Cards" },
+  { href: "/print/invitation", label: "Invitation" },
+  { href: "/print/enclosure", label: "Enclosure" },
+  { href: "/print/rsvp", label: "RSVP" },
+  { href: "/print/thank-you", label: "Thank You" },
+  { href: "/print/game", label: "Game" },
+  { href: "/print/gift-tag", label: "Gift Sticker" },
+  { href: "/print/gift-hang-tag", label: "Gift Tag" },
+  { href: "/print/return-label", label: "Return Label" },
+  { href: "/print/address-label", label: "Address Label" },
+  { href: "/print/social", label: "Social Cards" },
 ];
 
 interface Props {
   title: string;
   toolbarHint?: string;
-  cardWidth?: string;   // e.g. '5in', '210mm' — default '11in'
-  cardHeight?: string;  // e.g. '7in', '297mm' — default '8.5in'
+  cardWidth?: string; // e.g. '5in', '210mm' — default '11in'
+  cardHeight?: string; // e.g. '7in', '297mm' — default '8.5in'
 }
 
 const { title, toolbarHint, cardWidth, cardHeight } = Astro.props;
 
-const pathname  = Astro.url.pathname.replace(/\/$/, '');
-const idx       = PRINT_PAGES.findIndex(p => p.href === pathname);
-const prevPage  = idx > 0                       ? PRINT_PAGES[idx - 1] : null;
-const nextPage  = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
+const pathname = Astro.url.pathname.replace(/\/$/, "");
+const idx = PRINT_PAGES.findIndex((p) => p.href === pathname);
+const prevPage = idx > 0 ? PRINT_PAGES[idx - 1] : null;
+const nextPage = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
 ---
 
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{title}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-</head>
-<body style={`--card-w:${cardWidth ?? '11in'};--card-h:${cardHeight ?? '8.5in'};`}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500;1,600&family=Jost:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    style={`--card-w:${cardWidth ?? "11in"};--card-h:${cardHeight ?? "8.5in"};`}
+  >
+    <slot />
 
-  <slot />
-
-  <!-- ══ TOOLBAR — fixed bottom ═══════════════════════════════ -->
-  <div class="toolbar no-print">
-    <div class="toolbar-group">
-      <button onclick="window.print()" class="btn-print">🖨️ Print</button>
-      <a href="/print" class="btn-link btn-index">≡ All</a>
-      {prevPage && <a href={prevPage.href} class="btn-link">← {prevPage.label}</a>}
-      {idx >= 0 && <span class="btn-pager">{idx + 1} / {PRINT_PAGES.length}</span>}
-      {nextPage && <a href={nextPage.href} class="btn-link">{nextPage.label} →</a>}
+    <!-- ══ TOOLBAR — fixed bottom ═══════════════════════════════ -->
+    <div class="toolbar no-print">
+      <div class="toolbar-group">
+        <button onclick="window.print()" class="btn-print">🖨️ Print</button>
+        <a href="/print" class="btn-link btn-index">≡ All</a>
+        {
+          prevPage && (
+            <a href={prevPage.href} class="btn-link">
+              ← {prevPage.label}
+            </a>
+          )
+        }
+        {
+          idx >= 0 && (
+            <span class="btn-pager">
+              {idx + 1} / {PRINT_PAGES.length}
+            </span>
+          )
+        }
+        {
+          nextPage && (
+            <a href={nextPage.href} class="btn-link">
+              {nextPage.label} →
+            </a>
+          )
+        }
+      </div>
+      <slot class="toolbar-controls" name="toolbar-controls" />
+      {toolbarHint && <p class="toolbar-hint">{toolbarHint}</p>}
     </div>
-    <slot class="toolbar-controls" name="toolbar-controls" />
-    {toolbarHint && <p class="toolbar-hint">{toolbarHint}</p>}
-  </div>
 
+    <script is:inline>
+      (function () {
+        const MAX = 10;
+        const P = 1000;
+        const SEL =
+          ".flip-container, .card:not(.flip-container .card), [data-tilt]";
 
-  <script is:inline>
-    (function () {
-      const MAX = 10;
-      const P   = 1000;
-      const SEL = '.flip-container, .card:not(.flip-container .card), [data-tilt]';
+        function setup(host) {
+          if (getComputedStyle(host).position === "static")
+            host.style.position = "relative";
+          const glare = document.createElement("div");
+          glare.className = "tilt-glare no-print";
+          host.appendChild(glare);
 
-      function setup(host) {
-        if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
-        const glare = document.createElement('div');
-        glare.className = 'tilt-glare no-print';
-        host.appendChild(glare);
+          let raf = null;
 
-        let raf = null;
-
-        host.addEventListener('mouseenter', () => {
-          host.style.transition = 'transform 0.25s ease-out';
-        });
-
-        host.addEventListener('mousemove', e => {
-          if (raf) cancelAnimationFrame(raf);
-          raf = requestAnimationFrame(() => {
-            const r  = host.getBoundingClientRect();
-            const rx = (((e.clientY - r.top)  / r.height) - 0.5) * -MAX * 2;
-            const ry = (((e.clientX - r.left) / r.width)  - 0.5) *  MAX * 2;
-            host.style.transition = 'transform 0.08s ease-out';
-            host.style.transform  = `perspective(${P}px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-            const gx = ((e.clientX - r.left) / r.width)  * 100;
-            const gy = ((e.clientY - r.top)  / r.height) * 100;
-            glare.style.opacity    = '1';
-            glare.style.background =
-              `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.2) 0%, transparent 65%)`;
+          host.addEventListener("mouseenter", () => {
+            host.style.transition = "transform 0.25s ease-out";
           });
-        });
 
-        host.addEventListener('mouseleave', () => {
-          if (raf) cancelAnimationFrame(raf);
-          host.style.transition = 'transform 0.6s cubic-bezier(0.2,0.8,0.3,1)';
-          host.style.transform  = `perspective(${P}px) rotateX(0deg) rotateY(0deg)`;
-          glare.style.opacity   = '0';
-        });
-      }
+          host.addEventListener("mousemove", (e) => {
+            if (raf) cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(() => {
+              const r = host.getBoundingClientRect();
+              const rx = ((e.clientY - r.top) / r.height - 0.5) * -MAX * 2;
+              const ry = ((e.clientX - r.left) / r.width - 0.5) * MAX * 2;
+              host.style.transition = "transform 0.08s ease-out";
+              host.style.transform = `perspective(${P}px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+              const gx = ((e.clientX - r.left) / r.width) * 100;
+              const gy = ((e.clientY - r.top) / r.height) * 100;
+              glare.style.opacity = "1";
+              glare.style.background = `radial-gradient(circle at ${gx}% ${gy}%, rgba(255,255,255,0.2) 0%, transparent 65%)`;
+            });
+          });
 
-      document.querySelectorAll(SEL).forEach(setup);
-    })();
-  </script>
-</body>
+          host.addEventListener("mouseleave", () => {
+            if (raf) cancelAnimationFrame(raf);
+            host.style.transition =
+              "transform 0.6s cubic-bezier(0.2,0.8,0.3,1)";
+            host.style.transform = `perspective(${P}px) rotateX(0deg) rotateY(0deg)`;
+            glare.style.opacity = "0";
+          });
+        }
+
+        document.querySelectorAll(SEL).forEach(setup);
+      })();
+    </script>
+  </body>
 </html>
 
 <style is:global>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
   :root {
-    --cp:      #A8D4B8;
-    --cs:      #C5B8E0;
-    --dark:    #1a1a2e;
-    --ivory:   #fdfaf7;
-    --muted:   #8a8499;
-    --border:  rgba(197,184,224,0.45);
-    --fd: 'Cormorant Garamond', Georgia, serif;
-    --fb: 'Jost', Arial, sans-serif;
+    --cp: #a8d4b8;
+    --cs: #c5b8e0;
+    --dark: #1a1a2e;
+    --ivory: #fdfaf7;
+    --muted: #8a8499;
+    --border: rgba(197, 184, 224, 0.45);
+    --fd: "Cormorant Garamond", Georgia, serif;
+    --fb: "Jost", Arial, sans-serif;
     --cp-tint: color-mix(in srgb, var(--cp) 16%, var(--ivory));
     --cs-tint: color-mix(in srgb, var(--cs) 12%, var(--ivory));
   }
@@ -147,43 +176,88 @@ const nextPage  = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
 
   /* ── Toolbar ──────────────────────────────────────────────── */
   .toolbar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    display: flex; flex-wrap: wrap;
-    align-items: center; justify-content: center;
-    gap: 10px 20px; padding: 14px 24px 16px;
-    background: rgba(253,250,247,0.96);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px 20px;
+    padding: 14px 24px 16px;
+    background: rgba(253, 250, 247, 0.96);
     backdrop-filter: blur(8px);
     border-top: 1px solid var(--border);
     z-index: 100;
   }
-  .toolbar-controls { display: flex; gap: 8px; }
-  .toolbar-group { display: flex; align-items: center; gap: 10px; }
+  .toolbar-controls {
+    display: flex;
+    gap: 8px;
+  }
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
   .toolbar-hint {
-    width: 100%; text-align: center;
-    font-size: 10px; color: var(--muted); font-style: italic;
+    width: 100%;
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
   }
   .btn-print {
-    padding: 8px 20px; background: var(--dark); color: var(--cp);
-    border: none; border-radius: 999px; cursor: pointer;
-    font-family: var(--fb); font-size: 10px; font-weight: 600;
-    letter-spacing: 2px; text-transform: uppercase;
+    padding: 8px 20px;
+    background: var(--dark);
+    color: var(--cp);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
   }
-  .btn-link { font-size: 11px; color: var(--muted); text-decoration: none; }
-  .btn-link:hover { color: var(--dark); }
+  .btn-link {
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .btn-link:hover {
+    color: var(--dark);
+  }
   .btn-pager {
-    font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums;
-    padding: 0 4px; letter-spacing: 0.5px;
+    font-size: 10px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    padding: 0 4px;
+    letter-spacing: 0.5px;
   }
   .seg-control {
-    display: flex; border: 1px solid rgba(197,184,224,0.7);
-    border-radius: 8px; overflow: hidden;
+    display: flex;
+    border: 1px solid rgba(197, 184, 224, 0.7);
+    border-radius: 8px;
+    overflow: hidden;
   }
   .seg-btn {
-    padding: 6px 14px; border: none; cursor: pointer; background: var(--ivory);
-    font-family: var(--fb); font-size: 11px; font-weight: 500;
-    color: var(--muted); transition: background 0.15s, color 0.15s;
+    padding: 6px 14px;
+    border: none;
+    cursor: pointer;
+    background: var(--ivory);
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    transition:
+      background 0.15s,
+      color 0.15s;
   }
-  .seg-btn.active { background: var(--dark); color: var(--cp); }
+  .seg-btn.active {
+    background: var(--dark);
+    color: var(--cp);
+  }
 
   /* ── Flip ─────────────────────────────────────────────────── */
   .flip-container {
@@ -191,71 +265,122 @@ const nextPage  = idx < PRINT_PAGES.length - 1 ? PRINT_PAGES[idx + 1] : null;
     width: var(--card-w);
   }
   .flipper {
-    position: relative; width: 100%;
+    position: relative;
+    width: 100%;
     transform-style: preserve-3d;
     transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
     min-height: var(--card-h);
   }
-  .flipper.is-flipped { transform: rotateY(180deg); }
-  .face {
-    position: absolute; top: 0; left: 0;
-    width: 100%; min-height: 100%;
-    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  .flipper.is-flipped {
+    transform: rotateY(180deg);
   }
-  .face.back { transform: rotateY(180deg); }
+  .face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+  .face.back {
+    transform: rotateY(180deg);
+  }
 
   /* ── Card shell ───────────────────────────────────────────── */
   .card {
     background: var(--ivory);
     border: 1px solid var(--border);
-    display: flex; flex-direction: column;
-    box-shadow: 0 8px 40px rgba(26,26,46,0.14);
-    width: 100%; min-height: var(--card-h);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 40px rgba(26, 26, 46, 0.14);
+    width: 100%;
+    min-height: var(--card-h);
   }
   .card-accent {
-    height: 5px; flex-shrink: 0;
+    height: 5px;
+    flex-shrink: 0;
     background: linear-gradient(90deg, var(--cp), var(--cs), var(--cp));
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .card-accent-bottom {
-    height: 5px; flex-shrink: 0;
+    height: 5px;
+    flex-shrink: 0;
     background: linear-gradient(90deg, var(--cp), var(--cs), var(--cp));
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   /* ── Tilt glare overlay ─────────────────────────────────── */
-  .flip-container, [data-tilt] { position: relative; }
+  .flip-container,
+  [data-tilt] {
+    position: relative;
+  }
   .tilt-glare {
-    position: absolute; inset: 0;
-    pointer-events: none; opacity: 0;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
     transition: opacity 0.3s ease-out;
-    z-index: 10; border-radius: inherit;
+    z-index: 10;
+    border-radius: inherit;
   }
 
   /* ── Print base rules ─────────────────────────────────────── */
   @media print {
     /* @page size is set per-page, not here — each print page declares its own size */
-    body { background: white; padding: 0 !important; display: block; }
-    .no-print { display: none !important; }
+    body {
+      background: white;
+      padding: 0 !important;
+      display: block;
+    }
+    .no-print {
+      display: none !important;
+    }
 
     .flip-container {
-      display: block !important; width: auto !important;
-      height: auto !important; cursor: default; overflow: visible;
+      display: block !important;
+      width: auto !important;
+      height: auto !important;
+      cursor: default;
+      overflow: visible;
       transform: none !important;
     }
     .flipper {
-      transform: none !important; transform-style: flat;
-      position: static; width: auto; height: auto;
+      transform: none !important;
+      transform-style: flat;
+      position: static;
+      width: auto;
+      height: auto;
     }
     .face {
-      position: static !important; transform: none !important;
-      backface-visibility: visible; -webkit-backface-visibility: visible;
-      width: auto; min-height: auto;
+      position: static !important;
+      transform: none !important;
+      backface-visibility: visible;
+      -webkit-backface-visibility: visible;
+      width: auto;
+      min-height: auto;
     }
-    .face.front { break-after: page; page-break-after: always; }
-    .card { box-shadow: none; break-inside: avoid; width: var(--card-w); min-height: var(--card-h); transform: none !important; }
-    .card-accent-bottom { margin-top: 0; }
-    [data-tilt] { transform: none !important; }
-    .tilt-glare { display: none !important; }
+    .face.front {
+      break-after: page;
+      page-break-after: always;
+    }
+    .card {
+      box-shadow: none;
+      break-inside: avoid;
+      width: var(--card-w);
+      min-height: var(--card-h);
+      transform: none !important;
+    }
+    .card-accent-bottom {
+      margin-top: 0;
+    }
+    [data-tilt] {
+      transform: none !important;
+    }
+    .tilt-glare {
+      display: none !important;
+    }
   }
 </style>
