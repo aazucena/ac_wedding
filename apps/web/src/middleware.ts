@@ -50,17 +50,19 @@ export const onRequest = defineMiddleware(
       }
     }
 
-    if (
-      (url.pathname.startsWith("/print/") ||
-        url.pathname.startsWith("/admin/")) &&
-      !locals.isPreview &&
-      !import.meta.env.DEV
-    ) {
-      return redirect("/", 307);
-    }
+    // isPreview is only true when the token matched above — full bypass
+    if (!locals.isPreview) {
+      if (MAINTENANCE_MODE || (await checkDirectusMaintenance())) {
+        return redirect("/maintenance", 307);
+      }
 
-    if (MAINTENANCE_MODE || (await checkDirectusMaintenance())) {
-      return redirect("/maintenance", 307);
+      if (
+        (url.pathname.startsWith("/print/") ||
+          url.pathname.startsWith("/admin/")) &&
+        !import.meta.env.DEV
+      ) {
+        return redirect("/", 307);
+      }
     }
 
     return next();
