@@ -113,6 +113,10 @@ const ogImage = new URL("/api/social/dm.png", Astro.site).href;
 
     <ClientRouter />
     <link rel="icon" type="image/png" href="/favicon.png" />
+
+    <!-- Plausible Analytics -->
+    <script defer data-domain="wedding.aazucena.com" src="https://stats.aazucena.com/js/script.file-downloads.hash.outbound-links.pageview-props.revenue.tagged-events.js"></script>
+    <script>window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }</script>
     <style define:vars={{ colorPrimary, colorSecondary }}>
       :root {
         --cp: var(--colorPrimary, #a8d4b8);
