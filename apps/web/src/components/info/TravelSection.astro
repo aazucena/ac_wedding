@@ -1,9 +1,13 @@
 ---
 // info/TravelSection.astro — travel & accommodation section
-import MarkdownContent from '~/components/MarkdownContent.astro';
-import type { Accomodations } from '../../lib/types';
+import MarkdownContent from "~/components/MarkdownContent.astro";
+import type { Accomodations } from "../../lib/types";
 
-interface DirectionItem { icon?: string; title?: string; description?: string }
+interface DirectionItem {
+  icon?: string;
+  title?: string;
+  description?: string;
+}
 interface Props {
   directions: DirectionItem[];
   accomodation?: Accomodations | null;
@@ -17,54 +21,83 @@ const { directions, accomodation } = Astro.props;
     <h2 class="section-title">Travel & Directions</h2>
   </div>
   <div class="travel-grid">
+    {
+      directions.map((d) => (
+        <div class="travel-card">
+          {d.icon && <span class="travel-icon">{d.icon}</span>}
+          {d.title && <h3 class="travel-title">{d.title}</h3>}
+          {d.description && (
+            <MarkdownContent class="travel-desc" content={d.description} />
+          )}
+        </div>
+      ))
+    }
 
-    {directions.map((d) => (
-      <div class="travel-card">
-        {d.icon && <span class="travel-icon">{d.icon}</span>}
-        {d.title && <h3 class="travel-title">{d.title}</h3>}
-        {d.description && <MarkdownContent class="travel-desc" content={d.description} />}
-      </div>
-    ))}
+    {
+      accomodation ? (
+        <div class="travel-card">
+          {accomodation.vendor?.maps_url && (
+            <a
+              href={accomodation.vendor.maps_url}
+              target="_blank"
+              rel="noopener"
+              class="travel-map-icon"
+              title="View on map"
+              aria-label="View on map"
+            >
+              📍
+            </a>
+          )}
+          <span class="travel-icon">🏨</span>
+          <h3 class="travel-title">{accomodation.vendor?.name ?? "Hotel"}</h3>
 
-    {accomodation ? (
-      <div class="travel-card">
-        {accomodation.vendor?.maps_url && (
-          <a href={accomodation.vendor.maps_url} target="_blank" rel="noopener" class="travel-map-icon" title="View on map" aria-label="View on map">📍</a>
-        )}
-        <span class="travel-icon">🏨</span>
-        <h3 class="travel-title">{accomodation.vendor?.name ?? 'Hotel'}</h3>
+          {(accomodation.vendor?.address_line1 ||
+            accomodation.vendor?.city) && (
+            <p class="travel-desc travel-address">
+              {[accomodation.vendor?.address_line1, accomodation.vendor?.city]
+                .filter(Boolean)
+                .join(", ")}
+            </p>
+          )}
 
-        {(accomodation.vendor?.address_line1 || accomodation.vendor?.city) && (
-          <p class="travel-desc travel-address">
-            {[accomodation.vendor?.address_line1, accomodation.vendor?.city].filter(Boolean).join(', ')}
+          {accomodation.price && (
+            <p class="travel-price">
+              ${accomodation.price}~ {accomodation.currency ?? "CAD"}{" "}
+              <span class="travel-price-unit">/ night</span>
+            </p>
+          )}
+
+          {accomodation.booking_url && (
+            <div class="travel-cta">
+              <a
+                href={accomodation.booking_url}
+                target="_blank"
+                rel="noopener"
+                class="travel-book"
+              >
+                Book room block →
+              </a>
+              {accomodation.booking_deadline && (
+                <p class="travel-deadline">
+                  Book by {accomodation.booking_deadline}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div class="travel-card">
+          <span class="travel-icon">🏨</span>
+          <h3 class="travel-title">Accommodation</h3>
+          <p class="travel-desc">
+            We recommend staying near downtown Lethbridge. A hotel room block is
+            being arranged — details and a booking link will be posted here once
+            confirmed.
           </p>
-        )}
-
-        {accomodation.price && (
-          <p class="travel-price">${accomodation.price}~ {accomodation.currency ?? 'CAD'} <span class="travel-price-unit">/ night</span></p>
-        )}
-
-        {accomodation.booking_url && (
-          <div class="travel-cta">
-            <a href={accomodation.booking_url} target="_blank" rel="noopener" class="travel-book">Book room block →</a>
-            {accomodation.booking_deadline && (
-              <p class="travel-deadline">Book by {accomodation.booking_deadline}</p>
-            )}
-          </div>
-        )}
-      </div>
-    ) : (
-      <div class="travel-card">
-        <span class="travel-icon">🏨</span>
-        <h3 class="travel-title">Accommodation</h3>
-        <p class="travel-desc">
-          We recommend staying near downtown Lethbridge. A hotel room block is being arranged —
-          details and a booking link will be posted here once confirmed.
-        </p>
-        <p class="travel-coming-soon">Room block details coming soon</p>
-      </div>
-    )}
-
+          <p class="travel-coming-soon">Room block details coming soon</p>
+        </div>
+      )
+    }
   </div>
 
   <div class="travel-events-cta">
@@ -73,109 +106,198 @@ const { directions, accomodation } = Astro.props;
 </section>
 
 <style>
-.travel-grid {
-  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;
-}
+  .travel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+  }
 
-.travel-card {
-  background: var(--ivory);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-  padding: 28px 28px;
-  position: relative; overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
+  .travel-card {
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    padding: 28px 28px;
+    position: relative;
+    overflow: hidden;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
 
-.travel-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
+  .travel-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
 
-.travel-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  .travel-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
 
-.travel-icon { font-size: 28px; display: block; margin-bottom: 10px; }
+  .travel-icon {
+    font-size: 28px;
+    display: block;
+    margin-bottom: 10px;
+  }
 
-.travel-title {
-  font-family: var(--fd); font-size: 22px;
-  font-weight: 400; font-style: italic; color: var(--dark); margin-bottom: 10px;
-}
+  .travel-title {
+    font-family: var(--fd);
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--dark);
+    margin-bottom: 10px;
+  }
 
-.travel-desc {
-  font-family: var(--fb); font-size: 14px; font-weight: 300;
-  color: var(--muted); line-height: 1.8;
-}
-.travel-desc strong { color: var(--dark); font-weight: 500; }
-.travel-link { color: var(--cs); text-underline-offset: 3px; }
+  .travel-desc {
+    font-family: var(--fb);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .travel-desc strong {
+    color: var(--dark);
+    font-weight: 500;
+  }
+  .travel-link {
+    color: var(--cs);
+    text-underline-offset: 3px;
+  }
 
-.travel-coming-soon {
-  display: inline-block; margin-top: 12px;
-  font-family: var(--fb); font-size: 10px; font-weight: 600;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
-  background: color-mix(in srgb, var(--warm) 80%, white);
-  border: 1px solid var(--border);
-  border-radius: 999px; padding: 4px 14px;
-}
+  .travel-coming-soon {
+    display: inline-block;
+    margin-top: 12px;
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: color-mix(in srgb, var(--warm) 80%, white);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 14px;
+  }
 
-.travel-price {
-  font-family: var(--fd); font-size: 20px;
-  font-weight: 400; font-style: italic; color: var(--dark);
-  margin: 4px 0;
-}
+  .travel-price {
+    font-family: var(--fd);
+    font-size: 20px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--dark);
+    margin: 4px 0;
+  }
 
-.travel-price-unit {
-  font-family: var(--fb); font-size: 12px;
-  font-weight: 300; font-style: normal; color: var(--muted);
-}
+  .travel-price-unit {
+    font-family: var(--fb);
+    font-size: 12px;
+    font-weight: 300;
+    font-style: normal;
+    color: var(--muted);
+  }
 
-.travel-book {
-  display: block; width: 100%; text-align: center;
-  font-family: var(--fb); font-size: 12px; font-weight: 500;
-  letter-spacing: 0.5px; color: white;
-  background: linear-gradient(135deg, var(--cp), var(--cs));
-  border-radius: 999px; padding: 9px 16px;
-  text-decoration: none; transition: opacity 0.2s;
-  box-sizing: border-box;
-}
-.travel-book:hover { opacity: 0.85; }
+  .travel-book {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-family: var(--fb);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: white;
+    background: linear-gradient(135deg, var(--cp), var(--cs));
+    border-radius: 999px;
+    padding: 9px 16px;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    box-sizing: border-box;
+  }
+  .travel-book:hover {
+    opacity: 0.85;
+  }
 
-.travel-cta {
-  margin-top: 14px;
-  display: flex; flex-direction: column; align-items: center;
-}
+  .travel-cta {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-.travel-deadline {
-  font-family: var(--fb); font-size: 11px; font-weight: 400;
-  color: var(--muted); font-style: italic; margin-top: 6px;
-}
+  .travel-deadline {
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 6px;
+  }
 
-.travel-address {
-  margin-bottom: 2px;
-}
+  .travel-address {
+    margin-bottom: 2px;
+  }
 
-.travel-map-icon {
-  position: absolute; top: 14px; right: 14px;
-  padding: 12px;
-  font-size: 16px; line-height: 1;
-  text-decoration: none; opacity: 0.5;
-  transition: opacity 0.2s, transform 0.2s;
-}
-.travel-map-icon:hover { opacity: 1; transform: scale(1.15); }
+  .travel-map-icon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    padding: 12px;
+    font-size: 16px;
+    line-height: 1;
+    text-decoration: none;
+    opacity: 0.5;
+    transition:
+      opacity 0.2s,
+      transform 0.2s;
+  }
+  .travel-map-icon:hover {
+    opacity: 1;
+    transform: scale(1.15);
+  }
 
-.travel-events-cta {
-  display: flex; justify-content: center; margin-top: 28px;
-}
-.travel-events-btn {
-  font-family: var(--fb); font-size: 10px; font-weight: 600;
-  letter-spacing: 3px; text-transform: uppercase; text-decoration: none;
-  background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%);
-  color: color-mix(in srgb, var(--cp) 80%, white);
-  border-radius: var(--radius-sm); padding: 14px 32px;
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.travel-events-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .travel-events-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+  }
+  .travel-events-btn {
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: linear-gradient(135deg, var(--dark) 0%, var(--dark2) 100%);
+    color: color-mix(in srgb, var(--cp) 80%, white);
+    border-radius: var(--radius-sm);
+    padding: 14px 32px;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+  .travel-events-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
 
-@media (max-width: 900px) { .travel-grid { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 768px) { .travel-grid { grid-template-columns: 1fr; } .travel-map-icon { opacity: 1; transform: scale(1.15); } }
+  @media (max-width: 900px) {
+    .travel-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 768px) {
+    .travel-grid {
+      grid-template-columns: 1fr;
+    }
+    .travel-map-icon {
+      opacity: 1;
+      transform: scale(1.15);
+    }
+  }
 </style>

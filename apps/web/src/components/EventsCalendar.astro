@@ -1,7 +1,7 @@
 ---
 // components/EventsCalendar.astro — schedule-x calendar view + skeleton
-  import '@schedule-x/theme-default/dist/index.css';
-import '../styles/events-calendar.css';
+import "@schedule-x/theme-default/dist/index.css";
+import "../styles/events-calendar.css";
 interface CalendarEvent {
   id: string;
   title: string;
@@ -20,10 +20,7 @@ const { events, weddingDate } = Astro.props;
 ---
 
 <div id="calendar" class="calendar-wrap">
-  <div
-    id="calendar-mount"
-    data-cal={JSON.stringify({ events, weddingDate })}
-  >
+  <div id="calendar-mount" data-cal={JSON.stringify({ events, weddingDate })}>
     {/* Skeleton — replaced by schedule-x on render */}
     <div class="cal-skeleton" aria-hidden="true">
       <div class="cal-sk-toolbar">
@@ -33,38 +30,44 @@ const { events, weddingDate } = Astro.props;
       </div>
       <div class="cal-sk-header">
         <div class="cal-sk-axis-spacer"></div>
-        {Array.from({ length: 7 }).map(() => (
-          <div class="cal-sk-day-head">
-            <div class="cal-sk-bar" style="width:18px; height:11px"></div>
-            <div class="cal-sk-circle"></div>
-          </div>
-        ))}
+        {
+          Array.from({ length: 7 }).map(() => (
+            <div class="cal-sk-day-head">
+              <div class="cal-sk-bar" style="width:18px; height:11px" />
+              <div class="cal-sk-circle" />
+            </div>
+          ))
+        }
       </div>
       <div class="cal-sk-body">
         <div class="cal-sk-time-col">
-          {Array.from({ length: 9 }).map(() => (
-            <div class="cal-sk-time-row">
-              <div class="cal-sk-bar" style="width:34px; height:10px"></div>
-            </div>
-          ))}
+          {
+            Array.from({ length: 9 }).map(() => (
+              <div class="cal-sk-time-row">
+                <div class="cal-sk-bar" style="width:34px; height:10px" />
+              </div>
+            ))
+          }
         </div>
         <div class="cal-sk-grid-cols">
-          {[1,3,0,2,0,1,1].map((count) => (
-            <div class="cal-sk-col">
-              {Array.from({ length: count }).map((_, i) => (
-                <div
-                  class="cal-sk-event"
-                  style={`top:${12 + i * 34}%; height:${14 + (i % 2) * 8}%`}
-                ></div>
-              ))}
-            </div>
-          ))}
+          {
+            [1, 3, 0, 2, 0, 1, 1].map((count) => (
+              <div class="cal-sk-col">
+                {Array.from({ length: count }).map((_, i) => (
+                  <div
+                    class="cal-sk-event"
+                    style={`top:${12 + i * 34}%; height:${14 + (i % 2) * 8}%`}
+                  />
+                ))}
+              </div>
+            ))
+          }
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<script>import '../scripts/events-calendar';</script>
-
-
+<script>
+  import "../scripts/events-calendar";
+</script>

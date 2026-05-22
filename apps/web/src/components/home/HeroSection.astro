@@ -1,12 +1,12 @@
 ---
 // home/HeroSection.astro — hero + countdown  (2.5D parallax + motion graphics)
-import Stacked       from '@assets/stacked.png';
-import { Image } from 'astro:assets';
-import CountdownBar  from './CountdownBar.astro';
-import { assetUrl, focalPoint } from '~/lib/utils/format';
-import type { Gallery, Vendors } from '~/lib/types';
-import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
-import '../../styles/hero-section.css';
+import Stacked from "@assets/stacked.png";
+import { Image } from "astro:assets";
+import CountdownBar from "./CountdownBar.astro";
+import { assetUrl, focalPoint } from "~/lib/utils/format";
+import type { Gallery, Vendors } from "~/lib/types";
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from "astro:env/client";
+import "../../styles/hero-section.css";
 
 interface Props {
   groomFull: string;
@@ -17,36 +17,68 @@ interface Props {
   heroPhotos?: Gallery[];
   photographer?: Vendors | string | null;
 }
-const { groomFull, brideFull, weddingDateLabel, weddingLocation, weddingDate, heroPhotos = [], photographer } = Astro.props;
+const {
+  groomFull,
+  brideFull,
+  weddingDateLabel,
+  weddingLocation,
+  weddingDate,
+  heroPhotos = [],
+  photographer,
+} = Astro.props;
 
-const credit = photographer && typeof photographer === 'object' ? photographer : null;
+const credit =
+  photographer && typeof photographer === "object" ? photographer : null;
 
 const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
-const slides = heroPhotos.filter(p => p.image?.id);
+const slides = heroPhotos.filter((p) => p.image?.id);
 for (let i = slides.length - 1; i > 0; i--) {
   const j = Math.floor(Math.random() * (i + 1));
-  const tmp = slides[i]!; slides[i] = slides[j]!; slides[j] = tmp;
+  const tmp = slides[i]!;
+  slides[i] = slides[j]!;
+  slides[j] = tmp;
 }
-
 ---
 
 <section class="hero" id="hero-parallax">
-
   <!-- ▸ Depth 0 — photo crossfade (moves most, opposite to cursor) -->
   <div class="hero-bg" id="hero-bg">
-    {slides.length > 0
-      ? slides.map((photo, i) => (
+    {
+      slides.length > 0 ? (
+        slides.map((photo, i) => (
           <img
             class="hero-slide"
-            src={i === 0 ? assetUrl(photo.image!, { width: 1920, height: 1080, quality: 80, fit: 'cover', format: 'auto' }) : undefined}
-            data-src={i > 0 ? assetUrl(photo.image!, { width: 1920, height: 1080, quality: 80, fit: 'cover', format: 'auto' }) : undefined}
+            src={
+              i === 0
+                ? assetUrl(photo.image!, {
+                    width: 1920,
+                    height: 1080,
+                    quality: 80,
+                    fit: "cover",
+                    format: "auto",
+                  })
+                : undefined
+            }
+            data-src={
+              i > 0
+                ? assetUrl(photo.image!, {
+                    width: 1920,
+                    height: 1080,
+                    quality: 80,
+                    fit: "cover",
+                    format: "auto",
+                  })
+                : undefined
+            }
             alt=""
-            loading={i === 0 ? 'eager' : undefined}
+            loading={i === 0 ? "eager" : undefined}
             style={`object-position: ${focalPoint(photo.image)}`}
             data-download-protected={String(!allowDownload)}
           />
         ))
-      : <div class="hero-bg-placeholder"></div>
+      ) : (
+        <div class="hero-bg-placeholder" />
+      )
     }
   </div>
 
@@ -54,34 +86,54 @@ for (let i = slides.length - 1; i > 0; i--) {
   <div class="hero-overlay"></div>
 
   <!-- ▸ Depth 2 — bokeh orbs (only shown for gradient placeholder, not over photos) -->
-  {slides.length === 0 && (
-    <div class="hero-orbs" id="hero-orbs" aria-hidden="true">
-      <span class="hero-orb hero-orb--1"></span>
-      <span class="hero-orb hero-orb--2"></span>
-      <span class="hero-orb hero-orb--3"></span>
-      <span class="hero-orb hero-orb--4"></span>
-      <span class="hero-orb hero-orb--5"></span>
-    </div>
-  )}
+  {
+    slides.length === 0 && (
+      <div class="hero-orbs" id="hero-orbs" aria-hidden="true">
+        <span class="hero-orb hero-orb--1" />
+        <span class="hero-orb hero-orb--2" />
+        <span class="hero-orb hero-orb--3" />
+        <span class="hero-orb hero-orb--4" />
+        <span class="hero-orb hero-orb--5" />
+      </div>
+    )
+  }
 
   <!-- ▸ Depth 3 — foreground content (floats toward viewer) -->
-  <div class:list={['hero-content', { 'hero-content--with-photos': slides.length > 0 }]} id="hero-content">
+  <div
+    class:list={[
+      "hero-content",
+      { "hero-content--with-photos": slides.length > 0 },
+    ]}
+    id="hero-content"
+  >
     <CountdownBar weddingDate={weddingDate} />
     <p class="hero-eyebrow">{weddingDateLabel} · {weddingLocation}</p>
     <p class="hero-sub">Nuptial Mass &amp; Reception</p>
     <div class="hero-emblem-wrap">
-      <Image src={Stacked} class:list={['hero-emblem', { 'hero-emblem--over-photo': slides.length > 0 }]} alt={`${groomFull} & ${brideFull}`} />
+      <Image
+        src={Stacked}
+        class:list={[
+          "hero-emblem",
+          { "hero-emblem--over-photo": slides.length > 0 },
+        ]}
+        alt={`${groomFull} & ${brideFull}`}
+      />
     </div>
   </div>
 
-  {slides.length > 0 && credit && (
-    <p class="hero-photo-credit" aria-label={`Photography by ${credit.name}`}>
-      {credit.website
-        ? <a href={credit.website} target="_blank" rel="noopener noreferrer">Photography by {credit.name}</a>
-        : <>Photography by {credit.name}</>
-      }
-    </p>
-  )}
+  {
+    slides.length > 0 && credit && (
+      <p class="hero-photo-credit" aria-label={`Photography by ${credit.name}`}>
+        {credit.website ? (
+          <a href={credit.website} target="_blank" rel="noopener noreferrer">
+            Photography by {credit.name}
+          </a>
+        ) : (
+          <>Photography by {credit.name}</>
+        )}
+      </p>
+    )
+  }
 
   <button
     class="hero-scroll-cue"
@@ -93,24 +145,54 @@ for (let i = slides.length - 1; i > 0; i--) {
     <span class="hero-scroll-arrow">↓</span>
   </button>
 
-  {slides.length > 0 && (
-    <button class="hero-focus-btn" id="hero-focus-btn" aria-label="Toggle focus mode" aria-pressed="false">
-      <!-- Eye open — shown when NOT in immersive mode -->
-      <svg class="hero-focus-icon hero-focus-icon--expand" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
-      </svg>
-      <!-- Eye off — shown when IN immersive mode -->
-      <svg class="hero-focus-icon hero-focus-icon--compress" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-        <line x1="1" y1="1" x2="23" y2="23"/>
-      </svg>
-      <span class="hero-focus-label hero-focus-label--on">Focus</span>
-      <span class="hero-focus-label hero-focus-label--off">Exit</span>
-    </button>
-  )}
+  {
+    slides.length > 0 && (
+      <button
+        class="hero-focus-btn"
+        id="hero-focus-btn"
+        aria-label="Toggle focus mode"
+        aria-pressed="false"
+      >
+        {/* Eye open — shown when NOT in immersive mode */}
+        <svg
+          class="hero-focus-icon hero-focus-icon--expand"
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+        {/* Eye off — shown when IN immersive mode */}
+        <svg
+          class="hero-focus-icon hero-focus-icon--compress"
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+          <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+          <line x1="1" y1="1" x2="23" y2="23" />
+        </svg>
+        <span class="hero-focus-label hero-focus-label--on">Focus</span>
+        <span class="hero-focus-label hero-focus-label--off">Exit</span>
+      </button>
+    )
+  }
 </section>
 
-
-<script>import '../../scripts/hero';</script>
+<script>
+  import "../../scripts/hero";
+</script>

@@ -1,23 +1,29 @@
 ---
 // ui/SectionHeader.astro — standard section heading with eyebrow + title + optional subtitle
-import Badge from './Badge.astro';
+import Badge from "./Badge.astro";
 interface Props {
   eyebrow: string;
   title: string;
   subtitle?: string;
-  badgeVariant?: 'primary' | 'secondary' | 'accent';
+  badgeVariant?: "primary" | "secondary" | "accent";
 }
-const { eyebrow, title, subtitle, badgeVariant = 'primary' } = Astro.props;
+const { eyebrow, title, subtitle, badgeVariant = "primary" } = Astro.props;
 ---
 
-<header class="text-center mb-13 opacity-0 animate-[fadeUp_0.8s_0.15s_ease_forwards]">
+<header
+  class="mb-13 animate-[fadeUp_0.8s_0.15s_ease_forwards] text-center opacity-0"
+>
   <Badge text={eyebrow} variant={badgeVariant} />
-  <h2 class="font-display text-4xl md:text-5xl font-light tracking-tight text-dark mb-4 leading-tight">
+  <h2
+    class="mb-4 font-display text-4xl font-light leading-tight tracking-tight text-dark md:text-5xl"
+  >
     {title}
   </h2>
-  {subtitle && (
-    <p class="font-body text-muted text-base font-light max-w-lg mx-auto leading-relaxed">
-      {subtitle}
-    </p>
-  )}
+  {
+    subtitle && (
+      <p class="mx-auto max-w-lg font-body text-base font-light leading-relaxed text-muted">
+        {subtitle}
+      </p>
+    )
+  }
 </header>

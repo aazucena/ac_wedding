@@ -3,15 +3,15 @@
 interface Props {
   groomName: string;
   brideName: string;
-  eyebrow?:  string;
-  date?:     string;
+  eyebrow?: string;
+  date?: string;
 }
 
 const {
   groomName,
   brideName,
-  eyebrow = 'You are invited to celebrate',
-  date    = 'Nuptial Mass & Reception',
+  eyebrow = "You are invited to celebrate",
+  date = "Nuptial Mass & Reception",
 } = Astro.props;
 ---
 

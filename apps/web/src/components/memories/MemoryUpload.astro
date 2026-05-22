@@ -2,15 +2,14 @@
 // components/memories/MemoryUpload.astro
 // "Share your photo" form — POSTs multipart to /api/photo/upload.
 // defaultToken pre-fills the token field when navigated from the RSVP link.
-import '../../styles/memory-upload.css';
+import "../../styles/memory-upload.css";
 interface Props {
   defaultToken?: string;
 }
-const { defaultToken = '' } = Astro.props;
+const { defaultToken = "" } = Astro.props;
 ---
 
 <section class="mu-section" id="mu-section">
-
   <!-- ── CTA banner (collapsed state) ─────────────────────── -->
   <div class="mu-cta" id="mu-cta">
     <div class="mu-cta-left">
@@ -27,14 +26,23 @@ const { defaultToken = '' } = Astro.props;
 
   <!-- ── Upload form (expanded state) ──────────────────────── -->
   <div class="mu-expand" id="mu-expand" hidden>
-
     <form class="mu-form" id="mu-form" novalidate>
-
       <!-- File drop zone -->
-      <div class="mu-drop" id="mu-drop" tabindex="0" role="button"
-           aria-label="Select a photo to upload">
-        <input class="mu-file-input" id="mu-file" type="file"
-               accept="image/*" tabindex="-1" aria-hidden="true" />
+      <div
+        class="mu-drop"
+        id="mu-drop"
+        tabindex="0"
+        role="button"
+        aria-label="Select a photo to upload"
+      >
+        <input
+          class="mu-file-input"
+          id="mu-file"
+          type="file"
+          accept="image/*"
+          tabindex="-1"
+          aria-hidden="true"
+        />
 
         <div class="mu-drop-ph" id="mu-drop-ph">
           <span class="mu-drop-icon" aria-hidden="true">📷</span>
@@ -43,8 +51,17 @@ const { defaultToken = '' } = Astro.props;
         </div>
 
         <div class="mu-drop-preview" id="mu-drop-preview" hidden>
-          <img class="mu-preview-img" id="mu-preview-img" alt="Selected photo preview" />
-          <button class="mu-remove" id="mu-remove" type="button" aria-label="Remove photo">
+          <img
+            class="mu-preview-img"
+            id="mu-preview-img"
+            alt="Selected photo preview"
+          />
+          <button
+            class="mu-remove"
+            id="mu-remove"
+            type="button"
+            aria-label="Remove photo"
+          >
             ✕
           </button>
         </div>
@@ -53,11 +70,18 @@ const { defaultToken = '' } = Astro.props;
       <!-- Invitation token -->
       <div class="mu-field">
         <label class="mu-label" for="mu-token">Invitation code</label>
-        <input class="mu-input" id="mu-token" type="text"
-               value={defaultToken}
-               placeholder="Paste the code from your RSVP link"
-               autocomplete="off" spellcheck={false} />
-        <p class="mu-hint">The unique code at the end of your invitation email link.</p>
+        <input
+          class="mu-input"
+          id="mu-token"
+          type="text"
+          value={defaultToken}
+          placeholder="Paste the code from your RSVP link"
+          autocomplete="off"
+          spellcheck={false}
+        />
+        <p class="mu-hint">
+          The unique code at the end of your invitation email link.
+        </p>
       </div>
 
       <!-- Caption (optional) -->
@@ -65,15 +89,28 @@ const { defaultToken = '' } = Astro.props;
         <label class="mu-label" for="mu-caption">
           Caption <span class="mu-optional">(optional)</span>
         </label>
-        <input class="mu-input" id="mu-caption" type="text"
-               placeholder="Describe this moment…"
-               maxlength="120" />
+        <input
+          class="mu-input"
+          id="mu-caption"
+          type="text"
+          placeholder="Describe this moment…"
+          maxlength="120"
+        />
       </div>
 
-      <div class="mu-error" id="mu-error" role="alert" aria-live="polite" hidden></div>
+      <div
+        class="mu-error"
+        id="mu-error"
+        role="alert"
+        aria-live="polite"
+        hidden
+      >
+      </div>
 
       <div class="mu-actions">
-        <button class="mu-cancel-btn" id="mu-cancel" type="button">Cancel</button>
+        <button class="mu-cancel-btn" id="mu-cancel" type="button"
+          >Cancel</button
+        >
         <button class="mu-submit-btn" id="mu-submit" type="submit">
           <span class="mu-submit-text">Upload photo</span>
           <span class="mu-submit-dots" aria-hidden="true">
@@ -83,7 +120,6 @@ const { defaultToken = '' } = Astro.props;
           </span>
         </button>
       </div>
-
     </form>
 
     <!-- ── Success state ──────────────────────────────────── -->
@@ -97,10 +133,9 @@ const { defaultToken = '' } = Astro.props;
         Upload another
       </button>
     </div>
-
   </div>
-
 </section>
 
-<script>import '../../scripts/memory-upload';</script>
-
+<script>
+  import "../../scripts/memory-upload";
+</script>

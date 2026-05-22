@@ -1,6 +1,9 @@
 ---
 // info/FaqList.astro — FAQ accordion section
-interface FaqItem { question?: string; answer?: string }
+interface FaqItem {
+  question?: string;
+  answer?: string;
+}
 interface Props {
   faqs: FaqItem[];
 }
@@ -13,48 +16,64 @@ const { faqs } = Astro.props;
     <h2 class="section-title">FAQs</h2>
   </div>
   <div class="faq-list">
-    {faqs.map((item) => (
-      <div class="faq-item">
-        <p class="faq-q">{item.question}</p>
-        <p class="faq-a">{item.answer}</p>
-      </div>
-    ))}
+    {
+      faqs.map((item) => (
+        <div class="faq-item">
+          <p class="faq-q">{item.question}</p>
+          <p class="faq-a">{item.answer}</p>
+        </div>
+      ))
+    }
   </div>
 </section>
 
 <style>
-.faq-list {
-  background: var(--ivory);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  position: relative;
-}
+  .faq-list {
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    position: relative;
+  }
 
-.faq-list::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
+  .faq-list::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
 
-.faq-item {
-  padding: 24px 36px;
-  border-bottom: 1px solid var(--border);
-}
-.faq-item:last-child { border-bottom: none; }
+  .faq-item {
+    padding: 24px 36px;
+    border-bottom: 1px solid var(--border);
+  }
+  .faq-item:last-child {
+    border-bottom: none;
+  }
 
-.faq-q {
-  font-family: var(--fd); font-size: 20px;
-  font-weight: 400; color: var(--dark); margin-bottom: 6px;
-}
+  .faq-q {
+    font-family: var(--fd);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--dark);
+    margin-bottom: 6px;
+  }
 
-.faq-a {
-  font-family: var(--fb); font-size: 14px; font-weight: 300;
-  color: var(--muted); line-height: 1.8;
-}
+  .faq-a {
+    font-family: var(--fb);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+  }
 
-@media (max-width: 520px) {
-  .faq-item { padding: 20px 22px; }
-}
+  @media (max-width: 520px) {
+    .faq-item {
+      padding: 20px 22px;
+    }
+  }
 </style>

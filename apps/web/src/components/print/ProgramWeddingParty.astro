@@ -1,6 +1,6 @@
 ---
 // ProgramWeddingParty.astro — Panel 3 (inside right, wedding party / entourage)
-import type { Clergies, Entourage, Readings, Sponsors } from '~/lib/types';
+import type { Clergies, Entourage, Readings, Sponsors } from "~/lib/types";
 
 interface Props {
   clergies: Clergies[];
@@ -11,193 +11,288 @@ interface Props {
 
 const { clergies, entourage, readings, sponsors } = Astro.props;
 
-function getFullName(p: { first_name?: string | null; last_name?: string | null } | null | undefined, fallback = 'TBD') {
+function getFullName(
+  p:
+    | { first_name?: string | null; last_name?: string | null }
+    | null
+    | undefined,
+  fallback = "TBD",
+) {
   if (!p) return fallback;
-  return [p.first_name, p.last_name].filter(Boolean).join(' ') || fallback;
+  return [p.first_name, p.last_name].filter(Boolean).join(" ") || fallback;
 }
 
-const clergyList = clergies.map(c => {
-  const full = getFullName(c.person, '');
+const clergyList = clergies.map((c) => {
+  const full = getFullName(c.person, "");
   return c.title ? `${c.title} ${full}` : full;
 });
 
 const parentsOfBride = entourage
-  .filter(e => e.person && (e.role?.name ?? '').endsWith('of the Bride'))
-  .map(e => getFullName(e.person));
+  .filter((e) => e.person && (e.role?.name ?? "").endsWith("of the Bride"))
+  .map((e) => getFullName(e.person));
 const parentsOfGroom = entourage
-  .filter(e => e.person && (e.role?.name ?? '').endsWith('of the Groom'))
-  .map(e => getFullName(e.person));
+  .filter((e) => e.person && (e.role?.name ?? "").endsWith("of the Groom"))
+  .map((e) => getFullName(e.person));
 
-const ROLE_ORDER = ['Best Man','Maid of Honour','Groomsman','Bridesmaid','Flower Girl','Ring Bearer','Bible Bearer','Coin Bearer'];
+const ROLE_ORDER = [
+  "Best Man",
+  "Maid of Honour",
+  "Groomsman",
+  "Bridesmaid",
+  "Flower Girl",
+  "Ring Bearer",
+  "Bible Bearer",
+  "Coin Bearer",
+];
 const roleMap = new Map<string, string[]>();
 for (const e of entourage) {
-  const role = e.role?.name ?? 'Other';
+  const role = e.role?.name ?? "Other";
   if (!roleMap.has(role)) roleMap.set(role, []);
   roleMap.get(role)!.push(getFullName(e.person));
 }
 const partyGroups = [
-  ...ROLE_ORDER.filter(r => roleMap.has(r)).map(r => ({ role: r, members: roleMap.get(r)! })),
-  ...[...roleMap.entries()].filter(([r]) => !ROLE_ORDER.includes(r)).map(([r, members]) => ({ role: r, members })),
+  ...ROLE_ORDER.filter((r) => roleMap.has(r)).map((r) => ({
+    role: r,
+    members: roleMap.get(r)!,
+  })),
+  ...[...roleMap.entries()]
+    .filter(([r]) => !ROLE_ORDER.includes(r))
+    .map(([r, members]) => ({ role: r, members })),
 ];
 
 const readersMap = new Map<string, string[]>();
 for (const r of readings) {
   if (!r.reader) continue;
   const name = getFullName(r.reader);
-  const label = r.label ?? r.type ?? 'Reading';
+  const label = r.label ?? r.type ?? "Reading";
   if (!readersMap.has(label)) readersMap.set(label, []);
   readersMap.get(label)!.push(name);
 }
-const readerEntries = [...readersMap.entries()].map(([label, names]) => ({ label, names }));
+const readerEntries = [...readersMap.entries()].map(([label, names]) => ({
+  label,
+  names,
+}));
 
 const paired: { him: string; her: string; himLastName: string }[] = [];
 const used = new Set<string>();
 for (const s of sponsors) {
   if (used.has(s.id)) continue;
-  const partnerObj = s.partner ? sponsors.find((x: any) => x.id === s.partner?.id) : null;
+  const partnerObj = s.partner
+    ? sponsors.find((x: any) => x.id === s.partner?.id)
+    : null;
   const sName = getFullName(s.person);
-  const pName = partnerObj ? getFullName(partnerObj.person) : '';
+  const pName = partnerObj ? getFullName(partnerObj.person) : "";
   if (partnerObj) {
-    const g = s.person?.gender?.toLowerCase() ?? '';
-    const maleObj = g === 'female' ? partnerObj : s;
+    const g = s.person?.gender?.toLowerCase() ?? "";
+    const maleObj = g === "female" ? partnerObj : s;
     paired.push({
-      him: g === 'female' ? pName : sName,
-      her: g === 'female' ? sName : pName,
-      himLastName: maleObj.person?.last_name ?? '',
+      him: g === "female" ? pName : sName,
+      her: g === "female" ? sName : pName,
+      himLastName: maleObj.person?.last_name ?? "",
     });
-    used.add(s.id); used.add(partnerObj.id);
+    used.add(s.id);
+    used.add(partnerObj.id);
   } else {
-    paired.push({ him: sName, her: '', himLastName: s.person?.last_name ?? '' });
+    paired.push({
+      him: sName,
+      her: "",
+      himLastName: s.person?.last_name ?? "",
+    });
     used.add(s.id);
   }
 }
-paired.sort((a, b) => a.himLastName.toLowerCase().localeCompare(b.himLastName.toLowerCase()));
+paired.sort((a, b) =>
+  a.himLastName.toLowerCase().localeCompare(b.himLastName.toLowerCase()),
+);
 ---
 
 <div class="panel p3">
   <div class="accent-bar"></div>
   <div class="panel-body party-body">
-
     <header class="panel-hd">
       <p class="eyebrow">Those Who Celebrate With Us</p>
       <h2 class="panel-title">Wedding Party</h2>
     </header>
 
-    <div class="hr"><span class="hr-line"></span><span class="hr-gem">◆</span><span class="hr-line"></span></div>
+    <div class="hr">
+      <span class="hr-line"></span><span class="hr-gem">◆</span><span
+        class="hr-line"></span>
+    </div>
 
     <!-- Officiant — full width -->
-    {clergyList.length > 0 && (
-      <div class="wp-group">
-        <p class="wp-role">Officiant &amp; Celebrant</p>
-        {clergyList.map((name) => <p class="wp-name">{name}</p>)}
-      </div>
-    )}
+    {
+      clergyList.length > 0 && (
+        <div class="wp-group">
+          <p class="wp-role">Officiant &amp; Celebrant</p>
+          {clergyList.map((name) => (
+            <p class="wp-name">{name}</p>
+          ))}
+        </div>
+      )
+    }
 
     <!-- Parents — two columns (groom's side | bride's side) -->
-    {(parentsOfBride.length > 0 || parentsOfGroom.length > 0) && (
-      <div class="wp-paired">
-        <div class="wp-col">
-          <p class="wp-role">Parents of the Groom</p>
-          {parentsOfGroom.map(n => <p class="wp-name">{n}</p>)}
-        </div>
-        <div class="wp-col">
-          <p class="wp-role">Parents of the Bride</p>
-          {parentsOfBride.map(n => <p class="wp-name">{n}</p>)}
-        </div>
-      </div>
-    )}
-
-    <!-- Best Man + Maid of Honour — two columns -->
-    {(partyGroups.find(g => g.role === 'Maid of Honour') || partyGroups.find(g => g.role === 'Best Man')) && (
-      <div class="wp-paired">
-        <div class="wp-col">
-          <p class="wp-role">Best Man</p>
-          {(partyGroups.find(g => g.role === 'Best Man')?.members ?? []).map(m => (
-            <p class="wp-name">{m}</p>
-          ))}
-        </div>
-        <div class="wp-col">
-          <p class="wp-role">Maid of Honour</p>
-          {(partyGroups.find(g => g.role === 'Maid of Honour')?.members ?? []).map(m => (
-            <p class="wp-name">{m}</p>
-          ))}
-        </div>
-      </div>
-    )}
-
-    <!-- Groomsmen + Bridesmaids — two columns -->
-    {(partyGroups.find(g => g.role === 'Bridesmaid') || partyGroups.find(g => g.role === 'Groomsman')) && (
-      <div class="wp-paired">
-        <div class="wp-col">
-          <p class="wp-role">Groomsmen</p>
-          {(partyGroups.find(g => g.role === 'Groomsman')?.members ?? []).map(m => (
-            <p class="wp-name">{m}</p>
-          ))}
-        </div>
-        <div class="wp-col">
-          <p class="wp-role">Bridesmaids</p>
-          {(partyGroups.find(g => g.role === 'Bridesmaid')?.members ?? []).map(m => (
-            <p class="wp-name">{m}</p>
-          ))}
-        </div>
-      </div>
-    )}
-
-    <!-- Other roles (Flower Girl, Ring Bearer, etc.) — pairs of two columns -->
-    {(() => {
-      const others = partyGroups.filter(g =>
-        !['Best Man','Maid of Honour','Groomsman','Bridesmaid'].includes(g.role) &&
-        !g.role.endsWith('of the Bride') &&
-        !g.role.endsWith('of the Groom'));
-      const rows: (typeof others)[] = [];
-      for (let i = 0; i < others.length; i += 2) rows.push(others.slice(i, i + 2));
-      return rows.map(row =>
-        row.length === 2 ? (
-          <div class="wp-paired">
-            {row.map(g => (
-              <div class="wp-col">
-                <p class="wp-role">{g.role}{g.members.length > 1 ? 's' : ''}</p>
-                {g.members.map(m => <p class="wp-name">{m}</p>)}
-              </div>
+    {
+      (parentsOfBride.length > 0 || parentsOfGroom.length > 0) && (
+        <div class="wp-paired">
+          <div class="wp-col">
+            <p class="wp-role">Parents of the Groom</p>
+            {parentsOfGroom.map((n) => (
+              <p class="wp-name">{n}</p>
             ))}
           </div>
-        ) : (
-          <div class="wp-group">
-            <p class="wp-role">{row[0]!.role}{row[0]!.members.length > 1 ? 's' : ''}</p>
-            {row[0]!.members.map(m => <p class="wp-name">{m}</p>)}
+          <div class="wp-col">
+            <p class="wp-role">Parents of the Bride</p>
+            {parentsOfBride.map((n) => (
+              <p class="wp-name">{n}</p>
+            ))}
           </div>
-        )
-      );
-    })()}
+        </div>
+      )
+    }
+
+    <!-- Best Man + Maid of Honour — two columns -->
+    {
+      (partyGroups.find((g) => g.role === "Maid of Honour") ||
+        partyGroups.find((g) => g.role === "Best Man")) && (
+        <div class="wp-paired">
+          <div class="wp-col">
+            <p class="wp-role">Best Man</p>
+            {(
+              partyGroups.find((g) => g.role === "Best Man")?.members ?? []
+            ).map((m) => (
+              <p class="wp-name">{m}</p>
+            ))}
+          </div>
+          <div class="wp-col">
+            <p class="wp-role">Maid of Honour</p>
+            {(
+              partyGroups.find((g) => g.role === "Maid of Honour")?.members ??
+              []
+            ).map((m) => (
+              <p class="wp-name">{m}</p>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <!-- Groomsmen + Bridesmaids — two columns -->
+    {
+      (partyGroups.find((g) => g.role === "Bridesmaid") ||
+        partyGroups.find((g) => g.role === "Groomsman")) && (
+        <div class="wp-paired">
+          <div class="wp-col">
+            <p class="wp-role">Groomsmen</p>
+            {(
+              partyGroups.find((g) => g.role === "Groomsman")?.members ?? []
+            ).map((m) => (
+              <p class="wp-name">{m}</p>
+            ))}
+          </div>
+          <div class="wp-col">
+            <p class="wp-role">Bridesmaids</p>
+            {(
+              partyGroups.find((g) => g.role === "Bridesmaid")?.members ?? []
+            ).map((m) => (
+              <p class="wp-name">{m}</p>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <!-- Other roles (Flower Girl, Ring Bearer, etc.) — pairs of two columns -->
+    {
+      (() => {
+        const others = partyGroups.filter(
+          (g) =>
+            !["Best Man", "Maid of Honour", "Groomsman", "Bridesmaid"].includes(
+              g.role,
+            ) &&
+            !g.role.endsWith("of the Bride") &&
+            !g.role.endsWith("of the Groom"),
+        );
+        const rows: (typeof others)[] = [];
+        for (let i = 0; i < others.length; i += 2)
+          rows.push(others.slice(i, i + 2));
+        return rows.map((row) =>
+          row.length === 2 ? (
+            <div class="wp-paired">
+              {row.map((g) => (
+                <div class="wp-col">
+                  <p class="wp-role">
+                    {g.role}
+                    {g.members.length > 1 ? "s" : ""}
+                  </p>
+                  {g.members.map((m) => (
+                    <p class="wp-name">{m}</p>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div class="wp-group">
+              <p class="wp-role">
+                {row[0]!.role}
+                {row[0]!.members.length > 1 ? "s" : ""}
+              </p>
+              {row[0]!.members.map((m) => (
+                <p class="wp-name">{m}</p>
+              ))}
+            </div>
+          ),
+        );
+      })()
+    }
 
     <!-- Readers -->
-    {readerEntries.length > 0 && (
-      <div class="wp-group">
-        <p class="wp-role">Readers</p>
-        {readerEntries.flatMap(({ label, names }) =>
-          names.map(n => (
-            <p class="wp-name"><span class="wp-sub">{label} — </span>{n}</p>
-          ))
-        )}
-      </div>
-    )}
+    {
+      readerEntries.length > 0 && (
+        <div class="wp-group">
+          <p class="wp-role">Readers</p>
+          {readerEntries.flatMap(({ label, names }) =>
+            names.map((n) => (
+              <p class="wp-name">
+                <span class="wp-sub">{label} — </span>
+                {n}
+              </p>
+            )),
+          )}
+        </div>
+      )
+    }
 
     <!-- Principal Sponsors -->
-    {paired.length > 0 && (
-      <div class="wp-group wp-sponsors">
-        <div class="hr"><span class="hr-line"></span><span class="hr-gem">◆</span><span class="hr-line"></span></div>
-        <p class="wp-role">Principal Sponsors</p>
-        <div class="sponsors-grid">
-          {paired.map(pair => (
-            <p class="wp-pair">
-              {pair.him && pair.her
-                ? <>{pair.him}<span class="wp-amp"> &amp; </span>{pair.her}</>
-                : pair.him || pair.her}
-            </p>
-          ))}
+    {
+      paired.length > 0 && (
+        <div class="wp-group wp-sponsors">
+          <div class="hr">
+            <>
+              <span class="hr-line" />
+              <span class="hr-gem">◆</span>
+              <span class="hr-line" />
+            </>
+          </div>
+          <p class="wp-role">Principal Sponsors</p>
+          <div class="sponsors-grid">
+            {paired.map((pair) => (
+              <p class="wp-pair">
+                {pair.him && pair.her ? (
+                  <>
+                    {pair.him}
+                    <span class="wp-amp"> &amp; </span>
+                    {pair.her}
+                  </>
+                ) : (
+                  pair.him || pair.her
+                )}
+              </p>
+            ))}
+          </div>
         </div>
-      </div>
-    )}
+      )
+    }
   </div>
   <div class="accent-bar"></div>
 </div>

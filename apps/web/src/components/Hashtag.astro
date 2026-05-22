@@ -9,11 +9,15 @@ export interface Props {
   class?: string;
 }
 
-const { as = 'span', tag, class: className, ...attributes } = Astro.props;
+const { as = "span", tag, class: className, ...attributes } = Astro.props;
 const Element = as;
-const normalized = tag
-  ? (tag.startsWith('#') ? tag : '#' + tag)
-  : null;
+const normalized = tag ? (tag.startsWith("#") ? tag : "#" + tag) : null;
 ---
 
-{normalized && <Element {...attributes} class:list={[className]}>{normalized}</Element>}
+{
+  normalized && (
+    <Element {...attributes} class:list={[className]}>
+      {normalized}
+    </Element>
+  )
+}

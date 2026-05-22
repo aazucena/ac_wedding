@@ -5,52 +5,64 @@
 // instances on the page in a single querySelectorAll pass.
 
 interface Props {
-  url:        string;
-  size?:      number;   // px — default 120
-  label?:     string;   // optional caption below
-  class?:     string;
-  logo?:      string;   // asset URL to overlay at centre
-  logoRatio?: number;   // logo size as fraction of QR width (default 0.45)
+  url: string;
+  size?: number; // px — default 120
+  label?: string; // optional caption below
+  class?: string;
+  logo?: string; // asset URL to overlay at centre
+  logoRatio?: number; // logo size as fraction of QR width (default 0.45)
 }
 
-const { url, size = 120, label, class: className, logo, logoRatio = 0.45 } = Astro.props;
+const {
+  url,
+  size = 120,
+  label,
+  class: className,
+  logo,
+  logoRatio = 0.45,
+} = Astro.props;
 ---
 
-<div class:list={['qr-wrap', className]}>
+<div class:list={["qr-wrap", className]}>
   <div
     class="qr-inner"
     data-url={url}
     data-size={String(size)}
-    data-logo={logo ?? ''}
+    data-logo={logo ?? ""}
     data-logo-ratio={String(logoRatio)}
     style={`width:${size}px;height:${size}px;`}
-  ></div>
+  >
+  </div>
   {label && <p class="qr-label">{label}</p>}
 </div>
 
 <script>
-  import QRCodeStyling from 'qr-code-styling';
+  import QRCodeStyling from "qr-code-styling";
 
   function initQR(el: Element) {
-    const url       = el.getAttribute('data-url') ?? '';
-    const size      = parseInt(el.getAttribute('data-size') ?? '120');
-    const logo      = el.getAttribute('data-logo') || undefined;
-    const logoRatio = parseFloat(el.getAttribute('data-logo-ratio') ?? '0.22');
+    const url = el.getAttribute("data-url") ?? "";
+    const size = parseInt(el.getAttribute("data-size") ?? "120");
+    const logo = el.getAttribute("data-logo") || undefined;
+    const logoRatio = parseFloat(el.getAttribute("data-logo-ratio") ?? "0.22");
 
     const qr = new QRCodeStyling({
-      type:   'svg',
-      width:  size,
+      type: "svg",
+      width: size,
       height: size,
-      data:   url,
+      data: url,
       margin: 0,
-      qrOptions:            { errorCorrectionLevel: 'H' },
-      dotsOptions:          { type: 'dots',          color: '#5a9e7a' },
-      cornersSquareOptions: { type: 'extra-rounded', color: '#5a9e7a' },
-      cornersDotOptions:    { type: 'dot',           color: '#5a9e7a' },
-      backgroundOptions:    { color: 'transparent' },
+      qrOptions: { errorCorrectionLevel: "H" },
+      dotsOptions: { type: "dots", color: "#5a9e7a" },
+      cornersSquareOptions: { type: "extra-rounded", color: "#5a9e7a" },
+      cornersDotOptions: { type: "dot", color: "#5a9e7a" },
+      backgroundOptions: { color: "transparent" },
       ...(logo && {
-        image:        logo,
-        imageOptions: { margin: 8, imageSize: logoRatio, crossOrigin: 'anonymous' },
+        image: logo,
+        imageOptions: {
+          margin: 8,
+          imageSize: logoRatio,
+          crossOrigin: "anonymous",
+        },
       }),
     });
 
@@ -58,11 +70,15 @@ const { url, size = 120, label, class: className, logo, logoRatio = 0.45 } = Ast
   }
 
   function init() {
-    document.querySelectorAll('.qr-inner[data-url]:not([data-qr-ready])')
-      .forEach(el => { el.setAttribute('data-qr-ready', '1'); initQR(el); });
+    document
+      .querySelectorAll(".qr-inner[data-url]:not([data-qr-ready])")
+      .forEach((el) => {
+        el.setAttribute("data-qr-ready", "1");
+        initQR(el);
+      });
   }
 
-  document.addEventListener('astro:page-load', init);
+  document.addEventListener("astro:page-load", init);
   init();
 </script>
 
@@ -78,7 +94,7 @@ const { url, size = 120, label, class: className, logo, logoRatio = 0.45 } = Ast
     display: inline-flex;
   }
   .qr-label {
-    font-family: 'Jost', Arial, sans-serif;
+    font-family: "Jost", Arial, sans-serif;
     font-size: 7px;
     font-weight: 600;
     letter-spacing: 2px;

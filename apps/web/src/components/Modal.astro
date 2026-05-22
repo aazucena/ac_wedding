@@ -11,25 +11,38 @@ const { id, title, class: className } = Astro.props;
 <dialog
   id={id}
   class:list={[
-    'fixed inset-0 z-50 w-full max-w-lg mx-auto my-auto rounded-card shadow-hover bg-ivory/95 backdrop-blur-md p-0 open:flex open:flex-col',
-    'backdrop:bg-dark/40 backdrop:backdrop-blur-sm',
+    "fixed inset-0 z-50 mx-auto my-auto w-full max-w-lg rounded-card bg-ivory/95 p-0 shadow-hover backdrop-blur-md open:flex open:flex-col",
+    "backdrop:bg-dark/40 backdrop:backdrop-blur-sm",
     className,
   ]}
 >
-  {title && (
-    <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-[color-mix(in_srgb,var(--cs)_20%,transparent)]">
-      <h2 class="font-display text-xl text-dark">{title}</h2>
-      <button
-        class="modal-close w-8 h-8 rounded-full hover:bg-dark/5 flex items-center justify-center text-muted hover:text-dark transition-colors"
-        aria-label="Close dialog"
-        type="button"
-      >
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-          <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-  )}
+  {
+    title && (
+      <div class="flex items-center justify-between border-b border-[color-mix(in_srgb,var(--cs)_20%,transparent)] px-6 pb-4 pt-6">
+        <h2 class="font-display text-xl text-dark">{title}</h2>
+        <button
+          class="modal-close flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-dark/5 hover:text-dark"
+          aria-label="Close dialog"
+          type="button"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 1l12 12M13 1L1 13"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+      </div>
+    )
+  }
   <div class="flex-1 overflow-y-auto">
     <slot />
   </div>
@@ -37,17 +50,17 @@ const { id, title, class: className } = Astro.props;
 
 <script>
   function initModals() {
-    document.querySelectorAll('.modal-close').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        (btn.closest('dialog') as HTMLDialogElement)?.close();
+    document.querySelectorAll(".modal-close").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        (btn.closest("dialog") as HTMLDialogElement)?.close();
       });
     });
-    document.querySelectorAll('dialog').forEach((dialog) => {
-      dialog.addEventListener('click', (e) => {
+    document.querySelectorAll("dialog").forEach((dialog) => {
+      dialog.addEventListener("click", (e) => {
         if (e.target === dialog) dialog.close();
       });
     });
   }
   initModals();
-  document.addEventListener('astro:page-load', initModals);
+  document.addEventListener("astro:page-load", initModals);
 </script>

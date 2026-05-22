@@ -9,46 +9,79 @@ interface Props {
 const { plusOnesAllowed } = Astro.props;
 ---
 
-{plusOnesAllowed > 0 && (
-  <div class="po-modal-backdrop" id="po-modal-backdrop" aria-hidden="true">
-    <div class="po-modal" id="po-modal" role="dialog" aria-modal="true" aria-labelledby="po-modal-title">
-
-      <div class="po-modal-header">
-        <p class="po-modal-title" id="po-modal-title">Add a Plus-One</p>
-        <button type="button" class="po-modal-close" id="po-cancel" aria-label="Close">×</button>
-      </div>
-
-      <div class="po-modal-body">
-        <div class="po-form-fields">
-          <div class="field">
-            <input type="text" id="po-first" placeholder="First name *" autocomplete="given-name" />
-          </div>
-          <div class="field">
-            <input type="text" id="po-last" placeholder="Last name *" autocomplete="family-name" />
-          </div>
-          <div class="field field-select-wrap">
-            <select id="po-gender">
-              <option value="" disabled selected>Gender *</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </div>
-          <div class="field field-select-wrap">
-            <select id="po-type">
-              <option value="adult">Adult</option>
-              <option value="teen">Teen (13–17)</option>
-              <option value="child">Child (3–12)</option>
-              <option value="infant">Infant (0–2)</option>
-            </select>
-          </div>
+{
+  plusOnesAllowed > 0 && (
+    <div class="po-modal-backdrop" id="po-modal-backdrop" aria-hidden="true">
+      <div
+        class="po-modal"
+        id="po-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="po-modal-title"
+      >
+        <div class="po-modal-header">
+          <p class="po-modal-title" id="po-modal-title">
+            Add a Plus-One
+          </p>
+          <button
+            type="button"
+            class="po-modal-close"
+            id="po-cancel"
+            aria-label="Close"
+          >
+            ×
+          </button>
         </div>
-        <div class="error-banner" id="po-error"></div>
-      </div>
 
-      <div class="po-modal-footer">
-        <button type="button" class="wizard-btn wizard-btn--next" id="po-confirm">Add Guest</button>
-      </div>
+        <div class="po-modal-body">
+          <div class="po-form-fields">
+            <div class="field">
+              <input
+                type="text"
+                id="po-first"
+                placeholder="First name *"
+                autocomplete="given-name"
+              />
+            </div>
+            <div class="field">
+              <input
+                type="text"
+                id="po-last"
+                placeholder="Last name *"
+                autocomplete="family-name"
+              />
+            </div>
+            <div class="field field-select-wrap">
+              <select id="po-gender">
+                <option value="" disabled selected>
+                  Gender *
+                </option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="field field-select-wrap">
+              <select id="po-type">
+                <option value="adult">Adult</option>
+                <option value="teen">Teen (13–17)</option>
+                <option value="child">Child (3–12)</option>
+                <option value="infant">Infant (0–2)</option>
+              </select>
+            </div>
+          </div>
+          <div class="error-banner" id="po-error" />
+        </div>
 
+        <div class="po-modal-footer">
+          <button
+            type="button"
+            class="wizard-btn wizard-btn--next"
+            id="po-confirm"
+          >
+            Add Guest
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
-)}
+  )
+}

@@ -12,9 +12,11 @@ const { accent = true, hoverable = false, class: className, id } = Astro.props;
 <div
   id={id}
   class:list={[
-    'relative bg-ivory/80 backdrop-blur-sm rounded-card shadow-card overflow-hidden',
-    accent && 'before:absolute before:inset-x-0 before:top-0 before:h-0.5 before:bg-gradient-to-r before:from-primary before:to-secondary',
-    hoverable && 'transition-all duration-300 hover:shadow-hover hover:-translate-y-0.5',
+    "relative overflow-hidden rounded-card bg-ivory/80 shadow-card backdrop-blur-sm",
+    accent &&
+      "before:absolute before:inset-x-0 before:top-0 before:h-0.5 before:bg-gradient-to-r before:from-primary before:to-secondary",
+    hoverable &&
+      "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-hover",
     className,
   ]}
 >

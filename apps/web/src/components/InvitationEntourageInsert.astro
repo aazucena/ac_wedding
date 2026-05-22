@@ -2,53 +2,62 @@
 // InvitationEntourageInsert.astro — 5×7 entourage insert card for sponsor invitations.
 // Rendered below the main flip-card; prints on its own page via page-break-before.
 
-import type { Clergies, Entourage, Sponsors } from '@lib/types';
-import HeroEmblem from '@assets/hero_emblem.png';
-import { Image } from 'astro:assets';
+import type { Clergies, Entourage, Sponsors } from "@lib/types";
+import HeroEmblem from "@assets/hero_emblem.png";
+import { Image } from "astro:assets";
 
 interface Props {
-  clergies:  Clergies[];
+  clergies: Clergies[];
   entourage: Entourage[];
-  sponsors:  Sponsors[];
+  sponsors: Sponsors[];
   sizeClass?: string;
 }
 
-const { clergies, entourage, sponsors, sizeClass = 'size-5x7' } = Astro.props;
+const { clergies, entourage, sponsors, sizeClass = "size-5x7" } = Astro.props;
 
-type Role = 'entourage' | 'sponsor' | 'clergy' | 'bearer' | 'flower';
+type Role = "entourage" | "sponsor" | "clergy" | "bearer" | "flower";
 
-function honorific(gender: string | undefined | null, isSponsor: boolean): string {
-  if (gender === 'male') return 'Mr.';
-  return isSponsor ? 'Mrs.' : 'Ms.';
+function honorific(
+  gender: string | undefined | null,
+  isSponsor: boolean,
+): string {
+  if (gender === "male") return "Mr.";
+  return isSponsor ? "Mrs." : "Ms.";
 }
 
-
 function displayName(
-  person: { first_name?: string; last_name?: string; gender?: string | null } | undefined | null,
-  role: Role = 'entourage',
+  person:
+    | { first_name?: string; last_name?: string; gender?: string | null }
+    | undefined
+    | null,
+  role: Role = "entourage",
 ): string {
   const isSponsor = role === "sponsor";
-  if (!person) return '';
-  if (role !== "entourage") return `${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
-  return `${honorific(person.gender, isSponsor)} ${person.first_name ?? ''} ${person.last_name ?? ''}`.trim();
+  if (!person) return "";
+  if (role !== "entourage")
+    return `${person.first_name ?? ""} ${person.last_name ?? ""}`.trim();
+  return `${honorific(person.gender, isSponsor)} ${person.first_name ?? ""} ${person.last_name ?? ""}`.trim();
 }
 
 function formatParentPair(members: Entourage[]): string {
-  const father = members.find(m => m.person?.gender === 'male');
-  const mother = members.find(m => m.person?.gender !== 'male');
+  const father = members.find((m) => m.person?.gender === "male");
+  const mother = members.find((m) => m.person?.gender !== "male");
   if (father && mother) {
-    const lastName = father.person?.last_name ?? mother.person?.last_name ?? '';
-    return `Mr. & Mrs. ${father.person?.first_name ?? ''} and ${mother.person?.first_name ?? ''} ${lastName}`.trim();
+    const lastName = father.person?.last_name ?? mother.person?.last_name ?? "";
+    return `Mr. & Mrs. ${father.person?.first_name ?? ""} and ${mother.person?.first_name ?? ""} ${lastName}`.trim();
   }
-  return members.map(m => displayName(m.person)).join(' & ');
+  return members.map((m) => displayName(m.person)).join(" & ");
 }
 
-function formatSponsorPair(left: Sponsors, right: Sponsors | undefined): string {
-  if (!right) return displayName(left.person, 'sponsor');
-  const male   = left.person?.gender === 'male' ? left : right;
-  const female = left.person?.gender === 'male' ? right : left;
-  const lastName = male.person?.last_name ?? female.person?.last_name ?? '';
-  return `Mr. & Mrs. ${male.person?.first_name ?? ''} and ${female.person?.first_name ?? ''} ${lastName}`.trim();
+function formatSponsorPair(
+  left: Sponsors,
+  right: Sponsors | undefined,
+): string {
+  if (!right) return displayName(left.person, "sponsor");
+  const male = left.person?.gender === "male" ? left : right;
+  const female = left.person?.gender === "male" ? right : left;
+  const lastName = male.person?.last_name ?? female.person?.last_name ?? "";
+  return `Mr. & Mrs. ${male.person?.first_name ?? ""} and ${female.person?.first_name ?? ""} ${lastName}`.trim();
 }
 
 function memberSort(a: Entourage, b: Entourage) {
@@ -60,26 +69,58 @@ function memberSort(a: Entourage, b: Entourage) {
 const priests = clergies;
 
 // Parents: real (formal) and proxy (physically attending)
-const parentsBrideReal  = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') && !m.proxy);
-const parentsBrideProxy = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') &&  m.proxy);
-const parentsGroomReal  = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') && !m.proxy);
-const parentsGroomProxy = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') &&  m.proxy);
+const parentsBrideReal = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Bride" ||
+      m.role?.name === "Mother of the Bride") &&
+    !m.proxy,
+);
+const parentsBrideProxy = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Bride" ||
+      m.role?.name === "Mother of the Bride") &&
+    m.proxy,
+);
+const parentsGroomReal = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Groom" ||
+      m.role?.name === "Mother of the Groom") &&
+    !m.proxy,
+);
+const parentsGroomProxy = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Groom" ||
+      m.role?.name === "Mother of the Groom") &&
+    m.proxy,
+);
 
-const parentsBride = parentsBrideReal.length ? parentsBrideReal : parentsBrideProxy;
-const parentsGroom = parentsGroomReal.length ? parentsGroomReal : parentsGroomProxy;
+const parentsBride = parentsBrideReal.length
+  ? parentsBrideReal
+  : parentsBrideProxy;
+const parentsGroom = parentsGroomReal.length
+  ? parentsGroomReal
+  : parentsGroomProxy;
 
 // Wedding party
-const moh         = entourage.filter(m => m.role?.name === 'Maid of Honour').sort(memberSort);
-const bm          = entourage.filter(m => m.role?.name === 'Best Man').sort(memberSort);
-const bridesmaids = entourage.filter(m => m.role?.name === 'Bridesmaid').sort(memberSort);
-const groomsmen   = entourage.filter(m => m.role?.name === 'Groomsman').sort(memberSort);
+const moh = entourage
+  .filter((m) => m.role?.name === "Maid of Honour")
+  .sort(memberSort);
+const bm = entourage
+  .filter((m) => m.role?.name === "Best Man")
+  .sort(memberSort);
+const bridesmaids = entourage
+  .filter((m) => m.role?.name === "Bridesmaid")
+  .sort(memberSort);
+const groomsmen = entourage
+  .filter((m) => m.role?.name === "Groomsman")
+  .sort(memberSort);
 
-const ninongs  = sponsors.filter(s => s.role === 'ninong');
-const ninangs  = sponsors.filter(s => s.role === 'ninang');
+const ninongs = sponsors.filter((s) => s.role === "ninong");
+const ninangs = sponsors.filter((s) => s.role === "ninang");
 
 function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
-  const sponsorMap = new Map(sponsors.map(s => [s.id, s]));
-  const shown      = new Set<string>();
+  const sponsorMap = new Map(sponsors.map((s) => [s.id, s]));
+  const shown = new Set<string>();
   const pairs: Array<[Sponsors, Sponsors | undefined]> = [];
   for (const s of list) {
     if (shown.has(s.id)) continue;
@@ -95,8 +136,8 @@ function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
   // Sort by the male sponsor's last name
   return pairs.sort((a, b) => {
     const maleLastName = ([left, right]: [Sponsors, Sponsors | undefined]) => {
-      const male = left.person?.gender === 'male' ? left : (right ?? left);
-      return (male.person?.last_name ?? '').toLowerCase();
+      const male = left.person?.gender === "male" ? left : (right ?? left);
+      return (male.person?.last_name ?? "").toLowerCase();
     };
     return maleLastName(a).localeCompare(maleLastName(b));
   });
@@ -104,23 +145,40 @@ function buildPairs(list: Sponsors[]): Array<[Sponsors, Sponsors | undefined]> {
 
 const principalPairs = buildPairs([...ninongs, ...ninangs]);
 const secondaryTypes = [
-  { label: 'Candle Sponsors', pairs: buildPairs(sponsors.filter(s => s.role === 'candle')) },
-  { label: 'Veil Sponsors',   pairs: buildPairs(sponsors.filter(s => s.role === 'veil'))   },
-  { label: 'Cord Sponsors',   pairs: buildPairs(sponsors.filter(s => s.role === 'cord'))   },
-].filter(t => t.pairs.length > 0);
+  {
+    label: "Candle Sponsors",
+    pairs: buildPairs(sponsors.filter((s) => s.role === "candle")),
+  },
+  {
+    label: "Veil Sponsors",
+    pairs: buildPairs(sponsors.filter((s) => s.role === "veil")),
+  },
+  {
+    label: "Cord Sponsors",
+    pairs: buildPairs(sponsors.filter((s) => s.role === "cord")),
+  },
+].filter((t) => t.pairs.length > 0);
 
 // Bearers & flower girls
-const ringBearers  = entourage.filter(m => m.role?.name === 'Ring Bearer').sort(memberSort);
-const coinBearers  = entourage.filter(m => m.role?.name === 'Coin Bearer').sort(memberSort);
-const bibleBearers = entourage.filter(m => m.role?.name === 'Bible Bearer').sort(memberSort);
-const flowerGirls  = entourage.filter(m => m.role?.name === 'Flower Girl').sort(memberSort);
+const ringBearers = entourage
+  .filter((m) => m.role?.name === "Ring Bearer")
+  .sort(memberSort);
+const coinBearers = entourage
+  .filter((m) => m.role?.name === "Coin Bearer")
+  .sort(memberSort);
+const bibleBearers = entourage
+  .filter((m) => m.role?.name === "Bible Bearer")
+  .sort(memberSort);
+const flowerGirls = entourage
+  .filter((m) => m.role?.name === "Flower Girl")
+  .sort(memberSort);
 
-const hasParents  = parentsBride.length > 0 || parentsGroom.length > 0;
+const hasParents = parentsBride.length > 0 || parentsGroom.length > 0;
 const bearerTypes = [
-  { label: 'Ring Bearer',  members: ringBearers  },
-  { label: 'Coin Bearer',  members: coinBearers  },
-  { label: 'Bible Bearer', members: bibleBearers },
-].filter(b => b.members.length > 0);
+  { label: "Ring Bearer", members: ringBearers },
+  { label: "Coin Bearer", members: coinBearers },
+  { label: "Bible Bearer", members: bibleBearers },
+].filter((b) => b.members.length > 0);
 ---
 
 <div class={`insert-container ${sizeClass}`} id="insert-container">
@@ -136,137 +194,200 @@ const bearerTypes = [
       </div>
 
       {/* ── Officiating Priest ──────────────────────────────── */}
-      {priests.length > 0 && (
-        <section class="ins-section">
-          <p class="ins-label">Officiating {priests.length === 1 ? 'Priest' : 'Priests'}</p>
-          {priests.map(c => (
-            <p class="ins-name">{c.title ? `${c.title} ` : ''}{displayName(c.person, 'clergy')}</p>
-          ))}
-        </section>
-      )}
+      {
+        priests.length > 0 && (
+          <section class="ins-section">
+            <p class="ins-label">
+              Officiating {priests.length === 1 ? "Priest" : "Priests"}
+            </p>
+            {priests.map((c) => (
+              <p class="ins-name">
+                {c.title ? `${c.title} ` : ""}
+                {displayName(c.person, "clergy")}
+              </p>
+            ))}
+          </section>
+        )
+      }
 
       {/* ── Parents ─────────────────────────────────────────── */}
-      {hasParents && (
-        <section class="ins-section ins-section--two-col">
-          {parentsGroom.length > 0 && (
-            <div class="ins-col">
-              <p class="ins-label">Parents of the Groom</p>
-              <p class="ins-name ins-name--nowrap">{formatParentPair(parentsGroom)}</p>
-              {parentsGroomReal.length > 0 && parentsGroomProxy.length > 0 && (
-                <p class="ins-name ins-name--nowrap ins-name--proxy">Represented by {formatParentPair(parentsGroomProxy)}</p>
-              )}
-            </div>
-          )}
-          {parentsBride.length > 0 && parentsGroom.length > 0 && (
-            <span class="ins-col-divider" aria-hidden="true">✦</span>
-          )}
-          {parentsBride.length > 0 && (
-            <div class="ins-col">
-              <p class="ins-label">Parents of the Bride</p>
-              <p class="ins-name ins-name--nowrap">{formatParentPair(parentsBride)}</p>
-              {parentsBrideReal.length > 0 && parentsBrideProxy.length > 0 && (
-                <p class="ins-name ins-name--nowrap ins-name--proxy">Represented by {formatParentPair(parentsBrideProxy)}</p>
-              )}
-            </div>
-          )}
-        </section>
-      )}
+      {
+        hasParents && (
+          <section class="ins-section ins-section--two-col">
+            {parentsGroom.length > 0 && (
+              <div class="ins-col">
+                <p class="ins-label">Parents of the Groom</p>
+                <p class="ins-name ins-name--nowrap">
+                  {formatParentPair(parentsGroom)}
+                </p>
+                {parentsGroomReal.length > 0 &&
+                  parentsGroomProxy.length > 0 && (
+                    <p class="ins-name ins-name--nowrap ins-name--proxy">
+                      Represented by {formatParentPair(parentsGroomProxy)}
+                    </p>
+                  )}
+              </div>
+            )}
+            {parentsBride.length > 0 && parentsGroom.length > 0 && (
+              <span class="ins-col-divider" aria-hidden="true">
+                ✦
+              </span>
+            )}
+            {parentsBride.length > 0 && (
+              <div class="ins-col">
+                <p class="ins-label">Parents of the Bride</p>
+                <p class="ins-name ins-name--nowrap">
+                  {formatParentPair(parentsBride)}
+                </p>
+                {parentsBrideReal.length > 0 &&
+                  parentsBrideProxy.length > 0 && (
+                    <p class="ins-name ins-name--nowrap ins-name--proxy">
+                      Represented by {formatParentPair(parentsBrideProxy)}
+                    </p>
+                  )}
+              </div>
+            )}
+          </section>
+        )
+      }
 
       {/* ── Principal Sponsors ──────────────────────────────── */}
-      {principalPairs.length > 0 && (
-        <section class="ins-section">
-          <p class="ins-label">Principal Sponsors</p>
-          <div class="ins-pair-grid">
-            {principalPairs.map(([left, right]) => (
-              <p class="ins-name">{formatSponsorPair(left, right)}</p>
-            ))}
-          </div>
-        </section>
-      )}
+      {
+        principalPairs.length > 0 && (
+          <section class="ins-section">
+            <p class="ins-label">Principal Sponsors</p>
+            <div class="ins-pair-grid">
+              {principalPairs.map(([left, right]) => (
+                <p class="ins-name">{formatSponsorPair(left, right)}</p>
+              ))}
+            </div>
+          </section>
+        )
+      }
 
       {/* ── MoH & Best Man ──────────────────────────────────── */}
-      {(moh.length > 0 || bm.length > 0) && (
-        <section class="ins-section ins-section--two-col">
-          {bm.length > 0 && (
-            <div class="ins-col">
-              <p class="ins-label">Best Man</p>
-              {bm.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
-            </div>
-          )}
-          {moh.length > 0 && bm.length > 0 && (
-            <span class="ins-col-divider" aria-hidden="true">✦</span>
-          )}
-          {moh.length > 0 && (
-            <div class="ins-col">
-              <p class="ins-label">Maid of Honour</p>
-              {moh.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ── Bridesmaids & Groomsmen ─────────────────────────── */}
-      {(bridesmaids.length > 0 || groomsmen.length > 0) && (
-        <section class="ins-section ins-section--two-col">
-          {groomsmen.length > 0 && (
-            <div class="ins-col">
-              <p class="ins-label">{groomsmen.length === 1 ? 'Groomsman' : 'Groomsmen'}</p>
-              {groomsmen.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
-            </div>
-          )}
-          {bridesmaids.length > 0 && groomsmen.length > 0 && (
-            <span class="ins-col-divider" aria-hidden="true">✦</span>
-          )}
-          {bridesmaids.length > 0 && (
-            <div class="ins-col">
-              <p class="ins-label">{bridesmaids.length === 1 ? 'Bridesmaid' : 'Bridesmaids'}</p>
-              {bridesmaids.map(m => <p class="ins-name">{displayName(m.person)}</p>)}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* ── Candle / Veil / Cord Sponsors ───────────────────── */}
-      {secondaryTypes.length > 0 && (
-        <section class="ins-section ins-section--two-col">
-          {secondaryTypes.map((st, i) => (
-            <>
-              {i > 0 && <span class="ins-col-divider" aria-hidden="true">✦</span>}
+      {
+        (moh.length > 0 || bm.length > 0) && (
+          <section class="ins-section ins-section--two-col">
+            {bm.length > 0 && (
               <div class="ins-col">
-                <p class="ins-label">{st.label}</p>
-                {st.pairs.map(([left, right]) => (
-                  <p class="ins-name">{formatSponsorPair(left, right)}</p>
+                <p class="ins-label">Best Man</p>
+                {bm.map((m) => (
+                  <p class="ins-name">{displayName(m.person)}</p>
                 ))}
               </div>
-            </>
-          ))}
-        </section>
-      )}
+            )}
+            {moh.length > 0 && bm.length > 0 && (
+              <span class="ins-col-divider" aria-hidden="true">
+                ✦
+              </span>
+            )}
+            {moh.length > 0 && (
+              <div class="ins-col">
+                <p class="ins-label">Maid of Honour</p>
+                {moh.map((m) => (
+                  <p class="ins-name">{displayName(m.person)}</p>
+                ))}
+              </div>
+            )}
+          </section>
+        )
+      }
+
+      {/* ── Bridesmaids & Groomsmen ─────────────────────────── */}
+      {
+        (bridesmaids.length > 0 || groomsmen.length > 0) && (
+          <section class="ins-section ins-section--two-col">
+            {groomsmen.length > 0 && (
+              <div class="ins-col">
+                <p class="ins-label">
+                  {groomsmen.length === 1 ? "Groomsman" : "Groomsmen"}
+                </p>
+                {groomsmen.map((m) => (
+                  <p class="ins-name">{displayName(m.person)}</p>
+                ))}
+              </div>
+            )}
+            {bridesmaids.length > 0 && groomsmen.length > 0 && (
+              <span class="ins-col-divider" aria-hidden="true">
+                ✦
+              </span>
+            )}
+            {bridesmaids.length > 0 && (
+              <div class="ins-col">
+                <p class="ins-label">
+                  {bridesmaids.length === 1 ? "Bridesmaid" : "Bridesmaids"}
+                </p>
+                {bridesmaids.map((m) => (
+                  <p class="ins-name">{displayName(m.person)}</p>
+                ))}
+              </div>
+            )}
+          </section>
+        )
+      }
+
+      {/* ── Candle / Veil / Cord Sponsors ───────────────────── */}
+      {
+        secondaryTypes.length > 0 && (
+          <section class="ins-section ins-section--two-col">
+            {secondaryTypes.map((st, i) => (
+              <>
+                {i > 0 && (
+                  <span class="ins-col-divider" aria-hidden="true">
+                    ✦
+                  </span>
+                )}
+                <div class="ins-col">
+                  <p class="ins-label">{st.label}</p>
+                  {st.pairs.map(([left, right]) => (
+                    <p class="ins-name">{formatSponsorPair(left, right)}</p>
+                  ))}
+                </div>
+              </>
+            ))}
+          </section>
+        )
+      }
 
       {/* ── Bearers & Flower Girls ──────────────────────────── */}
-      {bearerTypes.length > 0 && (
-        <section class="ins-section ins-section--two-col">
-          {bearerTypes.map((bt, i) => (
-            <>
-              {i > 0 && <span class="ins-col-divider" aria-hidden="true">✦</span>}
-              <div class="ins-col">
-                <p class="ins-label">{bt.label}</p>
-                {bt.members.map(m => <p class="ins-name">{displayName(m.person, 'bearer')}</p>)}
-              </div>
-            </>
-          ))}
-        </section>
-      )}
-      {flowerGirls.length > 0 && (
-        <section class="ins-section">
-          <p class="ins-label">{flowerGirls.length === 1 ? 'Flower Girl' : 'Flower Girls'}</p>
-          <div class="ins-pair-grid">
-            {flowerGirls.map(m => (
-              <p class="ins-name ins-name--nowrap">{displayName(m.person, 'flower')}</p>
+      {
+        bearerTypes.length > 0 && (
+          <section class="ins-section ins-section--two-col">
+            {bearerTypes.map((bt, i) => (
+              <>
+                {i > 0 && (
+                  <span class="ins-col-divider" aria-hidden="true">
+                    ✦
+                  </span>
+                )}
+                <div class="ins-col">
+                  <p class="ins-label">{bt.label}</p>
+                  {bt.members.map((m) => (
+                    <p class="ins-name">{displayName(m.person, "bearer")}</p>
+                  ))}
+                </div>
+              </>
             ))}
-          </div>
-        </section>
-      )}
+          </section>
+        )
+      }
+      {
+        flowerGirls.length > 0 && (
+          <section class="ins-section">
+            <p class="ins-label">
+              {flowerGirls.length === 1 ? "Flower Girl" : "Flower Girls"}
+            </p>
+            <div class="ins-pair-grid">
+              {flowerGirls.map((m) => (
+                <p class="ins-name ins-name--nowrap">
+                  {displayName(m.person, "flower")}
+                </p>
+              ))}
+            </div>
+          </section>
+        )
+      }
     </div>
 
     <div class="card-accent-bottom"></div>

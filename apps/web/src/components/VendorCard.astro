@@ -1,12 +1,12 @@
 ---
-import { Icon } from 'astro-icon/components';
-import { assetUrl, toTelHref } from '../lib/utils/format';
-import type { Vendors } from '../lib/types';
-import '../styles/vendor-card.css';
+import { Icon } from "astro-icon/components";
+import { assetUrl, toTelHref } from "../lib/utils/format";
+import type { Vendors } from "../lib/types";
+import "../styles/vendor-card.css";
 
 interface Props {
   vendor: Vendors;
-  index:  number;
+  index: number;
 }
 
 const { vendor: v, index: i } = Astro.props;
@@ -14,42 +14,46 @@ const { vendor: v, index: i } = Astro.props;
 function categoryLabel(cat: string): string {
   return cat
     .split(/[_\s]+/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
-    .join(' ');
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
 }
 
-function contactName(p: { first_name?: string; last_name?: string; preferred_name?: string | null }): string {
-  return `${p.preferred_name ?? p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
+function contactName(p: {
+  first_name?: string;
+  last_name?: string;
+  preferred_name?: string | null;
+}): string {
+  return `${p.preferred_name ?? p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
 }
 
 function imgUrl(id: string): string {
-  return assetUrl(id, { fit: 'cover', quality: 82 });
+  return assetUrl(id, { fit: "cover", quality: 82 });
 }
 
 function logoUrl(id: string): string {
-  return assetUrl(id, { format: 'webp', quality: 95 });
+  return assetUrl(id, { format: "webp", quality: 95 });
 }
 
 const SOCIAL_ICONS: Record<string, string> = {
-  instagram: 'simple-icons:instagram',
-  facebook:  'simple-icons:facebook',
-  tiktok:    'simple-icons:tiktok',
-  youtube:   'simple-icons:youtube',
-  x:         'simple-icons:x',
-  twitter:   'simple-icons:x',
-  pinterest: 'simple-icons:pinterest',
-  linkedin:  'simple-icons:linkedin',
-  threads:   'simple-icons:threads',
-  snapchat:  'simple-icons:snapchat',
+  instagram: "simple-icons:instagram",
+  facebook: "simple-icons:facebook",
+  tiktok: "simple-icons:tiktok",
+  youtube: "simple-icons:youtube",
+  x: "simple-icons:x",
+  twitter: "simple-icons:x",
+  pinterest: "simple-icons:pinterest",
+  linkedin: "simple-icons:linkedin",
+  threads: "simple-icons:threads",
+  snapchat: "simple-icons:snapchat",
 };
 
 function socialIcon(platform: string): string {
-  return SOCIAL_ICONS[platform.toLowerCase()] ?? 'simple-icons:link';
+  return SOCIAL_ICONS[platform.toLowerCase()] ?? "simple-icons:link";
 }
 
 function socialLabel(platform: string): string {
   const key = platform.toLowerCase();
-  if (key === 'x' || key === 'twitter') return 'X / Twitter';
+  if (key === "x" || key === "twitter") return "X / Twitter";
   return platform.charAt(0).toUpperCase() + platform.slice(1);
 }
 
@@ -65,18 +69,29 @@ function isIndividual(vendor: Vendors): boolean {
   onclick={`document.getElementById('vd-${v.id}').showModal()`}
   aria-haspopup="dialog"
 >
-  {v.image?.id ? (
-    <div class="vendor-photo">
-      <img src={imgUrl(v.image.id)} alt={v.name} loading="lazy" decoding="async" />
-    </div>
-  ) : (
-    <div class="vendor-photo vendor-photo--placeholder">
-      <span class="vendor-photo-initial">{v.name.split('')[0]}</span>
-    </div>
-  )}
+  {
+    v.image?.id ? (
+      <div class="vendor-photo">
+        <img
+          src={imgUrl(v.image.id)}
+          alt={v.name}
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    ) : (
+      <div class="vendor-photo vendor-photo--placeholder">
+        <span class="vendor-photo-initial">{v.name.split("")[0]}</span>
+      </div>
+    )
+  }
 
   <div class="vendor-body">
-    {v.category && <span class="vendor-category">{categoryLabel(v.category)}</span>}
+    {
+      v.category && (
+        <span class="vendor-category">{categoryLabel(v.category)}</span>
+      )
+    }
     <p class="vendor-name">{v.name}</p>
     {v.subtitle && <p class="vendor-subtitle">{v.subtitle}</p>}
     {v.city && <p class="vendor-location">{v.city}</p>}
@@ -86,122 +101,193 @@ function isIndividual(vendor: Vendors): boolean {
 
 {/* ── Modal ── */}
 <dialog id={`vd-${v.id}`} class="vendor-modal">
-  <button class="modal-close" aria-label="Close" onclick="this.closest('dialog').close()">
-    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-      <line x1="1" y1="1" x2="11" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="11" y1="1" x2="1" y2="11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <button
+    class="modal-close"
+    aria-label="Close"
+    onclick="this.closest('dialog').close()"
+  >
+    <svg
+      width="12"
+      height="12"
+      viewBox="0 0 12 12"
+      fill="none"
+      aria-hidden="true"
+    >
+      <line
+        x1="1"
+        y1="1"
+        x2="11"
+        y2="11"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"></line>
+      <line
+        x1="11"
+        y1="1"
+        x2="1"
+        y2="11"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"></line>
     </svg>
   </button>
 
-  {v.image?.id ? (
-    <div class="modal-photo">
-      <img
-        src={imgUrl(v.image.id)}
-        alt={v.name}
-        loading="lazy"
-        decoding="async"
-        class:list={[v.logo?.id && 'modal-photo-blurred']}
-      />
-      {v.logo?.id && (
-        <div class="modal-photo-logo-overlay">
-          <img src={logoUrl(v.logo.id)} alt={v.name} class="modal-photo-logo" />
-        </div>
-      )}
-    </div>
-  ) : (
-    <div class="modal-photo modal-photo--placeholder">
-      <span class="modal-photo-initial">{v.name.split('')[0]}</span>
-    </div>
-  )}
+  {
+    v.image?.id ? (
+      <div class="modal-photo">
+        <img
+          src={imgUrl(v.image.id)}
+          alt={v.name}
+          loading="lazy"
+          decoding="async"
+          class:list={[v.logo?.id && "modal-photo-blurred"]}
+        />
+        {v.logo?.id && (
+          <div class="modal-photo-logo-overlay">
+            <img
+              src={logoUrl(v.logo.id)}
+              alt={v.name}
+              class="modal-photo-logo"
+            />
+          </div>
+        )}
+      </div>
+    ) : (
+      <div class="modal-photo modal-photo--placeholder">
+        <span class="modal-photo-initial">{v.name.split("")[0]}</span>
+      </div>
+    )
+  }
 
   <div class="modal-body">
     <div class="modal-header">
-      {v.category && <span class="vendor-category">{categoryLabel(v.category)}</span>}
+      {
+        v.category && (
+          <span class="vendor-category">{categoryLabel(v.category)}</span>
+        )
+      }
       <h2 class="modal-name">{v.name}</h2>
       {v.subtitle && <p class="modal-subtitle">{v.subtitle}</p>}
       {v.city && <p class="modal-location">{v.city}</p>}
     </div>
 
-    {(() => {
-      const solo  = isIndividual(v);
-      const email = v.email ?? (solo ? v.contacts?.[0]?.email : undefined);
-      const phone = v.phone ?? (solo ? v.contacts?.[0]?.phone : undefined);
-      return (email || phone) ? (
-        <div class="modal-section">
-          <p class="modal-section-label">Contact</p>
-          {email && (
-            <a href={`mailto:${email}`} class="modal-contact-link">
-              <Icon name="simple-icons:minutemailer" size={13} class="modal-icon" />
-              {email}
-            </a>
-          )}
-          {phone && (
-            <a href={toTelHref(phone)} class="modal-contact-link">
-              <Icon name="simple-icons:whatsapp" size={13} class="modal-icon" />
-              {phone}
-            </a>
-          )}
-        </div>
-      ) : null;
-    })()}
-
-    {!isIndividual(v) && (v.contacts ?? []).length > 0 && (
-      <div class="modal-section">
-        <p class="modal-section-label">Team</p>
-        {(v.contacts ?? []).map(c => (
-          <div class="modal-person">
-            <p class="modal-person-name">{contactName(c)}</p>
-            {c.email && (
-              <a href={`mailto:${c.email}`} class="modal-contact-link">
-                <Icon name="simple-icons:minutemailer" size={13} class="modal-icon" />
-                {c.email}
+    {
+      (() => {
+        const solo = isIndividual(v);
+        const email = v.email ?? (solo ? v.contacts?.[0]?.email : undefined);
+        const phone = v.phone ?? (solo ? v.contacts?.[0]?.phone : undefined);
+        return email || phone ? (
+          <div class="modal-section">
+            <p class="modal-section-label">Contact</p>
+            {email && (
+              <a href={`mailto:${email}`} class="modal-contact-link">
+                <Icon
+                  name="simple-icons:minutemailer"
+                  size={13}
+                  class="modal-icon"
+                />
+                {email}
               </a>
             )}
-            {c.phone && (
-              <a href={toTelHref(c.phone)} class="modal-contact-link">
-                <Icon name="simple-icons:whatsapp" size={13} class="modal-icon" />
-                {c.phone}
+            {phone && (
+              <a href={toTelHref(phone)} class="modal-contact-link">
+                <Icon
+                  name="simple-icons:whatsapp"
+                  size={13}
+                  class="modal-icon"
+                />
+                {phone}
               </a>
             )}
           </div>
-        ))}
-      </div>
-    )}
+        ) : null;
+      })()
+    }
 
-    {(v.social_media ?? []).length > 0 && (
-      <div class="modal-section">
-        <p class="modal-section-label">Social Media</p>
-        <div class="modal-socials">
-          {(v.social_media ?? []).map(s => (
-            <a
-              href={s.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="modal-social-link"
-              aria-label={socialLabel(s.platform)}
-            >
-              <Icon name={socialIcon(s.platform)} size={16} class="social-icon" />
-              <span>{socialLabel(s.platform)}</span>
-            </a>
+    {
+      !isIndividual(v) && (v.contacts ?? []).length > 0 && (
+        <div class="modal-section">
+          <p class="modal-section-label">Team</p>
+          {(v.contacts ?? []).map((c) => (
+            <div class="modal-person">
+              <p class="modal-person-name">{contactName(c)}</p>
+              {c.email && (
+                <a href={`mailto:${c.email}`} class="modal-contact-link">
+                  <Icon
+                    name="simple-icons:minutemailer"
+                    size={13}
+                    class="modal-icon"
+                  />
+                  {c.email}
+                </a>
+              )}
+              {c.phone && (
+                <a href={toTelHref(c.phone)} class="modal-contact-link">
+                  <Icon
+                    name="simple-icons:whatsapp"
+                    size={13}
+                    class="modal-icon"
+                  />
+                  {c.phone}
+                </a>
+              )}
+            </div>
           ))}
         </div>
-      </div>
-    )}
+      )
+    }
 
-    {(v.website || v.maps_url) && (
-      <div class="modal-section modal-links">
-        {v.website && (
-          <a href={v.website} target="_blank" rel="noopener noreferrer" class="modal-link-btn modal-link-btn--primary">
-            Visit website ↗
-          </a>
-        )}
-        {v.maps_url && (
-          <a href={v.maps_url} target="_blank" rel="noopener noreferrer" class="modal-link-btn">
-            View on map →
-          </a>
-        )}
-      </div>
-    )}
+    {
+      (v.social_media ?? []).length > 0 && (
+        <div class="modal-section">
+          <p class="modal-section-label">Social Media</p>
+          <div class="modal-socials">
+            {(v.social_media ?? []).map((s) => (
+              <a
+                href={s.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="modal-social-link"
+                aria-label={socialLabel(s.platform)}
+              >
+                <Icon
+                  name={socialIcon(s.platform)}
+                  size={16}
+                  class="social-icon"
+                />
+                <span>{socialLabel(s.platform)}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      (v.website || v.maps_url) && (
+        <div class="modal-section modal-links">
+          {v.website && (
+            <a
+              href={v.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="modal-link-btn modal-link-btn--primary"
+            >
+              Visit website ↗
+            </a>
+          )}
+          {v.maps_url && (
+            <a
+              href={v.maps_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="modal-link-btn"
+            >
+              View on map →
+            </a>
+          )}
+        </div>
+      )
+    }
   </div>
 </dialog>
-

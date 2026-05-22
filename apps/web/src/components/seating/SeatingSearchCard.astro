@@ -8,7 +8,6 @@
     <p class="card-header-title">What's your name?</p>
   </div>
   <div class="card-body">
-
     <div class="error-banner" id="error-banner"></div>
 
     <div class="field">
@@ -33,132 +32,194 @@
       <p class="results-label" id="results-label"></p>
       <div class="table-cards" id="results-list"></div>
     </div>
-
   </div>
 </div>
 
-<script>import '../../scripts/seating-search';</script>
+<script>
+  import "../../scripts/seating-search";
+</script>
 
 <style>
-.seat-card {
-  background: var(--ivory);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-  width: 100%; overflow: hidden;
-  opacity: 0; animation: fadeUp 0.8s 0.35s ease forwards;
-}
+  .seat-card {
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    width: 100%;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.35s ease forwards;
+  }
 
-.results-label {
-  font-family: var(--fb); font-size: 11px; font-weight: 600;
-  letter-spacing: 2px; text-transform: uppercase;
-  color: var(--muted); margin: 0 0 12px;
-}
+  .results-label {
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 12px;
+  }
 </style>
 <style is:global>
-.table-cards {
-  display: flex; flex-direction: column; gap: 12px;
-}
+  .table-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 
-/* ── Table card ─────────────────────────────────────────── */
-.table-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
+  /* ── Table card ─────────────────────────────────────────── */
+  .table-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
 
-/* Header */
-.table-card-header {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px;
-  padding: 14px 20px;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp) 14%, var(--ivory)),
-    color-mix(in srgb, var(--cs) 10%, var(--ivory)));
-  border-bottom: 1px solid var(--border);
-  position: relative;
-}
-.table-card-header::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
+  /* Header */
+  .table-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp) 14%, var(--ivory)),
+      color-mix(in srgb, var(--cs) 10%, var(--ivory))
+    );
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .table-card-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
 
-/* Left block: eyebrow + number */
-.table-num-block {
-  display: flex; flex-direction: column; gap: 1px;
-}
-.table-eyebrow {
-  font-family: var(--fb); font-size: 9px; font-weight: 600;
-  letter-spacing: 3px; text-transform: uppercase; color: var(--muted);
-  line-height: 1;
-}
-.table-num {
-  /* Sans-serif bold for legibility — especially for roman numerals */
-  font-family: var(--fb); font-size: 32px; font-weight: 700;
-  color: var(--dark); line-height: 1; letter-spacing: -0.5px;
-}
+  /* Left block: eyebrow + number */
+  .table-num-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+  .table-eyebrow {
+    font-family: var(--fb);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1;
+  }
+  .table-num {
+    /* Sans-serif bold for legibility — especially for roman numerals */
+    font-family: var(--fb);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
 
-/* Right block: name + section pill */
-.table-info-block {
-  display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
-  text-align: right;
-}
-.table-name {
-  font-family: var(--fd); font-size: 18px; font-weight: 400; font-style: italic;
-  color: var(--dark); line-height: 1.2;
-}
-.table-section-pill {
-  font-family: var(--fb); font-size: 9px; font-weight: 600;
-  letter-spacing: 2px; text-transform: uppercase;
-  color: var(--dark);
-  background: color-mix(in srgb, var(--cs) 18%, white);
-  border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
-  border-radius: 999px; padding: 3px 10px;
-}
+  /* Right block: name + section pill */
+  .table-info-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    text-align: right;
+  }
+  .table-name {
+    font-family: var(--fd);
+    font-size: 18px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--dark);
+    line-height: 1.2;
+  }
+  .table-section-pill {
+    font-family: var(--fb);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: color-mix(in srgb, var(--cs) 18%, white);
+    border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
 
-/* Guest list */
-.table-guest-list {
-  list-style: none; margin: 0;
-  background: var(--ivory);
-}
+  /* Guest list */
+  .table-guest-list {
+    list-style: none;
+    margin: 0;
+    background: var(--ivory);
+  }
 
-.table-guest {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 20px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
-}
-.table-guest:first-child { padding-top: 15px; }
-.table-guest:last-child { border-bottom: none; padding-bottom: 15px; }
+  .table-guest {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 20px;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
+  }
+  .table-guest:first-child {
+    padding-top: 15px;
+  }
+  .table-guest:last-child {
+    border-bottom: none;
+    padding-bottom: 15px;
+  }
 
-.table-guest--match {
-  background: color-mix(in srgb, var(--cp) 10%, var(--ivory));
-}
+  .table-guest--match {
+    background: color-mix(in srgb, var(--cp) 10%, var(--ivory));
+  }
 
-.match-symbol {
-  font-family: var(--fd); font-size: 11px;
-  color: var(--cs); flex-shrink: 0;
-}
+  .match-symbol {
+    font-family: var(--fd);
+    font-size: 11px;
+    color: var(--cs);
+    flex-shrink: 0;
+  }
 
-.guest-name {
-  font-family: var(--fd); font-size: 19px; font-weight: 400;
-  color: var(--dark); flex: 1;
-}
-.table-guest--match .guest-name { font-weight: 500; }
+  .guest-name {
+    font-family: var(--fd);
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--dark);
+    flex: 1;
+  }
+  .table-guest--match .guest-name {
+    font-weight: 500;
+  }
 
-.you-badge {
-  font-family: var(--fb); font-size: 9px; font-weight: 600;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--dark);
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp) 30%, white),
-    color-mix(in srgb, var(--cs) 22%, white));
-  border: 1px solid color-mix(in srgb, var(--cs) 28%, transparent);
-  border-radius: 999px; padding: 3px 10px; flex-shrink: 0;
-}
+  .you-badge {
+    font-family: var(--fb);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp) 30%, white),
+      color-mix(in srgb, var(--cs) 22%, white)
+    );
+    border: 1px solid color-mix(in srgb, var(--cs) 28%, transparent);
+    border-radius: 999px;
+    padding: 3px 10px;
+    flex-shrink: 0;
+  }
 
-.table-guest-divider {
-  height: 1px; margin: 4px 20px;
-  background: color-mix(in srgb, var(--border) 80%, transparent);
-  list-style: none;
-}
+  .table-guest-divider {
+    height: 1px;
+    margin: 4px 20px;
+    background: color-mix(in srgb, var(--border) 80%, transparent);
+    list-style: none;
+  }
 </style>

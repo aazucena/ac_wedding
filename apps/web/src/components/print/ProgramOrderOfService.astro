@@ -10,47 +10,47 @@ const { ceremonyTime, venueName } = Astro.props;
 
 const orderOfService = [
   {
-    section: 'Introductory Rites',
+    section: "Introductory Rites",
     items: [
-      { title: 'Entrance Procession',        icon: '♫' },
-      { title: 'Opening Hymn',               icon: '♪' },
-      { title: 'Greeting & Penitential Act', icon: '✝' },
+      { title: "Entrance Procession", icon: "♫" },
+      { title: "Opening Hymn", icon: "♪" },
+      { title: "Greeting & Penitential Act", icon: "✝" },
     ],
   },
   {
-    section: 'Liturgy of the Word',
+    section: "Liturgy of the Word",
     items: [
-      { title: 'First Reading',          icon: '📖' },
-      { title: 'Responsorial Psalm',     icon: '♪' },
-      { title: 'Second Reading',         icon: '📖' },
-      { title: 'Gospel Acclamation',     icon: '♪' },
-      { title: 'Gospel & Homily',        icon: '✝' },
+      { title: "First Reading", icon: "📖" },
+      { title: "Responsorial Psalm", icon: "♪" },
+      { title: "Second Reading", icon: "📖" },
+      { title: "Gospel Acclamation", icon: "♪" },
+      { title: "Gospel & Homily", icon: "✝" },
     ],
   },
   {
-    section: 'Rite of Marriage',
+    section: "Rite of Marriage",
     items: [
-      { title: 'Exchange of Vows',       icon: '💍' },
-      { title: 'Exchange of Rings',      icon: '💍' },
-      { title: 'Veil & Cord Ceremony',   icon: '✝' },
-      { title: 'Unity Candle',           icon: '🕯' },
-      { title: 'Prayer of the Faithful', icon: '✝' },
+      { title: "Exchange of Vows", icon: "💍" },
+      { title: "Exchange of Rings", icon: "💍" },
+      { title: "Veil & Cord Ceremony", icon: "✝" },
+      { title: "Unity Candle", icon: "🕯" },
+      { title: "Prayer of the Faithful", icon: "✝" },
     ],
   },
   {
-    section: 'Liturgy of the Eucharist',
+    section: "Liturgy of the Eucharist",
     items: [
-      { title: 'Offertory',              icon: '✝' },
-      { title: 'Eucharistic Prayer',     icon: '✝' },
-      { title: 'Communion',              icon: '✝' },
-      { title: 'Thanksgiving Prayer',    icon: '✝' },
+      { title: "Offertory", icon: "✝" },
+      { title: "Eucharistic Prayer", icon: "✝" },
+      { title: "Communion", icon: "✝" },
+      { title: "Thanksgiving Prayer", icon: "✝" },
     ],
   },
   {
-    section: 'Concluding Rites',
+    section: "Concluding Rites",
     items: [
-      { title: 'Solemn Blessing', icon: '✝' },
-      { title: 'Recessional',     icon: '♫' },
+      { title: "Solemn Blessing", icon: "✝" },
+      { title: "Recessional", icon: "♫" },
     ],
   },
 ];
@@ -59,7 +59,6 @@ const orderOfService = [
 <div class="panel p2">
   <div class="accent-bar"></div>
   <div class="panel-body ceremony-body">
-
     <header class="panel-hd">
       <p class="eyebrow">The Nuptial Mass</p>
       <h2 class="panel-title">Wedding Ceremony</h2>
@@ -68,25 +67,29 @@ const orderOfService = [
       </p>
     </header>
 
-    <div class="hr"><span class="hr-line"></span><span class="hr-gem">◆</span><span class="hr-line"></span></div>
+    <div class="hr">
+      <span class="hr-line"></span><span class="hr-gem">◆</span><span
+        class="hr-line"></span>
+    </div>
 
     <p class="sub-label">Order of Service</p>
     <div class="oos-sections">
-      {orderOfService.map((section) => (
-        <div class="oos-section">
-          <p class="oos-section-label">{section.section}</p>
-          <ol class="oos-list">
-            {section.items.map((item) => (
-              <li class="oos-item">
-                <span class="oos-icon">{item.icon}</span>
-                <span class="oos-title">{item.title}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      ))}
+      {
+        orderOfService.map((section) => (
+          <div class="oos-section">
+            <p class="oos-section-label">{section.section}</p>
+            <ol class="oos-list">
+              {section.items.map((item) => (
+                <li class="oos-item">
+                  <span class="oos-icon">{item.icon}</span>
+                  <span class="oos-title">{item.title}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        ))
+      }
     </div>
-
   </div>
   <div class="accent-bar"></div>
 </div>

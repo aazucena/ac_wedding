@@ -1,18 +1,18 @@
 ---
-import { Image } from 'astro:assets';
-import NavLogo from '~/assets/navbar.png';
+import { Image } from "astro:assets";
+import NavLogo from "~/assets/navbar.png";
 
 export interface NavLink {
-  type: 'link';
+  type: "link";
   id: string;
   text: string;
   url: string;
 }
 
 export interface NavGroup {
-  type: 'group';
+  type: "group";
   text: string;
-  links: Omit<NavLink, 'type'>[];
+  links: Omit<NavLink, "type">[];
 }
 
 export type NavItem = NavLink | NavGroup;
@@ -32,128 +32,167 @@ interface Props {
   previewSuffix?: string;
 }
 
-const { items, activeNav, scrollSpy = false, previewSuffix = '' } = Astro.props;
+const { items, activeNav, scrollSpy = false, previewSuffix = "" } = Astro.props;
 
 // A group is "active" if any of its child links matches activeNav
 function groupIsActive(group: NavGroup): boolean {
-  return group.links.some(l => l.id === activeNav);
+  return group.links.some((l) => l.id === activeNav);
 }
 ---
 
-{activeNav && (
-  <>
-    <nav class="nav" id="site-nav" data-scroll-spy={scrollSpy}>
-      <div class="navbar">
-        <a href={"/" + previewSuffix} class="nav-logo-link" aria-label="Home">
-          <Image src={NavLogo} class="nav-logo" alt="Aldrin & Christine" />
-        </a>
+{
+  activeNav && (
+    <>
+      <nav class="nav" id="site-nav" data-scroll-spy={scrollSpy}>
+        <div class="navbar">
+          <a href={"/" + previewSuffix} class="nav-logo-link" aria-label="Home">
+            <Image src={NavLogo} class="nav-logo" alt="Aldrin & Christine" />
+          </a>
 
-        {/* Desktop links */}
-        <div class="nav-desktop-links">
-          {items.map(item =>
-            item.type === 'link' ? (
+          {/* Desktop links */}
+          <div class="nav-desktop-links">
+            {items.map((item) =>
+              item.type === "link" ? (
+                <a
+                  href={item.url + previewSuffix}
+                  class:list={["nav-link", { active: activeNav === item.id }]}
+                >
+                  {item.text}
+                </a>
+              ) : (
+                <div
+                  class:list={["nav-group", { active: groupIsActive(item) }]}
+                >
+                  <button
+                    class:list={[
+                      "nav-link",
+                      "nav-group-btn",
+                      { active: groupIsActive(item) },
+                    ]}
+                    aria-haspopup="true"
+                    aria-expanded="false"
+                    type="button"
+                  >
+                    {item.text}
+                    <span class="nav-chevron" aria-hidden="true" />
+                  </button>
+                  <div class="nav-dropdown" role="menu">
+                    {item.links.map((link) => (
+                      <a
+                        href={link.url + previewSuffix}
+                        class:list={[
+                          "nav-dropdown-link",
+                          { active: activeNav === link.id },
+                        ]}
+                        role="menuitem"
+                      >
+                        {link.text}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+
+          {/* Hamburger */}
+          <button
+            id="nav-burger"
+            class="nav-burger"
+            aria-label="Toggle menu"
+            aria-expanded="false"
+            aria-controls="nav-offcanvas"
+            type="button"
+          >
+            <span class="burger-bar" />
+            <span class="burger-bar" />
+            <span class="burger-bar" />
+          </button>
+        </div>
+      </nav>
+
+      {/* Offcanvas backdrop */}
+      <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true" />
+
+      {/* Offcanvas panel */}
+      <div
+        id="nav-offcanvas"
+        class="nav-offcanvas"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+      >
+        <div class="nav-offcanvas-header">
+          <a
+            href={"/" + previewSuffix}
+            class="nav-offcanvas-logo-link"
+            aria-label="Home"
+          >
+            <Image
+              src={NavLogo}
+              class="nav-offcanvas-logo"
+              alt="Aldrin & Christine"
+            />
+          </a>
+          <button
+            id="nav-close"
+            class="nav-close"
+            type="button"
+            aria-label="Close menu"
+          >
+            <span class="close-bar" />
+            <span class="close-bar" />
+          </button>
+        </div>
+
+        <nav class="nav-offcanvas-links">
+          {items.map((item) =>
+            item.type === "link" ? (
               <a
                 href={item.url + previewSuffix}
-                class:list={['nav-link', { active: activeNav === item.id }]}
+                class:list={[
+                  "nav-offcanvas-link",
+                  { active: activeNav === item.id },
+                ]}
               >
                 {item.text}
               </a>
             ) : (
-              <div class:list={['nav-group', { active: groupIsActive(item) }]}>
+              <div
+                class:list={["offcanvas-group", { open: groupIsActive(item) }]}
+              >
                 <button
-                  class:list={['nav-link', 'nav-group-btn', { active: groupIsActive(item) }]}
-                  aria-haspopup="true"
-                  aria-expanded="false"
+                  class:list={[
+                    "offcanvas-group-btn",
+                    { active: groupIsActive(item) },
+                  ]}
                   type="button"
                 >
                   {item.text}
-                  <span class="nav-chevron" aria-hidden="true"></span>
+                  <span class="offcanvas-chevron" aria-hidden="true" />
                 </button>
-                <div class="nav-dropdown" role="menu">
-                  {item.links.map(link => (
+                <div class="offcanvas-group-links">
+                  {item.links.map((link) => (
                     <a
                       href={link.url + previewSuffix}
-                      class:list={['nav-dropdown-link', { active: activeNav === link.id }]}
-                      role="menuitem"
+                      class:list={[
+                        "nav-offcanvas-link",
+                        "nav-offcanvas-link--child",
+                        { active: activeNav === link.id },
+                      ]}
                     >
                       {link.text}
                     </a>
                   ))}
                 </div>
               </div>
-            )
+            ),
           )}
-        </div>
-
-        {/* Hamburger */}
-        <button
-          id="nav-burger"
-          class="nav-burger"
-          aria-label="Toggle menu"
-          aria-expanded="false"
-          aria-controls="nav-offcanvas"
-          type="button"
-        >
-          <span class="burger-bar"></span>
-          <span class="burger-bar"></span>
-          <span class="burger-bar"></span>
-        </button>
+        </nav>
       </div>
-    </nav>
-
-    {/* Offcanvas backdrop */}
-    <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true" />
-
-    {/* Offcanvas panel */}
-    <div
-      id="nav-offcanvas"
-      class="nav-offcanvas"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Navigation menu"
-    >
-      <div class="nav-offcanvas-header">
-        <a href={"/" + previewSuffix} class="nav-offcanvas-logo-link" aria-label="Home">
-          <Image src={NavLogo} class="nav-offcanvas-logo" alt="Aldrin & Christine" />
-        </a>
-        <button id="nav-close" class="nav-close" type="button" aria-label="Close menu">
-          <span class="close-bar"></span>
-          <span class="close-bar"></span>
-        </button>
-      </div>
-
-      <nav class="nav-offcanvas-links">
-        {items.map(item =>
-          item.type === 'link' ? (
-            <a
-              href={item.url + previewSuffix}
-              class:list={['nav-offcanvas-link', { active: activeNav === item.id }]}
-            >
-              {item.text}
-            </a>
-          ) : (
-            <div class:list={['offcanvas-group', { open: groupIsActive(item) }]}>
-              <button class:list={['offcanvas-group-btn', { active: groupIsActive(item) }]} type="button">
-                {item.text}
-                <span class="offcanvas-chevron" aria-hidden="true"></span>
-              </button>
-              <div class="offcanvas-group-links">
-                {item.links.map(link => (
-                  <a
-                    href={link.url + previewSuffix}
-                    class:list={['nav-offcanvas-link', 'nav-offcanvas-link--child', { active: activeNav === link.id }]}
-                  >
-                    {link.text}
-                  </a>
-                ))}
-              </div>
-            </div>
-          )
-        )}
-      </nav>
-    </div>
-  </>
-)}
+    </>
+  )
+}
 
 <script is:inline define:vars={{ scrollSpy }}>
   let _navAbort = null;
@@ -163,205 +202,283 @@ function groupIsActive(group: NavGroup): boolean {
     _navAbort = new AbortController();
     const sig = { signal: _navAbort.signal };
 
-    const nav = document.getElementById('site-nav');
+    const nav = document.getElementById("site-nav");
     if (!nav) return;
-    nav.classList.add('visible');
+    nav.classList.add("visible");
 
     // ── Scroll hide/show ───────────────────────────────────
     let prevScrollPos = window.scrollY;
     if (scrollSpy) {
       const spyOnScroll = () => {
-        nav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.75);
+        nav.classList.toggle(
+          "scrolled",
+          window.scrollY > window.innerHeight * 0.75,
+        );
       };
-      window.addEventListener('scroll', spyOnScroll, { passive: true, ...sig });
+      window.addEventListener("scroll", spyOnScroll, { passive: true, ...sig });
       spyOnScroll();
     }
-    window.addEventListener('scroll', () => {
-      const cur = window.scrollY;
-      if (prevScrollPos > cur) nav.classList.replace('hidden', 'visible');
-      else if (cur > 60) nav.classList.replace('visible', 'hidden');
-      prevScrollPos = cur;
-    }, { passive: true, ...sig });
+    window.addEventListener(
+      "scroll",
+      () => {
+        const cur = window.scrollY;
+        if (prevScrollPos > cur) nav.classList.replace("hidden", "visible");
+        else if (cur > 60) nav.classList.replace("visible", "hidden");
+        prevScrollPos = cur;
+      },
+      { passive: true, ...sig },
+    );
 
     // ── Desktop dropdowns ──────────────────────────────────
-    const groups = nav.querySelectorAll('.nav-group');
+    const groups = nav.querySelectorAll(".nav-group");
     function openGroup(group) {
-      groups.forEach(g => {
+      groups.forEach((g) => {
         const isTarget = g === group;
-        g.classList.toggle('open', isTarget);
-        g.querySelector('.nav-group-btn')?.setAttribute('aria-expanded', isTarget ? 'true' : 'false');
+        g.classList.toggle("open", isTarget);
+        g.querySelector(".nav-group-btn")?.setAttribute(
+          "aria-expanded",
+          isTarget ? "true" : "false",
+        );
       });
     }
     function closeAllDropdowns() {
-      groups.forEach(g => {
-        g.classList.remove('open');
-        g.querySelector('.nav-group-btn')?.setAttribute('aria-expanded', 'false');
+      groups.forEach((g) => {
+        g.classList.remove("open");
+        g.querySelector(".nav-group-btn")?.setAttribute(
+          "aria-expanded",
+          "false",
+        );
       });
     }
 
-    groups.forEach(group => {
-      const btn = group.querySelector('.nav-group-btn');
+    groups.forEach((group) => {
+      const btn = group.querySelector(".nav-group-btn");
 
       // Hover: open this one (closes others via openGroup), leave closes it
       // group.addEventListener('mouseenter', () => openGroup(group), sig);
-      group.addEventListener('mouseleave', () => closeAllDropdowns(), sig);
+      group.addEventListener("mouseleave", () => closeAllDropdowns(), sig);
 
       // Click: toggle (for touch devices where hover doesn't fire)
-      btn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        group.classList.contains('open') ? closeAllDropdowns() : openGroup(group);
-      }, sig);
+      btn?.addEventListener(
+        "click",
+        (e) => {
+          e.stopPropagation();
+          group.classList.contains("open")
+            ? closeAllDropdowns()
+            : openGroup(group);
+        },
+        sig,
+      );
     });
 
-    document.addEventListener('click', closeAllDropdowns, sig);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeAllDropdowns();
-    }, sig);
+    document.addEventListener("click", closeAllDropdowns, sig);
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key === "Escape") closeAllDropdowns();
+      },
+      sig,
+    );
 
     // ── Offcanvas ──────────────────────────────────────────
-    const burger    = document.getElementById('nav-burger');
-    const offcanvas = document.getElementById('nav-offcanvas');
-    const backdrop  = document.getElementById('nav-backdrop');
-    const closeBtn  = document.getElementById('nav-close');
+    const burger = document.getElementById("nav-burger");
+    const offcanvas = document.getElementById("nav-offcanvas");
+    const backdrop = document.getElementById("nav-backdrop");
+    const closeBtn = document.getElementById("nav-close");
 
     function openMenu() {
-      offcanvas?.classList.add('open');
-      backdrop?.classList.add('open');
-      burger?.setAttribute('aria-expanded', 'true');
-      document.body.style.overflow = 'hidden';
+      offcanvas?.classList.add("open");
+      backdrop?.classList.add("open");
+      burger?.setAttribute("aria-expanded", "true");
+      document.body.style.overflow = "hidden";
     }
     function closeMenu() {
-      offcanvas?.classList.remove('open');
-      backdrop?.classList.remove('open');
-      burger?.setAttribute('aria-expanded', 'false');
-      document.body.style.overflow = '';
+      offcanvas?.classList.remove("open");
+      backdrop?.classList.remove("open");
+      burger?.setAttribute("aria-expanded", "false");
+      document.body.style.overflow = "";
     }
 
-    burger?.addEventListener('click', openMenu, sig);
-    closeBtn?.addEventListener('click', closeMenu, sig);
-    backdrop?.addEventListener('click', closeMenu, sig);
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); }, sig);
+    burger?.addEventListener("click", openMenu, sig);
+    closeBtn?.addEventListener("click", closeMenu, sig);
+    backdrop?.addEventListener("click", closeMenu, sig);
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (e.key === "Escape") closeMenu();
+      },
+      sig,
+    );
 
     // Offcanvas accordion groups
-    offcanvas?.querySelectorAll('.offcanvas-group-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        btn.closest('.offcanvas-group')?.classList.toggle('open');
-      }, sig);
+    offcanvas?.querySelectorAll(".offcanvas-group-btn").forEach((btn) => {
+      btn.addEventListener(
+        "click",
+        () => {
+          btn.closest(".offcanvas-group")?.classList.toggle("open");
+        },
+        sig,
+      );
     });
 
     // Close offcanvas when a leaf link is tapped
-    offcanvas?.querySelectorAll('.nav-offcanvas-link').forEach(link => {
-      link.addEventListener('click', closeMenu, sig);
+    offcanvas?.querySelectorAll(".nav-offcanvas-link").forEach((link) => {
+      link.addEventListener("click", closeMenu, sig);
     });
   }
 
   if (!window._navListenerAdded) {
     window._navListenerAdded = true;
-    document.addEventListener('astro:page-load', initNavbar);
+    document.addEventListener("astro:page-load", initNavbar);
   }
 </script>
 
 <style>
-/* ── Desktop dropdown ─────────────────────────────────── */
-.nav-group { position: relative; }
+  /* ── Desktop dropdown ─────────────────────────────────── */
+  .nav-group {
+    position: relative;
+  }
 
-.nav-group-btn {
-  background: none; border: none; cursor: pointer;
-  display: flex; align-items: center; gap: 5px;
-}
+  .nav-group-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
 
-.nav-chevron {
-  display: inline-block; width: 6px; height: 6px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg) translateY(-1px);
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-.nav-group.open .nav-chevron { transform: rotate(-135deg) translateY(-1px); }
+  .nav-chevron {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-1px);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  .nav-group.open .nav-chevron {
+    transform: rotate(-135deg) translateY(-1px);
+  }
 
-.nav-dropdown {
-  position: absolute;
-  top: calc(100% + 10px);
-  left: 50%; transform: translateX(-50%) translateY(-6px);
-  background: var(--ivory);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-hover);
-  padding: 6px;
-  min-width: 160px;
-  z-index: 300;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  white-space: nowrap;
-}
+  .nav-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    background: var(--ivory);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-hover);
+    padding: 6px;
+    min-width: 160px;
+    z-index: 300;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.15s ease,
+      transform 0.15s ease;
+    white-space: nowrap;
+  }
 
-/* Show on hover OR when .open class is present */
-/* .nav-group:hover .nav-dropdown, */
-.nav-group:focus-within .nav-dropdown,
-.nav-group.open .nav-dropdown {
-  opacity: 1; pointer-events: auto;
-  transform: translateX(-50%) translateY(0);
-}
+  /* Show on hover OR when .open class is present */
+  /* .nav-group:hover .nav-dropdown, */
+  .nav-group:focus-within .nav-dropdown,
+  .nav-group.open .nav-dropdown {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
 
-/* When open via click, keep open even without hover */
-.nav-group.open .nav-dropdown { opacity: 1; pointer-events: auto; }
+  /* When open via click, keep open even without hover */
+  .nav-group.open .nav-dropdown {
+    opacity: 1;
+    pointer-events: auto;
+  }
 
-.nav-dropdown-link {
-  display: block;
-  font-family: var(--fb); font-size: 11px; font-weight: 500;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
-  padding: 9px 14px; border-radius: var(--radius-xs);
-  text-decoration: none;
-  transition: color 0.15s ease, background 0.15s ease;
-}
-.nav-dropdown-link:hover,
-.nav-dropdown-link.active {
-  color: var(--dark);
-  background: color-mix(in srgb, var(--cp) 15%, transparent);
-}
-.nav-dropdown-link.active { font-weight: 600; }
+  .nav-dropdown-link {
+    display: block;
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 9px 14px;
+    border-radius: var(--radius-xs);
+    text-decoration: none;
+    transition:
+      color 0.15s ease,
+      background 0.15s ease;
+  }
+  .nav-dropdown-link:hover,
+  .nav-dropdown-link.active {
+    color: var(--dark);
+    background: color-mix(in srgb, var(--cp) 15%, transparent);
+  }
+  .nav-dropdown-link.active {
+    font-weight: 600;
+  }
 
-/* ── Offcanvas accordion ──────────────────────────────── */
-.offcanvas-group-btn {
-  width: 100%; background: none; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: space-between;
-  font-family: var(--fb); font-size: 11px; font-weight: 500;
-  letter-spacing: 2.5px; text-transform: uppercase; color: var(--muted);
-  padding: 12px 16px; border-radius: 10px;
-  text-decoration: none;
-  transition: color 0.2s ease, background 0.2s ease;
-}
-.offcanvas-group-btn:hover,
-.offcanvas-group-btn.active {
-  color: var(--dark);
-  background: color-mix(in srgb, var(--cp) 18%, transparent);
-}
+  /* ── Offcanvas accordion ──────────────────────────────── */
+  .offcanvas-group-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition:
+      color 0.2s ease,
+      background 0.2s ease;
+  }
+  .offcanvas-group-btn:hover,
+  .offcanvas-group-btn.active {
+    color: var(--dark);
+    background: color-mix(in srgb, var(--cp) 18%, transparent);
+  }
 
-.offcanvas-chevron {
-  display: inline-block; width: 6px; height: 6px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg) translateY(-1px);
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-.offcanvas-group.open .offcanvas-chevron {
-  transform: rotate(-135deg) translateY(-1px);
-}
+  .offcanvas-chevron {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-1px);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+  .offcanvas-group.open .offcanvas-chevron {
+    transform: rotate(-135deg) translateY(-1px);
+  }
 
-.offcanvas-group-links {
-  display: none;
-  flex-direction: column;
-  padding: 2px 0 4px 12px;
-}
-.offcanvas-group.open .offcanvas-group-links { display: flex; }
+  .offcanvas-group-links {
+    display: none;
+    flex-direction: column;
+    padding: 2px 0 4px 12px;
+  }
+  .offcanvas-group.open .offcanvas-group-links {
+    display: flex;
+  }
 
-.nav-offcanvas-link--child {
-  font-size: 10.5px;
-  padding: 9px 16px;
-  opacity: 0.85;
-}
-.nav-offcanvas-link--child:hover,
-.nav-offcanvas-link--child.active { opacity: 1; }
+  .nav-offcanvas-link--child {
+    font-size: 10.5px;
+    padding: 9px 16px;
+    opacity: 0.85;
+  }
+  .nav-offcanvas-link--child:hover,
+  .nav-offcanvas-link--child.active {
+    opacity: 1;
+  }
 </style>

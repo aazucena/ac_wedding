@@ -1,8 +1,8 @@
 ---
 // MassPage8NuptialBlessing.astro — Page 8: Nuptial Blessing & Concluding Rites
-import CardWatermark from '@components/CardWatermark.astro';
-import StackedImg    from '@assets/stacked.png';
-import { Image } from 'astro:assets';
+import CardWatermark from "@components/CardWatermark.astro";
+import StackedImg from "@assets/stacked.png";
+import { Image } from "astro:assets";
 
 interface Props {
   groomFirst: string;
@@ -28,8 +28,19 @@ const { groomFirst, brideFirst } = Astro.props;
     </div>
 
     <div class="priest-label">Priest</div>
-    <div class="blessing-text">Holy Father, maker of the whole world, who created man and woman in your own image and willed that their union be crowned with your blessing: pour out with kindness the grace of the Holy Spirit upon these your servants {groomFirst} and {brideFirst}, who are joined today in the Sacrament of Matrimony.</div>
-    <div class="blessing-text">May they exult in your gift of children, may they be noted for their integrity of life, and be approved in the eyes of your holy Church. May they be strengthened by your blessing, and may they find their life together enriched with peace and joy.</div>
+    <div class="blessing-text">
+      Holy Father, maker of the whole world, who created man and woman in your
+      own image and willed that their union be crowned with your blessing: pour
+      out with kindness the grace of the Holy Spirit upon these your servants {
+        groomFirst
+      } and {brideFirst}, who are joined today in the Sacrament of Matrimony.
+    </div>
+    <div class="blessing-text">
+      May they exult in your gift of children, may they be noted for their
+      integrity of life, and be approved in the eyes of your holy Church. May
+      they be strengthened by your blessing, and may they find their life
+      together enriched with peace and joy.
+    </div>
     <div class="response-label">All</div>
     <div class="response">Amen.</div>
 
@@ -51,11 +62,17 @@ const { groomFirst, brideFirst } = Astro.props;
 
     <div class="rubric">Solemn Blessing</div>
     <div class="priest-label">Priest</div>
-    <div class="priest">May God the eternal Father keep you of one heart in love for one another, that the peace of Christ may dwell in you and abide always in your home.</div>
+    <div class="priest">
+      May God the eternal Father keep you of one heart in love for one another,
+      that the peace of Christ may dwell in you and abide always in your home.
+    </div>
     <div class="response-label">All</div>
     <div class="response">Amen.</div>
     <div class="priest-label">Priest</div>
-    <div class="priest">May you be blessed in your children, have solace in your friends, and may you live in peace with your neighbors.</div>
+    <div class="priest">
+      May you be blessed in your children, have solace in your friends, and may
+      you live in peace with your neighbors.
+    </div>
     <div class="response-label">All</div>
     <div class="response">Amen.</div>
 
@@ -66,11 +83,16 @@ const { groomFirst, brideFirst } = Astro.props;
     <div class="response">Thanks be to God.</div>
 
     <div class="rubric">Recessional</div>
-    <div class="priest">The wedding party recesses as the Recessional Hymn is sung. Please remain standing until the wedding party has exited the church.</div>
+    <div class="priest">
+      The wedding party recesses as the Recessional Hymn is sung. Please remain
+      standing until the wedding party has exited the church.
+    </div>
   </div>
 
   <div class="page-footer">
-    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <span class="footer-names"
+      >{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span
+    >
     <Image src={StackedImg} class="footer-logo" alt="" />
     <span class="footer-page">8</span>
   </div>

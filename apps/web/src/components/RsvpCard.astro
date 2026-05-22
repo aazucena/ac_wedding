@@ -1,60 +1,65 @@
 ---
 // apps/web/src/components/RsvpCard.astro
 // Thin shell: decides which view to render based on party status.
-import type { Parties } from '@lib/types';
-import RsvpAlreadyReplied   from './rsvp/RsvpAlreadyReplied.astro';
-import RsvpForm             from './rsvp/RsvpForm.astro';
-import RsvpMemoryUpload     from './rsvp/RsvpMemoryUpload.astro';
-import '../styles/rsvp-card.css';
+import type { Parties } from "@lib/types";
+import RsvpAlreadyReplied from "./rsvp/RsvpAlreadyReplied.astro";
+import RsvpForm from "./rsvp/RsvpForm.astro";
+import RsvpMemoryUpload from "./rsvp/RsvpMemoryUpload.astro";
+import "../styles/rsvp-card.css";
 
 interface Props {
-  party:           Parties;
-  groomName:       string;
-  brideName:       string;
-  hashtag:         string;
-  rsvpDeadline:    string;
+  party: Parties;
+  groomName: string;
+  brideName: string;
+  hashtag: string;
+  rsvpDeadline: string;
   plusOnesAllowed: number;
 }
 
-const { party, groomName, brideName, hashtag, rsvpDeadline, plusOnesAllowed } = Astro.props;
+const { party, groomName, brideName, hashtag, rsvpDeadline, plusOnesAllowed } =
+  Astro.props;
 
-const alreadyResponded = party.status === 'confirmed' || party.status === 'declined';
+const alreadyResponded =
+  party.status === "confirmed" || party.status === "declined";
 ---
 
 <div class="card" id="rsvp-card">
-
-  {alreadyResponded ? (
-    <>
-      <RsvpAlreadyReplied
-        partyName={party.name}
-        status={party.status!}
-        hashtag={hashtag}
-      />
-      {party.status === 'confirmed' && (
-        <RsvpMemoryUpload
-          sectionId="upload-section-existing"
-          dzId="dz-existing"
-          thumbGridId="thumb-grid-existing"
-          submitBtnId="upload-submit-existing"
-          statusId="upload-status-existing"
-          visible={true}
-          token={party.rsvp_token!}
+  {
+    alreadyResponded ? (
+      <>
+        <RsvpAlreadyReplied
+          partyName={party.name}
+          status={party.status!}
+          hashtag={hashtag}
         />
-      )}
-    </>
-  ) : (
-    <RsvpForm
-      party={party}
-      groomName={groomName}
-      brideName={brideName}
-      hashtag={hashtag}
-      rsvpDeadline={rsvpDeadline}
-      plusOnesAllowed={plusOnesAllowed}
-    />
-  )}
-
+        {party.status === "confirmed" && (
+          <RsvpMemoryUpload
+            sectionId="upload-section-existing"
+            dzId="dz-existing"
+            thumbGridId="thumb-grid-existing"
+            submitBtnId="upload-submit-existing"
+            statusId="upload-status-existing"
+            visible={true}
+            token={party.rsvp_token!}
+          />
+        )}
+      </>
+    ) : (
+      <RsvpForm
+        party={party}
+        groomName={groomName}
+        brideName={brideName}
+        hashtag={hashtag}
+        rsvpDeadline={rsvpDeadline}
+        plusOnesAllowed={plusOnesAllowed}
+      />
+    )
+  }
 </div>
 
 <style is:global>
-#rsvp-card.card { margin-left: auto; margin-right: auto; }
+  #rsvp-card.card {
+    margin-left: auto;
+    margin-right: auto;
+  }
 </style>

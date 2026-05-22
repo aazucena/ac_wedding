@@ -4,14 +4,19 @@
 // Update: window.__debugUpdate('rsvp', data)
 
 interface Props {
-  id:     string;
+  id: string;
   label?: string;
 }
-const { id, label = 'Form Data' } = Astro.props;
+const { id, label = "Form Data" } = Astro.props;
 ---
 
 <div class="form-debug" id={`form-debug-${id}`}>
-  <button type="button" class="form-debug-toggle" id={`form-debug-toggle-${id}`} aria-expanded="true">
+  <button
+    type="button"
+    class="form-debug-toggle"
+    id={`form-debug-toggle-${id}`}
+    aria-expanded="true"
+  >
     <span class="form-debug-icon">⬡</span>
     <span class="form-debug-label">{label}</span>
     <span class="form-debug-chevron">▾</span>
@@ -22,59 +27,79 @@ const { id, label = 'Form Data' } = Astro.props;
 <script>
   // One-time registration of the global update function — safe to define per instance
   if (!(window as any).__debugUpdate) {
-    (window as any).__debugUpdate = function(id: string, data: unknown) {
-      var pre = document.getElementById('form-debug-pre-' + id);
+    (window as any).__debugUpdate = function (id: string, data: unknown) {
+      var pre = document.getElementById("form-debug-pre-" + id);
       if (pre) pre.textContent = JSON.stringify(data, null, 2);
     };
   }
 
   // Toggle open/closed per instance
-  document.addEventListener('astro:page-load', () => {
-    document.querySelectorAll<HTMLElement>('.form-debug').forEach(panel => {
-      var id      = panel.id.replace('form-debug-', '');
-      var toggle  = document.getElementById('form-debug-toggle-' + id);
-      var pre     = document.getElementById('form-debug-pre-'    + id);
-      var chevron = toggle?.querySelector<HTMLElement>('.form-debug-chevron');
+  document.addEventListener("astro:page-load", () => {
+    document.querySelectorAll<HTMLElement>(".form-debug").forEach((panel) => {
+      var id = panel.id.replace("form-debug-", "");
+      var toggle = document.getElementById("form-debug-toggle-" + id);
+      var pre = document.getElementById("form-debug-pre-" + id);
+      var chevron = toggle?.querySelector<HTMLElement>(".form-debug-chevron");
       if (!toggle || !pre) return;
 
-      toggle.addEventListener('click', () => {
-        var open = pre!.style.display !== 'none';
-        pre!.style.display      = open ? 'none' : 'block';
-        toggle!.ariaExpanded    = String(!open);
-        if (chevron) chevron.style.transform = open ? 'rotate(-90deg)' : '';
+      toggle.addEventListener("click", () => {
+        var open = pre!.style.display !== "none";
+        pre!.style.display = open ? "none" : "block";
+        toggle!.ariaExpanded = String(!open);
+        if (chevron) chevron.style.transform = open ? "rotate(-90deg)" : "";
       });
     });
   });
 </script>
 
 <style>
-.form-debug {
-  margin-top: 24px;
-  border: 1px dashed color-mix(in srgb, #6366f1 40%, transparent);
-  border-radius: 6px;
-  overflow: hidden;
-  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
-  font-size: 11px;
-}
+  .form-debug {
+    margin-top: 24px;
+    border: 1px dashed color-mix(in srgb, #6366f1 40%, transparent);
+    border-radius: 6px;
+    overflow: hidden;
+    font-family: ui-monospace, "Cascadia Code", "Fira Code", monospace;
+    font-size: 11px;
+  }
 
-.form-debug-toggle {
-  display: flex; align-items: center; gap: 6px;
-  width: 100%; padding: 7px 10px;
-  background: color-mix(in srgb, #6366f1 6%, transparent);
-  border: none; cursor: pointer; text-align: left;
-  color: #6366f1;
-}
-.form-debug-toggle:hover { background: color-mix(in srgb, #6366f1 10%, transparent); }
+  .form-debug-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 7px 10px;
+    background: color-mix(in srgb, #6366f1 6%, transparent);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    color: #6366f1;
+  }
+  .form-debug-toggle:hover {
+    background: color-mix(in srgb, #6366f1 10%, transparent);
+  }
 
-.form-debug-icon    { font-size: 10px; opacity: 0.6; }
-.form-debug-label   { font-weight: 600; letter-spacing: 0.5px; flex: 1; }
-.form-debug-chevron { font-size: 9px; transition: transform 0.15s; }
+  .form-debug-icon {
+    font-size: 10px;
+    opacity: 0.6;
+  }
+  .form-debug-label {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    flex: 1;
+  }
+  .form-debug-chevron {
+    font-size: 9px;
+    transition: transform 0.15s;
+  }
 
-.form-debug-pre {
-  margin: 0; padding: 10px 12px;
-  background: color-mix(in srgb, #6366f1 3%, white);
-  color: #374151;
-  white-space: pre; overflow-x: auto;
-  line-height: 1.6; border-top: 1px dashed color-mix(in srgb, #6366f1 20%, transparent);
-}
+  .form-debug-pre {
+    margin: 0;
+    padding: 10px 12px;
+    background: color-mix(in srgb, #6366f1 3%, white);
+    color: #374151;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.6;
+    border-top: 1px dashed color-mix(in srgb, #6366f1 20%, transparent);
+  }
 </style>

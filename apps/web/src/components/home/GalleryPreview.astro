@@ -1,7 +1,7 @@
 ---
 // home/GalleryPreview.astro — gallery preview strip (6 images)
-import type { DirectusFiles } from '~/lib/types';
-import { assetUrl } from '~/lib/utils/format';
+import type { DirectusFiles } from "~/lib/types";
+import { assetUrl } from "~/lib/utils/format";
 interface GalleryPhoto {
   image?: DirectusFiles | string | null;
   title?: string | null;
@@ -15,83 +15,140 @@ interface Props {
   photographer?: Photographer | string | null;
 }
 const { photos, photographer } = Astro.props;
-const displayPhotos: GalleryPhoto[] = photos.length > 0 ? photos.slice(0, 6) : Array.from({ length: 6 });
-const credit = photographer && typeof photographer === 'object' ? photographer : null;
+const displayPhotos: GalleryPhoto[] =
+  photos.length > 0 ? photos.slice(0, 6) : Array.from({ length: 6 });
+const credit =
+  photographer && typeof photographer === "object" ? photographer : null;
 ---
 
 <style>
-.gallery-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
-}
-.gallery-item {
-  display: block; aspect-ratio: 1;
-  border-radius: var(--radius-sm); overflow: hidden;
-  border: 1px solid var(--border); box-shadow: var(--shadow-card);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-.gallery-item:hover { transform: scale(1.03); box-shadow: var(--shadow-hover); z-index: 1; }
-.gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
-.gallery-item:hover img { transform: scale(1.06); }
-.gallery-placeholder {
-  width: 100%; height: 100%;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp) 16%, var(--warm)),
-    color-mix(in srgb, var(--cs) 12%, var(--warm))
-  );
-  display: flex; align-items: center; justify-content: center;
-  font-size: 24px; opacity: 0.5;
-}
-.gallery-footer { text-align: center; margin-top: 20px; }
-.gallery-see-all {
-  display: inline-block; margin-top: 10px;
-  font-family: var(--fb); font-size: 11px; font-weight: 600;
-  letter-spacing: 2.5px; text-transform: uppercase;
-  color: var(--cs); text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--cs) 40%, transparent);
-  padding-bottom: 2px; transition: opacity 0.2s;
-}
-.gallery-see-all:hover { opacity: 0.7; }
-.gallery-credit {
-  margin-top: 10px;
-  font-size: 11px; color: var(--muted);
-  letter-spacing: 0.3px;
-}
-.gallery-credit a {
-  color: inherit; text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
-  padding-bottom: 1px; transition: opacity 0.2s;
-}
-.gallery-credit a:hover { opacity: 0.7; }
-@media (max-width: 640px) {
-  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
-}
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .gallery-item {
+    display: block;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+  .gallery-item:hover {
+    transform: scale(1.03);
+    box-shadow: var(--shadow-hover);
+    z-index: 1;
+  }
+  .gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+  .gallery-item:hover img {
+    transform: scale(1.06);
+  }
+  .gallery-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp) 16%, var(--warm)),
+      color-mix(in srgb, var(--cs) 12%, var(--warm))
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    opacity: 0.5;
+  }
+  .gallery-footer {
+    text-align: center;
+    margin-top: 20px;
+  }
+  .gallery-see-all {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--cs);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--cs) 40%, transparent);
+    padding-bottom: 2px;
+    transition: opacity 0.2s;
+  }
+  .gallery-see-all:hover {
+    opacity: 0.7;
+  }
+  .gallery-credit {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.3px;
+  }
+  .gallery-credit a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--muted) 40%, transparent);
+    padding-bottom: 1px;
+    transition: opacity 0.2s;
+  }
+  .gallery-credit a:hover {
+    opacity: 0.7;
+  }
+  @media (max-width: 640px) {
+    .gallery-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
 </style>
 
 <div class="gallery-grid">
-  {displayPhotos.map((photo) => (
-    <a href="/gallery" class="gallery-item">
-      {photo?.image ? (
-        <img
-          src={assetUrl(photo.image, { width: 400, height: 400, fit: 'cover' })}
-          alt={photo.title ?? ''}
-          loading="lazy"
-          decoding="async"
-        />
-      ) : (
-        <div class="gallery-placeholder"><span>📷</span></div>
-      )}
-    </a>
-  ))}
+  {
+    displayPhotos.map((photo) => (
+      <a href="/gallery" class="gallery-item">
+        {photo?.image ? (
+          <img
+            src={assetUrl(photo.image, {
+              width: 400,
+              height: 400,
+              fit: "cover",
+            })}
+            alt={photo.title ?? ""}
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div class="gallery-placeholder">
+            <span>📷</span>
+          </div>
+        )}
+      </a>
+    ))
+  }
 </div>
 <div class="gallery-footer">
-  {credit?.name && (
-    <p class="gallery-credit">
-      Photography by{' '}
-      {credit.website
-        ? <a href={credit.website} target="_blank" rel="noopener noreferrer">{credit.name}</a>
-        : credit.name
-      }
-    </p>
-  )}
+  {
+    credit?.name && (
+      <p class="gallery-credit">
+        Photography by{" "}
+        {credit.website ? (
+          <a href={credit.website} target="_blank" rel="noopener noreferrer">
+            {credit.name}
+          </a>
+        ) : (
+          credit.name
+        )}
+      </p>
+    )
+  }
   <a href="/gallery" class="gallery-see-all">View Full Gallery →</a>
 </div>

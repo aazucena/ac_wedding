@@ -1,6 +1,6 @@
 ---
-import type { Vendors } from '~/lib/types';
-import { assetUrl } from '~/lib/utils/format';
+import type { Vendors } from "~/lib/types";
+import { assetUrl } from "~/lib/utils/format";
 
 // home/VendorsGrid.astro — vendor partners grid
 interface Props {
@@ -10,107 +10,190 @@ interface Props {
 const {
   vendors,
   categoryLabel = {
-    church: 'Church', venue: 'Reception Venue', catering: 'Catering',
-    hotel: 'Hotel', photography: 'Photography', videography: 'Videography',
-    florist: 'Florist', music: 'Music', transport: 'Transportation', other: 'Partner',
+    church: "Church",
+    venue: "Reception Venue",
+    catering: "Catering",
+    hotel: "Hotel",
+    photography: "Photography",
+    videography: "Videography",
+    florist: "Florist",
+    music: "Music",
+    transport: "Transportation",
+    other: "Partner",
   },
 } = Astro.props;
 ---
 
 <style>
-.vendor-grid {
-  display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 20px; width: 100%;
-}
-.vendor-card {
-  width: 280px;
-  background: var(--ivory); border-radius: var(--radius);
-  border: 1px solid var(--border); padding: 28px 24px 24px;
-  box-shadow: var(--shadow-card); text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 8px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-  position: relative; overflow: hidden;
-}
-.vendor-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
-.vendor-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
-.vendor-logo {
-  height: 48px; width: auto; max-width: 140px;
-  object-fit: contain; margin-bottom: 4px;
-}
-.vendor-logo-placeholder {
-  width: 48px; height: 48px; border-radius: 50%;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp) 30%, white),
-    color-mix(in srgb, var(--cs) 20%, white)
-  );
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 22px; font-style: italic;
-  color: var(--dark); margin-bottom: 4px;
-}
-.vendor-category {
-  display: inline-block;
-  font-family: var(--fb); font-size: 9px; font-weight: 600;
-  letter-spacing: 2.5px; text-transform: uppercase; color: var(--dark);
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp) 25%, white),
-    color-mix(in srgb, var(--cp) 12%, white)
-  );
-  border: 1px solid color-mix(in srgb, var(--cp) 30%, transparent);
-  border-radius: 999px; padding: 4px 12px;
-}
-.vendor-name {
-  font-family: var(--fd); font-size: 19px;
-  font-weight: 400; color: var(--dark); line-height: 1.25;
-}
-.vendor-subtitle {
-  font-family: var(--fb); font-size: 10px; font-weight: 400;
-  color: color-mix(in srgb, var(--cp) 70%, var(--muted)); letter-spacing: 0.5px;
-}
-.vendor-link {
-  font-family: var(--fb); font-size: 11px; font-weight: 500;
-  color: var(--cs); text-decoration: none;
-  border-bottom: 1px solid color-mix(in srgb, var(--cs) 40%, transparent);
-  padding-bottom: 1px; transition: opacity 0.2s;
-}
-.vendor-link:hover { opacity: 0.7; }
-.vendors-cta {
-  display: flex; justify-content: center; margin-top: 32px;
-}
-.vendors-cta-btn {
-  font-family: var(--fb); font-size: 11px; font-weight: 600;
-  letter-spacing: 2px; text-transform: uppercase;
-  color: var(--dark); text-decoration: none;
-  border: 1px solid color-mix(in srgb, var(--dark) 35%, transparent);
-  border-radius: 999px; padding: 10px 28px;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-.vendors-cta-btn:hover {
-  background: var(--dark); color: var(--ivory);
-  border-color: var(--dark);
-}
-/* @media (max-width: 640px) {
+  .vendor-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+  }
+  .vendor-card {
+    width: 280px;
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 28px 24px 24px;
+    box-shadow: var(--shadow-card);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .vendor-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
+  .vendor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+  }
+  .vendor-logo {
+    height: 48px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
+  .vendor-logo-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp) 30%, white),
+      color-mix(in srgb, var(--cs) 20%, white)
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--fd);
+    font-size: 22px;
+    font-style: italic;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+  .vendor-category {
+    display: inline-block;
+    font-family: var(--fb);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--dark);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp) 25%, white),
+      color-mix(in srgb, var(--cp) 12%, white)
+    );
+    border: 1px solid color-mix(in srgb, var(--cp) 30%, transparent);
+    border-radius: 999px;
+    padding: 4px 12px;
+  }
+  .vendor-name {
+    font-family: var(--fd);
+    font-size: 19px;
+    font-weight: 400;
+    color: var(--dark);
+    line-height: 1.25;
+  }
+  .vendor-subtitle {
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 400;
+    color: color-mix(in srgb, var(--cp) 70%, var(--muted));
+    letter-spacing: 0.5px;
+  }
+  .vendor-link {
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--cs);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--cs) 40%, transparent);
+    padding-bottom: 1px;
+    transition: opacity 0.2s;
+  }
+  .vendor-link:hover {
+    opacity: 0.7;
+  }
+  .vendors-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+  }
+  .vendors-cta-btn {
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dark);
+    text-decoration: none;
+    border: 1px solid color-mix(in srgb, var(--dark) 35%, transparent);
+    border-radius: 999px;
+    padding: 10px 28px;
+    transition:
+      background 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+  .vendors-cta-btn:hover {
+    background: var(--dark);
+    color: var(--ivory);
+    border-color: var(--dark);
+  }
+  /* @media (max-width: 640px) {
   .vendor-grid { grid-template-columns: 1fr 1fr; }
 } */
 </style>
 
 <div class="vendor-grid">
-  {vendors.slice(0, 3).map((v) => (
-    <div class="vendor-card">
-      {v.logo?.id
-        ? <img src={assetUrl(v.logo, { height: 48 })} alt={v.name} class="vendor-logo" />
-        : <div class="vendor-logo-placeholder">{v.name[0]}</div>
-      }
-      <span class="vendor-category">{categoryLabel[v.category ?? ''] ?? v.category}</span>
-      <p class="vendor-name">{v.name}</p>
-      {v.subtitle && <p class="vendor-subtitle">{v.subtitle}</p>}
-      {v.website && (
-        <a href={v.website} target="_blank" rel="noopener noreferrer" class="vendor-link">Visit ↗</a>
-      )}
-    </div>
-  ))}
+  {
+    vendors.slice(0, 3).map((v) => (
+      <div class="vendor-card">
+        {v.logo?.id ? (
+          <img
+            src={assetUrl(v.logo, { height: 48 })}
+            alt={v.name}
+            class="vendor-logo"
+          />
+        ) : (
+          <div class="vendor-logo-placeholder">{v.name[0]}</div>
+        )}
+        <span class="vendor-category">
+          {categoryLabel[v.category ?? ""] ?? v.category}
+        </span>
+        <p class="vendor-name">{v.name}</p>
+        {v.subtitle && <p class="vendor-subtitle">{v.subtitle}</p>}
+        {v.website && (
+          <a
+            href={v.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="vendor-link"
+          >
+            Visit ↗
+          </a>
+        )}
+      </div>
+    ))
+  }
 </div>
 <div class="vendors-cta">
   <a href="/partners" class="vendors-cta-btn">View all partners</a>

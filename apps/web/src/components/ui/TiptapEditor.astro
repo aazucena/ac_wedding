@@ -3,179 +3,399 @@
 // Outputs markdown string (with <u>/<mark> for underline/highlight) to a hidden textarea.
 // bottomBar=true: toolbar moves to bottom-left; use <slot name="bar-end"> for e.g. a submit button.
 interface Props {
-  id:          string;
+  id: string;
   placeholder?: string;
-  class?:       string;
-  bottomBar?:   boolean;
+  class?: string;
+  bottomBar?: boolean;
 }
-const { id, placeholder = 'Write something…', class: className, bottomBar = false } = Astro.props;
+const {
+  id,
+  placeholder = "Write something…",
+  class: className,
+  bottomBar = false,
+} = Astro.props;
 
-const EMOJI_LIST = ['💍','💒','💐','🌸','💕','💞','💌','🥂','🎉','🎊','🙏','❤️','💖','🌹','✨','👰','🤵','🎶','😊','🎀'];
+const EMOJI_LIST = [
+  "💍",
+  "💒",
+  "💐",
+  "🌸",
+  "💕",
+  "💞",
+  "💌",
+  "🥂",
+  "🎉",
+  "🎊",
+  "🙏",
+  "❤️",
+  "💖",
+  "🌹",
+  "✨",
+  "👰",
+  "🤵",
+  "🎶",
+  "😊",
+  "🎀",
+];
 ---
 
-<div class:list={['tiptap-wrap', className, { 'tiptap-bottom-bar': bottomBar }]} data-id={id} data-placeholder={placeholder}>
-
-  {!bottomBar && (
-    <div class="tiptap-toolbar">
-      <button type="button" class="tiptap-btn" data-cmd="bold"        aria-label="Bold">      <strong>B</strong>  </button>
-      <button type="button" class="tiptap-btn" data-cmd="italic"      aria-label="Italic">    <em>I</em>          </button>
-      <button type="button" class="tiptap-btn" data-cmd="underline"   aria-label="Underline"> <u>U</u>            </button>
-      <div class="tiptap-divider" aria-hidden="true"></div>
-      <button type="button" class="tiptap-btn" data-cmd="highlight"   aria-label="Highlight"> <mark>H</mark>      </button>
-      <button type="button" class="tiptap-btn" data-cmd="blockquote"  aria-label="Blockquote"> ❝                  </button>
-      <div class="tiptap-divider" aria-hidden="true"></div>
-      <div class="tiptap-emoji-wrap">
-        <button type="button" class="tiptap-btn tiptap-emoji-trigger" aria-label="Emoji" aria-expanded="false">😊</button>
-        <div class="tiptap-emoji-picker" role="listbox" aria-label="Emoji picker">
-          {EMOJI_LIST.map(emoji => (
-            <button type="button" class="tiptap-emoji-btn" data-emoji={emoji} role="option" aria-label={emoji}>{emoji}</button>
-          ))}
-        </div>
-      </div>
-    </div>
-  )}
-
-  <div class="tiptap-content" id={`${id}-editor`}></div>
-
-  {bottomBar && (
-    <div class="tiptap-bar">
+<div
+  class:list={["tiptap-wrap", className, { "tiptap-bottom-bar": bottomBar }]}
+  data-id={id}
+  data-placeholder={placeholder}
+>
+  {
+    !bottomBar && (
       <div class="tiptap-toolbar">
-        <button type="button" class="tiptap-btn" data-cmd="bold"        aria-label="Bold">      <strong>B</strong>  </button>
-        <button type="button" class="tiptap-btn" data-cmd="italic"      aria-label="Italic">    <em>I</em>          </button>
-        <button type="button" class="tiptap-btn" data-cmd="underline"   aria-label="Underline"> <u>U</u>            </button>
-        <div class="tiptap-divider" aria-hidden="true"></div>
-        <button type="button" class="tiptap-btn" data-cmd="highlight"   aria-label="Highlight"> <mark>H</mark>      </button>
-        <button type="button" class="tiptap-btn" data-cmd="blockquote"  aria-label="Blockquote"> ❝                  </button>
-        <div class="tiptap-divider" aria-hidden="true"></div>
+        <button
+          type="button"
+          class="tiptap-btn"
+          data-cmd="bold"
+          aria-label="Bold"
+        >
+          {" "}
+          <strong>B</strong>{" "}
+        </button>
+        <button
+          type="button"
+          class="tiptap-btn"
+          data-cmd="italic"
+          aria-label="Italic"
+        >
+          {" "}
+          <em>I</em>{" "}
+        </button>
+        <button
+          type="button"
+          class="tiptap-btn"
+          data-cmd="underline"
+          aria-label="Underline"
+        >
+          {" "}
+          <u>U</u>{" "}
+        </button>
+        <div class="tiptap-divider" aria-hidden="true" />
+        <button
+          type="button"
+          class="tiptap-btn"
+          data-cmd="highlight"
+          aria-label="Highlight"
+        >
+          {" "}
+          <mark>H</mark>{" "}
+        </button>
+        <button
+          type="button"
+          class="tiptap-btn"
+          data-cmd="blockquote"
+          aria-label="Blockquote"
+        >
+          {" "}
+          ❝{" "}
+        </button>
+        <div class="tiptap-divider" aria-hidden="true" />
         <div class="tiptap-emoji-wrap">
-          <button type="button" class="tiptap-btn tiptap-emoji-trigger" aria-label="Emoji" aria-expanded="false">😊</button>
-          <div class="tiptap-emoji-picker" role="listbox" aria-label="Emoji picker">
-            {EMOJI_LIST.map(emoji => (
-              <button type="button" class="tiptap-emoji-btn" data-emoji={emoji} role="option" aria-label={emoji}>{emoji}</button>
+          <button
+            type="button"
+            class="tiptap-btn tiptap-emoji-trigger"
+            aria-label="Emoji"
+            aria-expanded="false"
+          >
+            😊
+          </button>
+          <div
+            class="tiptap-emoji-picker"
+            role="listbox"
+            aria-label="Emoji picker"
+          >
+            {EMOJI_LIST.map((emoji) => (
+              <button
+                type="button"
+                class="tiptap-emoji-btn"
+                data-emoji={emoji}
+                role="option"
+                aria-label={emoji}
+              >
+                {emoji}
+              </button>
             ))}
           </div>
         </div>
       </div>
-      <slot name="bar-end" />
-    </div>
-  )}
+    )
+  }
 
-  <textarea id={id} name={id} style="display:none" aria-hidden="true"></textarea>
+  <div class="tiptap-content" id={`${id}-editor`}></div>
+
+  {
+    bottomBar && (
+      <div class="tiptap-bar">
+        <div class="tiptap-toolbar">
+          <button
+            type="button"
+            class="tiptap-btn"
+            data-cmd="bold"
+            aria-label="Bold"
+          >
+            {" "}
+            <strong>B</strong>{" "}
+          </button>
+          <button
+            type="button"
+            class="tiptap-btn"
+            data-cmd="italic"
+            aria-label="Italic"
+          >
+            {" "}
+            <em>I</em>{" "}
+          </button>
+          <button
+            type="button"
+            class="tiptap-btn"
+            data-cmd="underline"
+            aria-label="Underline"
+          >
+            {" "}
+            <u>U</u>{" "}
+          </button>
+          <div class="tiptap-divider" aria-hidden="true" />
+          <button
+            type="button"
+            class="tiptap-btn"
+            data-cmd="highlight"
+            aria-label="Highlight"
+          >
+            {" "}
+            <mark>H</mark>{" "}
+          </button>
+          <button
+            type="button"
+            class="tiptap-btn"
+            data-cmd="blockquote"
+            aria-label="Blockquote"
+          >
+            {" "}
+            ❝{" "}
+          </button>
+          <div class="tiptap-divider" aria-hidden="true" />
+          <div class="tiptap-emoji-wrap">
+            <button
+              type="button"
+              class="tiptap-btn tiptap-emoji-trigger"
+              aria-label="Emoji"
+              aria-expanded="false"
+            >
+              😊
+            </button>
+            <div
+              class="tiptap-emoji-picker"
+              role="listbox"
+              aria-label="Emoji picker"
+            >
+              {EMOJI_LIST.map((emoji) => (
+                <button
+                  type="button"
+                  class="tiptap-emoji-btn"
+                  data-emoji={emoji}
+                  role="option"
+                  aria-label={emoji}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <slot name="bar-end" />
+      </div>
+    )
+  }
+
+  <textarea id={id} name={id} style="display:none" aria-hidden="true"
+  ></textarea>
 </div>
 
-<script>import '../../scripts/tiptap-editor';</script>
+<script>
+  import "../../scripts/tiptap-editor";
+</script>
 
 <style is:global>
-.tiptap-wrap {
-  display: flex; flex-direction: column;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--ivory);
-  transition: border-color 0.15s;
-}
+  .tiptap-wrap {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--ivory);
+    transition: border-color 0.15s;
+  }
 
-.tiptap-wrap:focus-within {
-  border-color: var(--cs);
-}
+  .tiptap-wrap:focus-within {
+    border-color: var(--cs);
+  }
 
-/* ── Toolbar (top mode) ──────────────────────────────────── */
-.tiptap-toolbar {
-  display: flex; align-items: center; gap: 2px;
-  padding: 6px 8px;
-  flex-wrap: wrap;
-}
+  /* ── Toolbar (top mode) ──────────────────────────────────── */
+  .tiptap-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 8px;
+    flex-wrap: wrap;
+  }
 
-/* top-mode toolbar has a bottom border */
-.tiptap-wrap:not(.tiptap-bottom-bar) .tiptap-toolbar {
-  border-bottom: 1px solid var(--border);
-}
+  /* top-mode toolbar has a bottom border */
+  .tiptap-wrap:not(.tiptap-bottom-bar) .tiptap-toolbar {
+    border-bottom: 1px solid var(--border);
+  }
 
-.tiptap-divider {
-  width: 1px; height: 16px;
-  background: var(--border);
-  margin: 0 4px; flex-shrink: 0;
-}
+  .tiptap-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--border);
+    margin: 0 4px;
+    flex-shrink: 0;
+  }
 
-.tiptap-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px;
-  background: none; border: none; border-radius: 4px;
-  font-size: 13px; color: var(--muted); cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
+  .tiptap-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      color 0.15s;
+  }
 
-.tiptap-btn:hover  { background: color-mix(in srgb, var(--cp) 10%, transparent); color: var(--dark); }
-.tiptap-btn.active { background: color-mix(in srgb, var(--cp) 15%, transparent); color: var(--dark); }
-.tiptap-btn mark   { background: color-mix(in srgb, #f6d860 60%, transparent); border-radius: 2px; padding: 0 2px; }
+  .tiptap-btn:hover {
+    background: color-mix(in srgb, var(--cp) 10%, transparent);
+    color: var(--dark);
+  }
+  .tiptap-btn.active {
+    background: color-mix(in srgb, var(--cp) 15%, transparent);
+    color: var(--dark);
+  }
+  .tiptap-btn mark {
+    background: color-mix(in srgb, #f6d860 60%, transparent);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
 
-/* ── Bottom bar ──────────────────────────────────────────── */
-.tiptap-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 4px 8px 4px 4px;
-  /* border-top: 1px solid var(--border); */
-  gap: 8px;
-}
+  /* ── Bottom bar ──────────────────────────────────────────── */
+  .tiptap-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px 4px 4px;
+    /* border-top: 1px solid var(--border); */
+    gap: 8px;
+  }
 
-/* Emoji picker opens upward in bottom-bar mode */
-.tiptap-bottom-bar .tiptap-emoji-picker {
-  top: auto;
-  bottom: calc(100% + 6px);
-}
+  /* Emoji picker opens upward in bottom-bar mode */
+  .tiptap-bottom-bar .tiptap-emoji-picker {
+    top: auto;
+    bottom: calc(100% + 6px);
+  }
 
-/* ── Emoji picker ────────────────────────────────────────── */
-.tiptap-emoji-wrap { position: relative; }
+  /* ── Emoji picker ────────────────────────────────────────── */
+  .tiptap-emoji-wrap {
+    position: relative;
+  }
 
-.tiptap-emoji-picker {
-  display: none;
-  position: absolute; top: calc(100% + 6px); left: 0; z-index: 50;
-  background: white; border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 6px;
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
-  width: 160px;
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--dark) 12%, transparent);
-  opacity: 0; pointer-events: none; transform: translateY(4px);
-  transition: opacity 0.15s, transform 0.15s;
-}
+  .tiptap-emoji-picker {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 50;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    width: 160px;
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--dark) 12%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(4px);
+    transition:
+      opacity 0.15s,
+      transform 0.15s;
+  }
 
-.tiptap-emoji-picker.open {
-  opacity: 1; pointer-events: auto; transform: translateY(0);
-}
+  .tiptap-emoji-picker.open {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
 
-.tiptap-emoji-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 28px; height: 28px; font-size: 16px;
-  background: none; border: none; border-radius: 4px; cursor: pointer;
-  transition: background 0.1s;
-}
+  .tiptap-emoji-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
 
-.tiptap-emoji-btn:hover { background: color-mix(in srgb, var(--cp) 10%, transparent); }
+  .tiptap-emoji-btn:hover {
+    background: color-mix(in srgb, var(--cp) 10%, transparent);
+  }
 
-/* ── Editor content ──────────────────────────────────────── */
-.tiptap-content { padding: 10px 12px; min-height: 120px; cursor: text; }
+  /* ── Editor content ──────────────────────────────────────── */
+  .tiptap-content {
+    padding: 10px 12px;
+    min-height: 120px;
+    cursor: text;
+  }
 
-.tiptap-content .ProseMirror {
-  outline: none;
-  font-family: var(--fb); font-size: 15px; font-weight: 300;
-  color: var(--dark); line-height: 1.7;
-}
+  .tiptap-content .ProseMirror {
+    outline: none;
+    font-family: var(--fb);
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--dark);
+    line-height: 1.7;
+  }
 
-.tiptap-content .ProseMirror p { margin: 0 0 0.5em; }
-.tiptap-content .ProseMirror p:last-child { margin-bottom: 0; }
+  .tiptap-content .ProseMirror p {
+    margin: 0 0 0.5em;
+  }
+  .tiptap-content .ProseMirror p:last-child {
+    margin-bottom: 0;
+  }
 
-.tiptap-content .ProseMirror blockquote {
-  border-left: 3px solid color-mix(in srgb, var(--cp) 50%, transparent);
-  margin: 0.5em 0; padding-left: 14px;
-  color: var(--muted); font-style: italic;
-}
+  .tiptap-content .ProseMirror blockquote {
+    border-left: 3px solid color-mix(in srgb, var(--cp) 50%, transparent);
+    margin: 0.5em 0;
+    padding-left: 14px;
+    color: var(--muted);
+    font-style: italic;
+  }
 
-.tiptap-content .ProseMirror mark {
-  background: color-mix(in srgb, #f6d860 50%, transparent);
-  border-radius: 2px; padding: 0 2px;
-}
+  .tiptap-content .ProseMirror mark {
+    background: color-mix(in srgb, #f6d860 50%, transparent);
+    border-radius: 2px;
+    padding: 0 2px;
+  }
 
-.tiptap-content .ProseMirror p.is-editor-empty:first-child::before {
-  content: attr(data-placeholder);
-  color: var(--muted); pointer-events: none; float: left; height: 0;
-}
+  .tiptap-content .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: var(--muted);
+    pointer-events: none;
+    float: left;
+    height: 0;
+  }
 </style>

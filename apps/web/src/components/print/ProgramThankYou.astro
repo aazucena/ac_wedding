@@ -1,9 +1,9 @@
 ---
 // ProgramThankYou.astro — Panel 4 (back of booklet, thank you + reception details)
-import AccentMark  from '@assets/accent_mark.png';
-import { Image } from 'astro:assets';
-import Hashtag     from '@components/Hashtag.astro';
-import QRCodeWidget from '@components/QRCode.astro';
+import AccentMark from "@assets/accent_mark.png";
+import { Image } from "astro:assets";
+import Hashtag from "@components/Hashtag.astro";
+import QRCodeWidget from "@components/QRCode.astro";
 
 interface Props {
   groomFirst: string;
@@ -15,23 +15,31 @@ interface Props {
   baseUrl: string;
 }
 
-const { groomFirst, brideFirst, hashtag, receptionVenueName, receptionAddress, receptionTime, baseUrl } = Astro.props;
+const {
+  groomFirst,
+  brideFirst,
+  hashtag,
+  receptionVenueName,
+  receptionAddress,
+  receptionTime,
+  baseUrl,
+} = Astro.props;
 ---
 
 <div class="panel p4">
   <div class="accent-bar"></div>
   <div class="panel-body ty-body">
-
     <div class="ty-top">
       <Image src={AccentMark} class="ty-accent" alt="" />
       <p class="eyebrow">With Gratitude</p>
       <h2 class="ty-heading">Thank You</h2>
       <div class="gem-row">
-        <span class="gem-line"></span><span class="gem">◆</span><span class="gem-line"></span>
+        <span class="gem-line"></span><span class="gem">◆</span><span
+          class="gem-line"></span>
       </div>
       <p class="ty-message">
-        Your presence on our wedding day is the greatest gift of all.
-        Thank you for sharing in our joy and blessing our marriage with your love.
+        Your presence on our wedding day is the greatest gift of all. Thank you
+        for sharing in our joy and blessing our marriage with your love.
       </p>
       <p class="ty-signed">{groomFirst} &amp; {brideFirst}</p>
       <Hashtag tag={hashtag} class="ty-hashtag" />
@@ -56,7 +64,6 @@ const { groomFirst, brideFirst, hashtag, receptionVenueName, receptionAddress, r
         </div>
       </div>
     </div>
-
   </div>
   <div class="accent-bar"></div>
 </div>

@@ -1,30 +1,55 @@
 ---
 // components/AddToCalendar.astro — shared "Add to Calendar" dropdown
-import { Icon } from 'astro-icon/components';
-import { buildGoogleUrl, buildOutlookUrl } from '~/lib/utils/calendar';
+import { Icon } from "astro-icon/components";
+import { buildGoogleUrl, buildOutlookUrl } from "~/lib/utils/calendar";
 
 interface Props {
-  name:         string;           // event name, used in aria-label and calendar title
-  icsKey:       string;           // key for /api/ics?event={icsKey}
-  start:        string;           // YYYYMMDDTHHMMSS
-  end:          string;           // YYYYMMDDTHHMMSS
-  location?:    string;
+  name: string; // event name, used in aria-label and calendar title
+  icsKey: string; // key for /api/ics?event={icsKey}
+  start: string; // YYYYMMDDTHHMMSS
+  end: string; // YYYYMMDDTHHMMSS
+  location?: string;
   description?: string;
-  align?:       'left' | 'right'; // menu alignment (default: left)
+  align?: "left" | "right"; // menu alignment (default: left)
 }
 
-const { name, icsKey, start, end, location, description, align = 'left' } = Astro.props;
+const {
+  name,
+  icsKey,
+  start,
+  end,
+  location,
+  description,
+  align = "left",
+} = Astro.props;
 
-const googleHref  = buildGoogleUrl({ title: name, start, end, location, description });
-const outlookHref = buildOutlookUrl({ title: name, start, end, location, description });
+const googleHref = buildGoogleUrl({
+  title: name,
+  start,
+  end,
+  location,
+  description,
+});
+const outlookHref = buildOutlookUrl({
+  title: name,
+  start,
+  end,
+  location,
+  description,
+});
 ---
 
 <details class="atc-dropdown">
   <summary class="atc-trigger" aria-label={`Add ${name} to your calendar`}>
     Add to Calendar
   </summary>
-  <div class:list={['atc-menu', `atc-menu--${align}`]}>
-    <a href={googleHref} target="_blank" rel="noopener noreferrer" class="atc-item">
+  <div class:list={["atc-menu", `atc-menu--${align}`]}>
+    <a
+      href={googleHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="atc-item"
+    >
       <Icon name="simple-icons:googlecalendar" class="atc-icon" />
       Google Calendar
     </a>
@@ -32,7 +57,12 @@ const outlookHref = buildOutlookUrl({ title: name, start, end, location, descrip
       <Icon name="simple-icons:apple" class="atc-icon" />
       Apple Calendar
     </a>
-    <a href={outlookHref} target="_blank" rel="noopener noreferrer" class="atc-item">
+    <a
+      href={outlookHref}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="atc-item"
+    >
       <Icon name="simple-icons:microsoftoutlook" class="atc-icon" />
       Outlook
     </a>
@@ -41,69 +71,113 @@ const outlookHref = buildOutlookUrl({ title: name, start, end, location, descrip
 
 <script>
   function init() {
-    document.querySelectorAll<HTMLDetailsElement>('.atc-dropdown').forEach(d => {
-      d.addEventListener('toggle', () => {
-        if (d.open) {
-          document.querySelectorAll<HTMLDetailsElement>('.atc-dropdown').forEach(o => {
-            if (o !== d) o.open = false;
-          });
-        }
+    document
+      .querySelectorAll<HTMLDetailsElement>(".atc-dropdown")
+      .forEach((d) => {
+        d.addEventListener("toggle", () => {
+          if (d.open) {
+            document
+              .querySelectorAll<HTMLDetailsElement>(".atc-dropdown")
+              .forEach((o) => {
+                if (o !== d) o.open = false;
+              });
+          }
+        });
       });
-    });
 
-    document.addEventListener('click', (e) => {
-      document.querySelectorAll<HTMLDetailsElement>('.atc-dropdown[open]').forEach(d => {
-        if (!d.contains(e.target as Node)) d.open = false;
-      });
+    document.addEventListener("click", (e) => {
+      document
+        .querySelectorAll<HTMLDetailsElement>(".atc-dropdown[open]")
+        .forEach((d) => {
+          if (!d.contains(e.target as Node)) d.open = false;
+        });
     });
   }
 
-  document.addEventListener('astro:page-load', init);
+  document.addEventListener("astro:page-load", init);
 </script>
 
 <style>
-.atc-dropdown { position: relative; flex-shrink: 0; }
-.atc-dropdown > summary { list-style: none; }
-.atc-dropdown > summary::-webkit-details-marker { display: none; }
+  .atc-dropdown {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .atc-dropdown > summary {
+    list-style: none;
+  }
+  .atc-dropdown > summary::-webkit-details-marker {
+    display: none;
+  }
 
-.atc-trigger {
-  cursor: pointer; user-select: none;
-  display: inline-block;
-  padding: 7px 16px; border-radius: 999px;
-  font-family: var(--fb); font-size: 10px; font-weight: 600;
-  letter-spacing: 1.5px; text-transform: uppercase;
-  background: color-mix(in srgb, var(--cp) 20%, white);
-  border: 1.5px solid color-mix(in srgb, var(--cp) 40%, transparent);
-  color: var(--dark);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.atc-trigger::after { content: ' ▾'; font-size: 9px; }
-.atc-dropdown[open] .atc-trigger {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(26, 26, 46, 0.12);
-}
+  .atc-trigger {
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;
+    padding: 7px 16px;
+    border-radius: 999px;
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--cp) 20%, white);
+    border: 1.5px solid color-mix(in srgb, var(--cp) 40%, transparent);
+    color: var(--dark);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .atc-trigger::after {
+    content: " ▾";
+    font-size: 9px;
+  }
+  .atc-dropdown[open] .atc-trigger {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26, 26, 46, 0.12);
+  }
 
-.atc-menu {
-  position: absolute; top: calc(100% + 6px); z-index: 40;
-  min-width: 160px;
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(26, 26, 46, 0.12);
-  overflow: hidden;
-}
-.atc-menu--left  { left: 0; }
-.atc-menu--right { right: 0; }
+  .atc-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    z-index: 40;
+    min-width: 160px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(26, 26, 46, 0.12);
+    overflow: hidden;
+  }
+  .atc-menu--left {
+    left: 0;
+  }
+  .atc-menu--right {
+    right: 0;
+  }
 
-.atc-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px;
-  font-family: var(--fb); font-size: 12px; font-weight: 500;
-  color: var(--dark); text-decoration: none;
-  transition: background 0.15s ease;
-}
-.atc-item + .atc-item { border-top: 1px solid var(--border); }
-.atc-item:hover { background: color-mix(in srgb, var(--cp) 8%, white); }
+  .atc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    font-family: var(--fb);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dark);
+    text-decoration: none;
+    transition: background 0.15s ease;
+  }
+  .atc-item + .atc-item {
+    border-top: 1px solid var(--border);
+  }
+  .atc-item:hover {
+    background: color-mix(in srgb, var(--cp) 8%, white);
+  }
 
-.atc-icon { width: 14px; height: 14px; flex-shrink: 0; color: var(--dark); opacity: 0.7; }
+  .atc-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    color: var(--dark);
+    opacity: 0.7;
+  }
 </style>

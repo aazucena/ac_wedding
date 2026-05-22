@@ -1,6 +1,6 @@
 ---
-import { marked } from 'marked';
-import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
+import { marked } from "marked";
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from "astro:env/client";
 
 export interface Props {
   headline: string;
@@ -13,16 +13,37 @@ export interface Props {
   animationDelay?: string;
 }
 
-const { headline, icon, title, content, imageUrl, objectPosition = 'center', reverse = false, animationDelay = '0.2s' } = Astro.props;
+const {
+  headline,
+  icon,
+  title,
+  content,
+  imageUrl,
+  objectPosition = "center",
+  reverse = false,
+  animationDelay = "0.2s",
+} = Astro.props;
 const contentHtml = await marked.parse(content);
 const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 ---
 
-<div class={`chapter ${reverse ? 'chapter-reverse' : ''}`} style={`animation-delay: ${animationDelay}`}>
+<div
+  class={`chapter ${reverse ? "chapter-reverse" : ""}`}
+  style={`animation-delay: ${animationDelay}`}
+>
   <div class="chapter-photo-placeholder">
-    {imageUrl
-      ? <img src={imageUrl} alt={title} class="chapter-photo" style={`object-position: ${objectPosition}`} data-download-protected={String(!allowDownload)} />
-      : <span>📷</span>
+    {
+      imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={title}
+          class="chapter-photo"
+          style={`object-position: ${objectPosition}`}
+          data-download-protected={String(!allowDownload)}
+        />
+      ) : (
+        <span>📷</span>
+      )
     }
   </div>
   <div class="chapter-content">
@@ -36,105 +57,179 @@ const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 </div>
 
 <style>
-.chapter {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
-  background: var(--ivory);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-  overflow: hidden;
-  position: relative;
-  opacity: 0; animation: fadeUp 0.8s ease forwards;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
+  .chapter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    position: relative;
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
 
-.chapter::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
+  .chapter::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
 
-.chapter:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  .chapter:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
 
-.chapter-photo-placeholder {
-  min-height: 260px;
-  background: linear-gradient(160deg,
-    color-mix(in srgb, var(--cp) 22%, var(--warm)),
-    color-mix(in srgb, var(--cs) 16%, var(--warm))
-  );
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px; opacity: 0.45;
-  order: 0;
-}
+  .chapter-photo-placeholder {
+    min-height: 260px;
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--cp) 22%, var(--warm)),
+      color-mix(in srgb, var(--cs) 16%, var(--warm))
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    opacity: 0.45;
+    order: 0;
+  }
 
-.chapter-photo {
-  width: 100%; height: 100%; object-fit: cover;
-  display: block; opacity: 1;
-}
+  .chapter-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 1;
+  }
 
-.chapter-photo[data-download-protected="true"] {
-  -webkit-user-drag: none;
-  -webkit-touch-callout: none;
-  user-select: none;
-}
+  .chapter-photo[data-download-protected="true"] {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
 
-.chapter-reverse .chapter-photo-placeholder { order: 1; }
-.chapter-reverse .chapter-content          { order: 0; }
+  .chapter-reverse .chapter-photo-placeholder {
+    order: 1;
+  }
+  .chapter-reverse .chapter-content {
+    order: 0;
+  }
 
-.chapter-content {
-  padding: 44px 40px;
-  display: flex; flex-direction: column; justify-content: center; gap: 16px;
-}
+  .chapter-content {
+    padding: 44px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 16px;
+  }
 
-.chapter-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp) 28%, white),
-    color-mix(in srgb, var(--cs) 22%, white)
-  );
-  border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
-  border-radius: 999px; padding: 6px 16px;
-  align-self: flex-start;
-}
+  .chapter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp) 28%, white),
+      color-mix(in srgb, var(--cs) 22%, white)
+    );
+    border: 1px solid color-mix(in srgb, var(--cs) 25%, transparent);
+    border-radius: 999px;
+    padding: 6px 16px;
+    align-self: flex-start;
+  }
 
-.chapter-icon { font-size: 14px; }
+  .chapter-icon {
+    font-size: 14px;
+  }
 
-.chapter-headline {
-  font-family: var(--fb); font-size: 10px; font-weight: 600;
-  letter-spacing: 2.5px; text-transform: uppercase; color: var(--dark);
-}
+  .chapter-headline {
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--dark);
+  }
 
-.chapter-title {
-  font-family: var(--fd); font-size: 30px;
-  font-weight: 300; font-style: italic; color: var(--dark); line-height: 1.1;
-}
+  .chapter-title {
+    font-family: var(--fd);
+    font-size: 30px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--dark);
+    line-height: 1.1;
+  }
 
-.chapter-body {
-  font-family: var(--fb); font-size: 15px; font-weight: 300;
-  color: var(--muted); line-height: 1.9;
-}
-.chapter-body :global(p)      { margin: 0 0 0.9em; }
-.chapter-body :global(p:last-child) { margin-bottom: 0; }
-.chapter-body :global(strong) { font-weight: 600; color: var(--dark); }
-.chapter-body :global(em)     { font-style: italic; }
-.chapter-body :global(a)      { color: var(--cs); text-decoration: underline; text-underline-offset: 2px; }
-.chapter-body :global(ul),
-.chapter-body :global(ol)     { padding-left: 1.4em; margin: 0.6em 0; }
-.chapter-body :global(li)     { margin-bottom: 0.3em; }
+  .chapter-body {
+    font-family: var(--fb);
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.9;
+  }
+  .chapter-body :global(p) {
+    margin: 0 0 0.9em;
+  }
+  .chapter-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+  .chapter-body :global(strong) {
+    font-weight: 600;
+    color: var(--dark);
+  }
+  .chapter-body :global(em) {
+    font-style: italic;
+  }
+  .chapter-body :global(a) {
+    color: var(--cs);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .chapter-body :global(ul),
+  .chapter-body :global(ol) {
+    padding-left: 1.4em;
+    margin: 0.6em 0;
+  }
+  .chapter-body :global(li) {
+    margin-bottom: 0.3em;
+  }
 
-@media (max-width: 700px) {
-  .chapter { grid-template-columns: 1fr; }
-  .chapter-photo-placeholder { min-height: 180px; order: 0 !important; }
-  .chapter-reverse .chapter-content { order: 1 !important; }
-  .chapter-content { padding: 28px 24px; }
-}
+  @media (max-width: 700px) {
+    .chapter {
+      grid-template-columns: 1fr;
+    }
+    .chapter-photo-placeholder {
+      min-height: 180px;
+      order: 0 !important;
+    }
+    .chapter-reverse .chapter-content {
+      order: 1 !important;
+    }
+    .chapter-content {
+      padding: 28px 24px;
+    }
+  }
 </style>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    document.querySelectorAll<HTMLImageElement>('.chapter-photo[data-download-protected="true"]').forEach(img => {
-      img.addEventListener('contextmenu', e => e.preventDefault());
-      img.addEventListener('dragstart', e => e.preventDefault());
-    });
+  document.addEventListener("astro:page-load", () => {
+    document
+      .querySelectorAll<HTMLImageElement>(
+        '.chapter-photo[data-download-protected="true"]',
+      )
+      .forEach((img) => {
+        img.addEventListener("contextmenu", (e) => e.preventDefault());
+        img.addEventListener("dragstart", (e) => e.preventDefault());
+      });
   });
 </script>

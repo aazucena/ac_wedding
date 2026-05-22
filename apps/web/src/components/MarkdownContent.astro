@@ -1,15 +1,12 @@
 ---
 // apps/web/src/components/MarkdownContent.astro
-import { parseMarkdown } from '@lib/markdown';
+import { parseMarkdown } from "@lib/markdown";
 export interface Props {
   content: string;
   as?: string;
 }
-const { as = 'div', content, ...props } = Astro.props;
+const { as = "div", content, ...props } = Astro.props;
 const Element = as;
 ---
 
-{content ? (
-<Element {...props} set:html={parseMarkdown(content)}>
-</Element>
-) : (<></>)}
+{content && <Element {...props} set:html={parseMarkdown(content)} />}

@@ -11,26 +11,48 @@ interface Props {
 const { members } = Astro.props;
 ---
 
-{members.length > 0 && (
-  <div id="identity-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="identity-title">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-header-text">
-          <p class="modal-eyebrow">Welcome!</p>
-          <h2 class="modal-title" id="identity-title">Who are you?</h2>
-          <p class="modal-desc">Select your name to get started.</p>
+{
+  members.length > 0 && (
+    <div
+      id="identity-modal"
+      class="modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="identity-title"
+    >
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-header-text">
+            <p class="modal-eyebrow">Welcome!</p>
+            <h2 class="modal-title" id="identity-title">
+              Who are you?
+            </h2>
+            <p class="modal-desc">Select your name to get started.</p>
+          </div>
         </div>
-      </div>
-      <div class="modal-body">
-        <div class="identity-list">
-          {members.map((m) => (
-            <button type="button" class="identity-btn" data-name={m.name} data-id={m.id} data-token={m.token}>{m.name}</button>
-          ))}
-          <button type="button" class="identity-btn identity-btn--other" id="identity-other-btn">
-            Not listed — enter manually
-          </button>
+        <div class="modal-body">
+          <div class="identity-list">
+            {members.map((m) => (
+              <button
+                type="button"
+                class="identity-btn"
+                data-name={m.name}
+                data-id={m.id}
+                data-token={m.token}
+              >
+                {m.name}
+              </button>
+            ))}
+            <button
+              type="button"
+              class="identity-btn identity-btn--other"
+              id="identity-other-btn"
+            >
+              Not listed — enter manually
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-)}
+  )
+}

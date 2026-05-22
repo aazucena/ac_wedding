@@ -3,55 +3,65 @@
 // Step 1: responses + details → Step 2: contact → Step 3: extras → Step 4: message → Step 5: review
 // Declined path: Step 1 → Step 4 → Step 5  (3 visible steps)
 
-import type { Parties } from '@lib/types';
-import iconSrc from '~/assets/icon.png';
-import RsvpGuestRow       from './RsvpGuestRow.astro';
-import RsvpPlusOneModal   from './RsvpPlusOneModal.astro';
-import RsvpMemoryUpload from './RsvpMemoryUpload.astro';
-import RsvpStepContact from './RsvpStepContact.astro';
-import RsvpStepExtras  from './RsvpStepExtras.astro';
-import RsvpStepMessage from './RsvpStepMessage.astro';
-import RsvpStepReview  from './RsvpStepReview.astro';
-import Hashtag         from '../Hashtag.astro';
-import '~/styles/rsvp-form.css';
+import type { Parties } from "@lib/types";
+import iconSrc from "~/assets/icon.png";
+import RsvpGuestRow from "./RsvpGuestRow.astro";
+import RsvpPlusOneModal from "./RsvpPlusOneModal.astro";
+import RsvpMemoryUpload from "./RsvpMemoryUpload.astro";
+import RsvpStepContact from "./RsvpStepContact.astro";
+import RsvpStepExtras from "./RsvpStepExtras.astro";
+import RsvpStepMessage from "./RsvpStepMessage.astro";
+import RsvpStepReview from "./RsvpStepReview.astro";
+import Hashtag from "../Hashtag.astro";
+import "~/styles/rsvp-form.css";
 
 interface Props {
-  party:           Parties;
-  groomName:       string;
-  brideName:       string;
-  hashtag:         string;
-  rsvpDeadline:    string;
+  party: Parties;
+  groomName: string;
+  brideName: string;
+  hashtag: string;
+  rsvpDeadline: string;
   plusOnesAllowed: number;
 }
 
-const { party, groomName, brideName, hashtag, rsvpDeadline, plusOnesAllowed } = Astro.props;
+const { party, groomName, brideName, hashtag, rsvpDeadline, plusOnesAllowed } =
+  Astro.props;
 
-type GuestType = 'adult' | 'teen' | 'child' | 'infant';
+type GuestType = "adult" | "teen" | "child" | "infant";
 
-const TYPE_ORDER: Record<GuestType, number> = { adult: 0, teen: 1, child: 2, infant: 3 };
+const TYPE_ORDER: Record<GuestType, number> = {
+  adult: 0,
+  teen: 1,
+  child: 2,
+  infant: 3,
+};
 
 // First names that may not be used for plus-ones.
 // Bride/groom come from settings; parents are fixed real people.
 const blockedFirstNames = [
-  groomName,          // preferred name from settings (e.g. "Aldrin")
-  brideName,          // preferred name from settings (e.g. "Christine")
-  'Eissa Aldrin',     // groom's formal first name
-  'Ma Christine',     // bride's formal first name
-  'Cesar',            // groom's father
-  'Amelia',           // groom's mother
-  'Benjamin', 'Bengie', // bride's father (formal + preferred)
-  'Ceferina', 'Rina',   // bride's mother (formal + preferred)
-].map(n => n.toLowerCase().trim());
+  groomName, // preferred name from settings (e.g. "Aldrin")
+  brideName, // preferred name from settings (e.g. "Christine")
+  "Eissa Aldrin", // groom's formal first name
+  "Ma Christine", // bride's formal first name
+  "Cesar", // groom's father
+  "Amelia", // groom's mother
+  "Benjamin",
+  "Bengie", // bride's father (formal + preferred)
+  "Ceferina",
+  "Rina", // bride's mother (formal + preferred)
+].map((n) => n.toLowerCase().trim());
 
-const guests = (party.members ?? []).map((g) => ({
-  id:        g.id,
-  personId:  g.person?.id ?? null,
-  name:      g.person?.preferred_name ?? g.person?.first_name ?? '',
-  firstName: g.person?.first_name ?? '',
-  lastName:  g.person?.last_name  ?? '',
-  type:      (g.type ?? 'adult') as GuestType,
-  dietary:   g.dietary_restrictions ?? '',
-})).sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
+const guests = (party.members ?? [])
+  .map((g) => ({
+    id: g.id,
+    personId: g.person?.id ?? null,
+    name: g.person?.preferred_name ?? g.person?.first_name ?? "",
+    firstName: g.person?.first_name ?? "",
+    lastName: g.person?.last_name ?? "",
+    type: (g.type ?? "adult") as GuestType,
+    dietary: g.dietary_restrictions ?? "",
+  }))
+  .sort((a, b) => TYPE_ORDER[a.type] - TYPE_ORDER[b.type]);
 ---
 
 <div class="card-header">
@@ -59,25 +69,35 @@ const guests = (party.members ?? []).map((g) => ({
   <p class="card-header-greeting">
     Dear <span class="guest-name">{party.name}</span>
   </p>
-  {party.invitation_label && party.invitation_type !== 'guest' && (
-    <p class="card-header-role">You are invited as our {party.invitation_label}</p>
-  )}
+  {
+    party.invitation_label && party.invitation_type !== "guest" && (
+      <p class="card-header-role">
+        You are invited as our {party.invitation_label}
+      </p>
+    )
+  }
   <p class="card-header-sub">Please respond for each member of your party.</p>
   <span class="deadline-badge">⏳ Due on {rsvpDeadline}</span>
 </div>
 
 <div class="form-loader" id="form-loader" aria-hidden="true">
-  <img class="form-loader-icon" src={iconSrc.src} alt="" width="80" height="80" />
+  <img
+    class="form-loader-icon"
+    src={iconSrc.src}
+    alt=""
+    width="80"
+    height="80"
+  />
   <p class="form-loader-text">A moment, please…</p>
 </div>
 
 <div class="card-body">
   <form id="rsvp-form" novalidate>
-
     <!-- Progress bar -->
     <div class="wizard-progress">
       <div class="wizard-progress-track">
-        <div class="wizard-progress-fill" id="wizard-fill" style="width:20%"></div>
+        <div class="wizard-progress-fill" id="wizard-fill" style="width:20%">
+        </div>
       </div>
       <span class="wizard-label" id="wizard-label">Step 1 of 5</span>
     </div>
@@ -85,28 +105,33 @@ const guests = (party.members ?? []).map((g) => ({
     <!-- ── Step 1: Who's coming? + details ───────────── -->
     <div class="wizard-step active" id="step-1">
       <div class="guest-list" id="guest-list">
-        {guests.map((g) => (
-          <RsvpGuestRow
-            guestId={g.id}
-            name={g.name}
-            dietary={g.dietary}
-          />
-        ))}
+        {
+          guests.map((g) => (
+            <RsvpGuestRow guestId={g.id} name={g.name} dietary={g.dietary} />
+          ))
+        }
       </div>
 
-      {plusOnesAllowed > 0 && (
-        <div id="plus-one-zone">
-          <div class="po-add-row" id="po-add-row">
-            <button type="button" class="po-add-btn" id="po-add-btn">
-              + Add Guest&ensp;<span class="po-badge" id="po-remaining">{plusOnesAllowed}</span>
-            </button>
+      {
+        plusOnesAllowed > 0 && (
+          <div id="plus-one-zone">
+            <div class="po-add-row" id="po-add-row">
+              <button type="button" class="po-add-btn" id="po-add-btn">
+                + Add Guest&ensp;
+                <span class="po-badge" id="po-remaining">
+                  {plusOnesAllowed}
+                </span>
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       <div class="error-banner" id="error-1"></div>
       <div class="wizard-nav wizard-nav--right">
-        <button type="button" class="wizard-btn wizard-btn--next" id="next-1">Continue</button>
+        <button type="button" class="wizard-btn wizard-btn--next" id="next-1"
+          >Continue</button
+        >
       </div>
     </div>
 
@@ -121,7 +146,6 @@ const guests = (party.members ?? []).map((g) => ({
 
     <!-- ── Step 5: Review ────────────────────────────── -->
     <RsvpStepReview />
-
   </form>
 
   <div class="success-state" id="state-success">
@@ -130,7 +154,12 @@ const guests = (party.members ?? []).map((g) => ({
     <p class="success-sub" id="success-message">
       Your RSVP has been received.<br />We can't wait to celebrate with you.
     </p>
-    <a href="/" class="success-home-btn" id="success-home-btn" style="display:none">Visit our wedding website</a>
+    <a
+      href="/"
+      class="success-home-btn"
+      id="success-home-btn"
+      style="display:none">Visit our wedding website</a
+    >
     <Hashtag as="span" class="success-hashtag" tag={hashtag} />
   </div>
 
@@ -141,23 +170,31 @@ const guests = (party.members ?? []).map((g) => ({
     submitBtnId="upload-submit-new"
     statusId="upload-status-new"
   />
-
 </div>
 
 <RsvpPlusOneModal plusOnesAllowed={plusOnesAllowed} />
 
-<Fragment set:html={`
+<Fragment
+  set:html={`
 <script type="application/json" id="rsvp-data">
   ${JSON.stringify({
-    partyId:         party.id,
-    guestList:       guests.map(g => ({ id: g.id, personId: g.personId, name: g.name, firstName: g.firstName, lastName: g.lastName, type: g.type })),
+    partyId: party.id,
+    guestList: guests.map((g) => ({
+      id: g.id,
+      personId: g.personId,
+      name: g.name,
+      firstName: g.firstName,
+      lastName: g.lastName,
+      type: g.type,
+    })),
     blockedFirstNames,
-    rsvpToken:       party.rsvp_token,
+    rsvpToken: party.rsvp_token,
     plusOnesAllowed: plusOnesAllowed,
   })}
 </script>
-`}/>
+`}
+/>
 
 <script>
-  import '~/scripts/rsvp-wizard';
+  import "~/scripts/rsvp-wizard";
 </script>

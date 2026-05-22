@@ -1,6 +1,6 @@
 ---
 // home/DressCodeCard.astro — dress code info card
-import MarkdownContent from '../MarkdownContent.astro';
+import MarkdownContent from "../MarkdownContent.astro";
 interface Props {
   dressCode: string;
   description?: string | null;
@@ -9,41 +9,71 @@ const { dressCode, description } = Astro.props;
 ---
 
 <style>
-.dress-card {
-  background: var(--ivory); border-radius: var(--radius);
-  border: 1px solid var(--border); box-shadow: var(--shadow-card);
-  padding: 48px 56px; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  position: relative; overflow: hidden; max-width: 640px; margin: 0 auto;
-}
-.dress-card::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
-.dress-icon { font-size: 32px; }
-.dress-title {
-  font-family: var(--fd); font-size: 28px;
-  font-weight: 300; font-style: italic; color: var(--dark);
-}
-.dress-desc {
-  font-family: var(--fb); font-size: 14px; font-weight: 300;
-  color: var(--muted); line-height: 1.9; max-width: 440px;
-}
-.dress-desc em { color: var(--dark); font-style: italic; }
-@media (max-width: 640px) {
-  .dress-card { padding: 36px 24px; }
-}
+  .dress-card {
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    padding: 48px 56px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .dress-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
+  .dress-icon {
+    font-size: 32px;
+  }
+  .dress-title {
+    font-family: var(--fd);
+    font-size: 28px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--dark);
+  }
+  .dress-desc {
+    font-family: var(--fb);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.9;
+    max-width: 440px;
+  }
+  .dress-desc em {
+    color: var(--dark);
+    font-style: italic;
+  }
+  @media (max-width: 640px) {
+    .dress-card {
+      padding: 36px 24px;
+    }
+  }
 </style>
 
 <div class="dress-card">
   <span class="dress-icon">👔</span>
   <h3 class="dress-title">{dressCode}</h3>
-  {description ? (
-    <MarkdownContent class="dress-desc" content={description} />
-  ) : (
-    <p class="dress-desc">
-      Barong or formal suits for gentlemen. Formal gowns for ladies.
-      <em> Please avoid wearing white and black.</em>
-    </p>
-  )}
+  {
+    description ? (
+      <MarkdownContent class="dress-desc" content={description} />
+    ) : (
+      <p class="dress-desc">
+        Barong or formal suits for gentlemen. Formal gowns for ladies.
+        <em> Please avoid wearing white and black.</em>
+      </p>
+    )
+  }
 </div>

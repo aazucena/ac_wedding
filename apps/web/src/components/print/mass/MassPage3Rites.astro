@@ -1,8 +1,8 @@
 ---
 // MassPage3Rites.astro — Page 3: Introductory Rites
-import CardWatermark from '@components/CardWatermark.astro';
-import StackedImg    from '@assets/stacked.png';
-import { Image } from 'astro:assets';
+import CardWatermark from "@components/CardWatermark.astro";
+import StackedImg from "@assets/stacked.png";
+import { Image } from "astro:assets";
 
 interface Props {
   groomFirst: string;
@@ -28,33 +28,56 @@ const { groomFirst, brideFirst } = Astro.props;
     </div>
 
     <div class="rubric">Entrance Procession</div>
-    <div class="priest">The wedding party processes into the church as the Opening Hymn is sung.</div>
+    <div class="priest">
+      The wedding party processes into the church as the Opening Hymn is sung.
+    </div>
 
     <div class="rubric">Sign of the Cross &amp; Greeting</div>
     <div class="priest-label">Priest</div>
-    <div class="priest">In the name of the Father, and of the Son, and of the Holy Spirit.</div>
+    <div class="priest">
+      In the name of the Father, and of the Son, and of the Holy Spirit.
+    </div>
     <div class="response-label">All</div>
     <div class="response">Amen.</div>
     <div class="priest-label">Priest</div>
-    <div class="priest">The grace of our Lord Jesus Christ, and the love of God, and the communion of the Holy Spirit be with you all.</div>
+    <div class="priest">
+      The grace of our Lord Jesus Christ, and the love of God, and the communion
+      of the Holy Spirit be with you all.
+    </div>
     <div class="response-label">All</div>
     <div class="response">And with your spirit.</div>
 
     <div class="rubric">Penitential Act</div>
     <div class="response-label">All</div>
-    <div class="response">I confess to almighty God and to you, my brothers and sisters, that I have greatly sinned, in my thoughts and in my words, in what I have done and in what I have failed to do, through my fault, through my fault, through my most grievous fault; therefore I ask blessed Mary ever-Virgin, all the Angels and Saints, and you, my brothers and sisters, to pray for me to the Lord our God.</div>
+    <div class="response">
+      I confess to almighty God and to you, my brothers and sisters, that I have
+      greatly sinned, in my thoughts and in my words, in what I have done and in
+      what I have failed to do, through my fault, through my fault, through my
+      most grievous fault; therefore I ask blessed Mary ever-Virgin, all the
+      Angels and Saints, and you, my brothers and sisters, to pray for me to the
+      Lord our God.
+    </div>
     <div class="priest-label">Priest</div>
-    <div class="priest">May almighty God have mercy on us, forgive us our sins, and bring us to everlasting life.</div>
+    <div class="priest">
+      May almighty God have mercy on us, forgive us our sins, and bring us to
+      everlasting life.
+    </div>
     <div class="response-label">All</div>
     <div class="response">Amen.</div>
 
     <div class="rubric">Gloria</div>
     <div class="response-label">All</div>
-    <div class="response">Glory to God in the highest, and on earth peace to people of good will. We praise you, we bless you, we adore you, we glorify you, we give you thanks for your great glory, Lord God, heavenly King, O God, almighty Father.</div>
+    <div class="response">
+      Glory to God in the highest, and on earth peace to people of good will. We
+      praise you, we bless you, we adore you, we glorify you, we give you thanks
+      for your great glory, Lord God, heavenly King, O God, almighty Father.
+    </div>
   </div>
 
   <div class="page-footer">
-    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <span class="footer-names"
+      >{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span
+    >
     <Image src={StackedImg} class="footer-logo" alt="" />
     <span class="footer-page">3</span>
   </div>

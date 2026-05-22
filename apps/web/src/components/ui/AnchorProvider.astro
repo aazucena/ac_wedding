@@ -34,14 +34,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--cp, #A8D4B8);
+    color: var(--cp, #a8d4b8);
     transform: scale(1.15);
     padding: 0;
     background: none;
     border: none;
     cursor: pointer;
     color: var(--muted, #8a8499);
-    transition: display 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    transition:
+      display 0.2s ease,
+      color 0.2s ease,
+      transform 0.15s ease;
     line-height: 1;
   }
 
@@ -49,7 +52,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--cp, #A8D4B8) !important;
+    color: var(--cp, #a8d4b8) !important;
   }
   /* Toast notification */
   #anchor-toast {
@@ -58,7 +61,7 @@
     left: 50%;
     translate: -50% 0;
     background: var(--dark, #1a1a2e);
-    color: color-mix(in srgb, var(--cp, #A8D4B8) 85%, white);
+    color: color-mix(in srgb, var(--cp, #a8d4b8) 85%, white);
     font-family: var(--fb, sans-serif);
     font-size: 11px;
     font-weight: 500;
@@ -69,7 +72,9 @@
     pointer-events: none;
     opacity: 0;
     transform: translateY(8px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      transform 0.2s ease;
     z-index: 9999;
     white-space: nowrap;
   }
@@ -81,22 +86,28 @@
 </style>
 
 <script is:inline>
-  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const SVG_NS = "http://www.w3.org/2000/svg";
 
   function makeLinkIcon() {
-    const svg = document.createElementNS(SVG_NS, 'svg');
-    svg.setAttribute('viewBox', '0 0 16 16');
-    svg.setAttribute('fill', 'none');
-    svg.setAttribute('stroke', 'currentColor');
-    svg.setAttribute('stroke-width', '1.8');
-    svg.setAttribute('stroke-linecap', 'round');
-    svg.setAttribute('stroke-linejoin', 'round');
-    svg.setAttribute('aria-hidden', 'true');
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "1.8");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    svg.setAttribute("aria-hidden", "true");
 
-    const p1 = document.createElementNS(SVG_NS, 'path');
-    p1.setAttribute('d', 'M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4');
-    const p2 = document.createElementNS(SVG_NS, 'path');
-    p2.setAttribute('d', 'M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12');
+    const p1 = document.createElementNS(SVG_NS, "path");
+    p1.setAttribute(
+      "d",
+      "M6.5 9.5a3.5 3.5 0 0 0 5 0l2-2a3.5 3.5 0 0 0-5-5L7 4",
+    );
+    const p2 = document.createElementNS(SVG_NS, "path");
+    p2.setAttribute(
+      "d",
+      "M9.5 6.5a3.5 3.5 0 0 0-5 0l-2 2a3.5 3.5 0 0 0 5 5L9 12",
+    );
     svg.appendChild(p1);
     svg.appendChild(p2);
     return svg;
@@ -105,78 +116,87 @@
   let toastTimer = null;
 
   function showToast(msg) {
-    const toast = document.getElementById('anchor-toast');
+    const toast = document.getElementById("anchor-toast");
     if (!toast) return;
     toast.textContent = msg;
-    toast.classList.add('visible');
+    toast.classList.add("visible");
     if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('visible'), 2000);
+    toastTimer = setTimeout(() => toast.classList.remove("visible"), 2000);
   }
 
   function initAnchorLinks() {
     // Clean up previously injected buttons (view transitions re-run this)
-    document.querySelectorAll('.anchor-copy-btn').forEach(b => b.remove());
-    document.querySelectorAll('.anchor-heading').forEach(h => h.classList.remove('anchor-heading'));
-    document.querySelectorAll('[data-anchorable]').forEach(el => el.removeAttribute('data-anchorable'));
+    document.querySelectorAll(".anchor-copy-btn").forEach((b) => b.remove());
+    document
+      .querySelectorAll(".anchor-heading")
+      .forEach((h) => h.classList.remove("anchor-heading"));
+    document
+      .querySelectorAll("[data-anchorable]")
+      .forEach((el) => el.removeAttribute("data-anchorable"));
 
-    document.querySelectorAll('[id]').forEach(section => {
+    document.querySelectorAll("[id]").forEach((section) => {
       const id = section.id;
       if (!id) return;
 
       // Find the first heading within 2 levels of the id-bearing element
-      const headingLevels = [
-        2, 3, 4, 5, 6
-      ]
-      const headings = headingLevels.map(lvl => `h${lvl}`);
-      const heading = section.matches(headings.join(','))
+      const headingLevels = [2, 3, 4, 5, 6];
+      const headings = headingLevels.map((lvl) => `h${lvl}`);
+      const heading = section.matches(headings.join(","))
         ? section
         : section.querySelector(
-            headings.map(h => `:scope > ${h}`).join(", ") + ", " +
-            headings.map(h => `:scope > * > ${h}`).join(", ")
+            headings.map((h) => `:scope > ${h}`).join(", ") +
+              ", " +
+              headings.map((h) => `:scope > * > ${h}`).join(", "),
           );
 
       if (!heading) return;
 
       // Mark the outer container so CSS hover group works
-      section.setAttribute('data-anchorable', '');
-      heading.classList.add('anchor-heading');
+      section.setAttribute("data-anchorable", "");
+      heading.classList.add("anchor-heading");
 
-      const btn = document.createElement('button');
-      btn.className = 'anchor-copy-btn';
-      btn.setAttribute('aria-label', `Copy link to "${heading.textContent?.trim()}"`);
+      const btn = document.createElement("button");
+      btn.className = "anchor-copy-btn";
+      btn.setAttribute(
+        "aria-label",
+        `Copy link to "${heading.textContent?.trim()}"`,
+      );
       btn.appendChild(makeLinkIcon());
 
-      btn.addEventListener('click', async (e) => {
+      btn.addEventListener("click", async (e) => {
         e.preventDefault();
         const url = `${location.origin}${location.pathname}#${id}`;
         try {
           await navigator.clipboard.writeText(url);
         } catch {
           // Fallback for browsers without Clipboard API
-          const ta = document.createElement('textarea');
+          const ta = document.createElement("textarea");
           ta.value = url;
-          ta.style.cssText = 'position:fixed;opacity:0;pointer-events:none';
+          ta.style.cssText = "position:fixed;opacity:0;pointer-events:none";
           document.body.appendChild(ta);
           ta.select();
-          document.execCommand('copy');
+          document.execCommand("copy");
           document.body.removeChild(ta);
         }
-        btn.classList.add('copied');
-        showToast('Link copied');
-        setTimeout(() => btn.classList.remove('copied'), 2000);
+        btn.classList.add("copied");
+        showToast("Link copied");
+        setTimeout(() => btn.classList.remove("copied"), 2000);
       });
 
       heading.appendChild(btn);
 
       // Store heading level so TableOfContents can indent by depth
-      section.setAttribute('data-toc-level', heading.tagName[1]);
+      section.setAttribute("data-toc-level", heading.tagName[1]);
     });
 
     // Defer so all astro:page-load handlers (e.g. TableOfContents) finish
     // registering their `anchor:ready` listeners before we fire it.
-    setTimeout(() => document.dispatchEvent(new CustomEvent('anchor:ready')), 0);
+    setTimeout(
+      () => document.dispatchEvent(new CustomEvent("anchor:ready")),
+      0,
+    );
   }
 
   // Run on first load and after every view-transition navigation
-  document.addEventListener('astro:page-load', initAnchorLinks);
+  document.addEventListener("astro:page-load", initAnchorLinks);
 </script>

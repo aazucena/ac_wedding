@@ -1,7 +1,7 @@
 ---
 // apps/web/src/components/CalendarExport.astro
 // Renders "Add to Calendar" buttons for ceremony and reception.
-import AddToCalendar from './AddToCalendar.astro';
+import AddToCalendar from "./AddToCalendar.astro";
 
 interface Props {
   groomName: string;
@@ -11,27 +11,26 @@ const { groomName, brideName } = Astro.props;
 
 const events = [
   {
-    id:       'ceremony',
-    label:    'Ceremony',
-    icon:     '⛪',
-    title:    `${groomName} & ${brideName} — Nuptial Mass`,
-    start:    '20260926T140000',
-    end:      '20260926T153000',
-    location: 'Lethbridge, Alberta',
-    desc:     `Wedding ceremony for ${groomName} and ${brideName}`,
+    id: "ceremony",
+    label: "Ceremony",
+    icon: "⛪",
+    title: `${groomName} & ${brideName} — Nuptial Mass`,
+    start: "20260926T140000",
+    end: "20260926T153000",
+    location: "Lethbridge, Alberta",
+    desc: `Wedding ceremony for ${groomName} and ${brideName}`,
   },
   {
-    id:       'reception',
-    label:    'Reception',
-    icon:     '🥂',
-    title:    `${groomName} & ${brideName} — Wedding Reception`,
-    start:    '20260926T180000',
-    end:      '20260926T220000',
-    location: 'Lethbridge, Alberta',
-    desc:     `Wedding reception for ${groomName} and ${brideName}`,
+    id: "reception",
+    label: "Reception",
+    icon: "🥂",
+    title: `${groomName} & ${brideName} — Wedding Reception`,
+    start: "20260926T180000",
+    end: "20260926T220000",
+    location: "Lethbridge, Alberta",
+    desc: `Wedding reception for ${groomName} and ${brideName}`,
   },
 ];
-
 ---
 
 <div class="calendar-export">
@@ -41,72 +40,100 @@ const events = [
   </div>
 
   <div class="cal-events">
-    {events.map(e => (
-      <div class="cal-event">
-        <div class="cal-event-label">
-          <span class="cal-event-icon">{e.icon}</span>
-          <span class="cal-event-name">{e.label}</span>
+    {
+      events.map((e) => (
+        <div class="cal-event">
+          <div class="cal-event-label">
+            <span class="cal-event-icon">{e.icon}</span>
+            <span class="cal-event-name">{e.label}</span>
+          </div>
+          <AddToCalendar
+            name={e.label}
+            icsKey={e.id}
+            start={e.start}
+            end={e.end}
+            location={e.location}
+            description={e.desc}
+            align="right"
+          />
         </div>
-        <AddToCalendar
-          name={e.label}
-          icsKey={e.id}
-          start={e.start}
-          end={e.end}
-          location={e.location}
-          description={e.desc}
-          align="right"
-        />
-      </div>
-    ))}
+      ))
+    }
   </div>
 </div>
 
 <style>
-.calendar-export {
-  background: var(--ivory);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-  position: relative;
-  width: 100%;
-}
+  .calendar-export {
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    position: relative;
+    width: 100%;
+  }
 
-.calendar-export::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
+  .calendar-export::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
 
-.cal-header {
-  text-align: center; padding: 28px 32px 0;
-}
+  .cal-header {
+    text-align: center;
+    padding: 28px 32px 0;
+  }
 
-.cal-events {
-  padding: 20px 32px 28px;
-  display: flex; flex-direction: column; gap: 0;
-}
+  .cal-events {
+    padding: 20px 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
 
-.cal-event {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 16px; padding: 16px 0;
-  border-bottom: 1px solid var(--border);
-}
-.cal-event:last-child { border-bottom: none; }
+  .cal-event {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .cal-event:last-child {
+    border-bottom: none;
+  }
 
-.cal-event-label {
-  display: flex; align-items: center; gap: 10px;
-}
+  .cal-event-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-.cal-event-icon { font-size: 18px; }
+  .cal-event-icon {
+    font-size: 18px;
+  }
 
-.cal-event-name {
-  font-family: var(--fd); font-size: 18px;
-  font-weight: 400; color: var(--dark);
-}
+  .cal-event-name {
+    font-family: var(--fd);
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--dark);
+  }
 
-@media (max-width: 520px) {
-  .cal-event { flex-direction: row; justify-content: space-between; gap: 10px; }
-  .cal-events { padding: 16px 20px 20px; }
-  .cal-header { padding: 24px 20px 0; }
-}
+  @media (max-width: 520px) {
+    .cal-event {
+      flex-direction: row;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .cal-events {
+      padding: 16px 20px 20px;
+    }
+    .cal-header {
+      padding: 24px 20px 0;
+    }
+  }
 </style>

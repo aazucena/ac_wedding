@@ -1,6 +1,6 @@
 ---
 // rsvp/RsvpStepMessage.astro — Step 4: Message to the couple (attending or declined)
-import TiptapEditor from '../ui/TiptapEditor.astro';
+import TiptapEditor from "../ui/TiptapEditor.astro";
 
 interface Props {
   groomName: string;
@@ -11,7 +11,10 @@ const { groomName, brideName } = Astro.props;
 
 <div class="wizard-step" id="step-4">
   <p class="step-eyebrow">Message to the Couple</p>
-  <p class="step-sub">Share your wishes for {groomName} &amp; {brideName}.<br />This will be posted on our Guestbook page.</p>
+  <p class="step-sub">
+    Share your wishes for {groomName} &amp; {brideName}.<br />This will be
+    posted on our Guestbook page.
+  </p>
   <div class="step-fields">
     <!-- attending: required -->
     <div id="msg-attending-wrap">
@@ -19,23 +22,35 @@ const { groomName, brideName } = Astro.props;
         <label class="field-label" for="message">
           Message <span class="field-required">*</span>
         </label>
-        <TiptapEditor id="message" placeholder={`Share your wishes for ${groomName} & ${brideName}…`} />
+        <TiptapEditor
+          id="message"
+          placeholder={`Share your wishes for ${groomName} & ${brideName}…`}
+        />
       </div>
     </div>
     <!-- declined: optional -->
     <div id="msg-declined-wrap" style="display:none">
-      <p class="declined-note">We'll miss you dearly.<br />Feel free to leave a note below.</p>
+      <p class="declined-note">
+        We'll miss you dearly.<br />Feel free to leave a note below.
+      </p>
       <div class="field">
         <label class="field-label" for="message-declined">
           Message <span class="optional">optional</span>
         </label>
-        <TiptapEditor id="message-declined" placeholder={`Share your wishes for ${groomName} & ${brideName}…`} />
+        <TiptapEditor
+          id="message-declined"
+          placeholder={`Share your wishes for ${groomName} & ${brideName}…`}
+        />
       </div>
     </div>
   </div>
   <div class="error-banner" id="error-4"></div>
   <div class="wizard-nav wizard-nav--between">
-    <button type="button" class="wizard-btn wizard-btn--back" id="back-4">← Back</button>
-    <button type="button" class="wizard-btn wizard-btn--next" id="next-4">Review</button>
+    <button type="button" class="wizard-btn wizard-btn--back" id="back-4"
+      >← Back</button
+    >
+    <button type="button" class="wizard-btn wizard-btn--next" id="next-4"
+      >Review</button
+    >
   </div>
 </div>

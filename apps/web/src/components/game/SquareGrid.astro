@@ -7,43 +7,72 @@ const { count = 15 } = Astro.props;
 ---
 
 <div class="squares-grid" id="squares-grid">
-  {Array.from({ length: count }, (_, i) => i + 1).map((n) => (
-    <button type="button" class="sq-btn" data-n={String(n)}>{n}</button>
-  ))}
+  {
+    Array.from({ length: count }, (_, i) => i + 1).map((n) => (
+      <button type="button" class="sq-btn" data-n={String(n)}>
+        {n}
+      </button>
+    ))
+  }
 </div>
 
 <style is:global>
   /* ── Squares grid ───────────────────────────────────────── */
   .squares-grid {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
   }
   .sq-btn {
     position: relative;
-    aspect-ratio: 1; border: 1.5px solid var(--border); border-radius: 8px;
-    background: var(--ivory); font-family: var(--fb); font-size: 15px;
-    font-weight: 500; color: var(--muted); cursor: pointer;
-    transition: border-color 0.15s, background 0.15s, color 0.15s;
+    aspect-ratio: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: var(--ivory);
+    font-family: var(--fb);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      background 0.15s,
+      color 0.15s;
   }
-  .sq-btn:hover { border-color: var(--cs); color: var(--dark); }
+  .sq-btn:hover {
+    border-color: var(--cs);
+    color: var(--dark);
+  }
   .sq-btn.done {
     border-color: var(--cp);
     background: color-mix(in srgb, var(--cp) 16%, var(--ivory));
-    color: var(--dark); font-weight: 600;
+    color: var(--dark);
+    font-weight: 600;
   }
   .sq-btn.done::after {
-    content: '✓';
-    position: absolute; top: 3px; right: 5px;
-    font-size: 8px; font-weight: 700; color: var(--cp);
+    content: "✓";
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    font-size: 8px;
+    font-weight: 700;
+    color: var(--cp);
   }
   .sq-btn.submitted {
     border-color: var(--border);
     background: color-mix(in srgb, var(--muted) 8%, var(--ivory));
-    color: var(--muted); font-weight: 400;
-    cursor: not-allowed; opacity: 0.55;
+    color: var(--muted);
+    font-weight: 400;
+    cursor: not-allowed;
+    opacity: 0.55;
   }
   .sq-btn.submitted::after {
-    content: '✦';
-    position: absolute; top: 3px; right: 5px;
-    font-size: 7px; font-weight: 700; color: var(--muted);
+    content: "✦";
+    position: absolute;
+    top: 3px;
+    right: 5px;
+    font-size: 7px;
+    font-weight: 700;
+    color: var(--muted);
   }
 </style>

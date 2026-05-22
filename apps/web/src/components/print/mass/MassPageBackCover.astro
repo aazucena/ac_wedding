@@ -1,8 +1,8 @@
 ---
 // MassPageBackCover.astro — Back cover: Thank you page
-import CardWatermark from '@components/CardWatermark.astro';
-import StackedImg    from '@assets/stacked.png';
-import { Image } from 'astro:assets';
+import CardWatermark from "@components/CardWatermark.astro";
+import StackedImg from "@assets/stacked.png";
+import { Image } from "astro:assets";
 
 interface Props {
   groomFirst: string;
@@ -31,8 +31,12 @@ const { groomFirst, brideFirst, weddingDate, venueN } = Astro.props;
       <span class="cover-rule-gem">✦</span>
       <div class="cover-rule-line"></div>
     </div>
-    <div class="cover-title" style="max-width: 3.5in; font-style: italic; font-family: var(--fd); font-size: 14px; text-transform: none; letter-spacing: 0; line-height: 1.7;">
-      Thank you for joining us on this sacred day and for witnessing the beginning of our forever.
+    <div
+      class="cover-title"
+      style="max-width: 3.5in; font-style: italic; font-family: var(--fd); font-size: 14px; text-transform: none; letter-spacing: 0; line-height: 1.7;"
+    >
+      Thank you for joining us on this sacred day and for witnessing the
+      beginning of our forever.
     </div>
     <div class="cover-rule" style="margin-top: 8px;">
       <div class="cover-rule-line"></div>
@@ -44,7 +48,9 @@ const { groomFirst, brideFirst, weddingDate, venueN } = Astro.props;
   </div>
 
   <div class="page-footer">
-    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <span class="footer-names"
+      >{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span
+    >
     <Image src={StackedImg} class="footer-logo" alt="" />
     <span class="footer-page"></span>
   </div>

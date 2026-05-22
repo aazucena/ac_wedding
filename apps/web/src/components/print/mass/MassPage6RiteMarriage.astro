@@ -1,8 +1,8 @@
 ---
 // MassPage6RiteMarriage.astro — Page 6: Rite of Marriage (vows)
-import CardWatermark from '@components/CardWatermark.astro';
-import StackedImg    from '@assets/stacked.png';
-import { Image } from 'astro:assets';
+import CardWatermark from "@components/CardWatermark.astro";
+import StackedImg from "@assets/stacked.png";
+import { Image } from "astro:assets";
 
 interface Props {
   groomFirst: string;
@@ -31,37 +31,60 @@ const { groomFirst, brideFirst, groomFull, brideFull } = Astro.props;
 
     <div class="rubric">Address &amp; Questions Before Consent</div>
     <div class="priest-label">Priest</div>
-    <div class="priest">{groomFirst} and {brideFirst}, have you come here to enter into Marriage without coercion, freely and wholeheartedly?</div>
+    <div class="priest">
+      {groomFirst} and {brideFirst}, have you come here to enter into Marriage
+      without coercion, freely and wholeheartedly?
+    </div>
     <div class="response-label">Both</div>
     <div class="response">I have.</div>
     <div class="priest-label">Priest</div>
-    <div class="priest">Are you prepared, as you follow the path of Marriage, to love and honor each other for as long as you both shall live?</div>
+    <div class="priest">
+      Are you prepared, as you follow the path of Marriage, to love and honor
+      each other for as long as you both shall live?
+    </div>
     <div class="response-label">Both</div>
     <div class="response">I am.</div>
     <div class="priest-label">Priest</div>
-    <div class="priest">Are you prepared to accept children lovingly from God and to bring them up according to the law of Christ and his Church?</div>
+    <div class="priest">
+      Are you prepared to accept children lovingly from God and to bring them up
+      according to the law of Christ and his Church?
+    </div>
     <div class="response-label">Both</div>
     <div class="response">I am.</div>
 
     <div class="rubric">Exchange of Vows</div>
     <div class="vow-block">
       <div class="vow-speaker">{groomFirst}</div>
-      <div class="vow-text">I, {groomFull}, take you, {brideFull}, to be my wife. I promise to be faithful to you, in good times and in bad, in sickness and in health, to love you and to honor you all the days of my life.</div>
+      <div class="vow-text">
+        I, {groomFull}, take you, {brideFull}, to be my wife. I promise to be
+        faithful to you, in good times and in bad, in sickness and in health, to
+        love you and to honor you all the days of my life.
+      </div>
     </div>
     <div class="vow-block">
       <div class="vow-speaker">{brideFirst}</div>
-      <div class="vow-text">I, {brideFull}, take you, {groomFull}, to be my husband. I promise to be faithful to you, in good times and in bad, in sickness and in health, to love you and to honor you all the days of my life.</div>
+      <div class="vow-text">
+        I, {brideFull}, take you, {groomFull}, to be my husband. I promise to be
+        faithful to you, in good times and in bad, in sickness and in health, to
+        love you and to honor you all the days of my life.
+      </div>
     </div>
 
     <div class="priest-label" style="margin-top: 10px;">Priest</div>
-    <div class="priest">May the Lord in his kindness strengthen the consent you have declared before the Church, and graciously bring to fulfillment his blessings within you.</div>
+    <div class="priest">
+      May the Lord in his kindness strengthen the consent you have declared
+      before the Church, and graciously bring to fulfillment his blessings
+      within you.
+    </div>
     <div class="priest">What God joins together, let no one put asunder.</div>
     <div class="response-label">All</div>
     <div class="response">Amen.</div>
   </div>
 
   <div class="page-footer">
-    <span class="footer-names">{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span>
+    <span class="footer-names"
+      >{groomFirst} <span class="footer-amp">&amp;</span> {brideFirst}</span
+    >
     <Image src={StackedImg} class="footer-logo" alt="" />
     <span class="footer-page">6</span>
   </div>

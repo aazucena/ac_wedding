@@ -1,12 +1,12 @@
 ---
-import Hashtag from '../Hashtag.astro';
+import Hashtag from "../Hashtag.astro";
 
 // rsvp/RsvpAlreadyReplied.astro — shown when party has already submitted an RSVP
 
 interface Props {
   partyName: string;
-  status:    string;   // 'confirmed' | 'declined'
-  hashtag:   string;
+  status: string; // 'confirmed' | 'declined'
+  hashtag: string;
 }
 
 const { partyName, status, hashtag } = Astro.props;
@@ -16,43 +16,88 @@ const { partyName, status, hashtag } = Astro.props;
   <div class="already-responded-icon">💌</div>
   <div class="already-responded-body">
     <h2 class="already-responded-title">
-      {status === 'confirmed' ? 'See you there!' : 'Response received'}
+      {status === "confirmed" ? "See you there!" : "Response received"}
     </h2>
-    <p class="already-responded-salutation">Dear <span class="party-name">{partyName}</span>,</p>
+    <p class="already-responded-salutation">
+      Dear <span class="party-name">{partyName}</span>,
+    </p>
     <p class="already-responded-sub">
-      {status === 'confirmed'
-        ? "We have your RSVP. We can't wait to celebrate with you!"
-        : "We have your response. You'll be missed!"}
+      {
+        status === "confirmed"
+          ? "We have your RSVP. We can't wait to celebrate with you!"
+          : "We have your response. You'll be missed!"
+      }
     </p>
     <Hashtag as="span" class="already-responded-hashtag" tag={hashtag} />
   </div>
 </div>
 
 <style>
-/* ══ ALREADY-RESPONDED STATE ══════════════════════════════ */
-.already-responded-state {
-  display: flex; flex-direction: column; gap: 10px; margin-top: 16px;
-  text-align: center; padding: 44px 32px;
-  border-bottom: 1px solid var(--border);
-}
-.already-responded-icon { font-size: 46px; margin-bottom: 18px; animation: rsvp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; flex-shrink: 0; line-height: 1; }
-@keyframes rsvp-pop { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-.already-responded-body { display: flex; flex-direction: column; gap: 6px; }
-.already-responded-title {
-  font-family: var(--fd); font-size: 34px; font-weight: 300; font-style: italic; color: var(--dark); margin-bottom: 10px;
-}
-.already-responded-salutation {
-  font-family: var(--fd); font-size: 22px; font-weight: 300; font-style: italic;
-  color: var(--muted); margin-bottom: 4px;
-}
-.already-responded-salutation .party-name {
-  color: var(--dark); font-weight: 400;
-}
-.already-responded-sub {
-  font-family: var(--fb); font-size: 14px; font-weight: 300; color: var(--muted); line-height: 1.8;
-}
-.already-responded-hashtag {
-  display: inline-block; margin-top: 4px;
-  font-family: var(--fd); font-size: 17px; font-style: italic; color: var(--cs);
-}
+  /* ══ ALREADY-RESPONDED STATE ══════════════════════════════ */
+  .already-responded-state {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+    text-align: center;
+    padding: 44px 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  .already-responded-icon {
+    font-size: 46px;
+    margin-bottom: 18px;
+    animation: rsvp-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  @keyframes rsvp-pop {
+    from {
+      transform: scale(0);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  .already-responded-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .already-responded-title {
+    font-family: var(--fd);
+    font-size: 34px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--dark);
+    margin-bottom: 10px;
+  }
+  .already-responded-salutation {
+    font-family: var(--fd);
+    font-size: 22px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .already-responded-salutation .party-name {
+    color: var(--dark);
+    font-weight: 400;
+  }
+  .already-responded-sub {
+    font-family: var(--fb);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--muted);
+    line-height: 1.8;
+  }
+  .already-responded-hashtag {
+    display: inline-block;
+    margin-top: 4px;
+    font-family: var(--fd);
+    font-size: 17px;
+    font-style: italic;
+    color: var(--cs);
+  }
 </style>

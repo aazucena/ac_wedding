@@ -2,9 +2,14 @@
 // game/UploadModal.astro — per-square file selection + confirm-submit modals
 ---
 
-
 <!-- ── Confirm-submit modal ─────────────────────────────── -->
-<div id="confirm-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+<div
+  id="confirm-modal"
+  class="modal-overlay hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="confirm-title"
+>
   <div class="modal-card">
     <div class="modal-header">
       <div class="modal-header-text">
@@ -17,22 +22,38 @@
       <div id="confirm-squares" class="confirm-squares"></div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="modal-cancel" id="confirm-cancel">Go Back</button>
-      <button type="button" class="modal-confirm" id="confirm-ok">Submit</button>
+      <button type="button" class="modal-cancel" id="confirm-cancel"
+        >Go Back</button
+      >
+      <button type="button" class="modal-confirm" id="confirm-ok">Submit</button
+      >
     </div>
   </div>
 </div>
 
 <!-- ── Upload modal ──────────────────────────────────────── -->
-<div id="upload-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+<div
+  id="upload-modal"
+  class="modal-overlay hidden"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-title"
+>
   <div class="modal-card">
     <div class="modal-header">
       <div class="modal-header-text">
         <p class="modal-eyebrow">Upload Proof</p>
         <h2 class="modal-title" id="modal-title">Square —</h2>
-        <p class="modal-desc">Take a selfie with the person who matches this square.</p>
+        <p class="modal-desc">
+          Take a selfie with the person who matches this square.
+        </p>
       </div>
-      <button type="button" class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      <button
+        type="button"
+        class="modal-close"
+        id="modal-close"
+        aria-label="Close">✕</button
+      >
     </div>
     <div class="modal-body">
       <div class="modal-drop" id="modal-drop">
@@ -49,7 +70,9 @@
           <span class="file-hint">JPEG, PNG, HEIC · max 10 MB</span>
         </div>
         <img id="modal-preview" class="file-preview hidden" alt="Preview" />
-        <div id="modal-replace-hint" class="replace-hint hidden">📷 Tap to replace</div>
+        <div id="modal-replace-hint" class="replace-hint hidden">
+          📷 Tap to replace
+        </div>
       </div>
       <div class="modal-meta">
         <input
@@ -65,12 +88,13 @@
           placeholder="Description (optional)"
           class="modal-meta-textarea"
           rows="2"
-          maxlength="400"
-        ></textarea>
+          maxlength="400"></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="modal-cancel" id="modal-cancel">Cancel</button>
+      <button type="button" class="modal-cancel" id="modal-cancel"
+        >Cancel</button
+      >
       <button type="button" class="modal-confirm" id="modal-confirm" disabled>
         <span id="modal-confirm-label">Add Photo</span>
       </button>
