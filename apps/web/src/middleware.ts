@@ -36,12 +36,13 @@ export const onRequest = defineMiddleware(
 
       if (tokenParam === secret) {
         locals.isPreview = true;
-        const response = await next();
-        response.headers.append(
-          "Set-Cookie",
-          `${PREVIEW_COOKIE}=${secret}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${PREVIEW_COOKIE_TTL}`,
-        );
-        return response;
+        cookies.set(PREVIEW_COOKIE, secret, {
+          path: "/",
+          httpOnly: true,
+          sameSite: "lax",
+          maxAge: PREVIEW_COOKIE_TTL,
+        });
+        return next();
       }
 
       if (tokenCookie === secret) {
