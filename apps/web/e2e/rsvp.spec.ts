@@ -7,19 +7,24 @@
 // The test only touches the dedicated __Playwright Test Party fixture.
 // beforeAll resets it to "pending" so re-runs are safe and real guest data is untouched.
 
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from "@playwright/test";
 
-const TEST_TOKEN   = process.env.TEST_RSVP_TOKEN ?? 'playwright-e2e-test-token';
-const DIRECTUS_URL = process.env.DIRECTUS_URL     ?? 'http://localhost:8055';
+const TEST_TOKEN = process.env.TEST_RSVP_TOKEN ?? "playwright-e2e-test-token";
+const DIRECTUS_URL = process.env.DIRECTUS_URL ?? "http://localhost:8055";
 // Prefer DIRECTUS_ADMIN_TOKEN (root .env.local); fall back to DIRECTUS_TOKEN (apps/web/.env.local)
-const API_TOKEN    = process.env.DIRECTUS_ADMIN_TOKEN ?? process.env.DIRECTUS_TOKEN ?? '';
+const API_TOKEN =
+  process.env.DIRECTUS_ADMIN_TOKEN ?? process.env.DIRECTUS_TOKEN ?? "";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function fetchJson(url: string, init?: RequestInit) {
   const res = await fetch(url, {
     ...init,
-    headers: { Authorization: `Bearer ${API_TOKEN}`, 'Content-Type': 'application/json', ...init?.headers },
+    headers: {
+      Authorization: `Bearer ${API_TOKEN}`,
+      "Content-Type": "application/json",
+      ...init?.headers,
+    },
   });
   return res.json() as Promise<{ data: unknown }>;
 }
@@ -34,9 +39,9 @@ async function resetTestFixture() {
 
   // Reset party to pending state
   await fetchJson(`${DIRECTUS_URL}/items/parties/${party.id}`, {
-    method: 'PATCH',
+    method: "PATCH",
     body: JSON.stringify({
-      status: 'pending',
+      status: "pending",
       hotel: false,
       transportation: false,
       song_request: null,
@@ -51,7 +56,7 @@ async function resetTestFixture() {
   );
   for (const guest of (guestRes.data as { id: string }[] | null) ?? []) {
     await fetchJson(`${DIRECTUS_URL}/items/guests/${guest.id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify({
         attending: null,
         attendance: null,
@@ -68,25 +73,28 @@ test.beforeAll(async () => {
   await resetTestFixture();
 });
 
-test('RSVP — attending happy path', async ({ page }: { page: Page }) => {
+test("RSVP — attending happy path", async ({ page }: { page: Page }) => {
   await page.goto(`/rsvp/${TEST_TOKEN}`);
 
   // The party name should appear in the greeting
-  await expect(page.locator('.guest-name')).toContainText('Playwright');
+  await expect(page.locator(".guest-name")).toContainText("Playwright");
 
   // First accordion auto-opens after 200 ms
   await page.waitForTimeout(400);
 
   // Select "Joyfully accepts" for the first guest
-  await page.locator('select[id^="response-"]').first().selectOption('attending');
+  await page
+    .locator('select[id^="response-"]')
+    .first()
+    .selectOption("attending");
 
   // Submit wrap becomes visible once all guests have responded
-  await expect(page.locator('#submit-wrap')).toBeVisible();
+  await expect(page.locator("#submit-wrap")).toBeVisible();
 
   // Submit the RSVP
-  await page.locator('#submit-btn').click();
+  await page.locator("#submit-btn").click();
 
   // Success state appears
-  await expect(page.locator('#state-success')).toBeVisible({ timeout: 10_000 });
-  await expect(page.locator('.success-title')).toContainText('Thank you!');
+  await expect(page.locator("#state-success")).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator(".success-title")).toContainText("Thank you!");
 });
