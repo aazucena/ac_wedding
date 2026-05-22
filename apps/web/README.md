@@ -1,4 +1,5 @@
 # Wedding Site — apps/web
+
 **Astro 6 SSR — deploys to Vercel at `wedding.aazucena.com`**
 
 ---
@@ -28,9 +29,9 @@
 
 In Directus → **Settings → Roles & Permissions → Public**:
 
-| Collection | Action | Fields |
-|---|---|---|
-| `guests` | Read | `id`, `first_name`, `status`, `plus_ones_allowed`, `rsvp_token` |
+| Collection | Action | Fields                                                          |
+| ---------- | ------ | --------------------------------------------------------------- |
+| `guests`   | Read   | `id`, `first_name`, `status`, `plus_ones_allowed`, `rsvp_token` |
 
 Only expose these 5 fields — not email, table_number, or any other PII.
 
@@ -39,6 +40,7 @@ Only expose these 5 fields — not email, table_number, or any other PII.
 ## Environment Variables
 
 ### Local development (`.env.local` in workspace root)
+
 ```
 DIRECTUS_URL=http://localhost:8055
 DIRECTUS_TOKEN=<admin-access-token>
@@ -47,6 +49,7 @@ PREVIEW_TOKEN=<any-secret-string>
 ```
 
 ### Vercel production (Vercel Dashboard → Project → Settings → Environment Variables)
+
 ```
 DIRECTUS_URL=https://planner.aazucena.com
 DIRECTUS_TOKEN=<production-admin-token>
@@ -83,12 +86,14 @@ pnpm rsvp:build        # Production build
 ## Deploy to Vercel
 
 Connect the repo in the Vercel dashboard and set:
+
 - **Root Directory:** `apps/web`
 - **Build Command:** `pnpm build`
 - **Framework Preset:** Astro
 - **Output:** SSR (Vercel adapter handles this automatically)
 
 Or via CLI:
+
 ```bash
 vercel deploy --prod
 ```
@@ -97,22 +102,22 @@ vercel deploy --prod
 
 ## Pages
 
-| Route | Description | Gate |
-|---|---|---|
-| `/` | Homepage / invite landing | Public |
-| `/rsvp/[token]` | RSVP form (token-gated per guest) | Valid `rsvp_token` |
-| `/ceremony` | Ceremony order of service | Public |
-| `/story` | Couple's story | Public |
-| `/info` | Event details and FAQs | Public |
-| `/events` | Schedule / timeline | Public |
-| `/wedding-party` | Entourage listing | Public |
-| `/seating` | Seating chart | 14 days before wedding date |
-| `/gallery` | Photo gallery | Public |
-| `/guestbook` | Guest messages | Public |
-| `/memories` | Post-wedding memories (photos + guestbook) | After wedding date |
-| `/partners` | Sponsors | Public |
-| `/print/mass` | Nuptial mass booklet (print layout) | Public |
-| `/print/invitation` | Invitation print layout | Public |
+| Route               | Description                                | Gate                        |
+| ------------------- | ------------------------------------------ | --------------------------- |
+| `/`                 | Homepage / invite landing                  | Public                      |
+| `/rsvp/[token]`     | RSVP form (token-gated per guest)          | Valid `rsvp_token`          |
+| `/ceremony`         | Ceremony order of service                  | Public                      |
+| `/story`            | Couple's story                             | Public                      |
+| `/info`             | Event details and FAQs                     | Public                      |
+| `/events`           | Schedule / timeline                        | Public                      |
+| `/wedding-party`    | Entourage listing                          | Public                      |
+| `/seating`          | Seating chart                              | 14 days before wedding date |
+| `/gallery`          | Photo gallery                              | Public                      |
+| `/guestbook`        | Guest messages                             | Public                      |
+| `/memories`         | Post-wedding memories (photos + guestbook) | After wedding date          |
+| `/partners`         | Sponsors                                   | Public                      |
+| `/print/mass`       | Nuptial mass booklet (print layout)        | Public                      |
+| `/print/invitation` | Invitation print layout                    | Public                      |
 
 Pages marked with a date gate redirect to `/` until the unlock date is reached. The `PREVIEW_TOKEN` env var bypasses all gates for admin review (sets an HttpOnly cookie valid for 2 hours).
 
