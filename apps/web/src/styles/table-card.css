@@ -1,13 +1,17 @@
 @media print {
-  @page { size: 8.5in 11in portrait; margin: 0; }
+  @page {
+    size: 8.5in 11in portrait;
+    margin: 0;
+  }
 }
 
 /* ── Sheet (one printed page = 2 cards) ──────────────────── */
 .sheet {
-  width: 8.5in; height: 11in;
+  width: 8.5in;
+  height: 11in;
   background: white;
   border: 1px solid var(--border);
-  box-shadow: 0 4px 24px rgba(26,26,46,0.10);
+  box-shadow: 0 4px 24px rgba(26, 26, 46, 0.1);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   grid-template-rows: 1fr;
@@ -16,90 +20,181 @@
 
 /* ── Single card slot ─────────────────────────────────────── */
 .card-slot {
-  width: 4.25in; height: 11in;
-  border-right: 0.5px dashed rgba(197,184,224,0.4);
+  width: 4.25in;
+  height: 11in;
+  border-right: 0.5px dashed rgba(197, 184, 224, 0.4);
   position: relative;
 }
-.card-slot:last-child { border-right: none; }
-.card-slot.empty { background: #faf8f5; }
+.card-slot:last-child {
+  border-right: none;
+}
+.card-slot.empty {
+  background: #faf8f5;
+}
 
 /* ── Tent card (4×6 sheet, folds in half to 4×3 tent) ─────── */
 .tent-card {
-  width: 4.25in; height: 11in;
-  display: flex; flex: 1; flex-direction: column; position: relative;
+  width: 4.25in;
+  height: 11in;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  position: relative;
 }
 
 /* Top half — upside-down (back of tent when folded) */
 .tent-top {
   height: 5.5in;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   transform: rotate(180deg);
-  border: 1px solid rgba(197,184,224,0.4); border-bottom: none;
+  border: 1px solid rgba(197, 184, 224, 0.4);
+  border-bottom: none;
   background: var(--ivory);
-  padding: 20px 28px 28px; gap: 6px; overflow: hidden; position: relative;
+  padding: 20px 28px 28px;
+  gap: 6px;
+  overflow: hidden;
+  position: relative;
 }
 
 /* Bottom half — right-side up (front face) */
 .tent-bottom {
   height: 5.5in;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  border: 1px solid rgba(197,184,224,0.4); border-top: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(197, 184, 224, 0.4);
+  border-top: none;
   background: var(--ivory);
-  padding: 28px 28px 20px; gap: 6px; overflow: hidden; position: relative;
+  padding: 28px 28px 20px;
+  gap: 6px;
+  overflow: hidden;
+  position: relative;
 }
 
 /* Accent bars */
 .tent-bar {
-  width: 100%; height: 4px; flex-shrink: 0;
-  background: linear-gradient(90deg, var(--cp) 0%, var(--cs) 50%, var(--cp) 100%);
-  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  width: 100%;
+  height: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    var(--cp) 0%,
+    var(--cs) 50%,
+    var(--cp) 100%
+  );
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 .tent-bar-bottom {
-  width: 100%; height: 4px; flex-shrink: 0;
-  background: linear-gradient(90deg, var(--cs) 0%, var(--cp) 50%, var(--cs) 100%);
-  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  width: 100%;
+  height: 4px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    var(--cs) 0%,
+    var(--cp) 50%,
+    var(--cs) 100%
+  );
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 /* Content — shared by both halves */
 .face-content {
-  position: relative; z-index: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  flex: 1; gap: 5px; text-align: center;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 5px;
+  text-align: center;
 }
 .face-eyebrow {
-  font-family: var(--fb); font-size: 7px; font-weight: 700;
-  letter-spacing: 4px; text-transform: uppercase; color: var(--cs);
+  font-family: var(--fb);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--cs);
 }
 .face-number {
-  font-family: var(--fd); font-size: 96px; font-weight: 300;
-  font-style: italic; color: var(--dark); line-height: 0.9; letter-spacing: -2px;
+  font-family: var(--fd);
+  font-size: 96px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--dark);
+  line-height: 0.9;
+  letter-spacing: -2px;
 }
-.face-rule { display: flex; align-items: center; gap: 8px; width: 70%; }
+.face-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 70%;
+}
 .face-rule-line {
-  flex: 1; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.6), transparent);
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(197, 184, 224, 0.6),
+    transparent
+  );
 }
-.face-rule-gem { font-size: 6px; color: var(--cs); }
+.face-rule-gem {
+  font-size: 6px;
+  color: var(--cs);
+}
 .face-name {
-  font-family: var(--fb); font-size: 9px; font-weight: 500;
-  letter-spacing: 3.5px; text-transform: uppercase; color: var(--dark); line-height: 1.4;
+  font-family: var(--fb);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 3.5px;
+  text-transform: uppercase;
+  color: var(--dark);
+  line-height: 1.4;
 }
 
 /* Footer — couple names, front face only */
 .face-footer {
-  position: relative; z-index: 1;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  flex-shrink: 0; padding-bottom: 4px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding-bottom: 4px;
 }
-.face-footer-names { font-family: var(--fd); font-size: 11px; font-style: italic; color: var(--muted); }
-.face-footer-amp { color: var(--cs); }
+.face-footer-names {
+  font-family: var(--fd);
+  font-size: 11px;
+  font-style: italic;
+  color: var(--muted);
+}
+.face-footer-amp {
+  color: var(--cs);
+}
 
 /* ── Print ────────────────────────────────────────────────── */
 @media print {
-  .sheet     { box-shadow: none; border: none; page-break-after: always; }
-  .card-slot { border: none; }
-  .tent-top, .tent-bottom { border-color: #ddd; }
+  .sheet {
+    box-shadow: none;
+    border: none;
+    page-break-after: always;
+  }
+  .card-slot {
+    border: none;
+  }
+  .tent-top,
+  .tent-bottom {
+    border-color: #ddd;
+  }
 }

@@ -1,13 +1,17 @@
 @media print {
-  @page { size: 8.5in 11in portrait; margin: 0; }
+  @page {
+    size: 8.5in 11in portrait;
+    margin: 0;
+  }
 }
 
 /* ── Sheet (one printed page = 6 cards) ──────────────────── */
 .sheet {
-  width: 11in; height: 8.5in;
+  width: 11in;
+  height: 8.5in;
   background: white;
   border: 1px solid var(--border);
-  box-shadow: 0 4px 24px rgba(26,26,46,0.10);
+  box-shadow: 0 4px 24px rgba(26, 26, 46, 0.1);
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
@@ -16,73 +20,144 @@
 
 /* ── Single tent card slot ────────────────────────────────── */
 .card-slot {
-  border: 0.5px dashed rgba(197,184,224,0.4);
+  border: 0.5px dashed rgba(197, 184, 224, 0.4);
   position: relative;
 }
-.card-slot.empty { background: #faf8f5; }
+.card-slot.empty {
+  background: #faf8f5;
+}
 
-.tent-card { height: 4.25in; width: 3.67in; position: relative; }
+.tent-card {
+  height: 4.25in;
+  width: 3.67in;
+  position: relative;
+}
 
 /* Top half — upside-down (back of tent when folded) */
 .tent-top {
   height: 2.125in;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   transform: rotate(180deg);
-  border: 1px solid rgba(197,184,224,0.35); border-bottom: none;
+  border: 1px solid rgba(197, 184, 224, 0.35);
+  border-bottom: none;
   background: var(--ivory);
-  padding: 12px 20px 16px; gap: 3px; position: relative;
+  padding: 12px 20px 16px;
+  gap: 3px;
+  position: relative;
 }
 
 /* Bottom half — right-side up (front of tent) */
 .tent-bottom {
   height: 2.125in;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  border: 1px solid rgba(197,184,224,0.35); border-top: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(197, 184, 224, 0.35);
+  border-top: none;
   background: var(--ivory);
-  padding: 16px 20px 12px; gap: 4px;
+  padding: 16px 20px 12px;
+  gap: 4px;
 }
 
 /* Accent bars */
 .tent-bar {
-  width: 100%; height: 3px; flex-shrink: 0;
-  background: linear-gradient(90deg, var(--cp) 0%, var(--cs) 50%, var(--cp) 100%);
-  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  width: 100%;
+  height: 3px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    var(--cp) 0%,
+    var(--cs) 50%,
+    var(--cp) 100%
+  );
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 .tent-bar-bottom {
-  width: 100%; height: 3px; flex-shrink: 0;
-  background: linear-gradient(90deg, var(--cs) 0%, var(--cp) 50%, var(--cs) 100%);
-  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  width: 100%;
+  height: 3px;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    var(--cs) 0%,
+    var(--cp) 50%,
+    var(--cs) 100%
+  );
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
 /* Guest name */
 .tent-name {
-  font-family: var(--fd); font-size: 22px; font-weight: 300; font-style: italic;
-  color: var(--dark); line-height: 1.1; text-align: center; letter-spacing: -0.3px;
+  font-family: var(--fd);
+  font-size: 22px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--dark);
+  line-height: 1.1;
+  text-align: center;
+  letter-spacing: -0.3px;
 }
 
 /* Table label */
 .tent-table {
-  font-family: var(--fb); font-size: 7.5px; font-weight: 600;
-  letter-spacing: 3px; text-transform: uppercase; color: var(--muted);
+  font-family: var(--fb);
+  font-size: 7.5px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
 }
-.tent-table-num { color: var(--dark); font-weight: 700; }
+.tent-table-num {
+  color: var(--dark);
+  font-weight: 700;
+}
 
 /* Rule between name and table */
-.tent-rule { display: flex; align-items: center; gap: 6px; width: 80%; }
-.tent-rule-line {
-  flex: 1; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.55), transparent);
+.tent-rule {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 80%;
 }
-.tent-rule-gem { font-size: 5px; color: var(--cs); }
+.tent-rule-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(197, 184, 224, 0.55),
+    transparent
+  );
+}
+.tent-rule-gem {
+  font-size: 5px;
+  color: var(--cs);
+}
 
 /* Empty card slot placeholder */
-.empty-card { width: 3.5in; height: 3.33in; }
+.empty-card {
+  width: 3.5in;
+  height: 3.33in;
+}
 
 /* ── Print ────────────────────────────────────────────────── */
 @media print {
-  .sheet { width: 8.5in; box-shadow: none; border: none; page-break-after: always; }
-  .card-slot { border: none; }
-  .tent-top, .tent-bottom { border-color: #ddd; }
+  .sheet {
+    width: 8.5in;
+    box-shadow: none;
+    border: none;
+    page-break-after: always;
+  }
+  .card-slot {
+    border: none;
+  }
+  .tent-top,
+  .tent-bottom {
+    border-color: #ddd;
+  }
 }

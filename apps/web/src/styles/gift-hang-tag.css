@@ -1,7 +1,16 @@
 @media print {
-  @page { size: 3.5in 3.5in; margin: 0; }
-  body { background: white !important; padding: 0 !important; display: block !important; }
-  .no-print { display: none !important; }
+  @page {
+    size: 3.5in 3.5in;
+    margin: 0;
+  }
+  body {
+    background: white !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
 
 /* ── Diamond card ───────────────────────────────────────── */
@@ -59,11 +68,19 @@
 .ht-rule-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(197, 184, 224, 0.7), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(197, 184, 224, 0.7),
+    transparent
+  );
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
-.ht-rule-gem { font-size: 5px; color: var(--cs); }
+.ht-rule-gem {
+  font-size: 5px;
+  color: var(--cs);
+}
 
 .ht-date {
   font-family: var(--fd);

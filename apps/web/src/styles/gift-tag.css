@@ -1,7 +1,16 @@
 @media print {
-  @page { size: letter portrait; margin: 0; }
-  body { background: white !important; padding: 0 !important; display: block !important; }
-  .no-print { display: none !important; }
+  @page {
+    size: letter portrait;
+    margin: 0;
+  }
+  body {
+    background: white !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  .no-print {
+    display: none !important;
+  }
 }
 
 /* ── Sheet grid ────────────────────────────────────────────── */
@@ -31,13 +40,15 @@
   text-align: center;
   gap: 3px;
   padding: 0.18in 0.14in;
-  box-shadow: 0 4px 18px rgba(26,26,46,0.10);
+  box-shadow: 0 4px 18px rgba(26, 26, 46, 0.1);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
 @media print {
-  .sticker { box-shadow: none; }
+  .sticker {
+    box-shadow: none;
+  }
 }
 
 /* ── Sticker contents ──────────────────────────────────────── */
@@ -76,7 +87,12 @@
 .sticker-rule-line {
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(197,184,224,0.7), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(197, 184, 224, 0.7),
+    transparent
+  );
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -96,9 +112,9 @@
 }
 
 .sticker-hashtag {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: "Cormorant Garamond", serif;
   font-style: italic;
-  color: #C5B8E0;
+  color: #c5b8e0;
   display: block;
   font-size: 10px;
   font-weight: 500;
