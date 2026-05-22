@@ -35,18 +35,13 @@ export const onRequest = defineMiddleware(
       const tokenCookie = cookies.get(PREVIEW_COOKIE)?.value;
 
       if (tokenParam === secret) {
-        // Delegate cookie-setting to /api/preview-auth, which always runs
-        // through the Vercel server function and flushes cookies reliably.
-        // Middleware cannot set cookies for prerendered (static) pages because
-        // the Vercel adapter serves them before the middleware response pipeline.
-        const cleanUrl = new URL(url);
-        cleanUrl.searchParams.delete("preview");
-        const then = cleanUrl.pathname + cleanUrl.search;
-
-        const authUrl = new URL("/api/preview-auth", url.origin);
-        authUrl.searchParams.set("token", secret);
-        authUrl.searchParams.set("then", then || "/");
-        return redirect(authUrl.toString(), 302);
+        locals.isPreview = true;
+        const response = await next();
+        response.headers.append(
+          "Set-Cookie",
+          `${PREVIEW_COOKIE}=${secret}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${PREVIEW_COOKIE_TTL}`,
+        );
+        return response;
       }
 
       if (tokenCookie === secret) {
@@ -55,19 +50,17 @@ export const onRequest = defineMiddleware(
       }
     }
 
-    // isPreview is only true when the token matched above — full bypass
-    if (!locals.isPreview) {
-      if (MAINTENANCE_MODE || (await checkDirectusMaintenance())) {
-        return redirect("/maintenance", 307);
-      }
+    if (
+      (url.pathname.startsWith("/print/") ||
+        url.pathname.startsWith("/admin/")) &&
+      !locals.isPreview &&
+      !import.meta.env.DEV
+    ) {
+      return redirect("/", 307);
+    }
 
-      if (
-        (url.pathname.startsWith("/print/") ||
-          url.pathname.startsWith("/admin/")) &&
-        !import.meta.env.DEV
-      ) {
-        return redirect("/", 307);
-      }
+    if (MAINTENANCE_MODE || (await checkDirectusMaintenance())) {
+      return redirect("/maintenance", 307);
     }
 
     return next();
