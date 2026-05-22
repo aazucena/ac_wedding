@@ -12,13 +12,13 @@ export function buildNameFilter(name: string): object {
     ? {
         _and: [
           { person: { first_name: { _icontains: parts[0] } } },
-          { person: { last_name:  { _icontains: parts.slice(1).join(' ') } } },
+          { person: { last_name: { _icontains: parts.slice(1).join(" ") } } },
         ],
       }
     : {
         _or: [
-          { person: { first_name:    { _icontains: name } } },
-          { person: { last_name:     { _icontains: name } } },
+          { person: { first_name: { _icontains: name } } },
+          { person: { last_name: { _icontains: name } } },
           { person: { preferred_name: { _icontains: name } } },
         ],
       };

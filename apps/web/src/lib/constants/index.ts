@@ -1,2 +1,2 @@
-export * from './nav'
-export * from './attire'
+export * from "./nav";
+export * from "./attire";

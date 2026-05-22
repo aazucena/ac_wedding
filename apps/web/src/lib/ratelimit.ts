@@ -2,7 +2,7 @@
 // Suitable for low-traffic, single-instance deployments (Railway/Node.js).
 
 interface Bucket {
-  count:   number;
+  count: number;
   resetAt: number;
 }
 
@@ -26,8 +26,12 @@ function maybePrune() {
  * @param limit    Max requests allowed in the window
  * @param windowMs Window duration in milliseconds
  */
-export function isRateLimited(key: string, limit: number, windowMs: number): boolean {
-  const now    = Date.now();
+export function isRateLimited(
+  key: string,
+  limit: number,
+  windowMs: number,
+): boolean {
+  const now = Date.now();
   const bucket = store.get(key);
 
   if (!bucket || now >= bucket.resetAt) {

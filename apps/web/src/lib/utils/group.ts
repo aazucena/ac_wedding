@@ -1,5 +1,9 @@
 // utils/group.ts — collection utilities via lodash-es
-import { groupBy as _groupBy, sortBy as _sortBy, orderBy as _orderBy } from 'lodash-es';
+import {
+  groupBy as _groupBy,
+  sortBy as _sortBy,
+  orderBy as _orderBy,
+} from "lodash-es";
 
 /**
  * Group an array of objects by a key.
@@ -21,6 +25,10 @@ export function sortBy<T>(arr: T[], keys: string | string[]): T[] {
  * Order an array with explicit direction per key.
  * e.g. orderBy(vendors, ['category', 'name'], ['asc', 'asc'])
  */
-export function orderBy<T>(arr: T[], keys: string[], orders: Array<'asc' | 'desc'> = []): T[] {
+export function orderBy<T>(
+  arr: T[],
+  keys: string[],
+  orders: Array<"asc" | "desc"> = [],
+): T[] {
   return _orderBy(arr, keys, orders);
 }

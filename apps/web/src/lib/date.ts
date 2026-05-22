@@ -4,7 +4,10 @@ const DEFAULT_TIMEZONE = "America/Edmonton";
 
 type DateInput = DateTime | string;
 
-export function toDateTime(input: DateInput, timezone = DEFAULT_TIMEZONE): DateTime {
+export function toDateTime(
+  input: DateInput,
+  timezone = DEFAULT_TIMEZONE,
+): DateTime {
   return typeof input === "string"
     ? DateTime.fromISO(input, { zone: timezone })
     : input.setZone(timezone);
@@ -14,22 +17,37 @@ export function getYear(input: DateInput, timezone = DEFAULT_TIMEZONE): number {
   return toDateTime(input, timezone).year;
 }
 
-export function getMonth(input: DateInput, locale = "en-US", timezone = DEFAULT_TIMEZONE): string {
+export function getMonth(
+  input: DateInput,
+  locale = "en-US",
+  timezone = DEFAULT_TIMEZONE,
+): string {
   return toDateTime(input, timezone).setLocale(locale).toFormat("MMMM");
 }
 
-export function getDayOfWeek(input: DateInput, locale = "en-US", timezone = DEFAULT_TIMEZONE): string {
+export function getDayOfWeek(
+  input: DateInput,
+  locale = "en-US",
+  timezone = DEFAULT_TIMEZONE,
+): string {
   return toDateTime(input, timezone).setLocale(locale).toFormat("cccc");
 }
 
-export function toISODateString(input: DateInput, timezone = DEFAULT_TIMEZONE): string {
+export function toISODateString(
+  input: DateInput,
+  timezone = DEFAULT_TIMEZONE,
+): string {
   return toDateTime(input, timezone).toISODate()!;
 }
 
 // ── Duration ──────────────────────────────────────────────────────────────────
 
 /** Duration between two datetimes, normalised to hours + minutes. */
-export function durationBetween(start: DateInput, end: DateInput, timezone = DEFAULT_TIMEZONE): Duration {
+export function durationBetween(
+  start: DateInput,
+  end: DateInput,
+  timezone = DEFAULT_TIMEZONE,
+): Duration {
   return toDateTime(end, timezone)
     .diff(toDateTime(start, timezone), ["hours", "minutes"])
     .shiftTo("hours", "minutes");
@@ -49,7 +67,13 @@ export function formatDuration(duration: Duration): string {
 }
 
 /** Days from now until a future date (always rounded up). */
-export function daysUntil(input: DateInput, timezone = DEFAULT_TIMEZONE): number {
-  const diff = toDateTime(input, timezone).diff(DateTime.now().setZone(timezone), "days");
+export function daysUntil(
+  input: DateInput,
+  timezone = DEFAULT_TIMEZONE,
+): number {
+  const diff = toDateTime(input, timezone).diff(
+    DateTime.now().setZone(timezone),
+    "days",
+  );
   return Math.ceil(diff.days);
 }

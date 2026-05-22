@@ -220,7 +220,7 @@ export interface Guests {
   notes?: string;
   person?: Persons;
   attending?: boolean;
-  attendance?: Array<'ceremony' | 'reception'>;
+  attendance?: Array<"ceremony" | "reception">;
   table?: Tables;
   party?: Parties;
   type?: string;
@@ -394,7 +394,7 @@ export interface Memories {
   description?: string;
   reception?: Reception;
   guest?: Guests;
-  source?: 'game' | 'rsvp' | null;
+  source?: "game" | "rsvp" | null;
 }
 
 export interface Parties {
@@ -417,7 +417,7 @@ export interface Parties {
   representative?: Persons;
   group?: Groups;
   members: Guests[];
-  invitation_type?: 'guest' | 'sponsor' | 'entourage';
+  invitation_type?: "guest" | "sponsor" | "entourage";
   invitation_label?: string;
   plus_ones_allowed?: number | null;
 }
@@ -675,7 +675,7 @@ export interface WeddingSettings {
   dress_code_description?: string;
   directions?: any;
   accomodation?: Accomodations;
-  'accordion-5v4tn4'?: any;
+  "accordion-5v4tn4"?: any;
   rsvp?: any;
   announcement?: any;
   dress_code_group?: any;
@@ -684,9 +684,9 @@ export interface WeddingSettings {
   mc_token?: string;
   maintenance?: boolean;
   show_program?: boolean;
-  return_address_line1?:       string;
-  return_address_city?:        string;
-  return_address_region?:      string;
+  return_address_line1?: string;
+  return_address_city?: string;
+  return_address_region?: string;
   return_address_postal_code?: string;
   emblem?: DirectusFiles;
   insignia?: DirectusFiles;

@@ -30,18 +30,18 @@ export function initDropzone(config: DropzoneConfig): unknown {
 
   // Dynamically import to keep it out of the critical path
   return new (window as any).Dropzone(el, {
-    url:            config.url,
-    params:         config.params ?? {},
-    maxFilesize:    config.maxFileSizeMB ?? 10,
-    acceptedFiles:  config.acceptedFiles ?? 'image/*',
+    url: config.url,
+    params: config.params ?? {},
+    maxFilesize: config.maxFileSizeMB ?? 10,
+    acceptedFiles: config.acceptedFiles ?? "image/*",
     addRemoveLinks: true,
-    dictDefaultMessage: 'Drop photos here or click to upload',
+    dictDefaultMessage: "Drop photos here or click to upload",
     init() {
       if (config.onSuccess) {
-        this.on('success', config.onSuccess);
+        this.on("success", config.onSuccess);
       }
       if (config.onRemoved) {
-        this.on('removedfile', config.onRemoved);
+        this.on("removedfile", config.onRemoved);
       }
     },
   });
