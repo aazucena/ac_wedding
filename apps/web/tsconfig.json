@@ -41,5 +41,5 @@
     "jsx": "react-jsx"
   },
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist/", "playwright.config.ts"]
+  "exclude": ["dist/", "playwright.config.ts", "eslint.config.mjs"]
 }

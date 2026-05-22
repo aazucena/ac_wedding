@@ -20,8 +20,8 @@
     "dump:collections": "bash scripts/dump-collections.sh",
     "gallery:import": "node scripts/import-gallery.js",
     "test": "pnpm --filter rsvp test",
-    "lint": "eslint .",
-    "format": "prettier --write ."
+    "lint": "pnpm --filter ./apps/web exec eslint .",
+    "format": "pnpm --filter ./apps/web exec prettier --write ."
   },
   "engines": {
     "node": ">=18.0.0",
