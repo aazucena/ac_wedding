@@ -1,24 +1,26 @@
 ---
 // apps/web/src/pages/seating.astro — reception seating finder
-import Layout           from '../layouts/Layout.astro';
-import PageHeader       from '../components/PageHeader.astro';
-import Hashtag          from '~/components/Hashtag.astro';
-import SeatingSearchCard from '../components/seating/SeatingSearchCard.astro';
-import { getSettings }  from '../lib/directus';
-import { formatDate }   from '../lib/utils/format';
-import { DateTime }     from 'luxon';
-import { toDateTime }   from '../lib/date';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import Hashtag from "~/components/Hashtag.astro";
+import SeatingSearchCard from "../components/seating/SeatingSearchCard.astro";
+import { getSettings } from "../lib/directus";
+import { formatDate } from "../lib/utils/format";
+import { DateTime } from "luxon";
+import { toDateTime } from "../lib/date";
 
-const settings         = await getSettings();
+const settings = await getSettings();
 
 // Seating is hidden until 14 days before the wedding
-const releaseDate = toDateTime(settings.wedding_date ?? '2099-12-31').minus({ days: 14 });
+const releaseDate = toDateTime(settings.wedding_date ?? "2099-12-31").minus({
+  days: 14,
+});
 if (!Astro.locals.isPreview && DateTime.now() < releaseDate) {
-  return Astro.redirect('/', 307);
+  return Astro.redirect("/", 307);
 }
-const groom            = settings.groom?.first_name ?? 'Aldrin';
-const bride            = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 const weddingLocation = settings.location;
 ---
 
@@ -28,9 +30,7 @@ const weddingLocation = settings.location;
   colorSecondary={settings.color_secondary}
   activeNav="seating"
 >
-
   <div class="page-narrow">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -41,24 +41,28 @@ const weddingLocation = settings.location;
     <SeatingSearchCard />
 
     <p class="seating-note">
-      Seating assignments are for the reception dinner.
-      If you can't find your name, ask one of our ushers at the venue.
+      Seating assignments are for the reception dinner. If you can't find your
+      name, ask one of our ushers at the venue.
     </p>
-
   </div>
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>
 
 <style>
-.seating-note {
-  font-family: var(--fb); font-size: 12px; font-weight: 300;
-  color: var(--muted); text-align: center; line-height: 1.7;
-  max-width: 380px; margin: 4px auto 0;
-  opacity: 0; animation: fadeUp 0.8s 0.55s ease forwards;
-}
+  .seating-note {
+    font-family: var(--fb);
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.7;
+    max-width: 380px;
+    margin: 4px auto 0;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.55s ease forwards;
+  }
 </style>

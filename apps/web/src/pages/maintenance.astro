@@ -1,18 +1,21 @@
 ---
 // apps/web/src/pages/maintenance.astro
-import '@fontsource/cormorant-garamond/300-italic.css';
-import '@fontsource/cormorant-garamond/400-italic.css';
-import '@fontsource/jost/300.css';
-import '@fontsource/jost/400.css';
-import Insignia from '~/assets/insignia.png';
-import { getContactDetails, getMaintenanceStatus } from '~/lib/directus';
-import { MAINTENANCE_MODE } from 'astro:env/server';
+import "@fontsource/cormorant-garamond/300-italic.css";
+import "@fontsource/cormorant-garamond/400-italic.css";
+import "@fontsource/jost/300.css";
+import "@fontsource/jost/400.css";
+import Insignia from "~/assets/insignia.png";
+import { getContactDetails, getMaintenanceStatus } from "~/lib/directus";
+import { MAINTENANCE_MODE } from "astro:env/server";
 
-const active = MAINTENANCE_MODE || await getMaintenanceStatus();
+const active = MAINTENANCE_MODE || (await getMaintenanceStatus());
 if (!active) {
   // @ts-ignore -- variable IS read in return expression; Astro TS checker false-positive
-  const r = Astro.request.headers.get('referer') ?? '';
-  return Astro.redirect(r && !new URL(r, Astro.url).pathname.startsWith('/maintenance') ? r : '/', 307);
+  const r = Astro.request.headers.get("referer") ?? "";
+  return Astro.redirect(
+    r && !new URL(r, Astro.url).pathname.startsWith("/maintenance") ? r : "/",
+    307,
+  );
 }
 
 const { email, phone } = await getContactDetails();
@@ -20,57 +23,68 @@ const { email, phone } = await getContactDetails();
 
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Back Soon — Aldrin & Christine</title>
-  <meta name="robots" content="noindex, nofollow" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-</head>
-<body>
-  <div class="grain" aria-hidden="true"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Back Soon — Aldrin & Christine</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
 
-  <div class="page">
-    <div class="card">
-      <img src={Insignia.src} alt="" class="insignia" />
-      <span class="ornament" aria-hidden="true">✦</span>
-      <p class="eyebrow">September 26, 2026</p>
-      <h1 class="headline">Back Soon</h1>
-      <p class="message">
-        We're putting the finishing touches on our little corner of the internet.
-        Check back shortly — we can't wait to celebrate with you.
-      </p>
-      <p class="names">Aldrin &amp; Christine</p>
-      {(email || phone) && (
-        <p class="contact">
-          {email && <a href={`mailto:${email}`}>{email}</a>}
-          {email && phone && <span aria-hidden="true">·</span>}
-          {phone && <a href={`tel:${phone}`}>{phone}</a>}
+    <div class="page">
+      <div class="card">
+        <img src={Insignia.src} alt="" class="insignia" />
+        <span class="ornament" aria-hidden="true">✦</span>
+        <p class="eyebrow">September 26, 2026</p>
+        <h1 class="headline">Back Soon</h1>
+        <p class="message">
+          We're putting the finishing touches on our little corner of the
+          internet. Check back shortly — we can't wait to celebrate with you.
         </p>
-      )}
+        <p class="names">Aldrin &amp; Christine</p>
+        {
+          (email || phone) && (
+            <p class="contact">
+              {email && <a href={`mailto:${email}`}>{email}</a>}
+              {email && phone && <span aria-hidden="true">·</span>}
+              {phone && <a href={`tel:${phone}`}>{phone}</a>}
+            </p>
+          )
+        }
+      </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>
 
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
   :root {
-    --cp: #A8D4B8;
-    --cs: #C5B8E0;
+    --cp: #a8d4b8;
+    --cs: #c5b8e0;
     --dark: #1a1a2e;
     --ivory: #fdfaf7;
     --warm: #f4f0ec;
     --muted: #8a8499;
     --border: rgba(196, 186, 220, 0.45);
-    --fd: 'Cormorant Garamond', Georgia, serif;
-    --fb: 'Jost', Arial, sans-serif;
-    --shadow-card: 0 8px 48px rgba(26,26,46,0.08), 0 2px 12px rgba(26,26,46,0.04);
+    --fd: "Cormorant Garamond", Georgia, serif;
+    --fb: "Jost", Arial, sans-serif;
+    --shadow-card:
+      0 8px 48px rgba(26, 26, 46, 0.08), 0 2px 12px rgba(26, 26, 46, 0.04);
     --radius: 24px;
   }
 
-  html { height: 100%; }
+  html {
+    height: 100%;
+  }
 
   body {
     font-family: var(--fb);
@@ -82,12 +96,17 @@ const { email, phone } = await getContactDetails();
   }
 
   .grain {
-    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.18;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.18;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
   }
 
   .page {
-    position: relative; z-index: 1;
+    position: relative;
+    z-index: 1;
     min-height: 100dvh;
     display: flex;
     align-items: center;
@@ -115,9 +134,11 @@ const { email, phone } = await getContactDetails();
   }
 
   .card::before {
-    content: '';
+    content: "";
     position: absolute;
-    top: 0; left: 0; right: 0;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 3px;
     background: linear-gradient(90deg, var(--cp), var(--cs));
   }
@@ -127,7 +148,8 @@ const { email, phone } = await getContactDetails();
     height: 400px;
     object-fit: contain;
     opacity: 0.75;
-    margin-bottom: -4rem; margin-top: -6rem;
+    margin-bottom: -4rem;
+    margin-top: -6rem;
   }
 
   .ornament {
@@ -195,14 +217,28 @@ const { email, phone } = await getContactDetails();
   }
 
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(22px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(22px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
-  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
   @media (max-width: 480px) {
-    .card { padding: 48px 28px; }
-    .headline { font-size: 40px; }
+    .card {
+      padding: 48px 28px;
+    }
+    .headline {
+      font-size: 40px;
+    }
   }
 </style>

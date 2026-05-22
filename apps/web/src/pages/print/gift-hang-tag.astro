@@ -3,38 +3,41 @@ export const prerender = true;
 // apps/web/src/pages/print/gift-hang-tag.astro
 // Gift Hang-Tag — 3.5×3.5 in diamond · double-sided · To / From fields on back
 
-import { getSettings } from '@lib/directus';
-import { formatDate }  from '@lib/utils/format';
-import PrintLayout     from '@layouts/PrintLayout.astro';
-import StackedImg      from '@assets/stacked.png';
-import HeroEmblem      from '@assets/hero_emblem.png';
-import { Image }       from 'astro:assets';
-import Hashtag         from '@components/Hashtag.astro';
-import '../../styles/gift-hang-tag.css';
+import { getSettings } from "@lib/directus";
+import { formatDate } from "@lib/utils/format";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import StackedImg from "@assets/stacked.png";
+import HeroEmblem from "@assets/hero_emblem.png";
+import { Image } from "astro:assets";
+import Hashtag from "@components/Hashtag.astro";
+import "../../styles/gift-hang-tag.css";
 
-const settings    = await getSettings();
-const groomFirst  = settings.groom?.first_name ?? 'Aldrin';
-const brideFirst  = settings.bride?.first_name ?? 'Christine';
-const weddingDate = formatDate(settings.wedding_date ?? '2026-09-26');
-const hashtag     = settings.hashtag ?? null;
+const settings = await getSettings();
+const groomFirst = settings.groom?.first_name ?? "Aldrin";
+const brideFirst = settings.bride?.first_name ?? "Christine";
+const weddingDate = formatDate(settings.wedding_date ?? "2026-09-26");
+const hashtag = settings.hashtag ?? null;
 ---
 
 <PrintLayout
   title="Gift Hang-Tag — Print"
-  cardWidth="3.5in" cardHeight="3.5in"
+  cardWidth="3.5in"
+  cardHeight="3.5in"
   toolbarHint="3.5 × 3.5 in · Diamond · Double-sided · Cut & punch hole at top tip"
 >
-
   <div class="toolbar-controls" slot="toolbar-controls">
     <div class="seg-control">
-      <button class="seg-btn active" id="btnFront" onclick="showFace('front')">Front</button>
-      <button class="seg-btn"        id="btnBack"  onclick="showFace('back')">Back</button>
+      <button class="seg-btn active" id="btnFront" onclick="showFace('front')"
+        >Front</button
+      >
+      <button class="seg-btn" id="btnBack" onclick="showFace('back')"
+        >Back</button
+      >
     </div>
   </div>
 
   <div class="flip-container" id="flip-container" onclick="toggleFlip()">
     <div class="flipper" id="flipper">
-
       <!-- ████ FRONT ████ -->
       <div class="face front">
         <div class="ht-card">
@@ -69,10 +72,8 @@ const hashtag     = settings.hashtag ?? null;
           </div>
         </div>
       </div>
-
     </div>
   </div>
-
 </PrintLayout>
 
 <script is:inline src="/scripts/gift-hang-tag-preview.js"></script>

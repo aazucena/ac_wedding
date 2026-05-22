@@ -4,89 +4,144 @@ export const prerender = true;
 // Reception Program — two-sided 5×7 card
 // Front: timeline   Back: venue + hashtag + table number
 
-import { getSettings, getReception } from '@lib/directus';
-import { formatDate } from '@lib/utils/format';
-import PrintLayout          from '@layouts/PrintLayout.astro';
-import Hashtag              from '@components/Hashtag.astro';
-import CardWatermark        from '@components/CardWatermark.astro';
-import AccentMark           from '@assets/accent_mark.png';
-import Stacked              from '@assets/stacked.png';
-import { Image } from 'astro:assets';
-import '../../styles/reception.css';
+import { getSettings, getReception } from "@lib/directus";
+import { formatDate } from "@lib/utils/format";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import Hashtag from "@components/Hashtag.astro";
+import CardWatermark from "@components/CardWatermark.astro";
+import AccentMark from "@assets/accent_mark.png";
+import Stacked from "@assets/stacked.png";
+import { Image } from "astro:assets";
+import "../../styles/reception.css";
 
 const [settings, reception] = await Promise.all([
-  getSettings(), getReception(),
+  getSettings(),
+  getReception(),
 ]);
 
 const program = reception?.programs || [];
 
-const groomFirst = settings.groom?.first_name ?? 'Aldrin';
-const brideFirst = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groomFirst = settings.groom?.first_name ?? "Aldrin";
+const brideFirst = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 
-function fmt(t: string | null | undefined, fallback = '') {
+function fmt(t: string | null | undefined, fallback = "") {
   if (!t) return fallback;
-  const [h, m] = t.split(':').map(Number);
+  const [h, m] = t.split(":").map(Number);
   if (!h || !m) return fallback;
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 }
 
 const fallbackTimeline = [
-  { time: fmt(reception.start_time,          '5:00 PM'), label: 'Grand Entrance',        note: 'Wedding party processional', icon: '✦' },
-  { time: '',                                             label: 'Welcome Toast',          note: 'Best man & maid of honour',  icon: '♡' },
-  { time: '',                                             label: 'Opening Prayer',         note: '',                           icon: '✝' },
-  { time: '',                                             label: 'Dinner Is Served',       note: 'Multi-course dinner',        icon: '🍽' },
-  { time: '',                                             label: 'Messages & Tributes',    note: 'From family & friends',      icon: '♡' },
-  { time: '',                                             label: 'First Dance',            note: `${groomFirst} & ${brideFirst}`, icon: '♫' },
-  { time: '',                                             label: 'Parent Dances',          note: 'Parents of groom & bride',   icon: '♫' },
-  { time: '',                                             label: 'Cake Cutting',           note: '',                           icon: '✦' },
-  { time: '',                                             label: 'Bouquet & Garter Toss',  note: '',                           icon: '✦' },
-  { time: '',                                             label: 'Open Dancing',           note: 'Party starts here',          icon: '♫' },
-  { time: fmt(reception.end_time, '11:00 PM'),           label: 'Last Dance & Send-Off',  note: 'Thank you & goodnight',      icon: '✦' },
+  {
+    time: fmt(reception.start_time, "5:00 PM"),
+    label: "Grand Entrance",
+    note: "Wedding party processional",
+    icon: "✦",
+  },
+  {
+    time: "",
+    label: "Welcome Toast",
+    note: "Best man & maid of honour",
+    icon: "♡",
+  },
+  { time: "", label: "Opening Prayer", note: "", icon: "✝" },
+  {
+    time: "",
+    label: "Dinner Is Served",
+    note: "Multi-course dinner",
+    icon: "🍽",
+  },
+  {
+    time: "",
+    label: "Messages & Tributes",
+    note: "From family & friends",
+    icon: "♡",
+  },
+  {
+    time: "",
+    label: "First Dance",
+    note: `${groomFirst} & ${brideFirst}`,
+    icon: "♫",
+  },
+  {
+    time: "",
+    label: "Parent Dances",
+    note: "Parents of groom & bride",
+    icon: "♫",
+  },
+  { time: "", label: "Cake Cutting", note: "", icon: "✦" },
+  { time: "", label: "Bouquet & Garter Toss", note: "", icon: "✦" },
+  { time: "", label: "Open Dancing", note: "Party starts here", icon: "♫" },
+  {
+    time: fmt(reception.end_time, "11:00 PM"),
+    label: "Last Dance & Send-Off",
+    note: "Thank you & goodnight",
+    icon: "✦",
+  },
 ];
 
 const liveTimeline = program.map((p: any) => ({
-  time:  fmt(p.estimated_start_time),
+  time: fmt(p.estimated_start_time),
   label: p.label,
-  note:  p.assigned_to
-    ? [p.assigned_to.preferred_name ?? p.assigned_to.first_name, p.assigned_to.last_name].filter(Boolean).join(' ')
-    : (p.notes ?? ''),
-  icon: iconForType(p.type ?? ''),
+  note: p.assigned_to
+    ? [
+        p.assigned_to.preferred_name ?? p.assigned_to.first_name,
+        p.assigned_to.last_name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    : (p.notes ?? ""),
+  icon: iconForType(p.type ?? ""),
 }));
 
 function iconForType(type: string): string {
-  const map: Record<string,string> = {
-    entrance: '🚪', dance: '💃', speech: '🎤', remarks: '🎤',
-    prayer: '🙏', dinner: '🍽️', cake: '🎂', toast: '🥂', bouquet: '💐', garter: '📿',
-    money: '💵', game: '🎮', video: '🎥', celebration: '🎉',
+  const map: Record<string, string> = {
+    entrance: "🚪",
+    dance: "💃",
+    speech: "🎤",
+    remarks: "🎤",
+    prayer: "🙏",
+    dinner: "🍽️",
+    cake: "🎂",
+    toast: "🥂",
+    bouquet: "💐",
+    garter: "📿",
+    money: "💵",
+    game: "🎮",
+    video: "🎥",
+    celebration: "🎉",
   };
-  return map[type.toLowerCase()] ?? '✦';
+  return map[type.toLowerCase()] ?? "✦";
 }
 
 const timeline = liveTimeline.length > 0 ? liveTimeline : fallbackTimeline;
-const venueName = reception.venue?.name ?? 'Reception Venue';
+const venueName = reception.venue?.name ?? "Reception Venue";
 const venueAddr = reception.venue?.address_line1
-  ? `${reception.venue.address_line1}, ${reception.venue.city ?? 'Lethbridge'}, AB`
-  : 'Lethbridge, Alberta, Canada';
+  ? `${reception.venue.address_line1}, ${reception.venue.city ?? "Lethbridge"}, AB`
+  : "Lethbridge, Alberta, Canada";
 ---
 
 <PrintLayout
   title={`Reception Program — ${groomFirst} & ${brideFirst}`}
-  cardWidth="5in" cardHeight="7in"
+  cardWidth="5in"
+  cardHeight="7in"
   toolbarHint="Click the card to flip · print sends both sides"
 >
-
   <div class="toolbar-controls" slot="toolbar-controls">
     <div class="seg-control">
-      <button id="btn-front" class="seg-btn active" onclick="showFace('front')">Front</button>
-      <button id="btn-back"  class="seg-btn"        onclick="showFace('back')">Back</button>
+      <button id="btn-front" class="seg-btn active" onclick="showFace('front')"
+        >Front</button
+      >
+      <button id="btn-back" class="seg-btn" onclick="showFace('back')"
+        >Back</button
+      >
     </div>
   </div>
 
   <!-- ══ FLIP CONTAINER ══════════════════════════════════════ -->
   <div class="flip-container" id="flip-container">
     <div class="flipper" id="flipper">
-
       <!-- ══ FRONT — Timeline ══════════════════════════════════ -->
       <div class="card face front">
         <div class="card-accent"></div>
@@ -94,38 +149,61 @@ const venueAddr = reception.venue?.address_line1
         <header class="card-header">
           <Image src={AccentMark} class="header-accent" alt="" />
           <p class="header-eyebrow">Reception Programme</p>
-          <h1 class="header-names">{groomFirst} <span class="amp">&amp;</span> {brideFirst}</h1>
+          <h1 class="header-names">
+            {groomFirst}
+            <span class="amp">&amp;</span>
+            {brideFirst}
+          </h1>
           <p class="header-meta">
             {venueName}
-            {venueAddr && <><br /><span class="header-addr">{venueAddr}</span></>}
+            {
+              venueAddr && (
+                <>
+                  <>
+                    <br />
+                    <span class="header-addr">{venueAddr}</span>
+                  </>
+                </>
+              )
+            }
           </p>
         </header>
 
-        <div class="rule-row"><span class="rule-line"></span><span class="rule-gem">◆</span><span class="rule-line"></span></div>
+        <div class="rule-row">
+          <span class="rule-line"></span><span class="rule-gem">◆</span><span
+            class="rule-line"></span>
+        </div>
 
         <ol class="timeline">
-          {timeline.map((item: any, i: number) => (
-            <li class={`tl-item ${i === 0 ? 'first' : ''} ${i === timeline.length - 1 ? 'last' : ''}`}>
-              <div class="tl-time">
-                {item.time && <span class="tl-time-val">{item.time}</span>}
-              </div>
-              <div class="tl-spine">
-                <span class="tl-dot"></span>
-                {i < timeline.length - 1 && <span class="tl-line"></span>}
-              </div>
-              <div class="tl-content">
-                <span class="tl-icon">{item.icon}</span>
-                <div class="tl-text">
-                  <p class="tl-label">{item.label}</p>
-                  {item.note && <p class="tl-note">{item.note}</p>}
+          {
+            timeline.map((item: any, i: number) => (
+              <li
+                class={`tl-item ${i === 0 ? "first" : ""} ${i === timeline.length - 1 ? "last" : ""}`}
+              >
+                <div class="tl-time">
+                  {item.time && <span class="tl-time-val">{item.time}</span>}
                 </div>
-              </div>
-            </li>
-          ))}
+                <div class="tl-spine">
+                  <span class="tl-dot" />
+                  {i < timeline.length - 1 && <span class="tl-line" />}
+                </div>
+                <div class="tl-content">
+                  <span class="tl-icon">{item.icon}</span>
+                  <div class="tl-text">
+                    <p class="tl-label">{item.label}</p>
+                    {item.note && <p class="tl-note">{item.note}</p>}
+                  </div>
+                </div>
+              </li>
+            ))
+          }
         </ol>
 
         <footer class="card-footer">
-          <div class="rule-row footer-rule"><span class="rule-line"></span><span class="rule-gem">◆</span><span class="rule-line"></span></div>
+          <div class="rule-row footer-rule">
+            <span class="rule-line"></span><span class="rule-gem">◆</span><span
+              class="rule-line"></span>
+          </div>
           <Image src={Stacked} class="footer-logo" alt="" />
           <Hashtag tag={settings.hashtag} class="footer-hashtag" />
         </footer>
@@ -143,23 +221,43 @@ const venueAddr = reception.venue?.address_line1
           <div class="back-content">
             <p class="back-eyebrow">{weddingDateLabel}</p>
 
-            <h2 class="back-names">{groomFirst} <span class="amp">&amp;</span> {brideFirst}</h2>
+            <h2 class="back-names">
+              {groomFirst}
+              <span class="amp">&amp;</span>
+              {brideFirst}
+            </h2>
 
-            <div class="rule-row back-rule"><span class="rule-line"></span><span class="rule-gem">◆</span><span class="rule-line"></span></div>
+            <div class="rule-row back-rule">
+              <span class="rule-line"></span><span class="rule-gem">◆</span
+              ><span class="rule-line"></span>
+            </div>
 
             <div class="venue-block">
               <p class="venue-label">Reception</p>
               <p class="venue-name">{venueName}</p>
               <p class="venue-addr">{venueAddr}</p>
-              {reception.start_time && (
-                <p class="venue-time">{fmt(reception.start_time)}</p>
-              )}
-              {reception.venue?.maps_url && (
-                <a class="venue-maps no-print" href={reception.venue.maps_url} target="_blank">↗ Directions</a>
-              )}
+              {
+                reception.start_time && (
+                  <p class="venue-time">{fmt(reception.start_time)}</p>
+                )
+              }
+              {
+                reception.venue?.maps_url && (
+                  <a
+                    class="venue-maps no-print"
+                    href={reception.venue.maps_url}
+                    target="_blank"
+                  >
+                    ↗ Directions
+                  </a>
+                )
+              }
             </div>
 
-            <div class="rule-row back-rule"><span class="rule-line"></span><span class="rule-gem">◆</span><span class="rule-line"></span></div>
+            <div class="rule-row back-rule">
+              <span class="rule-line"></span><span class="rule-gem">◆</span
+              ><span class="rule-line"></span>
+            </div>
 
             <div class="table-block">
               <p class="table-label">Table</p>
@@ -169,17 +267,18 @@ const venueAddr = reception.venue?.address_line1
         </div>
 
         <footer class="card-footer">
-          <div class="rule-row footer-rule"><span class="rule-line"></span><span class="rule-gem">◆</span><span class="rule-line"></span></div>
+          <div class="rule-row footer-rule">
+            <span class="rule-line"></span><span class="rule-gem">◆</span><span
+              class="rule-line"></span>
+          </div>
           <Image src={Stacked} class="footer-logo" alt="" />
           <Hashtag tag={settings.hashtag} class="footer-hashtag" />
         </footer>
 
         <div class="card-accent-bottom"></div>
       </div>
-
     </div><!-- /.flipper -->
   </div><!-- /.flip-container -->
-
 </PrintLayout>
 
 <script is:inline src="/scripts/reception-preview.js"></script>

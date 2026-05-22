@@ -1,51 +1,69 @@
 ---
 export const prerender = false;
 // apps/web/src/pages/gallery.astro
-import Layout          from '../layouts/Layout.astro';
-import PageHeader      from '../components/PageHeader.astro';
-import GalleryGrid     from '../components/gallery/GalleryGrid.astro';
-import GalleryLightbox from '../components/gallery/GalleryLightbox.astro';
-import { getSettings, getGalleryPhotos, type Vendors } from '../lib/directus';
-import { formatDate, assetUrl } from '../lib/utils/format';
-import Hashtag from '~/components/Hashtag.astro';
-import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
-import '../styles/gallery.css';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import GalleryGrid from "../components/gallery/GalleryGrid.astro";
+import GalleryLightbox from "../components/gallery/GalleryLightbox.astro";
+import { getSettings, getGalleryPhotos, type Vendors } from "../lib/directus";
+import { formatDate, assetUrl } from "../lib/utils/format";
+import Hashtag from "~/components/Hashtag.astro";
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from "astro:env/client";
+import "../styles/gallery.css";
 
-const [settings, photos] = await Promise.all([getSettings(), getGalleryPhotos()]);
-const groom = settings.groom?.first_name ?? 'Aldrin';
-const bride  = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const [settings, photos] = await Promise.all([
+  getSettings(),
+  getGalleryPhotos(),
+]);
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 
 const placeholders = Array.from({ length: 9 }, (_, i) => ({
-  id: `placeholder-${i}`, title: null, description: null, image: null, sort: i,
+  id: `placeholder-${i}`,
+  title: null,
+  description: null,
+  image: null,
+  sort: i,
 }));
 
-const items = photos.length > 0 ? photos : (import.meta.env.DEV ? placeholders : []);
-const _photo = typeof settings.photographer === 'object'
-  ? (settings.photographer as Vendors)
-  : null;
+const items =
+  photos.length > 0 ? photos : import.meta.env.DEV ? placeholders : [];
+const _photo =
+  typeof settings.photographer === "object"
+    ? (settings.photographer as Vendors)
+    : null;
 
 const CATEGORY_ORDER = [
-  'engagement', 'details', 'preparation', 'bridesmaids', 'groomsmen',
-  'ceremony', 'group_photos', 'reception', 'portraits', 'candids', 'family_formals',
+  "engagement",
+  "details",
+  "preparation",
+  "bridesmaids",
+  "groomsmen",
+  "ceremony",
+  "group_photos",
+  "reception",
+  "portraits",
+  "candids",
+  "family_formals",
 ];
 const CATEGORY_LABELS: Record<string, string> = {
-  engagement:     'Engagement',
-  details:        'Details',
-  preparation:    'Preparation',
-  bridesmaids:    'Bridesmaids',
-  groomsmen:      'Groomsmen',
-  ceremony:       'Ceremony',
-  group_photos:   'Group Photos',
-  reception:      'Reception',
-  portraits:      'Portraits',
-  candids:        'Candids',
-  family_formals: 'Family Formals',
+  engagement: "Engagement",
+  details: "Details",
+  preparation: "Preparation",
+  bridesmaids: "Bridesmaids",
+  groomsmen: "Groomsmen",
+  ceremony: "Ceremony",
+  group_photos: "Group Photos",
+  reception: "Reception",
+  portraits: "Portraits",
+  candids: "Candids",
+  family_formals: "Family Formals",
 };
 
-const categoriesInUse = new Set(photos.map(p => p.category).filter(Boolean));
-const activeCategories = CATEGORY_ORDER.filter(c => categoriesInUse.has(c));
-const hasBW      = photos.some(p => p.bw);
+const categoriesInUse = new Set(photos.map((p) => p.category).filter(Boolean));
+const activeCategories = CATEGORY_ORDER.filter((c) => categoriesInUse.has(c));
+const hasBW = photos.some((p) => p.bw);
 const showFilter = activeCategories.length > 1 || hasBW;
 ---
 
@@ -55,9 +73,7 @@ const showFilter = activeCategories.length > 1 || hasBW;
   colorSecondary={settings.color_secondary}
   activeNav="gallery"
 >
-
   <div class="page-wide gallery-page" id="photos">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -65,67 +81,105 @@ const showFilter = activeCategories.length > 1 || hasBW;
       date={`Our Gallery · ${weddingDateLabel}`}
     />
 
-    {showFilter && (
-      <div class="gallery-filter" id="gallery-filter" role="group" aria-label="Filter photos">
-        <button class="gallery-filter-btn active" data-filter="all">All</button>
-        {activeCategories.map(cat => (
-          <button class="gallery-filter-btn" data-filter={cat}>
-            {CATEGORY_LABELS[cat]}
+    {
+      showFilter && (
+        <div
+          class="gallery-filter"
+          id="gallery-filter"
+          role="group"
+          aria-label="Filter photos"
+        >
+          <button class="gallery-filter-btn active" data-filter="all">
+            All
           </button>
-        ))}
-        {hasBW && (
-          <>
-            <span class="gallery-filter-sep" aria-hidden="true"></span>
-            <button class="gallery-filter-bw" id="gallery-filter-bw" aria-pressed="false">
-              B&amp;W
+          {activeCategories.map((cat) => (
+            <button class="gallery-filter-btn" data-filter={cat}>
+              {CATEGORY_LABELS[cat]}
             </button>
-          </>
-        )}
-      </div>
-    )}
+          ))}
+          {hasBW && (
+            <>
+              <span class="gallery-filter-sep" aria-hidden="true" />
+              <button
+                class="gallery-filter-bw"
+                id="gallery-filter-bw"
+                aria-pressed="false"
+              >
+                B&amp;W
+              </button>
+            </>
+          )}
+        </div>
+      )
+    }
 
     {items.length > 0 && <GalleryGrid items={items} />}
 
-    <p class="gallery-filter-empty" id="gallery-filter-empty" aria-live="polite"></p>
+    <p
+      class="gallery-filter-empty"
+      id="gallery-filter-empty"
+      aria-live="polite"
+    >
+    </p>
 
-    {photos.length === 0 && (
-      <p class="gallery-empty">Photos will be added soon. Check back after the wedding!</p>
-    )}
+    {
+      photos.length === 0 && (
+        <p class="gallery-empty">
+          Photos will be added soon. Check back after the wedding!
+        </p>
+      )
+    }
 
-    {_photo?.name && (
-      <div class="photographer-card">
-        {_photo.logo?.id && (
-          <img
-            src={assetUrl(_photo.logo, { height: 72 })}
-            alt={_photo.name}
-            class="photographer-logo"
-          />
-        )}
-        <p class="photographer-label">Official Photographer</p>
-        <p class="photographer-name">{_photo.name}</p>
-        {_photo.subtitle && <p class="photographer-subtitle">{_photo.subtitle}</p>}
-        {_photo.website && (
-          <a href={_photo.website} target="_blank" rel="noopener noreferrer" class="photographer-link">
-            Visit website ↗
+    {
+      _photo?.name && (
+        <div class="photographer-card">
+          {_photo.logo?.id && (
+            <img
+              src={assetUrl(_photo.logo, { height: 72 })}
+              alt={_photo.name}
+              class="photographer-logo"
+            />
+          )}
+          <p class="photographer-label">Official Photographer</p>
+          <p class="photographer-name">{_photo.name}</p>
+          {_photo.subtitle && (
+            <p class="photographer-subtitle">{_photo.subtitle}</p>
+          )}
+          {_photo.website && (
+            <a
+              href={_photo.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="photographer-link"
+            >
+              Visit website ↗
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    {
+      _photo?.name && (
+        <div class="pictime-card">
+          <p class="pictime-label">Official Photo Gallery</p>
+          <p class="pictime-heading">Full Collection &amp; Prints</p>
+          <p class="pictime-desc">
+            Browse the full collection — from our engagement shoot through the
+            wedding day and beyond. Order prints, and download your favourite
+            moments.
+          </p>
+          <a
+            href="https://kvnmcbnqlshoots.pic-time.com/client/azucena-wedding"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="pictime-btn"
+          >
+            Open Gallery ↗
           </a>
-        )}
-      </div>
-    )}
-
-    {_photo?.name && <div class="pictime-card">
-      <p class="pictime-label">Official Photo Gallery</p>
-      <p class="pictime-heading">Full Collection &amp; Prints</p>
-      <p class="pictime-desc">Browse the full collection — from our engagement shoot through the wedding day and beyond. Order prints, and download your favourite moments.</p>
-      <a
-        href="https://kvnmcbnqlshoots.pic-time.com/client/azucena-wedding"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="pictime-btn"
-      >
-        Open Gallery ↗
-      </a>
-    </div>}
-
+        </div>
+      )
+    }
   </div>
 
   <Fragment slot="footer-extra">
@@ -133,9 +187,14 @@ const showFilter = activeCategories.length > 1 || hasBW;
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
-  <GalleryLightbox slot="overlay" photographer={_photo?.name ?? null} photographerLogo={_photo?.logo ?? null} showDownload={PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false} />
-
+  <GalleryLightbox
+    slot="overlay"
+    photographer={_photo?.name ?? null}
+    photographerLogo={_photo?.logo ?? null}
+    showDownload={PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false}
+  />
 </Layout>
 
-
-<script>import '../scripts/gallery-filter';</script>
+<script>
+  import "../scripts/gallery-filter";
+</script>

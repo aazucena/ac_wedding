@@ -1,22 +1,20 @@
 ---
 export const prerender = true;
 // apps/web/src/pages/info.astro
-import Layout            from '../layouts/Layout.astro';
-import PageHeader        from '../components/PageHeader.astro';
-import Hashtag           from '~/components/Hashtag.astro';
-import TravelSection     from '../components/info/TravelSection.astro';
-import FaqList           from '../components/info/FaqList.astro';
-import ContactCard       from '../components/info/ContactCard.astro';
-import { getSettings, getFaqs } from '../lib/directus';
-import { formatDate } from '../lib/utils/format';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import Hashtag from "~/components/Hashtag.astro";
+import TravelSection from "../components/info/TravelSection.astro";
+import FaqList from "../components/info/FaqList.astro";
+import ContactCard from "../components/info/ContactCard.astro";
+import { getSettings, getFaqs } from "../lib/directus";
+import { formatDate } from "../lib/utils/format";
 
-const [settings, faqs] = await Promise.all([
-  getSettings(), getFaqs(),
-]);
+const [settings, faqs] = await Promise.all([getSettings(), getFaqs()]);
 
-const groom           = settings.groom?.first_name ?? 'Aldrin';
-const bride           = settings.bride?.first_name ?? 'Christine';
-const weddingDate     = settings.wedding_date ?? '2026-09-26';
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDate = settings.wedding_date ?? "2026-09-26";
 const weddingDateLabel = formatDate(weddingDate);
 
 type DirectionItem = { icon?: string; title?: string; description?: string };
@@ -29,9 +27,7 @@ const directions: DirectionItem[] = settings.directions ?? [];
   colorSecondary={settings.color_secondary}
   activeNav="info"
 >
-
   <div class="page-wide info-page">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -39,32 +35,42 @@ const directions: DirectionItem[] = settings.directions ?? [];
       date={`${weddingDateLabel} · Lethbridge, Alberta`}
     />
 
-    <TravelSection directions={directions} accomodation={settings.accomodation} />
+    <TravelSection
+      directions={directions}
+      accomodation={settings.accomodation}
+    />
     <div class="section-divider" aria-hidden="true"><span>✦</span></div>
 
     <FaqList faqs={faqs ?? []} />
     <div class="section-divider" aria-hidden="true"><span>✦</span></div>
 
     <ContactCard email={settings.email} phone={settings.phone} />
-
   </div>
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>
 
 <style>
-.info-page { display: flex; flex-direction: column; align-items: center; }
+  .info-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-.section-divider span {
-  font-size: 11px;
-  color: color-mix(in srgb, var(--dark) 55%, transparent);
-  line-height: 1; flex-shrink: 0;
-  animation: spin 18s linear infinite;
-  display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+  .section-divider span {
+    font-size: 11px;
+    color: color-mix(in srgb, var(--dark) 55%, transparent);
+    line-height: 1;
+    flex-shrink: 0;
+    animation: spin 18s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 </style>

@@ -3,50 +3,111 @@ export const prerender = true;
 // apps/web/src/pages/print/index.astro
 // Print Pages — index listing all available print pages
 
-import { getSettings } from '../../lib/directus';
-import { formatDate } from '../../lib/utils/format';
-import StackedImg        from '@assets/stacked.png';
-import AccentMark        from '@assets/accent_mark.png';
-import { Image } from 'astro:assets';
-import Hashtag           from '~/components/Hashtag.astro';
-import '../../styles/print-index.css';
+import { getSettings } from "../../lib/directus";
+import { formatDate } from "../../lib/utils/format";
+import StackedImg from "@assets/stacked.png";
+import AccentMark from "@assets/accent_mark.png";
+import { Image } from "astro:assets";
+import Hashtag from "~/components/Hashtag.astro";
+import "../../styles/print-index.css";
 
 const settings = await getSettings();
-const groomFirst = settings.groom?.first_name ?? 'Aldrin';
-const brideFirst = settings.bride?.first_name ?? 'Christine';
+const groomFirst = settings.groom?.first_name ?? "Aldrin";
+const brideFirst = settings.bride?.first_name ?? "Christine";
 
-const weddingDate = formatDate(settings.wedding_date ?? '2026-09-26');
+const weddingDate = formatDate(settings.wedding_date ?? "2026-09-26");
 
 const printPages = [
   {
-    category: 'Ceremony',
+    category: "Ceremony",
     items: [
-      { title: 'Mass Booklet',     href: '/print/mass',  desc: '5.5 × 8.5 in · 9 pages · Half-letter booklet', warning: 'Pending parish approval' },
-      { title: 'Wedding Program',  href: '/print/program',       desc: '5 × 7 in · 4-panel foldable · Outside & Inside' },
+      {
+        title: "Mass Booklet",
+        href: "/print/mass",
+        desc: "5.5 × 8.5 in · 9 pages · Half-letter booklet",
+        warning: "Pending parish approval",
+      },
+      {
+        title: "Wedding Program",
+        href: "/print/program",
+        desc: "5 × 7 in · 4-panel foldable · Outside & Inside",
+      },
     ],
   },
   {
-    category: 'Reception',
+    category: "Reception",
     items: [
-      { title: 'Reception Program', href: '/print/reception',    desc: '5 × 7 in · Flip card · Timeline & venue details' },
-      { title: 'Menu Card',         href: '/print/menu',          desc: '4 × 9 in · Portrait · Classic Buffet' },
-      { title: 'Table Number Cards',href: '/print/table-numbers', desc: '4 × 3 in · Tent card · 2 per page' },
-      { title: 'Place Cards',       href: '/print/place-cards',   desc: '3.5 × 2 in · Tent card · 6 per page · By table' },
-      { title: 'Escort Cards',      href: '/print/escort-cards',  desc: '3.5 × 2 in · Flat · 4 per page · Alphabetical' },
+      {
+        title: "Reception Program",
+        href: "/print/reception",
+        desc: "5 × 7 in · Flip card · Timeline & venue details",
+      },
+      {
+        title: "Menu Card",
+        href: "/print/menu",
+        desc: "4 × 9 in · Portrait · Classic Buffet",
+      },
+      {
+        title: "Table Number Cards",
+        href: "/print/table-numbers",
+        desc: "4 × 3 in · Tent card · 2 per page",
+      },
+      {
+        title: "Place Cards",
+        href: "/print/place-cards",
+        desc: "3.5 × 2 in · Tent card · 6 per page · By table",
+      },
+      {
+        title: "Escort Cards",
+        href: "/print/escort-cards",
+        desc: "3.5 × 2 in · Flat · 4 per page · Alphabetical",
+      },
     ],
   },
   {
-    category: 'Stationery',
+    category: "Stationery",
     items: [
-      { title: 'Invitation',        href: '/print/invitation',    desc: '' },
-      { title: 'Enclosure Card',    href: '/print/enclosure',     desc: '5 × 3.5 in · Flip card · Ceremony & reception details' },
-      { title: 'RSVP Card',         href: '/print/rsvp',          desc: '6 × 4 in · Single-sided · QR code + seat reservation' },
-      { title: 'Thank You Card',    href: '/print/thank-you',     desc: '5 × 7 in · Flip card · Photo front + letter back' },
-      { title: 'Find a Guest',      href: '/print/game',          desc: '11 × 8.5 in · Landscape · Bingo game card' },
-      { title: 'Gift Tag Sticker',  href: '/print/gift-tag',      desc: '2 × 2 in · Circle · 12 per page · Envelope seal or gift tag' },
-      { title: 'Gift Hang-Tag',     href: '/print/gift-hang-tag', desc: '3.5 × 3.5 in · Diamond · Double-sided · To / From fields' },
-      { title: 'Return Label',      href: '/print/return-label',  desc: '2 × 4 in · Avery 5163 · 10 per page · Return address' },
-      { title: 'Address Label',     href: '/print/address-label', desc: '2 × 4 in · Avery 5163 · 10 per page · Write-in name & address' },
+      { title: "Invitation", href: "/print/invitation", desc: "" },
+      {
+        title: "Enclosure Card",
+        href: "/print/enclosure",
+        desc: "5 × 3.5 in · Flip card · Ceremony & reception details",
+      },
+      {
+        title: "RSVP Card",
+        href: "/print/rsvp",
+        desc: "6 × 4 in · Single-sided · QR code + seat reservation",
+      },
+      {
+        title: "Thank You Card",
+        href: "/print/thank-you",
+        desc: "5 × 7 in · Flip card · Photo front + letter back",
+      },
+      {
+        title: "Find a Guest",
+        href: "/print/game",
+        desc: "11 × 8.5 in · Landscape · Bingo game card",
+      },
+      {
+        title: "Gift Tag Sticker",
+        href: "/print/gift-tag",
+        desc: "2 × 2 in · Circle · 12 per page · Envelope seal or gift tag",
+      },
+      {
+        title: "Gift Hang-Tag",
+        href: "/print/gift-hang-tag",
+        desc: "3.5 × 3.5 in · Diamond · Double-sided · To / From fields",
+      },
+      {
+        title: "Return Label",
+        href: "/print/return-label",
+        desc: "2 × 4 in · Avery 5163 · 10 per page · Return address",
+      },
+      {
+        title: "Address Label",
+        href: "/print/address-label",
+        desc: "2 × 4 in · Avery 5163 · 10 per page · Write-in name & address",
+      },
     ],
   },
 ];
@@ -54,66 +115,83 @@ const printPages = [
 
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Print Pages</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-</head>
-<body>
-
-  <div class="site-header">
-    <Image src={AccentMark} class="header-accent" alt="" />
-    <div class="header-eyebrow">Wedding Stationery</div>
-    <div class="header-title">Print Pages</div>
-    <div class="header-rule">
-      <div class="header-rule-line"></div>
-      <span class="header-rule-gem">✦</span>
-      <div class="header-rule-line"></div>
-    </div>
-    <div class="header-names">{groomFirst} &amp; {brideFirst}</div>
-    <div class="header-date">{weddingDate}</div>
-  </div>
-
-  <div class="main-card">
-    {printPages.map((cat) => (
-      <div class="category">
-        <div class="category-header">
-          <span class="category-label">{cat.category}</span>
-          <div class="category-line"></div>
-        </div>
-        {cat.items.map((item) => (
-          <a class="print-row" href={item.href}>
-            <div class="row-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <line x1="7" y1="8" x2="17" y2="8"/>
-                <line x1="7" y1="12" x2="17" y2="12"/>
-                <line x1="7" y1="16" x2="13" y2="16"/>
-              </svg>
-            </div>
-            <div class="row-body">
-              <span class="row-title">{item.title}</span>
-              <span class="row-desc">{item.desc}</span>
-              {item.warning && (
-                <span class="row-warning">⚠ {item.warning}</span>
-              )}
-            </div>
-            <svg class="row-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </a>
-        ))}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Print Pages</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="site-header">
+      <Image src={AccentMark} class="header-accent" alt="" />
+      <div class="header-eyebrow">Wedding Stationery</div>
+      <div class="header-title">Print Pages</div>
+      <div class="header-rule">
+        <div class="header-rule-line"></div>
+        <span class="header-rule-gem">✦</span>
+        <div class="header-rule-line"></div>
       </div>
-    ))}
-  </div>
+      <div class="header-names">{groomFirst} &amp; {brideFirst}</div>
+      <div class="header-date">{weddingDate}</div>
+    </div>
 
-  <div class="page-footer">
-    <Image src={StackedImg} class="footer-logo" alt="" />
-    <span class="footer-gem">✦</span>
-    <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-  </div>
+    <div class="main-card">
+      {
+        printPages.map((cat) => (
+          <div class="category">
+            <div class="category-header">
+              <span class="category-label">{cat.category}</span>
+              <div class="category-line" />
+            </div>
+            {cat.items.map((item) => (
+              <a class="print-row" href={item.href}>
+                <div class="row-icon">
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <line x1="7" y1="8" x2="17" y2="8" />
+                    <line x1="7" y1="12" x2="17" y2="12" />
+                    <line x1="7" y1="16" x2="13" y2="16" />
+                  </svg>
+                </div>
+                <div class="row-body">
+                  <span class="row-title">{item.title}</span>
+                  <span class="row-desc">{item.desc}</span>
+                  {item.warning && (
+                    <span class="row-warning">⚠ {item.warning}</span>
+                  )}
+                </div>
+                <svg
+                  class="row-arrow"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </a>
+            ))}
+          </div>
+        ))
+      }
+    </div>
 
-</body>
+    <div class="page-footer">
+      <Image src={StackedImg} class="footer-logo" alt="" />
+      <span class="footer-gem">✦</span>
+      <Hashtag tag={settings.hashtag} class="footer-hashtag" />
+    </div>
+  </body>
 </html>
-

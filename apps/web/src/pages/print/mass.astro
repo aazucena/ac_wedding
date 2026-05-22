@@ -6,66 +6,85 @@ export const prerender = true;
 //           Liturgy of the Eucharist, Nuptial Blessing, Concluding Rites
 // ⚠ Requires parish approval before printing
 
-import { getSettings, getCeremony, getClergies, getReadings } from '@lib/directus';
-import { formatDate, formatTime } from '@lib/utils/format';
-import PrintLayout        from '@layouts/PrintLayout.astro';
-import MassPage1Cover     from '@components/print/mass/MassPage1Cover.astro';
-import MassPage2Order     from '@components/print/mass/MassPage2Order.astro';
-import MassPage3Rites     from '@components/print/mass/MassPage3Rites.astro';
-import MassPage4LiturgyWord   from '@components/print/mass/MassPage4LiturgyWord.astro';
-import MassPage5Gospel    from '@components/print/mass/MassPage5Gospel.astro';
-import MassPage6RiteMarriage  from '@components/print/mass/MassPage6RiteMarriage.astro';
-import MassPage7Rings     from '@components/print/mass/MassPage7Rings.astro';
-import MassPage8NuptialBlessing from '@components/print/mass/MassPage8NuptialBlessing.astro';
-import MassPageBackCover  from '@components/print/mass/MassPageBackCover.astro';
-import '../../styles/mass.css';
+import {
+  getSettings,
+  getCeremony,
+  getClergies,
+  getReadings,
+} from "@lib/directus";
+import { formatDate, formatTime } from "@lib/utils/format";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import MassPage1Cover from "@components/print/mass/MassPage1Cover.astro";
+import MassPage2Order from "@components/print/mass/MassPage2Order.astro";
+import MassPage3Rites from "@components/print/mass/MassPage3Rites.astro";
+import MassPage4LiturgyWord from "@components/print/mass/MassPage4LiturgyWord.astro";
+import MassPage5Gospel from "@components/print/mass/MassPage5Gospel.astro";
+import MassPage6RiteMarriage from "@components/print/mass/MassPage6RiteMarriage.astro";
+import MassPage7Rings from "@components/print/mass/MassPage7Rings.astro";
+import MassPage8NuptialBlessing from "@components/print/mass/MassPage8NuptialBlessing.astro";
+import MassPageBackCover from "@components/print/mass/MassPageBackCover.astro";
+import "../../styles/mass.css";
 
 const [settings, ceremony, clergies, readings] = await Promise.all([
-  getSettings(), getCeremony(), getClergies(), getReadings(),
+  getSettings(),
+  getCeremony(),
+  getClergies(),
+  getReadings(),
 ]);
 
-const groomFirst = settings.groom?.first_name  ?? 'Aldrin';
-const brideFirst = settings.bride?.first_name  ?? 'Christine';
-const groomFull  = `${groomFirst} ${settings.groom?.last_name  ?? 'Plata'}`;
-const brideFull  = `${brideFirst} ${settings.bride?.last_name ?? 'Ranada'}`;
+const groomFirst = settings.groom?.first_name ?? "Aldrin";
+const brideFirst = settings.bride?.first_name ?? "Christine";
+const groomFull = `${groomFirst} ${settings.groom?.last_name ?? "Plata"}`;
+const brideFull = `${brideFirst} ${settings.bride?.last_name ?? "Ranada"}`;
 
-const weddingDate  = formatDate(settings.wedding_date ?? '2026-09-26', 'cccc, MMMM d, yyyy');
-const ceremonyTime = ceremony.start_time ? formatTime(ceremony.start_time) : '2:00 PM';
-const venueN = ceremony.venue?.name ?? 'Church Name';
-const venueA = ceremony.venue?.address_line1 ?? '';
-const venueC = ceremony.venue?.city ?? '';
+const weddingDate = formatDate(
+  settings.wedding_date ?? "2026-09-26",
+  "cccc, MMMM d, yyyy",
+);
+const ceremonyTime = ceremony.start_time
+  ? formatTime(ceremony.start_time)
+  : "2:00 PM";
+const venueN = ceremony.venue?.name ?? "Church Name";
+const venueA = ceremony.venue?.address_line1 ?? "";
+const venueC = ceremony.venue?.city ?? "";
 
-const priest = clergies.find((c: any) => c.title?.toLowerCase().includes('father') || c.title?.toLowerCase().includes('priest'));
+const priest = clergies.find(
+  (c: any) =>
+    c.title?.toLowerCase().includes("father") ||
+    c.title?.toLowerCase().includes("priest"),
+);
 const priestName = priest
-  ? `${priest.title ?? 'Rev. Fr.'} ${priest.person?.first_name ?? ''} ${priest.person?.last_name ?? ''}`.trim()
-  : 'Rev. Fr. [Name]';
+  ? `${priest.title ?? "Rev. Fr."} ${priest.person?.first_name ?? ""} ${priest.person?.last_name ?? ""}`.trim()
+  : "Rev. Fr. [Name]";
 
-function readerName(r: typeof readings[0]) {
+function readerName(r: (typeof readings)[0]) {
   const p = r.reader;
   if (!p) return null;
-  return `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
+  return `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
 }
-function scriptureRef(r: typeof readings[0]) {
+function scriptureRef(r: (typeof readings)[0]) {
   if (r.label) return r.label;
-  return r.scripture ?? r.book ?? '';
+  return r.scripture ?? r.book ?? "";
 }
 
-const firstReading  = readings.find((r: any) => r.type === 'first')  ?? null;
-const psalm         = readings.find((r: any) => r.type === 'psalm')  ?? null;
-const secondReading = readings.find((r: any) => r.type === 'second') ?? null;
-const gospel        = readings.find((r: any) => r.type === 'gospel') ?? null;
+const firstReading = readings.find((r: any) => r.type === "first") ?? null;
+const psalm = readings.find((r: any) => r.type === "psalm") ?? null;
+const secondReading = readings.find((r: any) => r.type === "second") ?? null;
+const gospel = readings.find((r: any) => r.type === "gospel") ?? null;
 ---
 
 <PrintLayout
   title="Nuptial Mass Booklet — Print"
-  cardWidth="5.5in" cardHeight="8.5in"
+  cardWidth="5.5in"
+  cardHeight="8.5in"
   toolbarHint="⚠ Parish approval required before printing · 5.5 × 8.5 in · 9 pages"
 >
-
   <!-- Screen header -->
   <div class="page-header no-print">
     <div class="page-title">Nuptial Mass Booklet</div>
-    <div class="page-meta">5.5 × 8.5 in · Half-letter · Folded 8.5 × 11 sheet</div>
+    <div class="page-meta">
+      5.5 × 8.5 in · Half-letter · Folded 8.5 × 11 sheet
+    </div>
     <div class="approval-badge">⚠ Pending Parish Approval</div>
   </div>
 
@@ -87,25 +106,26 @@ const gospel        = readings.find((r: any) => r.type === 'gospel') ?? null;
   <MassPage2Order
     groomFirst={groomFirst}
     brideFirst={brideFirst}
-    firstReadingRef={firstReading ? scriptureRef(firstReading) : '[First Reading]'}
-    psalmRef={psalm ? scriptureRef(psalm) : '[Psalm]'}
+    firstReadingRef={firstReading
+      ? scriptureRef(firstReading)
+      : "[First Reading]"}
+    psalmRef={psalm ? scriptureRef(psalm) : "[Psalm]"}
     secondReadingRef={secondReading ? scriptureRef(secondReading) : null}
-    gospelRef={gospel ? scriptureRef(gospel) : '[Gospel]'}
+    gospelRef={gospel ? scriptureRef(gospel) : "[Gospel]"}
   />
 
   <!-- PAGE 3 — INTRODUCTORY RITES -->
-  <MassPage3Rites
-    groomFirst={groomFirst}
-    brideFirst={brideFirst}
-  />
+  <MassPage3Rites groomFirst={groomFirst} brideFirst={brideFirst} />
 
   <!-- PAGE 4 — LITURGY OF THE WORD -->
   <MassPage4LiturgyWord
     groomFirst={groomFirst}
     brideFirst={brideFirst}
-    firstReadingRef={firstReading ? scriptureRef(firstReading) : 'To be confirmed'}
+    firstReadingRef={firstReading
+      ? scriptureRef(firstReading)
+      : "To be confirmed"}
     firstReadingReader={firstReading ? readerName(firstReading) : null}
-    psalmRef={psalm ? scriptureRef(psalm) : 'To be confirmed'}
+    psalmRef={psalm ? scriptureRef(psalm) : "To be confirmed"}
     psalmReader={psalm ? readerName(psalm) : null}
   />
 
@@ -115,8 +135,8 @@ const gospel        = readings.find((r: any) => r.type === 'gospel') ?? null;
     brideFirst={brideFirst}
     secondReadingRef={secondReading ? scriptureRef(secondReading) : null}
     secondReadingReader={secondReading ? readerName(secondReading) : null}
-    gospelRef={gospel ? scriptureRef(gospel) : 'To be confirmed'}
-    gospelBook={gospel?.book ?? '[Evangelist]'}
+    gospelRef={gospel ? scriptureRef(gospel) : "To be confirmed"}
+    gospelBook={gospel?.book ?? "[Evangelist]"}
   />
 
   <!-- PAGE 6 — RITE OF MARRIAGE -->
@@ -128,16 +148,10 @@ const gospel        = readings.find((r: any) => r.type === 'gospel') ?? null;
   />
 
   <!-- PAGE 7 — BLESSING & EXCHANGE OF RINGS -->
-  <MassPage7Rings
-    groomFirst={groomFirst}
-    brideFirst={brideFirst}
-  />
+  <MassPage7Rings groomFirst={groomFirst} brideFirst={brideFirst} />
 
   <!-- PAGE 8 — NUPTIAL BLESSING & CONCLUDING RITES -->
-  <MassPage8NuptialBlessing
-    groomFirst={groomFirst}
-    brideFirst={brideFirst}
-  />
+  <MassPage8NuptialBlessing groomFirst={groomFirst} brideFirst={brideFirst} />
 
   <!-- BACK COVER -->
   <MassPageBackCover
@@ -146,5 +160,4 @@ const gospel        = readings.find((r: any) => r.type === 'gospel') ?? null;
     weddingDate={weddingDate}
     venueN={venueN}
   />
-
 </PrintLayout>

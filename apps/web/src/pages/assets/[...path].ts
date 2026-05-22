@@ -2,15 +2,22 @@
 // Keeps DIRECTUS_URL and DIRECTUS_TOKEN server-side only.
 // e.g. /assets/abc-123?width=600&fit=cover → Directus /assets/abc-123?...
 
-import type { APIRoute } from 'astro';
-import { DIRECTUS_URL, DIRECTUS_TOKEN } from 'astro:env/server';
+import type { APIRoute } from "astro";
+import { DIRECTUS_URL, DIRECTUS_TOKEN } from "astro:env/server";
 
-const PASS_DOWN = ['content-type', 'content-length', 'cache-control', 'etag', 'last-modified', 'content-disposition'];
+const PASS_DOWN = [
+  "content-type",
+  "content-length",
+  "cache-control",
+  "etag",
+  "last-modified",
+  "content-disposition",
+];
 
 export const GET: APIRoute = async ({ request, params }) => {
   try {
-    const path        = params.path ?? '';
-    const qs          = new URL(request.url).search;
+    const path = params.path ?? "";
+    const qs = new URL(request.url).search;
     const upstreamUrl = `${DIRECTUS_URL}/assets/${path}${qs}`;
 
     const upstream = await fetch(upstreamUrl, {
@@ -24,9 +31,12 @@ export const GET: APIRoute = async ({ request, params }) => {
       if (v) responseHeaders.set(h, v);
     }
 
-    return new Response(upstream.body, { status: upstream.status, headers: responseHeaders });
+    return new Response(upstream.body, {
+      status: upstream.status,
+      headers: responseHeaders,
+    });
   } catch (err) {
-    const isTimeout = err instanceof Error && err.name === 'TimeoutError';
+    const isTimeout = err instanceof Error && err.name === "TimeoutError";
     return new Response(null, { status: isTimeout ? 504 : 502 });
   }
 };

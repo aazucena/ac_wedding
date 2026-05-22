@@ -1,38 +1,43 @@
 ---
 // apps/web/src/pages/guestbook.astro — messages from confirmed guests to the couple
-import Layout          from '../layouts/Layout.astro';
-import PageHeader      from '../components/PageHeader.astro';
-import Hashtag         from '~/components/Hashtag.astro';
-import GuestbookForm   from '../components/guestbook/GuestbookForm.astro';
-import { getSettings, getGuestMessages } from '../lib/directus';
-import { formatDate }  from '../lib/utils/format';
-import MarkdownContent from '../components/MarkdownContent.astro';
-import { parseMarkdown } from '../lib/markdown';
-import '../styles/guestbook.css';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import Hashtag from "~/components/Hashtag.astro";
+import GuestbookForm from "../components/guestbook/GuestbookForm.astro";
+import { getSettings, getGuestMessages } from "../lib/directus";
+import { formatDate } from "../lib/utils/format";
+import MarkdownContent from "../components/MarkdownContent.astro";
+import { parseMarkdown } from "../lib/markdown";
+import "../styles/guestbook.css";
 
-const [settings, rawMessages] = await Promise.all([getSettings(), getGuestMessages()]);
+const [settings, rawMessages] = await Promise.all([
+  getSettings(),
+  getGuestMessages(),
+]);
 
 const messages = rawMessages;
 
-const groom            = settings.groom?.first_name ?? 'Aldrin';
-const bride            = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 
-const weddingDate    = new Date(settings.wedding_date ?? '2026-09-26');
-const weddingIsOver  = new Date() > weddingDate;
+const weddingDate = new Date(settings.wedding_date ?? "2026-09-26");
+const weddingIsOver = new Date() > weddingDate;
 
 const PAGE_SIZE = 12;
 const total = messages.length;
-const pageSizeOptions = [12, 24, 48].filter(n => n < total).map(n => ({ value: n, label: `${n} / page` }));
+const pageSizeOptions = [12, 24, 48]
+  .filter((n) => n < total)
+  .map((n) => ({ value: n, label: `${n} / page` }));
 pageSizeOptions.push({ value: total, label: `All (${total})` });
 
 function shortDate(iso?: string): string {
-  if (!iso) return '';
-  return formatDate(iso, 'MMM d, yyyy');
+  if (!iso) return "";
+  return formatDate(iso, "MMM d, yyyy");
 }
 
 const initialMessages = messages.slice(0, PAGE_SIZE);
-const allMessages = messages.map(m => ({
+const allMessages = messages.map((m) => ({
   name: m.name,
   messageHtml: m.message_to_couple ? parseMarkdown(m.message_to_couple) : null,
   date: m.date_rsvp_submitted ?? null,
@@ -46,9 +51,7 @@ const allMessages = messages.map(m => ({
   colorSecondary={settings.color_secondary}
   activeNav="guestbook"
 >
-
   <div class="page-wide guestbook-page">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -58,74 +61,106 @@ const allMessages = messages.map(m => ({
 
     {weddingIsOver && <GuestbookForm />}
 
-    {messages.length === 0 ? (
-      <div class="empty-alert" role="status">
-        <span class="empty-alert-icon" aria-hidden="true">✦</span>
-        <p class="empty-alert-text">Messages will appear here once guests RSVP.</p>
-      </div>
-    ) : (
-      <>
-        <p class="messages-eyebrow">
-          <span>{total}</span> {total === 1 ? 'Message' : 'Messages'}
-        </p>
-
-        <div class="list-header">
-          <select class="toolbar-pagesize" id="guestbook-pagesize" aria-label="Page size">
-            {pageSizeOptions.map(opt => (
-              <option value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
-          <button class="toolbar-sort" id="guestbook-sort" type="button" aria-label="Sort order">
-            <span id="sort-label">Newest</span>
-            <span class="sort-arrow" id="sort-arrow">↓</span>
-          </button>
+    {
+      messages.length === 0 ? (
+        <div class="empty-alert" role="status">
+          <span class="empty-alert-icon" aria-hidden="true">
+            ✦
+          </span>
+          <p class="empty-alert-text">
+            Messages will appear here once guests RSVP.
+          </p>
         </div>
+      ) : (
+        <>
+          <p class="messages-eyebrow">
+            <span>{total}</span> {total === 1 ? "Message" : "Messages"}
+          </p>
 
-        <div class="letters-wrap" id="letters-wrap">
-        <div class="letters" id="letters-list">
-          {initialMessages.map((msg, i) => (
-            <article class="letter" style={`animation-delay: ${0.1 + i * 0.06}s`}>
-              <header class="letter-header">
-                <div class="letter-from">
-                  <span class="letter-symbol" aria-hidden="true">✦</span>
-                  <span class="letter-name">{msg.name}</span>
-                </div>
-                {msg.date_rsvp_submitted && (
-                  <time class="letter-date" datetime={msg.date_rsvp_submitted}>
-                    {shortDate(msg.date_rsvp_submitted)}
-                  </time>
-                )}
-              </header>
-              <div class="letter-rule" aria-hidden="true"></div>
-              <MarkdownContent as="div" class="letter-message" content={msg.message_to_couple ?? ''} />
-            </article>
-          ))}
-        </div>
-        </div>
-
-        {messages.length > PAGE_SIZE && (
-          <div class="load-more-wrap" id="load-more-wrap">
-            <button class="load-more-btn" id="load-more-btn" type="button">
-              Show more messages
-              <span class="load-more-count" id="load-more-count">
-                {messages.length - PAGE_SIZE} remaining
+          <div class="list-header">
+            <select
+              class="toolbar-pagesize"
+              id="guestbook-pagesize"
+              aria-label="Page size"
+            >
+              {pageSizeOptions.map((opt) => (
+                <option value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            <button
+              class="toolbar-sort"
+              id="guestbook-sort"
+              type="button"
+              aria-label="Sort order"
+            >
+              <span id="sort-label">Newest</span>
+              <span class="sort-arrow" id="sort-arrow">
+                ↓
               </span>
             </button>
           </div>
-        )}
 
-        <script type="application/json" id="all-messages" set:html={JSON.stringify(allMessages)} />
-      </>
-    )}
+          <div class="letters-wrap" id="letters-wrap">
+            <div class="letters" id="letters-list">
+              {initialMessages.map((msg, i) => (
+                <article
+                  class="letter"
+                  style={`animation-delay: ${0.1 + i * 0.06}s`}
+                >
+                  <header class="letter-header">
+                    <div class="letter-from">
+                      <span class="letter-symbol" aria-hidden="true">
+                        ✦
+                      </span>
+                      <span class="letter-name">{msg.name}</span>
+                    </div>
+                    {msg.date_rsvp_submitted && (
+                      <time
+                        class="letter-date"
+                        datetime={msg.date_rsvp_submitted}
+                      >
+                        {shortDate(msg.date_rsvp_submitted)}
+                      </time>
+                    )}
+                  </header>
+                  <div class="letter-rule" aria-hidden="true" />
+                  <MarkdownContent
+                    as="div"
+                    class="letter-message"
+                    content={msg.message_to_couple ?? ""}
+                  />
+                </article>
+              ))}
+            </div>
+          </div>
 
+          {messages.length > PAGE_SIZE && (
+            <div class="load-more-wrap" id="load-more-wrap">
+              <button class="load-more-btn" id="load-more-btn" type="button">
+                Show more messages
+                <span class="load-more-count" id="load-more-count">
+                  {messages.length - PAGE_SIZE} remaining
+                </span>
+              </button>
+            </div>
+          )}
+
+          <script
+            type="application/json"
+            id="all-messages"
+            set:html={JSON.stringify(allMessages)}
+          />
+        </>
+      )
+    }
   </div>
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>
 
-<script>import '../scripts/guestbook';</script>
-
+<script>
+  import "../scripts/guestbook";
+</script>

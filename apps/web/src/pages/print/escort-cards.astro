@@ -6,39 +6,42 @@ export const prerender = true;
 // Layout: 12 cards per printed page (3 cols × 4 rows) on 8.5×11
 // Data: all attending guests with table assignments, sorted by last name
 
-import { getSettings, getGuestsWithTables } from '@lib/directus';
-import PrintLayout    from '@layouts/PrintLayout.astro';
-import CardWatermark  from '@components/CardWatermark.astro';
+import { getSettings, getGuestsWithTables } from "@lib/directus";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import CardWatermark from "@components/CardWatermark.astro";
 
-const [, guests] = await Promise.all([
-  getSettings(), getGuestsWithTables(),
-]);
+const [, guests] = await Promise.all([getSettings(), getGuestsWithTables()]);
 
 // Sort by last name for escort card display (alphabetical at the door)
 const sorted = [...guests].sort((a, b) => {
-  const aLast = a.person?.last_name ?? '';
-  const bLast = b.person?.last_name ?? '';
+  const aLast = a.person?.last_name ?? "";
+  const bLast = b.person?.last_name ?? "";
   return aLast.localeCompare(bLast);
 });
 
-function displayName(g: typeof guests[0]): string {
+function displayName(g: (typeof guests)[0]): string {
   const p = g.person;
-  if (!p) return 'Guest';
-  const first = p.preferred_name || p.first_name || '';
-  const last  = p.last_name || '';
-  return [first, last].filter(Boolean).join(' ');
+  if (!p) return "Guest";
+  const first = p.preferred_name || p.first_name || "";
+  const last = p.last_name || "";
+  return [first, last].filter(Boolean).join(" ");
 }
 
-function tableLabel(g: typeof guests[0]): string {
+function tableLabel(g: (typeof guests)[0]): string {
   const t = g.table;
-  if (!t) return '';
-  if (t.name)          return t.name;
+  if (!t) return "";
+  if (t.name) return t.name;
   if (t.number != null) return `Table ${t.number}`;
-  return '';
+  return "";
 }
 
 // Pad to multiple of 12
-if (sorted.length <= 0) sorted.push({ id: '', person: { id: '', first_name: 'Test', last_name: 'Guest' }, table: { id: '', number: 1, name: "Guest Family" }});
+if (sorted.length <= 0)
+  sorted.push({
+    id: "",
+    person: { id: "", first_name: "Test", last_name: "Guest" },
+    table: { id: "", number: 1, name: "Guest Family" },
+  });
 const padded = [...sorted];
 while (padded.length % 12 !== 0) padded.push(null as any);
 
@@ -47,48 +50,52 @@ const pageCount = Math.ceil(sorted.length / 12);
 
 <PrintLayout
   title="Escort Cards — Print"
-  cardWidth="8.5in" cardHeight="11in"
-  toolbarHint={`8.5 × 11 in · Portrait · Cut on dashed lines · ${sorted.length} guest${sorted.length !== 1 ? 's' : ''} · ${pageCount} page${pageCount !== 1 ? 's' : ''}`}
+  cardWidth="8.5in"
+  cardHeight="11in"
+  toolbarHint={`8.5 × 11 in · Portrait · Cut on dashed lines · ${sorted.length} guest${sorted.length !== 1 ? "s" : ""} · ${pageCount} page${pageCount !== 1 ? "s" : ""}`}
 >
-
   <!-- ── Render sheets of 12 ── -->
-  {Array.from({ length: Math.ceil(padded.length / 12) }, (_, pageIdx) => (
-    <div class="sheet">
-      {padded.slice(pageIdx * 12, pageIdx * 12 + 12).map((guest) =>
-        guest ? (
-          <div class="card-slot">
-            <div class="escort-card">
-              <div class="accent-bar"></div>
+  {
+    Array.from({ length: Math.ceil(padded.length / 12) }, (_, pageIdx) => (
+      <div class="sheet">
+        {padded.slice(pageIdx * 12, pageIdx * 12 + 12).map((guest) =>
+          guest ? (
+            <div class="card-slot">
+              <div class="escort-card">
+                <div class="accent-bar" />
 
-              <CardWatermark opacity={0.05} size={64} />
+                <CardWatermark opacity={0.05} size={64} />
 
-              <div class="card-body">
-                <div class="card-name">{displayName(guest)}</div>
-                <div class="card-rule">
-                  <div class="card-rule-line"></div>
-                  <span class="card-rule-gem">✦</span>
-                  <div class="card-rule-line"></div>
+                <div class="card-body">
+                  <div class="card-name">{displayName(guest)}</div>
+                  <div class="card-rule">
+                    <div class="card-rule-line" />
+                    <span class="card-rule-gem">✦</span>
+                    <div class="card-rule-line" />
+                  </div>
+                  <div class="card-table">
+                    <span class="card-table-val">{tableLabel(guest)}</span>
+                  </div>
                 </div>
-                <div class="card-table">
-                  <span class="card-table-val">{tableLabel(guest)}</span>
-                </div>
+
+                <div class="accent-bar-bottom" />
               </div>
-
-              <div class="accent-bar-bottom"></div>
             </div>
-          </div>
-        ) : (
-          <div class="card-slot empty"></div>
-        )
-      )}
-    </div>
-  ))}
-
+          ) : (
+            <div class="card-slot empty" />
+          ),
+        )}
+      </div>
+    ))
+  }
 </PrintLayout>
 
 <style is:global>
   @media print {
-    @page { size: 8.5in 11in portrait; margin: 0; }
+    @page {
+      size: 8.5in 11in portrait;
+      margin: 0;
+    }
   }
 </style>
 
@@ -99,7 +106,7 @@ const pageCount = Math.ceil(sorted.length / 12);
     height: 8in;
     background: white;
     border: 1px solid var(--border);
-    box-shadow: 0 4px 24px rgba(26,26,46,0.10);
+    box-shadow: 0 4px 24px rgba(26, 26, 46, 0.1);
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(4, 1fr);
@@ -110,38 +117,57 @@ const pageCount = Math.ceil(sorted.length / 12);
   .card-slot {
     width: 3.5in;
     height: 2in;
-    border: 0.5px dashed rgba(197,184,224,0.35);
+    border: 0.5px dashed rgba(197, 184, 224, 0.35);
     position: relative;
   }
-  .card-slot.empty { background: #faf8f5; }
+  .card-slot.empty {
+    background: #faf8f5;
+  }
 
   /* ── Escort card ──────────────────────────────────────────── */
   .escort-card {
     width: 3.5in;
     height: 2in;
     background: var(--ivory);
-    border: 1px solid rgba(197,184,224,0.45);
+    border: 1px solid rgba(197, 184, 224, 0.45);
     display: flex;
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    box-shadow: 0 2px 12px rgba(26,26,46,0.08);
+    box-shadow: 0 2px 12px rgba(26, 26, 46, 0.08);
   }
 
   .accent-bar {
-    height: 3px; width: 100%; flex-shrink: 0;
-    background: linear-gradient(90deg, var(--cp) 0%, var(--cs) 50%, var(--cp) 100%);
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    height: 3px;
+    width: 100%;
+    flex-shrink: 0;
+    background: linear-gradient(
+      90deg,
+      var(--cp) 0%,
+      var(--cs) 50%,
+      var(--cp) 100%
+    );
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   .accent-bar-bottom {
-    height: 3px; width: 100%; flex-shrink: 0;
-    background: linear-gradient(90deg, var(--cs) 0%, var(--cp) 50%, var(--cs) 100%);
-    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    height: 3px;
+    width: 100%;
+    flex-shrink: 0;
+    background: linear-gradient(
+      90deg,
+      var(--cs) 0%,
+      var(--cp) 50%,
+      var(--cs) 100%
+    );
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   /* Card body */
   .card-body {
-    position: relative; z-index: 1;
+    position: relative;
+    z-index: 1;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -153,32 +179,61 @@ const pageCount = Math.ceil(sorted.length / 12);
   }
 
   .card-name {
-    font-family: var(--fd); font-size: 22px; font-weight: 300;
-    font-style: italic; color: var(--dark);
-    line-height: 1.1; letter-spacing: -0.3px;
+    font-family: var(--fd);
+    font-size: 22px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--dark);
+    line-height: 1.1;
+    letter-spacing: -0.3px;
   }
 
   .card-rule {
-    display: flex; align-items: center; gap: 7px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
     width: 75%;
   }
   .card-rule-line {
-    flex: 1; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(197,184,224,0.6), transparent);
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(197, 184, 224, 0.6),
+      transparent
+    );
   }
-  .card-rule-gem { font-size: 5px; color: var(--cs); }
+  .card-rule-gem {
+    font-size: 5px;
+    color: var(--cs);
+  }
 
   .card-table {
-    font-family: var(--fb); font-size: 8px; font-weight: 600;
-    letter-spacing: 3px; text-transform: uppercase;
+    font-family: var(--fb);
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
     color: var(--muted);
   }
-  .card-table-val { color: var(--dark); }
+  .card-table-val {
+    color: var(--dark);
+  }
 
   /* ── Print ────────────────────────────────────────────────── */
   @media print {
-    .sheet     { box-shadow: none; border: none; page-break-after: always; }
-    .card-slot { border: none; }
-    .escort-card { box-shadow: none; border: 1px solid #ddd; }
+    .sheet {
+      box-shadow: none;
+      border: none;
+      page-break-after: always;
+    }
+    .card-slot {
+      border: none;
+    }
+    .escort-card {
+      box-shadow: none;
+      border: 1px solid #ddd;
+    }
   }
 </style>

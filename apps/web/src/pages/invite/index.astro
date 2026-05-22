@@ -1,17 +1,17 @@
 ---
 // apps/web/src/pages/invite/index.astro
-import Layout           from '../../layouts/Layout.astro';
-import PageHeader       from '../../components/PageHeader.astro';
-import Hashtag          from '~/components/Hashtag.astro';
-import InviteSearchCard from '../../components/invite/InviteSearchCard.astro';
-import NotInvitedCard   from '../../components/invite/NotInvitedCard.astro';
-import { getSettings }  from '../../lib/directus';
-import { formatDate }   from '../../lib/utils/format';
+import Layout from "../../layouts/Layout.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import Hashtag from "~/components/Hashtag.astro";
+import InviteSearchCard from "../../components/invite/InviteSearchCard.astro";
+import NotInvitedCard from "../../components/invite/NotInvitedCard.astro";
+import { getSettings } from "../../lib/directus";
+import { formatDate } from "../../lib/utils/format";
 
 const settings = await getSettings();
-const groom = settings.groom?.first_name ?? 'Aldrin';
-const bride  = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 ---
 
 <Layout
@@ -20,9 +20,7 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
   colorSecondary={settings.color_secondary}
   activeNav="invite"
 >
-
   <div class="page-narrow">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -33,18 +31,16 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
     <InviteSearchCard />
 
     <NotInvitedCard
-      email={settings.email ?? 'couple@email.com'}
+      email={settings.email ?? "couple@email.com"}
       phone={settings.phone}
       groom={groom}
       bride={bride}
       weddingDate={weddingDateLabel}
     />
-
   </div>
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>

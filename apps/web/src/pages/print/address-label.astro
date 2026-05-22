@@ -5,45 +5,46 @@
 
 export const prerender = true;
 
-import PrintLayout from '@layouts/PrintLayout.astro';
-import IconImg     from '@assets/icon.png';
-import { Image }   from 'astro:assets';
-import '../../styles/address-label.css';
+import PrintLayout from "@layouts/PrintLayout.astro";
+import IconImg from "@assets/icon.png";
+import { Image } from "astro:assets";
+import "../../styles/address-label.css";
 ---
 
 <PrintLayout
   title="Address Label — Print"
-  cardWidth="8.5in" cardHeight="11in"
+  cardWidth="8.5in"
+  cardHeight="11in"
   toolbarHint="2 × 4 in · Avery 5163 · 10 per page · Letter portrait"
 >
-
   <div class="address-sheet">
-    {Array.from({ length: 10 }).map(() => (
-      <div class="address-label">
-        <div class="al-accent-bar"></div>
-        <Image src={IconImg} class="al-icon" alt="" />
-        <div class="al-inner">
-          <div class="al-to">To</div>
-          <div class="al-rule">
-            <div class="al-rule-line"></div>
-            <span class="al-rule-gem">✦</span>
-            <div class="al-rule-line"></div>
+    {
+      Array.from({ length: 10 }).map(() => (
+        <div class="address-label">
+          <div class="al-accent-bar" />
+          <Image src={IconImg} class="al-icon" alt="" />
+          <div class="al-inner">
+            <div class="al-to">To</div>
+            <div class="al-rule">
+              <div class="al-rule-line" />
+              <span class="al-rule-gem">✦</span>
+              <div class="al-rule-line" />
+            </div>
+            <div class="al-field">
+              <span class="al-field-label">Name</span>
+              <div class="al-write-line al-name-line" />
+            </div>
+            <div class="al-field">
+              <span class="al-field-label">Address</span>
+              <div class="al-write-line" />
+            </div>
+            <div class="al-field">
+              <div class="al-write-line" />
+            </div>
           </div>
-          <div class="al-field">
-            <span class="al-field-label">Name</span>
-            <div class="al-write-line al-name-line"></div>
-          </div>
-          <div class="al-field">
-            <span class="al-field-label">Address</span>
-            <div class="al-write-line"></div>
-          </div>
-          <div class="al-field">
-            <div class="al-write-line"></div>
-          </div>
+          <div class="al-accent-bar-bottom" />
         </div>
-        <div class="al-accent-bar-bottom"></div>
-      </div>
-    ))}
+      ))
+    }
   </div>
-
 </PrintLayout>

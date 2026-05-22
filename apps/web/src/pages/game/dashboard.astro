@@ -1,39 +1,45 @@
 ---
 // apps/web/src/pages/game/dashboard.astro — MC dashboard for the Find a Guest game
-import { getSettings, getGameProofFiles } from '../../lib/directus';
-import type { GameSubmission } from '../../lib/directus';
-import { formatDate, formatTime } from '../../lib/utils/format';
-import { GAME_SQUARES } from '../../lib/constants/game';
-import { DateTime } from 'luxon';
-import '../../styles/dashboard.css';
+import { getSettings, getGameProofFiles } from "../../lib/directus";
+import type { GameSubmission } from "../../lib/directus";
+import { formatDate, formatTime } from "../../lib/utils/format";
+import { GAME_SQUARES } from "../../lib/constants/game";
+import { DateTime } from "luxon";
+import "../../styles/dashboard.css";
 
 const settings = await getSettings();
 
-const groom = settings.groom?.first_name ?? 'Aldrin';
-const bride = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 
-const TZ = 'America/Edmonton';
+const TZ = "America/Edmonton";
 const deadlineLabel = settings.game_deadline
-  ? DateTime.fromISO(`${settings.wedding_date ?? '2026-09-26'}T${settings.game_deadline}`, { zone: TZ }).toFormat('h:mm a')
+  ? DateTime.fromISO(
+      `${settings.wedding_date ?? "2026-09-26"}T${settings.game_deadline}`,
+      { zone: TZ },
+    ).toFormat("h:mm a")
   : null;
 
 type Submission = GameSubmission;
 const submissions: Submission[] = await getGameProofFiles();
 
 // Exclude anything manually flagged by the couple in Directus
-const visible = submissions.filter(s => s.approved !== false);
+const visible = submissions.filter((s) => s.approved !== false);
 
 const totalSubmissions = visible.length;
-const uniqueGuests     = new Set(visible.map(s => s.guestName)).size;
-const squaresWithProof = new Set(visible.map(s => s.squareNumber)).size;
+const uniqueGuests = new Set(visible.map((s) => s.guestName)).size;
+const squaresWithProof = new Set(visible.map((s) => s.squareNumber)).size;
 
 // Grid: first upload per square
 const firstBySquare = new Map<number, Submission>();
-[...visible].reverse().forEach(s => {
+[...visible].reverse().forEach((s) => {
   if (!firstBySquare.has(s.squareNumber)) firstBySquare.set(s.squareNumber, s);
 });
-const grid = Array.from({ length: 15 }, (_, i) => firstBySquare.get(i + 1) ?? null);
+const grid = Array.from(
+  { length: 15 },
+  (_, i) => firstBySquare.get(i + 1) ?? null,
+);
 
 // By-guest: all visible submissions grouped, sorted alphabetically
 const byGuest = visible.reduce<Record<string, Submission[]>>((acc, s) => {
@@ -43,209 +49,311 @@ const byGuest = visible.reduce<Record<string, Submission[]>>((acc, s) => {
 
 // Leaderboard: guests ranked by unique squares uploaded — MC checks these cards first
 const leaderboard = Object.entries(byGuest)
-  .map(([name, photos]) => ({ name, squares: new Set(photos.map(p => p.squareNumber)).size }))
+  .map(([name, photos]) => ({
+    name,
+    squares: new Set(photos.map((p) => p.squareNumber)).size,
+  }))
   .sort((a, b) => b.squares - a.squares)
   .slice(0, 5);
 ---
 
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex, nofollow" />
-  <title>MC Dashboard — {groom} & {bride}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-</head>
-<body>
-
-  <!-- Passcode modal -->
-  <div id="auth-overlay" class="auth-overlay">
-    <div class="auth-card">
-      <p class="auth-eyebrow">MC Dashboard</p>
-      <h1 class="auth-title">Enter Passcode</h1>
-      <p class="auth-desc">This page is for the emcee only.</p>
-      <div class="auth-field">
-        <input
-          id="auth-input"
-          type="password"
-          placeholder="Passcode"
-          class="auth-input"
-          autocomplete="off"
-          autofocus
-        />
-      </div>
-      <p id="auth-error" class="auth-error hidden">Incorrect passcode. Try again.</p>
-      <button id="auth-submit" class="auth-btn">Continue</button>
-    </div>
-  </div>
-
-  <div id="dashboard" hidden>
-  <div class="accent-bar"></div>
-
-  <div class="page">
-
-    <!-- Header -->
-    <header class="page-header">
-      <p class="eyebrow">MC Dashboard · {groom} & {bride} · {weddingDateLabel}{deadlineLabel && <> · Deadline <strong>{deadlineLabel}</strong></>}</p>
-      <h1 class="page-title">Find a Guest</h1>
-      <p class="page-subtitle">Reception Icebreaker</p>
-    </header>
-
-    <!-- Stats -->
-    <div class="stat-bar">
-      <div class="stat">
-        <span class="stat-value">{totalSubmissions}</span>
-        <span class="stat-label">Total Uploads</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">{uniqueGuests}</span>
-        <span class="stat-label">Unique Guests</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">{squaresWithProof}<span class="stat-denom">/15</span></span>
-        <span class="stat-label">Squares with Proof</span>
-      </div>
-    </div>
-
-    <!-- Live refresh -->
-    <div class="refresh-bar">
-      <span class="refresh-status">Updated <span id="refresh-ts">just now</span></span>
-      <div class="refresh-actions">
-        <button class="refresh-btn" id="refresh-btn">Refresh</button>
-        <span class="refresh-divider">·</span>
-        <button class="refresh-btn" onclick="window.print()">Print</button>
-      </div>
-    </div>
-
-    <div class="content-layout">
-
-      <!-- Main column -->
-      <div class="main-col">
-
-        <!-- 15-Square Grid -->
-        <section class="section">
-          <h2 class="section-title">15-Square Grid</h2>
-          <div class="grid">
-            {grid.map((slot, i) => (
-              <div class:list={['square', slot ? 'square--filled' : 'square--empty']}>
-                {slot ? (
-                  <>
-                    <img src={slot.fileUrl} alt={`Square ${i + 1} — ${slot.guestName}`} loading="lazy" class="square-img" />
-                    <div class="square-overlay">
-                      <span class="square-num">#{i + 1}</span>
-                      <span class="square-guest">{slot.guestName}</span>
-                    </div>
-                  </>
-                ) : (
-                  <span class="square-empty-num">#{i + 1}</span>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <!-- By Guest -->
-        <section class="section">
-          <h2 class="section-title" id="by-guest-section">By Guest</h2>
-
-          <input id="guest-search" type="search" placeholder="Search guest…" class="guest-search" autocomplete="off" />
-
-          {visible.length === 0 && (
-            <p class="empty-note">No submissions yet.</p>
-          )}
-
-          <div class="guest-list" id="guest-list">
-            {Object.entries(byGuest).sort(([a], [b]) => a.localeCompare(b)).map(([name, photos]) => {
-              const uploadedSquares = new Set(photos.map(p => p.squareNumber));
-              return (
-              <div class="guest-card">
-                <div class="guest-card-header" role="button" tabindex="0" aria-expanded="false">
-                  <span class="guest-name">{name}</span>
-                  <div class="sq-minigrid">
-                    {Array.from({ length: 15 }, (_, i) => i + 1).map(n => (
-                      <span class:list={['sq-cell', uploadedSquares.has(n) ? 'sq-cell--uploaded' : 'sq-cell--empty']} data-sq={n}>{n}</span>
-                    ))}
-                  </div>
-                  <svg class="card-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M3 6L8 11L13 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
-                </div>
-                <div class="guest-card-photos" hidden>
-                  {photos.sort((a, b) => a.squareNumber - b.squareNumber).map(p => (
-                    <div class="photo-row">
-                      <a href={p.fileUrl} target="_blank" rel="noopener" class="photo-thumb-link">
-                        <img src={p.fileUrl} alt={`Square ${p.squareNumber} — ${name}`} loading="lazy" class="photo-thumb" />
-                      </a>
-                      <div class="photo-info">
-                        <div class="photo-meta-top">
-                          <span class="photo-meta-square">Square #{p.squareNumber}</span>
-                          <span class="photo-meta-time">{formatTime(p.uploadedAt)}</span>
-                        </div>
-                        {p.title && <span class="photo-meta-title">{p.title}</span>}
-                        {p.description && <p class="photo-meta-desc">{p.description}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              );
-            })}
-          </div>
-        </section>
-
-      </div>
-
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <div class="sidebar-sticky">
-
-          <!-- Leaderboard -->
-          <div class="sidebar-card">
-            <h2 class="sidebar-title">Check First</h2>
-            {leaderboard.length === 0 ? (
-              <p class="sidebar-empty">No uploads yet.</p>
-            ) : (
-              <div class="leaderboard">
-                {leaderboard.map((g, i) => (
-                  <div class="lb-row">
-                    <span class="lb-rank">#{i + 1}</span>
-                    <div class="lb-body">
-                      <span class="lb-name">{g.name}</span>
-                      <span class="lb-count">{g.squares}<span class="lb-denom">/15</span></span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <!-- Square Reference -->
-          <div class="sidebar-card">
-            <h2 class="sidebar-title">Square Reference</h2>
-            <div class="ref-grid">
-              {GAME_SQUARES.map((sq, i) => (
-                <div class:list={['ref-row', sq.star && 'ref-row--star']}>
-                  <span class="ref-num">{String(i + 1).padStart(2, '0')}</span>
-                  <span class="ref-prompt">{sq.prompt}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>MC Dashboard — {groom} & {bride}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+  </head>
+  <body>
+    <!-- Passcode modal -->
+    <div id="auth-overlay" class="auth-overlay">
+      <div class="auth-card">
+        <p class="auth-eyebrow">MC Dashboard</p>
+        <h1 class="auth-title">Enter Passcode</h1>
+        <p class="auth-desc">This page is for the emcee only.</p>
+        <div class="auth-field">
+          <input
+            id="auth-input"
+            type="password"
+            placeholder="Passcode"
+            class="auth-input"
+            autocomplete="off"
+            autofocus
+          />
         </div>
-      </aside>
-
+        <p id="auth-error" class="auth-error hidden">
+          Incorrect passcode. Try again.
+        </p>
+        <button id="auth-submit" class="auth-btn">Continue</button>
+      </div>
     </div>
 
-  </div>
-  </div> <!-- /dashboard -->
+    <div id="dashboard" hidden>
+      <div class="accent-bar"></div>
 
-</body>
+      <div class="page">
+        <!-- Header -->
+        <header class="page-header">
+          <p class="eyebrow">
+            MC Dashboard · {groom} & {bride} · {weddingDateLabel}{
+              deadlineLabel && (
+                <>
+                  {" "}
+                  · Deadline <strong>{deadlineLabel}</strong>
+                </>
+              )
+            }
+          </p>
+          <h1 class="page-title">Find a Guest</h1>
+          <p class="page-subtitle">Reception Icebreaker</p>
+        </header>
+
+        <!-- Stats -->
+        <div class="stat-bar">
+          <div class="stat">
+            <span class="stat-value">{totalSubmissions}</span>
+            <span class="stat-label">Total Uploads</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">{uniqueGuests}</span>
+            <span class="stat-label">Unique Guests</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value"
+              >{squaresWithProof}<span class="stat-denom">/15</span></span
+            >
+            <span class="stat-label">Squares with Proof</span>
+          </div>
+        </div>
+
+        <!-- Live refresh -->
+        <div class="refresh-bar">
+          <span class="refresh-status"
+            >Updated <span id="refresh-ts">just now</span></span
+          >
+          <div class="refresh-actions">
+            <button class="refresh-btn" id="refresh-btn">Refresh</button>
+            <span class="refresh-divider">·</span>
+            <button class="refresh-btn" onclick="window.print()">Print</button>
+          </div>
+        </div>
+
+        <div class="content-layout">
+          <!-- Main column -->
+          <div class="main-col">
+            <!-- 15-Square Grid -->
+            <section class="section">
+              <h2 class="section-title">15-Square Grid</h2>
+              <div class="grid">
+                {
+                  grid.map((slot, i) => (
+                    <div
+                      class:list={[
+                        "square",
+                        slot ? "square--filled" : "square--empty",
+                      ]}
+                    >
+                      {slot ? (
+                        <>
+                          <img
+                            src={slot.fileUrl}
+                            alt={`Square ${i + 1} — ${slot.guestName}`}
+                            loading="lazy"
+                            class="square-img"
+                          />
+                          <div class="square-overlay">
+                            <span class="square-num">#{i + 1}</span>
+                            <span class="square-guest">{slot.guestName}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <span class="square-empty-num">#{i + 1}</span>
+                      )}
+                    </div>
+                  ))
+                }
+              </div>
+            </section>
+
+            <!-- By Guest -->
+            <section class="section">
+              <h2 class="section-title" id="by-guest-section">By Guest</h2>
+
+              <input
+                id="guest-search"
+                type="search"
+                placeholder="Search guest…"
+                class="guest-search"
+                autocomplete="off"
+              />
+
+              {
+                visible.length === 0 && (
+                  <p class="empty-note">No submissions yet.</p>
+                )
+              }
+
+              <div class="guest-list" id="guest-list">
+                {
+                  Object.entries(byGuest)
+                    .sort(([a], [b]) => a.localeCompare(b))
+                    .map(([name, photos]) => {
+                      const uploadedSquares = new Set(
+                        photos.map((p) => p.squareNumber),
+                      );
+                      return (
+                        <div class="guest-card">
+                          <div
+                            class="guest-card-header"
+                            role="button"
+                            tabindex="0"
+                            aria-expanded="false"
+                          >
+                            <span class="guest-name">{name}</span>
+                            <div class="sq-minigrid">
+                              {Array.from({ length: 15 }, (_, i) => i + 1).map(
+                                (n) => (
+                                  <span
+                                    class:list={[
+                                      "sq-cell",
+                                      uploadedSquares.has(n)
+                                        ? "sq-cell--uploaded"
+                                        : "sq-cell--empty",
+                                    ]}
+                                    data-sq={n}
+                                  >
+                                    {n}
+                                  </span>
+                                ),
+                              )}
+                            </div>
+                            <svg
+                              class="card-chevron"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 16 16"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M3 6L8 11L13 6"
+                                stroke="currentColor"
+                                stroke-width="1.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                              />
+                            </svg>
+                          </div>
+                          <div class="guest-card-photos" hidden>
+                            {photos
+                              .sort((a, b) => a.squareNumber - b.squareNumber)
+                              .map((p) => (
+                                <div class="photo-row">
+                                  <a
+                                    href={p.fileUrl}
+                                    target="_blank"
+                                    rel="noopener"
+                                    class="photo-thumb-link"
+                                  >
+                                    <img
+                                      src={p.fileUrl}
+                                      alt={`Square ${p.squareNumber} — ${name}`}
+                                      loading="lazy"
+                                      class="photo-thumb"
+                                    />
+                                  </a>
+                                  <div class="photo-info">
+                                    <div class="photo-meta-top">
+                                      <span class="photo-meta-square">
+                                        Square #{p.squareNumber}
+                                      </span>
+                                      <span class="photo-meta-time">
+                                        {formatTime(p.uploadedAt)}
+                                      </span>
+                                    </div>
+                                    {p.title && (
+                                      <span class="photo-meta-title">
+                                        {p.title}
+                                      </span>
+                                    )}
+                                    {p.description && (
+                                      <p class="photo-meta-desc">
+                                        {p.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      );
+                    })
+                }
+              </div>
+            </section>
+          </div>
+
+          <!-- Sidebar -->
+          <aside class="sidebar">
+            <div class="sidebar-sticky">
+              <!-- Leaderboard -->
+              <div class="sidebar-card">
+                <h2 class="sidebar-title">Check First</h2>
+                {
+                  leaderboard.length === 0 ? (
+                    <p class="sidebar-empty">No uploads yet.</p>
+                  ) : (
+                    <div class="leaderboard">
+                      {leaderboard.map((g, i) => (
+                        <div class="lb-row">
+                          <span class="lb-rank">#{i + 1}</span>
+                          <div class="lb-body">
+                            <span class="lb-name">{g.name}</span>
+                            <span class="lb-count">
+                              {g.squares}
+                              <span class="lb-denom">/15</span>
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                }
+              </div>
+
+              <!-- Square Reference -->
+              <div class="sidebar-card">
+                <h2 class="sidebar-title">Square Reference</h2>
+                <div class="ref-grid">
+                  {
+                    GAME_SQUARES.map((sq, i) => (
+                      <div class:list={["ref-row", sq.star && "ref-row--star"]}>
+                        <span class="ref-num">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span class="ref-prompt">{sq.prompt}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+    <!-- /dashboard -->
+  </body>
 </html>
 
-<script>import '../../scripts/dashboard';</script>
-
+<script>
+  import "../../scripts/dashboard";
+</script>

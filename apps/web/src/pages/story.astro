@@ -1,56 +1,67 @@
 ---
 export const prerender = true;
 // apps/web/src/pages/story.astro
-import Layout        from '../layouts/Layout.astro';
-import PageHeader    from '../components/PageHeader.astro';
-import StoryChapter  from '../components/story/StoryChapter.astro';
-import { getSettings } from '../lib/directus';
-import { assetUrl, formatDate, focalPoint } from '../lib/utils/format';
-import Hashtag from '~/components/Hashtag.astro';
-import SpotifyPlayer from '~/components/SpotifyPlayer.astro';
-import { getYear } from '~/lib/date';
-import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from 'astro:env/client';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import StoryChapter from "../components/story/StoryChapter.astro";
+import { getSettings } from "../lib/directus";
+import { assetUrl, formatDate, focalPoint } from "../lib/utils/format";
+import Hashtag from "~/components/Hashtag.astro";
+import SpotifyPlayer from "~/components/SpotifyPlayer.astro";
+import { getYear } from "~/lib/date";
+import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from "astro:env/client";
 
 const settings = await getSettings();
-const groom = settings.groom?.first_name ?? 'Aldrin';
-const bride = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 const weddingLocation = settings.location;
-const year = getYear(settings.wedding_date ?? '2026-09-26');
+const year = getYear(settings.wedding_date ?? "2026-09-26");
 
-const fallbackChapters: Array<{ headline: string; icon: string; title: string; content: string; image?: undefined }> = [
+const fallbackChapters: Array<{
+  headline: string;
+  icon: string;
+  title: string;
+  content: string;
+  image?: undefined;
+}> = [
   {
-    headline:  "The Beginning",
+    headline: "The Beginning",
     icon: "✨",
     title: "How We Met",
-    content: "Every great love story starts somewhere. Ours began in Lethbridge — a chance encounter that neither of us planned, but both of us needed. What started as a simple conversation turned into hours of talking, laughing, and realizing that something rare and real was happening between us.",
+    content:
+      "Every great love story starts somewhere. Ours began in Lethbridge — a chance encounter that neither of us planned, but both of us needed. What started as a simple conversation turned into hours of talking, laughing, and realizing that something rare and real was happening between us.",
   },
   {
-    headline:  "Growing Together",
+    headline: "Growing Together",
     icon: "🌱",
     title: "Building a Life",
-    content: "Over the years, we built something beautiful together — late nights, inside jokes, shared dreams, and a love that deepened through every season. We learned each other's rhythms, supported each other's ambitions, and became each other's home long before we ever said the words out loud.",
+    content:
+      "Over the years, we built something beautiful together — late nights, inside jokes, shared dreams, and a love that deepened through every season. We learned each other's rhythms, supported each other's ambitions, and became each other's home long before we ever said the words out loud.",
   },
   {
-    headline:  "The Proposal",
+    headline: "The Proposal",
     icon: "💍",
     title: "He Asked, She Said Yes",
-    content: "When the moment finally came, it felt both perfectly planned and wonderfully inevitable. With a ring, a question, and a heart full of everything — the answer was yes. Yes to forever. Yes to adventure. Yes to building a family rooted in faith, love, and laughter.",
+    content:
+      "When the moment finally came, it felt both perfectly planned and wonderfully inevitable. With a ring, a question, and a heart full of everything — the answer was yes. Yes to forever. Yes to adventure. Yes to building a family rooted in faith, love, and laughter.",
   },
   {
-    headline:  "What's Next",
+    headline: "What's Next",
     icon: "🕊️",
     title: weddingDateLabel,
-    content: "Now we stand at the beginning of the next chapter — and we want you there with us. A Nuptial Mass, a celebration, and a lifetime ahead. We are so grateful for every person who has loved and supported us along the way. You are not just guests — you are part of our story.",
+    content:
+      "Now we stand at the beginning of the next chapter — and we want you there with us. A Nuptial Mass, a celebration, and a lifetime ahead. We are so grateful for every person who has loved and supported us along the way. You are not just guests — you are part of our story.",
   },
 ];
 
 const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 
 const directusChapters = settings.story?.chapters;
-const chapters = (directusChapters && directusChapters.length > 0)
-  ? [...directusChapters].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
-  : fallbackChapters;
+const chapters =
+  directusChapters && directusChapters.length > 0
+    ? [...directusChapters].sort((a, b) => (a.sort ?? 0) - (b.sort ?? 0))
+    : fallbackChapters;
 ---
 
 <Layout
@@ -59,9 +70,7 @@ const chapters = (directusChapters && directusChapters.length > 0)
   colorSecondary={settings.color_secondary}
   activeNav="story"
 >
-
   <div class="page-wide story-page" id="chapters">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -71,35 +80,56 @@ const chapters = (directusChapters && directusChapters.length > 0)
 
     <!-- ── Hero cover image ─────────────────────────────── -->
     <div class="story-hero">
-      {settings.story?.cover_image?.id
-        ? <img
-            src={assetUrl(settings.story.cover_image, { width: 1400, height: 480, fit: 'cover', quality: 85, format: 'auto' })}
+      {
+        settings.story?.cover_image?.id ? (
+          <img
+            src={assetUrl(settings.story.cover_image, {
+              width: 1400,
+              height: 480,
+              fit: "cover",
+              quality: 85,
+              format: "auto",
+            })}
             alt=""
             class="story-hero-img"
             style={`object-position: ${focalPoint(settings.story.cover_image)}`}
             data-download-protected={String(!allowDownload)}
           />
-        : <div class="story-hero-inner">
+        ) : (
+          <div class="story-hero-inner">
             <span class="story-hero-icon">📷</span>
             <span class="story-hero-label">Photo coming soon</span>
           </div>
+        )
       }
     </div>
 
     <!-- ── Chapters ──────────────────────────────────────── -->
     <div class="chapters">
-      {chapters.map((ch, i) => (
-        <StoryChapter
-          icon={ch.icon ?? ''}
-          headline={ch.headline ?? ''}
-          title={ch.title ?? ''}
-          content={ch.content ?? ''}
-          imageUrl={ch.image?.id ? assetUrl(ch.image, { width: 800, height: 560, fit: 'cover', quality: 85, format: 'auto' }) : undefined}
-          objectPosition={focalPoint(ch.image)}
-          reverse={i % 2 === 1}
-          animationDelay={`${0.2 + i * 0.1}s`}
-        />
-      ))}
+      {
+        chapters.map((ch, i) => (
+          <StoryChapter
+            icon={ch.icon ?? ""}
+            headline={ch.headline ?? ""}
+            title={ch.title ?? ""}
+            content={ch.content ?? ""}
+            imageUrl={
+              ch.image?.id
+                ? assetUrl(ch.image, {
+                    width: 800,
+                    height: 560,
+                    fit: "cover",
+                    quality: 85,
+                    format: "auto",
+                  })
+                : undefined
+            }
+            objectPosition={focalPoint(ch.image)}
+            reverse={i % 2 === 1}
+            animationDelay={`${0.2 + i * 0.1}s`}
+          />
+        ))
+      }
     </div>
     <!-- ── Fixed soundtrack player ─────────────────────────── -->
     <SpotifyPlayer fixed />
@@ -109,93 +139,155 @@ const chapters = (directusChapters && directusChapters.length > 0)
       <p class="story-cta-text">Ready to celebrate with us?</p>
       <div class="story-cta-btns">
         <a href="/invite" class="story-btn-primary">RSVP Now</a>
-        <a href="/info"   class="story-btn-secondary">Wedding Info</a>
+        <a href="/info" class="story-btn-secondary">Wedding Info</a>
       </div>
     </div>
-
   </div>
-
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>
 
 <style>
-.story-page { display: flex; flex-direction: column; align-items: center; }
+  .story-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-.story-hero {
-  width: 100%; border-radius: var(--radius);
-  overflow: hidden; margin-bottom: 56px;
-  border: 1px solid var(--border); box-shadow: var(--shadow-card);
-  opacity: 0; animation: fadeUp 0.8s 0.2s ease forwards;
-}
-.story-hero-img {
-  width: 100%; height: 400px;
-  object-fit: cover; display: block;
-}
+  .story-hero {
+    width: 100%;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 56px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s ease forwards;
+  }
+  .story-hero-img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    display: block;
+  }
 
-.story-hero-img[data-download-protected="true"] {
-  -webkit-user-drag: none;
-  -webkit-touch-callout: none;
-  user-select: none;
-}
-.story-hero-inner {
-  min-height: 320px;
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--cp) 28%, var(--warm)),
-    color-mix(in srgb, var(--cs) 22%, var(--warm))
-  );
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
-}
-.story-hero-icon  { font-size: 40px; opacity: 0.4; }
-.story-hero-label {
-  font-family: var(--fb); font-size: 11px; font-weight: 500;
-  letter-spacing: 3px; text-transform: uppercase; color: var(--muted); opacity: 0.6;
-}
+  .story-hero-img[data-download-protected="true"] {
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  .story-hero-inner {
+    min-height: 320px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cp) 28%, var(--warm)),
+      color-mix(in srgb, var(--cs) 22%, var(--warm))
+    );
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .story-hero-icon {
+    font-size: 40px;
+    opacity: 0.4;
+  }
+  .story-hero-label {
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.6;
+  }
 
-.chapters { display: flex; flex-direction: column; gap: 24px; width: 100%; margin-bottom: 56px; }
+  .chapters {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    margin-bottom: 56px;
+  }
 
-.story-cta {
-  text-align: center; margin-bottom: 16px;
-  display: flex; flex-direction: column; align-items: center; gap: 20px;
-  opacity: 0; animation: fadeUp 0.8s 0.6s ease forwards;
-}
-.story-cta-text {
-  font-family: var(--fd); font-size: 28px; font-weight: 300; font-style: italic; color: var(--dark);
-}
-.story-cta-btns { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
-.story-btn-primary {
-  display: inline-block; padding: 16px 44px;
-  background: linear-gradient(135deg, var(--dark), var(--dark2));
-  color: color-mix(in srgb, var(--cp) 80%, white);
-  border-radius: var(--radius-sm); text-decoration: none;
-  font-family: var(--fb); font-size: 11px; font-weight: 600;
-  letter-spacing: 4px; text-transform: uppercase;
-  box-shadow: 0 8px 32px rgba(26,26,46,0.2);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.story-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(26,26,46,0.28); }
-.story-btn-secondary {
-  display: inline-block; padding: 16px 44px; background: transparent; color: var(--dark);
-  border: 1.5px solid var(--border); border-radius: var(--radius-sm); text-decoration: none;
-  font-family: var(--fb); font-size: 11px; font-weight: 600;
-  letter-spacing: 4px; text-transform: uppercase;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-.story-btn-secondary:hover {
-  border-color: color-mix(in srgb, var(--cs) 60%, transparent); transform: translateY(-2px);
-}
+  .story-cta {
+    text-align: center;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.6s ease forwards;
+  }
+  .story-cta-text {
+    font-family: var(--fd);
+    font-size: 28px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--dark);
+  }
+  .story-cta-btns {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .story-btn-primary {
+    display: inline-block;
+    padding: 16px 44px;
+    background: linear-gradient(135deg, var(--dark), var(--dark2));
+    color: color-mix(in srgb, var(--cp) 80%, white);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    box-shadow: 0 8px 32px rgba(26, 26, 46, 0.2);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+  .story-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 40px rgba(26, 26, 46, 0.28);
+  }
+  .story-btn-secondary {
+    display: inline-block;
+    padding: 16px 44px;
+    background: transparent;
+    color: var(--dark);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease;
+  }
+  .story-btn-secondary:hover {
+    border-color: color-mix(in srgb, var(--cs) 60%, transparent);
+    transform: translateY(-2px);
+  }
 </style>
 
 <script>
-  document.addEventListener('astro:page-load', () => {
-    document.querySelectorAll<HTMLImageElement>('[data-download-protected="true"]').forEach(img => {
-      img.addEventListener('contextmenu', e => e.preventDefault());
-      img.addEventListener('dragstart', e => e.preventDefault());
-    });
+  document.addEventListener("astro:page-load", () => {
+    document
+      .querySelectorAll<HTMLImageElement>('[data-download-protected="true"]')
+      .forEach((img) => {
+        img.addEventListener("contextmenu", (e) => e.preventDefault());
+        img.addEventListener("dragstart", (e) => e.preventDefault());
+      });
   });
 </script>

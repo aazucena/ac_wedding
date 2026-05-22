@@ -5,57 +5,77 @@
 // Back:  3×5 signature grid · tie-breaker strip
 // Print: double-sided, flip on short edge
 
-import QRCodeWidget   from '@components/QRCode.astro';
-import Hashtag        from '@components/Hashtag.astro';
-import { getSettings } from '@lib/directus';
-import { formatDate } from '@lib/utils/format';
-import AccentMark     from '@assets/accent_mark.png';
-import Lettermark     from '@assets/lettermark.png';
-import HeroEmblem     from '@assets/hero_emblem.png';
-import { Image } from 'astro:assets';
-import PrintLayout    from '@layouts/PrintLayout.astro';
-import { GAME_SQUARES } from '@lib/constants/game';
-import '../../styles/game-card-front.css';
-import '../../styles/game-card-back.css';
+import QRCodeWidget from "@components/QRCode.astro";
+import Hashtag from "@components/Hashtag.astro";
+import { getSettings } from "@lib/directus";
+import { formatDate } from "@lib/utils/format";
+import AccentMark from "@assets/accent_mark.png";
+import Lettermark from "@assets/lettermark.png";
+import HeroEmblem from "@assets/hero_emblem.png";
+import { Image } from "astro:assets";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import { GAME_SQUARES } from "@lib/constants/game";
+import "../../styles/game-card-front.css";
+import "../../styles/game-card-back.css";
 
-const settings   = await getSettings();
-const groomFirst = settings.groom?.first_name ?? 'Aldrin';
-const brideFirst = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
-const BASE_URL   = import.meta.env.SITE ?? 'https://wedding.aazucena.com';
+const settings = await getSettings();
+const groomFirst = settings.groom?.first_name ?? "Aldrin";
+const brideFirst = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
+const BASE_URL = import.meta.env.SITE ?? "https://wedding.aazucena.com";
 
-const token      = Astro.url.searchParams.get('token');
-const uploadUrl  = token ? `${BASE_URL}/game/upload?token=${encodeURIComponent(token)}` : `${BASE_URL}/game/upload`;
+const token = Astro.url.searchParams.get("token");
+const uploadUrl = token
+  ? `${BASE_URL}/game/upload?token=${encodeURIComponent(token)}`
+  : `${BASE_URL}/game/upload`;
 
 const squares = GAME_SQUARES;
 
 const tieBreakerQ = `How many total days have ${groomFirst} & ${brideFirst} been a couple leading up to today? Closest/exact guest wins!`;
 
 const steps = [
-  { label: 'Participation is Optional',  body: 'Join individually or as a table "team".' },
-  { label: 'The Proof Rule',             body: 'Scan the QR code to upload your own selfie as proof. Each upload must be unique — shared photos don\'t count.' },
-  { label: 'No Self-Signing',            body: 'Each guest signs your card once — one square only. The couple & their parents don\'t count.' },
-  { label: 'Submission Deadline',        body: 'All cards and uploads must be in by 8:45 PM.' },
-  { label: 'Winner Selection',           body: 'First completed card handed in wins. Tie-breaker on the back.' },
+  {
+    label: "Participation is Optional",
+    body: 'Join individually or as a table "team".',
+  },
+  {
+    label: "The Proof Rule",
+    body: "Scan the QR code to upload your own selfie as proof. Each upload must be unique — shared photos don't count.",
+  },
+  {
+    label: "No Self-Signing",
+    body: "Each guest signs your card once — one square only. The couple & their parents don't count.",
+  },
+  {
+    label: "Submission Deadline",
+    body: "All cards and uploads must be in by 8:45 PM.",
+  },
+  {
+    label: "Winner Selection",
+    body: "First completed card handed in wins. Tie-breaker on the back.",
+  },
 ];
 ---
 
 <PrintLayout
   title={`Find a Guest — ${groomFirst} & ${brideFirst}`}
-  cardWidth="11in" cardHeight="8.5in"
+  cardWidth="11in"
+  cardHeight="8.5in"
   toolbarHint="11 × 8.5 in · Landscape · Click card to flip · print sends both sides"
 >
-
   <div slot="toolbar-controls">
     <div class="seg-control">
-      <button id="btn-front" class="seg-btn active" onclick="showFace('front')">Front</button>
-      <button id="btn-back"  class="seg-btn"        onclick="showFace('back')">Back</button>
+      <button id="btn-front" class="seg-btn active" onclick="showFace('front')"
+        >Front</button
+      >
+      <button id="btn-back" class="seg-btn" onclick="showFace('back')"
+        >Back</button
+      >
     </div>
   </div>
 
   <div class="flip-container" id="flip-container">
     <div class="flipper" id="flipper">
-
       <!-- FRONT — header · rules · QR footer -->
       <div class="card face front">
         <div class="card-accent"></div>
@@ -69,9 +89,13 @@ const steps = [
           <div class="f-title-row">
             <div class="f-accent-wrap"><Image src={AccentMark} alt="" /></div>
             <h1 class="f-title">Find a Guest</h1>
-            <div class="f-accent-wrap f-accent-flip"><Image src={AccentMark} alt="" /></div>
+            <div class="f-accent-wrap f-accent-flip">
+              <Image src={AccentMark} alt="" />
+            </div>
           </div>
-          <p class="f-names">{groomFirst} &amp; {brideFirst} · {weddingDateLabel}</p>
+          <p class="f-names">
+            {groomFirst} &amp; {brideFirst} · {weddingDateLabel}
+          </p>
         </div>
 
         <div class="divider">
@@ -83,14 +107,19 @@ const steps = [
         <div class="f-rules">
           <p class="f-rules-lbl">How to Play</p>
           <div class="f-rules-list">
-            {steps.map((s, i) => (
-              <div class="f-rule">
-                <span class="f-rule-num">{(i + 1).toString().padStart(2, '0')}</span>
-                <span class="f-rule-text">
-                  <strong class="f-rule-strong">{s.label}:</strong>&nbsp;{s.body}
-                </span>
-              </div>
-            ))}
+            {
+              steps.map((s, i) => (
+                <div class="f-rule">
+                  <span class="f-rule-num">
+                    {(i + 1).toString().padStart(2, "0")}
+                  </span>
+                  <span class="f-rule-text">
+                    <strong class="f-rule-strong">{s.label}:</strong>&nbsp;
+                    {s.body}
+                  </span>
+                </div>
+              ))
+            }
           </div>
         </div>
 
@@ -103,7 +132,9 @@ const steps = [
             </div>
           </div>
           <div class="f-brand">
-            <div class="f-lettermark-wrap"><Image src={Lettermark} alt="" /></div>
+            <div class="f-lettermark-wrap">
+              <Image src={Lettermark} alt="" />
+            </div>
             <Hashtag tag={settings.hashtag} class="f-hashtag" />
           </div>
         </div>
@@ -116,10 +147,15 @@ const steps = [
         <div class="card-accent"></div>
 
         <div class="b-header">
-          <div class="b-header-accent-wrap"><Image src={AccentMark} alt="" /></div>
+          <div class="b-header-accent-wrap">
+            <Image src={AccentMark} alt="" />
+          </div>
           <div class="b-header-body">
             <p class="b-header-title">Find a Guest · Reception Icebreaker</p>
-            <p class="b-header-rule">Find someone for each square · one signature per guest · couple & parents don't count</p>
+            <p class="b-header-rule">
+              Find someone for each square · one signature per guest · couple &
+              parents don't count
+            </p>
           </div>
           <div class="b-header-name">
             <span class="b-header-name-lbl">Player Name</span>
@@ -128,17 +164,19 @@ const steps = [
         </div>
 
         <div class="b-grid">
-          {squares.map((sq, i) => (
-            <div class={`b-cell b-pos-${i + 1}${sq.star ? ' b-star' : ''}`}>
-              <p class="b-num">{String(i + 1).padStart(2, '0')}</p>
-              <p class="b-prompt">{sq.prompt}</p>
-              {sq.hint && <p class="b-hint">{sq.hint}</p>}
-              <div class="b-sig">
-                <span class="b-sig-lbl">Sign</span>
-                <span class="b-sig-line"></span>
+          {
+            squares.map((sq, i) => (
+              <div class={`b-cell b-pos-${i + 1}${sq.star ? " b-star" : ""}`}>
+                <p class="b-num">{String(i + 1).padStart(2, "0")}</p>
+                <p class="b-prompt">{sq.prompt}</p>
+                {sq.hint && <p class="b-hint">{sq.hint}</p>}
+                <div class="b-sig">
+                  <span class="b-sig-lbl">Sign</span>
+                  <span class="b-sig-line" />
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          }
         </div>
 
         <div class="b-tb">
@@ -156,10 +194,8 @@ const steps = [
 
         <div class="card-accent-bottom"></div>
       </div>
-
     </div>
   </div>
-
 </PrintLayout>
 
 <script is:inline src="/scripts/game-preview.js"></script>

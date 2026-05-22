@@ -3,39 +3,40 @@ export const prerender = true;
 // apps/web/src/pages/print/gift-tag.astro
 // Gift Tag Sticker — 2×2 in circle, 12 per letter sheet (3 cols × 4 rows)
 
-import { getSettings } from '@lib/directus';
-import { formatDate } from '@lib/utils/format';
-import PrintLayout     from '@layouts/PrintLayout.astro';
-import StackedImg      from '@assets/stacked.png';
-import { Image } from 'astro:assets';
-import '../../styles/gift-tag.css';
-import Hashtag from '~/components/Hashtag.astro';
+import { getSettings } from "@lib/directus";
+import { formatDate } from "@lib/utils/format";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import StackedImg from "@assets/stacked.png";
+import { Image } from "astro:assets";
+import "../../styles/gift-tag.css";
+import Hashtag from "~/components/Hashtag.astro";
 
-const settings  = await getSettings();
-const hashtag   = settings.hashtag ?? '#AldrinAndChristine2026';
+const settings = await getSettings();
+const hashtag = settings.hashtag ?? "#AldrinAndChristine2026";
 
-const weddingDate = formatDate(settings.wedding_date ?? '2026-09-26');
+const weddingDate = formatDate(settings.wedding_date ?? "2026-09-26");
 ---
 
 <PrintLayout
   title="Gift Tag Sticker — Print"
-  cardWidth="8.5in" cardHeight="11in"
+  cardWidth="8.5in"
+  cardHeight="11in"
   toolbarHint="2 × 2 in · Circle · 12 per page · Letter portrait"
 >
-
   <div class="sheet">
-    {Array.from({ length: 12 }).map(() => (
-      <div class="sticker">
-        <Image src={StackedImg} class="sticker-logo" alt="" />
-        <div class="sticker-rule">
-          <div class="sticker-rule-line"></div>
-          <span class="sticker-rule-gem">✦</span>
-          <div class="sticker-rule-line"></div>
+    {
+      Array.from({ length: 12 }).map(() => (
+        <div class="sticker">
+          <Image src={StackedImg} class="sticker-logo" alt="" />
+          <div class="sticker-rule">
+            <div class="sticker-rule-line" />
+            <span class="sticker-rule-gem">✦</span>
+            <div class="sticker-rule-line" />
+          </div>
+          <div class="sticker-date">{weddingDate}</div>
+          <Hashtag as="div" tag={hashtag} class="sticker-hashtag" />
         </div>
-        <div class="sticker-date">{weddingDate}</div>
-        <Hashtag as="div" tag={hashtag} class="sticker-hashtag" />
-      </div>
-    ))}
+      ))
+    }
   </div>
-
 </PrintLayout>

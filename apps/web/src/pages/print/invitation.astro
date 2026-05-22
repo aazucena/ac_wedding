@@ -5,90 +5,175 @@ export const prerender = false;
 //   Front — names + date + venue (ceremony & reception)
 //   Back  — attire swatches · gift note · website QR
 
-import { getSettings, getCeremony, getReception, getPartyByToken, getClergies, getEntourage, getSponsorsFull } from '@lib/directus';
-import { formatTime, formatLonghandDate } from '@lib/print';
-import { formatDate } from '@lib/utils/format';
-import { ATTIRE_SWATCHES } from '@lib/constants';
-import PrintLayout                   from '@layouts/PrintLayout.astro';
-import Hashtag                       from '@components/Hashtag.astro';
-import CardWatermark                 from '@components/CardWatermark.astro';
-import QRCodeWidget                  from '@components/QRCode.astro';
-import InvitationEntourageInsert     from '@components/InvitationEntourageInsert.astro';
-import Favicon                        from '@assets/favicon.svg';
-import AccentMark                    from '@assets/accent_mark.svg';
-import Insignia                      from '@assets/insignia.png';
-import { Image }                     from 'astro:assets';
-import '../../styles/invitation.css';
+import {
+  getSettings,
+  getCeremony,
+  getReception,
+  getPartyByToken,
+  getClergies,
+  getEntourage,
+  getSponsorsFull,
+} from "@lib/directus";
+import { formatTime, formatLonghandDate } from "@lib/print";
+import { formatDate } from "@lib/utils/format";
+import { ATTIRE_SWATCHES } from "@lib/constants";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import Hashtag from "@components/Hashtag.astro";
+import CardWatermark from "@components/CardWatermark.astro";
+import QRCodeWidget from "@components/QRCode.astro";
+import InvitationEntourageInsert from "@components/InvitationEntourageInsert.astro";
+import Favicon from "@assets/favicon.svg";
+import AccentMark from "@assets/accent_mark.svg";
+import Insignia from "@assets/insignia.png";
+import { Image } from "astro:assets";
+import "../../styles/invitation.css";
 
-const token = Astro.url.searchParams.get('token') ?? undefined;
-const draft = Astro.url.searchParams.get('draft') as 'guest' | 'sponsor' | 'entourage' | null;
+const token = Astro.url.searchParams.get("token") ?? undefined;
+const draft = Astro.url.searchParams.get("draft") as
+  | "guest"
+  | "sponsor"
+  | "entourage"
+  | null;
 
 const DRAFT_PARTIES = {
-  guest:     { id: 'draft', name: 'Plata Family',   rsvp_token: undefined, members: [], invitation_type: 'guest'     as const, invitation_label: undefined },
-  sponsor:   { id: 'draft', name: 'Ranada Family', rsvp_token: undefined, members: [], invitation_type: 'sponsor'   as const, invitation_label: 'Principal Sponsor (Ninong & Ninang)' },
-  entourage: { id: 'draft', name: 'Karl Plata',    rsvp_token: undefined, members: [], invitation_type: 'entourage' as const, invitation_label: 'Best Man' },
+  guest: {
+    id: "draft",
+    name: "Plata Family",
+    rsvp_token: undefined,
+    members: [],
+    invitation_type: "guest" as const,
+    invitation_label: undefined,
+  },
+  sponsor: {
+    id: "draft",
+    name: "Ranada Family",
+    rsvp_token: undefined,
+    members: [],
+    invitation_type: "sponsor" as const,
+    invitation_label: "Principal Sponsor (Ninong & Ninang)",
+  },
+  entourage: {
+    id: "draft",
+    name: "Karl Plata",
+    rsvp_token: undefined,
+    members: [],
+    invitation_type: "entourage" as const,
+    invitation_label: "Best Man",
+  },
 };
 
 const [settings, ceremony, reception, party] = await Promise.all([
-  getSettings(), getCeremony(), getReception(),
-  draft        ? Promise.resolve(DRAFT_PARTIES[draft] ?? null)
-  : token      ? getPartyByToken(token)
-  : Promise.resolve(null),
+  getSettings(),
+  getCeremony(),
+  getReception(),
+  draft
+    ? Promise.resolve(DRAFT_PARTIES[draft] ?? null)
+    : token
+      ? getPartyByToken(token)
+      : Promise.resolve(null),
 ]);
 
-const isSponsor = (party?.invitation_type ?? 'guest') === 'sponsor';
+const isSponsor = (party?.invitation_type ?? "guest") === "sponsor";
 const [clergies, entourage, sponsors] = isSponsor
   ? await Promise.all([getClergies(), getEntourage(), getSponsorsFull()])
-  : [[], [], []] as [Awaited<ReturnType<typeof getClergies>>, Awaited<ReturnType<typeof getEntourage>>, Awaited<ReturnType<typeof getSponsorsFull>>];
+  : ([[], [], []] as [
+      Awaited<ReturnType<typeof getClergies>>,
+      Awaited<ReturnType<typeof getEntourage>>,
+      Awaited<ReturnType<typeof getSponsorsFull>>,
+    ]);
 
-const bride      = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
-const groom      = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Plata'}`;
+const bride = `${settings.bride?.first_name ?? "Christine"} ${settings.bride?.last_name ?? "Ranada"}`;
+const groom = `${settings.groom?.first_name ?? "Aldrin"} ${settings.groom?.last_name ?? "Plata"}`;
 
 function formatParentPair(members: typeof entourage): string {
-  const father = members.find(m => m.person?.gender === 'male');
-  const mother = members.find(m => m.person?.gender !== 'male');
-  if (!father || !mother) return members.map(m => `${m.person?.first_name ?? ''} ${m.person?.last_name ?? ''}`.trim()).join(' & ');
-  const lastName = father.person?.last_name ?? mother.person?.last_name ?? '';
-  return `Mr. & Mrs. ${father.person?.first_name ?? ''} and ${mother.person?.first_name ?? ''} ${lastName}`.trim();
+  const father = members.find((m) => m.person?.gender === "male");
+  const mother = members.find((m) => m.person?.gender !== "male");
+  if (!father || !mother)
+    return members
+      .map((m) =>
+        `${m.person?.first_name ?? ""} ${m.person?.last_name ?? ""}`.trim(),
+      )
+      .join(" & ");
+  const lastName = father.person?.last_name ?? mother.person?.last_name ?? "";
+  return `Mr. & Mrs. ${father.person?.first_name ?? ""} and ${mother.person?.first_name ?? ""} ${lastName}`.trim();
 }
 
-const parentsBrideReal  = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') && !m.proxy);
-const parentsBrideProxy = entourage.filter(m => (m.role?.name === 'Father of the Bride' || m.role?.name === 'Mother of the Bride') &&  m.proxy);
-const parentsGroomReal  = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') && !m.proxy);
-const parentsGroomProxy = entourage.filter(m => (m.role?.name === 'Father of the Groom' || m.role?.name === 'Mother of the Groom') &&  m.proxy);
+const parentsBrideReal = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Bride" ||
+      m.role?.name === "Mother of the Bride") &&
+    !m.proxy,
+);
+const parentsBrideProxy = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Bride" ||
+      m.role?.name === "Mother of the Bride") &&
+    m.proxy,
+);
+const parentsGroomReal = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Groom" ||
+      m.role?.name === "Mother of the Groom") &&
+    !m.proxy,
+);
+const parentsGroomProxy = entourage.filter(
+  (m) =>
+    (m.role?.name === "Father of the Groom" ||
+      m.role?.name === "Mother of the Groom") &&
+    m.proxy,
+);
 
-const BRIDE_PARENTS       = formatParentPair(parentsBrideReal.length ? parentsBrideReal : parentsBrideProxy);
-const BRIDE_PARENTS_PROXY = parentsBrideReal.length ? formatParentPair(parentsBrideProxy) : '';
-const GROOM_PARENTS       = formatParentPair(parentsGroomReal.length ? parentsGroomReal : parentsGroomProxy);
-const GROOM_PARENTS_PROXY = parentsGroomReal.length ? formatParentPair(parentsGroomProxy) : '';
-const { dayOfWeek, ordinalDate, yearInWords } = formatLonghandDate(settings.wedding_date);
-const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.com';
-
+const BRIDE_PARENTS = formatParentPair(
+  parentsBrideReal.length ? parentsBrideReal : parentsBrideProxy,
+);
+const BRIDE_PARENTS_PROXY = parentsBrideReal.length
+  ? formatParentPair(parentsBrideProxy)
+  : "";
+const GROOM_PARENTS = formatParentPair(
+  parentsGroomReal.length ? parentsGroomReal : parentsGroomProxy,
+);
+const GROOM_PARENTS_PROXY = parentsGroomReal.length
+  ? formatParentPair(parentsGroomProxy)
+  : "";
+const { dayOfWeek, ordinalDate, yearInWords } = formatLonghandDate(
+  settings.wedding_date,
+);
+const BASE_URL =
+  import.meta.env.PUBLIC_SITE_URL ?? "https://wedding.aazucena.com";
 ---
 
 <PrintLayout
   title={`Invitation — ${groom} & ${bride}`}
-  cardWidth="5in" cardHeight="7in"
+  cardWidth="5in"
+  cardHeight="7in"
   toolbarHint="Click the card to flip · print sends both sides"
 >
-
   <div class="toolbar-controls" slot="toolbar-controls">
     <div class="seg-control">
-      <button id="btn-5x7" class="seg-btn active" onclick="setSize('5x7')">5×7 in</button>
-      <button id="btn-a4"  class="seg-btn"        onclick="setSize('a4')">A4</button>
+      <button id="btn-5x7" class="seg-btn active" onclick="setSize('5x7')"
+        >5×7 in</button
+      >
+      <button id="btn-a4" class="seg-btn" onclick="setSize('a4')">A4</button>
     </div>
     <div class="seg-control">
-      <button id="btn-front" class="seg-btn active" onclick="showFace('front')">Front</button>
-      <button id="btn-back"  class="seg-btn"        onclick="showFace('back')">Back</button>
-      {isSponsor && (
-        <button id="btn-insert" class="seg-btn" onclick="showFace('insert')">Insert</button>
-      )}
+      <button id="btn-front" class="seg-btn active" onclick="showFace('front')"
+        >Front</button
+      >
+      <button id="btn-back" class="seg-btn" onclick="showFace('back')"
+        >Back</button
+      >
+      {
+        isSponsor && (
+          <button id="btn-insert" class="seg-btn" onclick="showFace('insert')">
+            Insert
+          </button>
+        )
+      }
     </div>
   </div>
 
   <div class="flip-container size-5x7" id="flip-container">
     <div class="flipper" id="flipper">
-
       <!-- ══ FRONT — Names + Date ═════════════════════════════ -->
       <div class="card face front">
         <div class="card-accent"></div>
@@ -96,33 +181,40 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
         <div class="front-inner">
           <p class="together-note">Together with their families</p>
 
-          {isSponsor && (
-            <div class="sponsor-header">
-              <div class="parents-block">
-                <div class="parent-group">
-                  <p class="parent-line">{GROOM_PARENTS}</p>
-                  {GROOM_PARENTS_PROXY && (
-                    <p class="parent-line parent-line--proxy">Represented by {GROOM_PARENTS_PROXY}</p>
-                  )}
+          {
+            isSponsor && (
+              <div class="sponsor-header">
+                <div class="parents-block">
+                  <div class="parent-group">
+                    <p class="parent-line">{GROOM_PARENTS}</p>
+                    {GROOM_PARENTS_PROXY && (
+                      <p class="parent-line parent-line--proxy">
+                        Represented by {GROOM_PARENTS_PROXY}
+                      </p>
+                    )}
+                  </div>
+                  <div class="name-divider name-divider--sm">
+                    <span class="rule-r" />
+                    <span class="inv-and">and</span>
+                    <span class="rule-l" />
+                  </div>
+                  <div class="parent-group">
+                    <p class="parent-line">{BRIDE_PARENTS}</p>
+                    {BRIDE_PARENTS_PROXY && (
+                      <p class="parent-line parent-line--proxy">
+                        Represented by {BRIDE_PARENTS_PROXY}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <div class="name-divider name-divider--sm">
-                  <span class="rule-r"></span>
-                  <span class="inv-and">and</span>
-                  <span class="rule-l"></span>
-                </div>
-                <div class="parent-group">
-                  <p class="parent-line">{BRIDE_PARENTS}</p>
-                  {BRIDE_PARENTS_PROXY && (
-                    <p class="parent-line parent-line--proxy">Represented by {BRIDE_PARENTS_PROXY}</p>
-                  )}
-                </div>
+                <p class="request-copy">
+                  request the honour of your presence
+                  <br />
+                  at the celebration of their Holy Matrimony
+                </p>
               </div>
-              <p class="request-copy">
-                request the honour of your presence<br />
-                at the celebration of their Holy Matrimony
-              </p>
-            </div>
-          )}
+            )
+          }
 
           <div class="names-block">
             <h1 class="inv-name">{groom}</h1>
@@ -134,16 +226,22 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
             <h1 class="inv-name">{bride}</h1>
           </div>
 
-          {!isSponsor && (
-            <p class="request-copy">
-              request the honour of your presence
-              {party?.invitation_label && party.invitation_type === 'entourage'
-                ? <><br />as our {party.invitation_label}</>
-                : null
-              }<br />
-              at the celebration of their Holy Matrimony
-            </p>
-          )}
+          {
+            !isSponsor && (
+              <p class="request-copy">
+                request the honour of your presence
+                {party?.invitation_label &&
+                party.invitation_type === "entourage" ? (
+                  <>
+                    <br />
+                    as our {party.invitation_label}
+                  </>
+                ) : null}
+                <br />
+                at the celebration of their Holy Matrimony
+              </p>
+            )
+          }
 
           <div class="date-block">
             <p class="ornament">✦</p>
@@ -154,34 +252,40 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
 
           <div class="front-hr">
             <span class="rule-r long"></span>
-            <span class="ornament-sm"><Image src={AccentMark} width={20} height={20} alt="" /></span>
+            <span class="ornament-sm"
+              ><Image src={AccentMark} width={20} height={20} alt="" /></span
+            >
             <span class="rule-l long"></span>
           </div>
 
           <div class="front-venues">
             <section class="venue-section">
               <p class="section-eye">Ceremony</p>
-              <p class="venue-name">{ceremony.venue?.name ?? 'Venue TBD'}</p>
+              <p class="venue-name">{ceremony.venue?.name ?? "Venue TBD"}</p>
               <p class="venue-addr">
-                {ceremony.venue?.address_line1
-                  ? `${ceremony.venue.address_line1}, ${ceremony.venue.city ?? 'Lethbridge'}, Alberta`
-                  : 'Lethbridge, Alberta, Canada'}
+                {
+                  ceremony.venue?.address_line1
+                    ? `${ceremony.venue.address_line1}, ${ceremony.venue.city ?? "Lethbridge"}, Alberta`
+                    : "Lethbridge, Alberta, Canada"
+                }
               </p>
               <p class="venue-time">{formatTime(ceremony.start_time)}</p>
             </section>
             <span class="front-venue-rule" aria-hidden="true"></span>
             <section class="venue-section">
               <p class="section-eye">Reception</p>
-              <p class="venue-name">{reception.venue?.name ?? 'Venue TBD'}</p>
-              {reception.venue?.address_line1 && (
-                <p class="venue-addr">
-                  {reception.venue.address_line1}, {reception.venue.city ?? 'Lethbridge'}, Alberta
-                </p>
-              )}
+              <p class="venue-name">{reception.venue?.name ?? "Venue TBD"}</p>
+              {
+                reception.venue?.address_line1 && (
+                  <p class="venue-addr">
+                    {reception.venue.address_line1},{" "}
+                    {reception.venue.city ?? "Lethbridge"}, Alberta
+                  </p>
+                )
+              }
               <p class="venue-time">{formatTime(reception.start_time)}</p>
             </section>
           </div>
-
         </div>
 
         <div class="card-accent-bottom"></div>
@@ -194,76 +298,103 @@ const BASE_URL = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.co
         <CardWatermark opacity={0.04} size={160} />
 
         <div class="back-inner">
-
           <!-- Website / QR -->
           <section class="rsvp-section">
             <p class="rsvp-heading">For RSVP & Details</p>
             <div class="qr-embellish">
-              <Image src={Insignia} width={340} height={340} alt="" class="qr-bg-insignia" />
-              <span class="qr-corner qr-corner--tl"><Image src={AccentMark} width={22} height={22} alt="" /></span>
-              <span class="qr-corner qr-corner--tr"><Image src={AccentMark} width={22} height={22} alt="" /></span>
-              <span class="qr-corner qr-corner--bl"><Image src={AccentMark} width={22} height={22} alt="" /></span>
-              <span class="qr-corner qr-corner--br"><Image src={AccentMark} width={22} height={22} alt="" /></span>
+              <Image
+                src={Insignia}
+                width={340}
+                height={340}
+                alt=""
+                class="qr-bg-insignia"
+              />
+              <span class="qr-corner qr-corner--tl"
+                ><Image src={AccentMark} width={22} height={22} alt="" /></span
+              >
+              <span class="qr-corner qr-corner--tr"
+                ><Image src={AccentMark} width={22} height={22} alt="" /></span
+              >
+              <span class="qr-corner qr-corner--bl"
+                ><Image src={AccentMark} width={22} height={22} alt="" /></span
+              >
+              <span class="qr-corner qr-corner--br"
+                ><Image src={AccentMark} width={22} height={22} alt="" /></span
+              >
               <QRCodeWidget url={BASE_URL} size={170} logo={Favicon.src} />
             </div>
             <p class="rsvp-url">{BASE_URL}</p>
             <p class="rsvp-instruction">
-              Please scan the code or visit our wedding website
-              to RSVP and view full event details.
+              Please scan the code or visit our wedding website to RSVP and view
+              full event details.
             </p>
-            <p class="rsvp-deadline">Kindly reply by <strong>{formatDate(settings.rsvp_deadline ?? '2026-08-26')}</strong></p>
+            <p class="rsvp-deadline">
+              Kindly reply by <strong
+                >{formatDate(settings.rsvp_deadline ?? "2026-08-26")}</strong
+              >
+            </p>
             <Hashtag tag={settings.hashtag} class="rsvp-hashtag" />
           </section>
 
-          {!isSponsor && (
-            <>
-              <div class="hr">
-                <span class="hr-rule"></span><span class="hr-diamond">◆</span><span class="hr-rule"></span>
-              </div>
-
-              <!-- Attire -->
-              <section class="attire-section">
-                <p class="attire-label">Attire</p>
-                <p class="attire-dresscode">{ceremony.dress_code ?? 'Formal'}</p>
-                <div class="attire-row">
-                  <div class="attire-col">
-                    <p class="attire-gender">Gentlemen</p>
-                    <p class="attire-wear">Suits or Dress Shirts</p>
-                  </div>
-                  <div class="attire-col">
-                    <p class="attire-gender">Ladies</p>
-                    <p class="attire-wear">Gowns or Cocktail Dresses</p>
-                  </div>
+          {
+            !isSponsor && (
+              <>
+                <div class="hr">
+                  <>
+                    <span class="hr-rule" />
+                    <span class="hr-diamond">◆</span>
+                    <span class="hr-rule" />
+                  </>
                 </div>
-                <div class="swatch-row">
-                  {ATTIRE_SWATCHES.map(s => (
-                    <div class="swatch-wrap">
-                      <span class="swatch-circle" style={`background:${s.hex}`}></span>
-                      <span class="swatch-name">{s.label}</span>
+
+                {/* Attire */}
+                <section class="attire-section">
+                  <p class="attire-label">Attire</p>
+                  <p class="attire-dresscode">
+                    {ceremony.dress_code ?? "Formal"}
+                  </p>
+                  <div class="attire-row">
+                    <div class="attire-col">
+                      <p class="attire-gender">Gentlemen</p>
+                      <p class="attire-wear">Suits or Dress Shirts</p>
                     </div>
-                  ))}
-                </div>
-                {/* <p class="attire-avoid">Please avoid wearing white &amp; black</p> */}
-              </section>
-            </>
-          )}
-
+                    <div class="attire-col">
+                      <p class="attire-gender">Ladies</p>
+                      <p class="attire-wear">Gowns or Cocktail Dresses</p>
+                    </div>
+                  </div>
+                  <div class="swatch-row">
+                    {ATTIRE_SWATCHES.map((s) => (
+                      <div class="swatch-wrap">
+                        <span
+                          class="swatch-circle"
+                          style={`background:${s.hex}`}
+                        />
+                        <span class="swatch-name">{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  {/* <p class="attire-avoid">Please avoid wearing white &amp; black</p> */}
+                </section>
+              </>
+            )
+          }
         </div>
 
         <div class="card-accent-bottom"></div>
       </div>
-
     </div><!-- /.flipper -->
   </div><!-- /.flip-container -->
 
-  {isSponsor && (
-    <InvitationEntourageInsert
-      clergies={clergies}
-      entourage={entourage}
-      sponsors={sponsors}
-    />
-  )}
-
+  {
+    isSponsor && (
+      <InvitationEntourageInsert
+        clergies={clergies}
+        entourage={entourage}
+        sponsors={sponsors}
+      />
+    )
+  }
 </PrintLayout>
 
 <script is:inline src="/scripts/invitation-preview.js"></script>

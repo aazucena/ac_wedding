@@ -13,61 +13,82 @@ export const prerender = true;
 //      OUTSIDE SPREAD             INSIDE SPREAD
 
 import {
-  getSettings, getCeremony, getReception, getSponsors,
-  getClergies, getEntourage, getReadings,
-} from '../../lib/directus';
-import { formatDate } from '../../lib/utils/format';
-import PrintLayout          from '@layouts/PrintLayout.astro';
-import FoldLine             from '@components/FoldLine.astro';
-import ProgramCover          from '@components/print/ProgramCover.astro';
-import ProgramOrderOfService from '@components/print/ProgramOrderOfService.astro';
-import ProgramWeddingParty   from '@components/print/ProgramWeddingParty.astro';
-import ProgramThankYou       from '@components/print/ProgramThankYou.astro';
-import '../../styles/program-layout.css';
-import '../../styles/program-panels.css';
-import type { Persons } from '~/lib/types';
+  getSettings,
+  getCeremony,
+  getReception,
+  getSponsors,
+  getClergies,
+  getEntourage,
+  getReadings,
+} from "../../lib/directus";
+import { formatDate } from "../../lib/utils/format";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import FoldLine from "@components/FoldLine.astro";
+import ProgramCover from "@components/print/ProgramCover.astro";
+import ProgramOrderOfService from "@components/print/ProgramOrderOfService.astro";
+import ProgramWeddingParty from "@components/print/ProgramWeddingParty.astro";
+import ProgramThankYou from "@components/print/ProgramThankYou.astro";
+import "../../styles/program-layout.css";
+import "../../styles/program-panels.css";
+import type { Persons } from "~/lib/types";
 
-const [settings, ceremony, reception, sponsors, clergies, entourage, readings] = await Promise.all([
-  getSettings(), getCeremony(), getReception(), getSponsors(),
-  getClergies(), getEntourage(), getReadings(),
-]);
+const [settings, ceremony, reception, sponsors, clergies, entourage, readings] =
+  await Promise.all([
+    getSettings(),
+    getCeremony(),
+    getReception(),
+    getSponsors(),
+    getClergies(),
+    getEntourage(),
+    getReadings(),
+  ]);
 
 const getFullName = (person: Persons) =>
-  [person?.first_name, person?.last_name].filter(Boolean).join(' ');
+  [person?.first_name, person?.last_name].filter(Boolean).join(" ");
 
-const groomFirst = settings.groom?.first_name ?? 'Aldrin';
-const brideFirst = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26', 'EEEE · MMMM d, yyyy');
-const groomFull  = getFullName(settings.groom!);
-const brideFull  = getFullName(settings.bride!);
+const groomFirst = settings.groom?.first_name ?? "Aldrin";
+const brideFirst = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(
+  settings.wedding_date ?? "2026-09-26",
+  "EEEE · MMMM d, yyyy",
+);
+const groomFull = getFullName(settings.groom!);
+const brideFull = getFullName(settings.bride!);
 
-function formatTime(t: string | undefined | null, fallback = 'TBD') {
+function formatTime(t: string | undefined | null, fallback = "TBD") {
   if (!t) return fallback;
-  const [h, m] = t.split(':').map(Number);
-  if (!h || !m && m !== 0) return fallback;
-  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`;
+  const [h, m] = t.split(":").map(Number);
+  if (!h || (!m && m !== 0)) return fallback;
+  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
 }
 
-const BASE_URL         = import.meta.env.PUBLIC_SITE_URL ?? 'https://wedding.aazucena.com';
-const ceremonyTime     = formatTime(ceremony.start_time);
-const venueName        = ceremony.venue?.name ?? 'Lethbridge, Alberta';
-const receptionVenueName = reception.venue?.name ?? 'Reception Venue TBD';
+const BASE_URL =
+  import.meta.env.PUBLIC_SITE_URL ?? "https://wedding.aazucena.com";
+const ceremonyTime = formatTime(ceremony.start_time);
+const venueName = ceremony.venue?.name ?? "Lethbridge, Alberta";
+const receptionVenueName = reception.venue?.name ?? "Reception Venue TBD";
 const receptionAddress = reception.venue?.address_line1
-  ? `${reception.venue.address_line1}, ${reception.venue.city ?? 'Lethbridge'}, AB`
-  : '';
+  ? `${reception.venue.address_line1}, ${reception.venue.city ?? "Lethbridge"}, AB`
+  : "";
 const receptionTime = formatTime(reception.start_time);
 ---
 
 <PrintLayout
   title={`Wedding Program — ${groomFirst} & ${brideFirst}`}
-  cardWidth="5.5in" cardHeight="8.5in"
+  cardWidth="5.5in"
+  cardHeight="8.5in"
   toolbarHint="Outside = cover & back · Inside = ceremony & wedding party"
 >
-
   <div class="toolbar-controls" slot="toolbar-controls">
     <div class="seg-control">
-      <button class="seg-btn"        id="btn-inside"  onclick="showSpread('inside')">Inside</button>
-      <button class="seg-btn active" id="btn-outside" onclick="showSpread('outside')">Outside</button>
+      <button class="seg-btn" id="btn-inside" onclick="showSpread('inside')"
+        >Inside</button
+      >
+      <button
+        class="seg-btn active"
+        id="btn-outside"
+        onclick="showSpread('outside')">Outside</button
+      >
     </div>
   </div>
 
@@ -78,9 +99,10 @@ const receptionTime = formatTime(reception.start_time);
           OUTSIDE SPREAD  —  Panel 4 (left) · Panel 1 (right)
       ══════════════════════════════════════════════════════════════ -->
       <div class="spread face front" id="spread-outside">
-        <p class="spread-label no-print">Outside — fold along the centre line</p>
+        <p class="spread-label no-print">
+          Outside — fold along the centre line
+        </p>
         <div class="spread-row">
-
           <!-- ── PANEL 4: Thank You + Reception (back of booklet) ── -->
           <ProgramThankYou
             groomFirst={groomFirst}
@@ -104,7 +126,6 @@ const receptionTime = formatTime(reception.start_time);
             venueName={venueName}
             weddingDateLabel={weddingDateLabel}
           />
-
         </div>
       </div>
 
@@ -112,13 +133,14 @@ const receptionTime = formatTime(reception.start_time);
           INSIDE SPREAD  —  Panel 2 (left) · Panel 3 (right)
       ══════════════════════════════════════════════════════════════ -->
       <div class="spread face back" id="spread-inside">
-        <p class="spread-label no-print">Inside — open the program to see this spread</p>
+        <p class="spread-label no-print">
+          Inside — open the program to see this spread
+        </p>
         <div class="spread-row">
-
           <!-- ── PANEL 2: Wedding Ceremony / Order of Service ────── -->
           <ProgramOrderOfService
             ceremonyTime={ceremonyTime}
-            venueName={ceremony.venue?.name ?? 'TBD'}
+            venueName={ceremony.venue?.name ?? "TBD"}
           />
 
           <div class="no-print">
@@ -132,13 +154,10 @@ const receptionTime = formatTime(reception.start_time);
             readings={readings}
             sponsors={sponsors}
           />
-
         </div>
       </div>
-
     </div><!-- /.flipper -->
   </div><!-- /.flip-container -->
-
 </PrintLayout>
 
 <script is:inline src="/scripts/program-preview.js"></script>
@@ -146,23 +165,39 @@ const receptionTime = formatTime(reception.start_time);
 <style is:global>
   @media print {
     /* Full letter landscape — two 5.5in panels side by side per page */
-    @page { size: 11in 8.5in landscape; margin: 0; }
+    @page {
+      size: 11in 8.5in landscape;
+      margin: 0;
+    }
 
     /* Panels sit side by side within each spread */
-    .spread-row { display: flex !important; box-shadow: none; border-radius: 0; overflow: visible; }
+    .spread-row {
+      display: flex !important;
+      box-shadow: none;
+      border-radius: 0;
+      overflow: visible;
+    }
 
     /* Each panel fills half the landscape page — no individual page breaks */
     .panel {
-      width: 5.5in; height: 8.5in; min-height: 8.5in;
+      width: 5.5in;
+      height: 8.5in;
+      min-height: 8.5in;
       overflow: hidden;
-      page-break-after: avoid; break-after: avoid;
+      page-break-after: avoid;
+      break-after: avoid;
     }
 
     /* PrintLayout's .face.front { break-after: page } handles the spread-to-spread break */
 
-    .accent-bar, .cover-crest, .ty-accent, .foot-mark,
-    .reception-pill, .qr-row {
-      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+    .accent-bar,
+    .cover-crest,
+    .ty-accent,
+    .foot-mark,
+    .reception-pill,
+    .qr-row {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
     }
   }
 </style>

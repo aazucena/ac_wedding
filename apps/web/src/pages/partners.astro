@@ -1,18 +1,18 @@
 ---
 export const prerender = true;
 // apps/web/src/pages/partners.astro — partner showcase / shoutout
-import Layout      from '../layouts/Layout.astro';
-import PageHeader  from '../components/PageHeader.astro';
-import Hashtag     from '~/components/Hashtag.astro';
-import VendorCard  from '../components/VendorCard.astro';
-import { getSettings, getVendors } from '../lib/directus';
-import { formatDate } from '../lib/utils/format';
+import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
+import Hashtag from "~/components/Hashtag.astro";
+import VendorCard from "../components/VendorCard.astro";
+import { getSettings, getVendors } from "../lib/directus";
+import { formatDate } from "../lib/utils/format";
 
 const [settings, vendors] = await Promise.all([getSettings(), getVendors()]);
 
-const groom            = settings.groom?.first_name ?? 'Aldrin';
-const bride            = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 ---
 
 <Layout
@@ -21,9 +21,7 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
   colorSecondary={settings.color_secondary}
   activeNav="partners"
 >
-
   <div class="page-wide vendors-page">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -32,48 +30,67 @@ const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
     />
 
     <p class="vendors-intro">
-      Our wedding wouldn't be what it is without the care and dedication of everyone behind it.
-      Thank you to everyone who made this day beautiful.
+      Our wedding wouldn't be what it is without the care and dedication of
+      everyone behind it. Thank you to everyone who made this day beautiful.
     </p>
 
-    {vendors.length === 0 ? (
-      <p class="vendors-empty">Partner details coming soon.</p>
-    ) : (
-      <div class="vendors-grid">
-        {vendors.map((v, i) => <VendorCard vendor={v} index={i} />)}
-      </div>
-    )}
-
+    {
+      vendors.length === 0 ? (
+        <p class="vendors-empty">Partner details coming soon.</p>
+      ) : (
+        <div class="vendors-grid">
+          {vendors.map((v, i) => (
+            <VendorCard vendor={v} index={i} />
+          ))}
+        </div>
+      )
+    }
   </div>
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>
 
-<script>import '../scripts/partners-dialog';</script>
+<script>
+  import "../scripts/partners-dialog";
+</script>
 
 <style>
-.vendors-page {
-  display: flex; flex-direction: column; align-items: center;
-}
+  .vendors-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 
-.vendors-intro {
-  font-family: var(--fd); font-size: 20px; font-weight: 300; font-style: italic;
-  color: var(--muted); text-align: center; line-height: 1.7;
-  max-width: 520px; margin: -24px auto 52px;
-  opacity: 0; animation: fadeUp 0.8s 0.25s ease forwards;
-}
+  .vendors-intro {
+    font-family: var(--fd);
+    font-size: 20px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.7;
+    max-width: 520px;
+    margin: -24px auto 52px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.25s ease forwards;
+  }
 
-.vendors-empty {
-  font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--muted);
-  text-align: center;
-}
+  .vendors-empty {
+    font-family: var(--fd);
+    font-size: 20px;
+    font-style: italic;
+    color: var(--muted);
+    text-align: center;
+  }
 
-.vendors-grid {
-  display: flex; flex-wrap: wrap; justify-content: center;
-  gap: 20px; width: 100%;
-}
+  .vendors-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    width: 100%;
+  }
 </style>

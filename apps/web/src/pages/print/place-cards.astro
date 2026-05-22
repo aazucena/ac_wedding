@@ -6,35 +6,38 @@ export const prerender = true;
 // Layout: 6 cards per printed page (3 cols × 2 rows), score line in center
 // Data: all attending guests with table assignments, sorted by table number
 
-import { getSettings, getGuestsWithTables } from '@lib/directus';
-import PrintLayout      from '@layouts/PrintLayout.astro';
-import CardWatermark    from '@components/CardWatermark.astro';
-import FoldLine         from '@components/FoldLine.astro';
-import '../../styles/place-card.css';
+import { getSettings, getGuestsWithTables } from "@lib/directus";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import CardWatermark from "@components/CardWatermark.astro";
+import FoldLine from "@components/FoldLine.astro";
+import "../../styles/place-card.css";
 
-const [, guests] = await Promise.all([
-  getSettings(), getGuestsWithTables(),
-]);
+const [, guests] = await Promise.all([getSettings(), getGuestsWithTables()]);
 
 // Build display name: preferred or first + last
-function displayName(g: typeof guests[0]): string {
+function displayName(g: (typeof guests)[0]): string {
   const p = g.person;
-  if (!p) return 'Guest';
-  const first = p.preferred_name || p.first_name || '';
-  const last  = p.last_name || '';
-  return [first, last].filter(Boolean).join(' ');
+  if (!p) return "Guest";
+  const first = p.preferred_name || p.first_name || "";
+  const last = p.last_name || "";
+  return [first, last].filter(Boolean).join(" ");
 }
 
-function tableLabel(g: typeof guests[0]): string {
+function tableLabel(g: (typeof guests)[0]): string {
   const t = g.table;
-  if (!t) return '';
+  if (!t) return "";
   if (t.name) return t.name;
   if (t.number != null) return `Table ${t.number}`;
-  return '';
+  return "";
 }
 
 // Pad to multiple of 6 for clean grid
-if (guests.length <= 0) guests.push({ id: '', person: { id: '', first_name: 'Test', last_name: 'Guest' }, table: { id: '', number: 1, name: "Guest Family" }});
+if (guests.length <= 0)
+  guests.push({
+    id: "",
+    person: { id: "", first_name: "Test", last_name: "Guest" },
+    table: { id: "", number: 1, name: "Guest Family" },
+  });
 const padded = [...guests];
 while (padded.length % 6 !== 0) padded.push(null as any);
 
@@ -43,61 +46,60 @@ const pageCount = Math.ceil(guests.length / 6);
 
 <PrintLayout
   title="Place Cards — Print"
-  cardWidth="8.5in" cardHeight="11in"
-  toolbarHint={`8.5 × 11 in · Portrait · Cut & fold on dashed lines · ${guests.length} guest${guests.length !== 1 ? 's' : ''} · ${pageCount} page${pageCount !== 1 ? 's' : ''}`}
+  cardWidth="8.5in"
+  cardHeight="11in"
+  toolbarHint={`8.5 × 11 in · Portrait · Cut & fold on dashed lines · ${guests.length} guest${guests.length !== 1 ? "s" : ""} · ${pageCount} page${pageCount !== 1 ? "s" : ""}`}
 >
-
   <!-- ── Render sheets of 6 ── -->
-  {Array.from({ length: Math.ceil(padded.length / 6) }, (_, pageIdx) => (
-    <div class="sheet">
-      {padded.slice(pageIdx * 6, pageIdx * 6 + 6).map((guest) =>
-        guest ? (
-          <div class="card-slot">
-            <div class="tent-card">
+  {
+    Array.from({ length: Math.ceil(padded.length / 6) }, (_, pageIdx) => (
+      <div class="sheet">
+        {padded.slice(pageIdx * 6, pageIdx * 6 + 6).map((guest) =>
+          guest ? (
+            <div class="card-slot">
+              <div class="tent-card">
+                {/* Top half (upside-down = back face when folded) */}
+                <div class="tent-top">
+                  <div class="tent-bar-bottom" />
+                  <div class="tent-name">{displayName(guest)}</div>
+                  <div class="tent-rule">
+                    <div class="tent-rule-line" />
+                    <span class="tent-rule-gem">✦</span>
+                    <div class="tent-rule-line" />
+                  </div>
+                  <div class="tent-table">
+                    <span class="tent-table-num">{tableLabel(guest)}</span>
+                  </div>
+                  <div class="tent-bar" />
+                  <CardWatermark opacity={0.06} size={44} />
+                </div>
 
-              <!-- Top half (upside-down = back face when folded) -->
-              <div class="tent-top">
-                <div class="tent-bar-bottom"></div>
-                <div class="tent-name">{displayName(guest)}</div>
-                <div class="tent-rule">
-                  <div class="tent-rule-line"></div>
-                  <span class="tent-rule-gem">✦</span>
-                  <div class="tent-rule-line"></div>
+                {/* Score / fold line */}
+                <FoldLine />
+
+                {/* Bottom half (front face) */}
+                <div class="tent-bottom">
+                  <div class="tent-bar" />
+                  <div class="tent-name">{displayName(guest)}</div>
+                  <div class="tent-rule">
+                    <div class="tent-rule-line" />
+                    <span class="tent-rule-gem">✦</span>
+                    <div class="tent-rule-line" />
+                  </div>
+                  <div class="tent-table">
+                    <span class="tent-table-num">{tableLabel(guest)}</span>
+                  </div>
+                  <div class="tent-bar-bottom" />
                 </div>
-                <div class="tent-table">
-                  <span class="tent-table-num">{tableLabel(guest)}</span>
-                </div>
-                <div class="tent-bar"></div>
-                <CardWatermark opacity={0.06} size={44} />
               </div>
-
-              <!-- Score / fold line -->
-              <FoldLine />
-
-              <!-- Bottom half (front face) -->
-              <div class="tent-bottom">
-                <div class="tent-bar"></div>
-                <div class="tent-name">{displayName(guest)}</div>
-                <div class="tent-rule">
-                  <div class="tent-rule-line"></div>
-                  <span class="tent-rule-gem">✦</span>
-                  <div class="tent-rule-line"></div>
-                </div>
-                <div class="tent-table">
-                  <span class="tent-table-num">{tableLabel(guest)}</span>
-                </div>
-                <div class="tent-bar-bottom"></div>
-              </div>
-
             </div>
-          </div>
-        ) : (
-          <div class="card-slot empty">
-            <div class="empty-card"></div>
-          </div>
-        )
-      )}
-    </div>
-  ))}
-
+          ) : (
+            <div class="card-slot empty">
+              <div class="empty-card" />
+            </div>
+          ),
+        )}
+      </div>
+    ))
+  }
 </PrintLayout>

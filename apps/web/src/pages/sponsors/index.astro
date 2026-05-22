@@ -1,51 +1,66 @@
 ---
 export const prerender = true;
 // apps/web/src/pages/sponsors/index.astro
-import Layout     from '../../layouts/Layout.astro';
-import PageHeader from '../../components/PageHeader.astro';
-import { getSettings, getSponsors } from '../../lib/directus';
-import { formatDate } from '../../lib/utils/format';
-import Hashtag from '~/components/Hashtag.astro';
+import Layout from "../../layouts/Layout.astro";
+import PageHeader from "../../components/PageHeader.astro";
+import { getSettings, getSponsors } from "../../lib/directus";
+import { formatDate } from "../../lib/utils/format";
+import Hashtag from "~/components/Hashtag.astro";
 
 const [settings, sponsors] = await Promise.all([getSettings(), getSponsors()]);
 
-const groom = settings.groom?.first_name ?? 'Aldrin';
-const bride = settings.bride?.first_name ?? 'Christine';
-const weddingDateLabel = formatDate(settings.wedding_date ?? '2026-09-26');
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 
-const roleOrder = ['Principal Sponsor', 'Veil', 'Cord', 'Candle'];
+const roleOrder = ["Principal Sponsor", "Veil", "Cord", "Candle"];
 
-function fullName(p: { first_name?: string; last_name?: string; middle_name?: string | null } | undefined | null): string {
-  if (!p) return '';
-  return `${p.first_name ?? ''} ${p.last_name ?? ''}`.trim();
+function fullName(
+  p:
+    | { first_name?: string; last_name?: string; middle_name?: string | null }
+    | undefined
+    | null,
+): string {
+  if (!p) return "";
+  return `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim();
 }
 
-function withHonorific(s: typeof sponsors[0]): string {
-  const honorific = s.person?.gender === 'male' ? 'Mr.' : 'Mrs.';
+function withHonorific(s: (typeof sponsors)[0]): string {
+  const honorific = s.person?.gender === "male" ? "Mr." : "Mrs.";
   return `${honorific} ${fullName(s.person)}`;
 }
 
 const paired = new Set<string>();
-const pairs: Array<{ role: string; a: typeof sponsors[0]; b: typeof sponsors[0] | null }> = [];
+const pairs: Array<{
+  role: string;
+  a: (typeof sponsors)[0];
+  b: (typeof sponsors)[0] | null;
+}> = [];
 
 for (const s of sponsors) {
   if (paired.has(s.id)) continue;
   paired.add(s.id);
 
-  const partner = s.partner ? sponsors.find(x => x.id === s.partner!.id) ?? null : null;
+  const partner = s.partner
+    ? (sponsors.find((x) => x.id === s.partner!.id) ?? null)
+    : null;
   if (partner) paired.add(partner.id);
-  if (['ninong', 'ninang'].includes(s.role ?? '')) s.role = 'principal sponsors';
+  if (["ninong", "ninang"].includes(s.role ?? ""))
+    s.role = "principal sponsors";
 
-  pairs.push({ role: s.role ?? '', a: s, b: partner });
+  pairs.push({ role: s.role ?? "", a: s, b: partner });
 }
 
 pairs.sort((x, y) => {
-  const ri = (r: string) => roleOrder.indexOf(r) >= 0 ? roleOrder.indexOf(r) : 99;
-  const maleLastName = (p: typeof pairs[0]) => {
-    const male = [p.a, p.b].find(s => s?.person?.gender === 'male') ?? p.a;
-    return (male?.person?.last_name ?? '').toLowerCase();
+  const ri = (r: string) =>
+    roleOrder.indexOf(r) >= 0 ? roleOrder.indexOf(r) : 99;
+  const maleLastName = (p: (typeof pairs)[0]) => {
+    const male = [p.a, p.b].find((s) => s?.person?.gender === "male") ?? p.a;
+    return (male?.person?.last_name ?? "").toLowerCase();
   };
-  return ri(x.role) - ri(y.role) || maleLastName(x).localeCompare(maleLastName(y));
+  return (
+    ri(x.role) - ri(y.role) || maleLastName(x).localeCompare(maleLastName(y))
+  );
 });
 
 const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
@@ -60,9 +75,7 @@ const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
   colorSecondary={settings.color_secondary}
   activeNav="sponsors"
 >
-
   <div class="page-wide">
-
     <PageHeader
       groomName={groom}
       brideName={bride}
@@ -70,107 +83,145 @@ const grouped = pairs.reduce<Record<string, typeof pairs>>((acc, p) => {
       date={`Our Sponsors · ${weddingDateLabel}`}
     />
 
-    {Object.entries(grouped).map(([role, rolePairs]) => (
-      <section class="sponsor-section">
-        <h2 class="sponsor-role-title">{role}</h2>
-        <div class="sponsor-grid">
-          {rolePairs.map(({ a, b }) => {
-            const husband = [a, b].find(s => s?.person?.gender === 'male') ?? a;
-            const wife    = [a, b].find(s => s?.person?.gender !== 'male') ?? null;
-            return (
-              <div class="sponsor-pair">
-                <div class="sponsor-name ninong">{withHonorific(husband)}</div>
-                {wife && (
-                  <>
-                    <div class="sponsor-sep">✦</div>
-                    <div class="sponsor-name ninang">{withHonorific(wife)}</div>
-                  </>
-                )}
-              </div>
-            );
-          })}
+    {
+      Object.entries(grouped).map(([role, rolePairs]) => (
+        <section class="sponsor-section">
+          <h2 class="sponsor-role-title">{role}</h2>
+          <div class="sponsor-grid">
+            {rolePairs.map(({ a, b }) => {
+              const husband =
+                [a, b].find((s) => s?.person?.gender === "male") ?? a;
+              const wife =
+                [a, b].find((s) => s?.person?.gender !== "male") ?? null;
+              return (
+                <div class="sponsor-pair">
+                  <div class="sponsor-name ninong">
+                    {withHonorific(husband)}
+                  </div>
+                  {wife && (
+                    <>
+                      <div class="sponsor-sep">✦</div>
+                      <div class="sponsor-name ninang">
+                        {withHonorific(wife)}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      ))
+    }
+
+    {
+      pairs.length === 0 && (
+        <div class="card page-narrow" style="text-align:center; padding: 48px;">
+          <p style="font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--muted);">
+            Sponsor list coming soon.
+          </p>
         </div>
-      </section>
-    ))}
-
-    {pairs.length === 0 && (
-      <div class="card page-narrow" style="text-align:center; padding: 48px;">
-        <p style="font-family: var(--fd); font-size: 20px; font-style: italic; color: var(--muted);">
-          Sponsor list coming soon.
-        </p>
-      </div>
-    )}
-
+      )
+    }
   </div>
 
   <Fragment slot="footer-extra">
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>
 
 <style>
-.sponsor-section {
-  margin-bottom: 48px; width: 100%;
-  opacity: 0; animation: fadeUp 0.8s 0.3s ease forwards;
-}
+  .sponsor-section {
+    margin-bottom: 48px;
+    width: 100%;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s ease forwards;
+  }
 
-.sponsor-role-title {
-  font-family: var(--fd); font-size: 32px; font-weight: 300; font-style: italic;
-  color: var(--dark); text-align: center;
-  margin-bottom: 20px;
-}
+  .sponsor-role-title {
+    font-family: var(--fd);
+    font-size: 32px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--dark);
+    text-align: center;
+    margin-bottom: 20px;
+  }
 
-.sponsor-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
-}
+  .sponsor-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
 
-.sponsor-pair {
-  flex: 1 1 420px;
-  max-width: 600px;
-  background: var(--ivory);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  padding: 24px 28px;
-  box-shadow: var(--shadow-card);
-  display: flex; align-items: center;
-  justify-content: center; gap: 14px;
-  white-space: nowrap; text-align: center;
-  position: relative; overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
+  .sponsor-pair {
+    flex: 1 1 420px;
+    max-width: 600px;
+    background: var(--ivory);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 24px 28px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    white-space: nowrap;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
 
-.sponsor-pair::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-  border-radius: var(--radius) var(--radius) 0 0;
-}
+  .sponsor-pair::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
 
-.sponsor-pair:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-hover);
-}
+  .sponsor-pair:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+  }
 
-.sponsor-name {
-  font-family: var(--fd); font-size: 20px;
-  font-weight: 400; color: var(--dark); line-height: 1.2;
-}
+  .sponsor-name {
+    font-family: var(--fd);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--dark);
+    line-height: 1.2;
+  }
 
-.ninong { font-style: italic; }
-.ninang { font-style: normal; }
+  .ninong {
+    font-style: italic;
+  }
+  .ninang {
+    font-style: normal;
+  }
 
-.sponsor-sep {
-  font-family: var(--fd); font-size: 13px;
-  color: var(--cs); opacity: 0.7;
-}
+  .sponsor-sep {
+    font-family: var(--fd);
+    font-size: 13px;
+    color: var(--cs);
+    opacity: 0.7;
+  }
 
-@media (max-width: 520px) {
-  .sponsor-grid { grid-template-columns: 1fr; }
-  .sponsor-pair { flex-direction: column; gap: 6px; }
-}
+  @media (max-width: 520px) {
+    .sponsor-grid {
+      grid-template-columns: 1fr;
+    }
+    .sponsor-pair {
+      flex-direction: column;
+      gap: 6px;
+    }
+  }
 </style>

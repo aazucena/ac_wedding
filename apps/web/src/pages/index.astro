@@ -1,41 +1,70 @@
 ---
 export const prerender = true;
 // apps/web/src/pages/index.astro
-import Layout          from '../layouts/Layout.astro';
-import EventStrip      from '../components/EventStrip.astro';
-import CalendarExport  from '../components/CalendarExport.astro';
-import Hashtag         from '~/components/Hashtag.astro';
-import AccentMark      from '@assets/accent_mark.png';
-import { Image } from 'astro:assets';
-import HeroSection     from '../components/home/HeroSection.astro';
-import ProgramTimeline from '../components/home/ProgramTimeline.astro';
-import DressCodeCard   from '../components/home/DressCodeCard.astro';
-import RegistrySection from '../components/home/RegistrySection.astro';
-import VendorsGrid     from '../components/home/VendorsGrid.astro';
-import GalleryPreview  from '../components/home/GalleryPreview.astro';
-import StoryPreviewCard from '../components/home/StoryPreviewCard.astro';
-import RsvpZone        from '../components/home/RsvpZone.astro';
-import HashtagShare    from '../components/home/HashtagShare.astro';
-import SpotifyPlayer   from '../components/SpotifyPlayer.astro';
-import { getSettings, getVendors, getCeremony, getReception, getGalleryPhotos, getHeroPhotos, getRsvpCount, getRegistries } from '../lib/directus';
-import { formatTime, formatDate } from '../lib/utils/format';
+import Layout from "../layouts/Layout.astro";
+import EventStrip from "../components/EventStrip.astro";
+import CalendarExport from "../components/CalendarExport.astro";
+import Hashtag from "~/components/Hashtag.astro";
+import AccentMark from "@assets/accent_mark.png";
+import { Image } from "astro:assets";
+import HeroSection from "../components/home/HeroSection.astro";
+import ProgramTimeline from "../components/home/ProgramTimeline.astro";
+import DressCodeCard from "../components/home/DressCodeCard.astro";
+import RegistrySection from "../components/home/RegistrySection.astro";
+import VendorsGrid from "../components/home/VendorsGrid.astro";
+import GalleryPreview from "../components/home/GalleryPreview.astro";
+import StoryPreviewCard from "../components/home/StoryPreviewCard.astro";
+import RsvpZone from "../components/home/RsvpZone.astro";
+import HashtagShare from "../components/home/HashtagShare.astro";
+import SpotifyPlayer from "../components/SpotifyPlayer.astro";
+import {
+  getSettings,
+  getVendors,
+  getCeremony,
+  getReception,
+  getGalleryPhotos,
+  getHeroPhotos,
+  getRsvpCount,
+  getRegistries,
+} from "../lib/directus";
+import { formatTime, formatDate } from "../lib/utils/format";
 
-const [settings, vendors, ceremony, reception, photos, heroPhotos, rsvpCount, registries] = await Promise.all([
-  getSettings(), getVendors(), getCeremony(), getReception(), getGalleryPhotos(), getHeroPhotos(), getRsvpCount(), getRegistries(),
+const [
+  settings,
+  vendors,
+  ceremony,
+  reception,
+  photos,
+  heroPhotos,
+  rsvpCount,
+  registries,
+] = await Promise.all([
+  getSettings(),
+  getVendors(),
+  getCeremony(),
+  getReception(),
+  getGalleryPhotos(),
+  getHeroPhotos(),
+  getRsvpCount(),
+  getRegistries(),
 ]);
 
-const groom           = settings.groom?.first_name ?? 'Aldrin';
-const bride           = settings.bride?.first_name ?? 'Christine';
-const groomFull       = `${settings.groom?.first_name ?? 'Aldrin'} ${settings.groom?.last_name ?? 'Azucena'}`;
-const brideFull       = `${settings.bride?.first_name ?? 'Christine'} ${settings.bride?.last_name ?? 'Ranada'}`;
-const hashtag         = settings.hashtag ?? '#AldrinAndChristine2026';
-const weddingDate     = settings.wedding_date ?? '2026-09-26';
+const groom = settings.groom?.first_name ?? "Aldrin";
+const bride = settings.bride?.first_name ?? "Christine";
+const groomFull = `${settings.groom?.first_name ?? "Aldrin"} ${settings.groom?.last_name ?? "Azucena"}`;
+const brideFull = `${settings.bride?.first_name ?? "Christine"} ${settings.bride?.last_name ?? "Ranada"}`;
+const hashtag = settings.hashtag ?? "#AldrinAndChristine2026";
+const weddingDate = settings.wedding_date ?? "2026-09-26";
 const weddingDateLabel = formatDate(weddingDate);
-const weddingLocation = settings.location ?? 'Lethbridge, Alberta';
-const ceremonyTime    = ceremony.start_time ? formatTime(ceremony.start_time) : 'TBD';
-const receptionTime   = reception.start_time ? formatTime(reception.start_time) : 'TBD';
-const ceremonyVenue   = ceremony.venue?.name  ?? 'Venue TBD';
-const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
+const weddingLocation = settings.location ?? "Lethbridge, Alberta";
+const ceremonyTime = ceremony.start_time
+  ? formatTime(ceremony.start_time)
+  : "TBD";
+const receptionTime = reception.start_time
+  ? formatTime(reception.start_time)
+  : "TBD";
+const ceremonyVenue = ceremony.venue?.name ?? "Venue TBD";
+const receptionVenue = reception.venue?.name ?? "Venue TBD";
 ---
 
 <Layout
@@ -46,7 +75,6 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
   toc={true}
   tocShowAfter="#main-content"
 >
-
   <HeroSection
     groomFull={groomFull}
     brideFull={brideFull}
@@ -70,11 +98,18 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
       receptionVenue={receptionVenue}
       receptionTime={receptionTime}
     />
-    {settings.rsvp_enabled && (
-      <RsvpZone count={rsvpCount.confirmed} deadline={settings.rsvp_deadline} />
-    )}
+    {
+      settings.rsvp_enabled && (
+        <RsvpZone
+          count={rsvpCount.confirmed}
+          deadline={settings.rsvp_deadline}
+        />
+      )
+    }
   </section>
-  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+  <div class="section-divider" aria-hidden="true">
+    <Image src={AccentMark} class="divider-accent" alt="" />
+  </div>
 
   <section class="page-wide section-block">
     <div class="section-header">
@@ -83,25 +118,35 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
     </div>
     <StoryPreviewCard story={settings.story} />
   </section>
-  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+  <div class="section-divider" aria-hidden="true">
+    <Image src={AccentMark} class="divider-accent" alt="" />
+  </div>
 
   <section class="page-wide section-block">
     <div class="section-header">
       <p class="section-eyebrow">The Big Day</p>
       <h2 class="section-title" id="program">Program</h2>
     </div>
-    {settings.show_program
-      ? <ProgramTimeline ceremony={ceremony} reception={reception} />
-      : (
+    {
+      settings.show_program ? (
+        <ProgramTimeline ceremony={ceremony} reception={reception} />
+      ) : (
         <div class="program-coming-soon">
-          <span class="program-cs-icon" aria-hidden="true">✦</span>
+          <span class="program-cs-icon" aria-hidden="true">
+            ✦
+          </span>
           <p class="program-cs-heading">Coming soon</p>
-          <p class="program-cs-note">We're finalizing the evening's program with our MC — check back closer to the wedding day.</p>
+          <p class="program-cs-note">
+            We're finalizing the evening's program with our MC — check back
+            closer to the wedding day.
+          </p>
         </div>
       )
     }
   </section>
-  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+  <div class="section-divider" aria-hidden="true">
+    <Image src={AccentMark} class="divider-accent" alt="" />
+  </div>
 
   <section class="page-wide section-block">
     <div class="section-header">
@@ -109,40 +154,57 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
       <h2 class="section-title" id="dress-code">Dress Code</h2>
     </div>
     <DressCodeCard
-      dressCode={settings.dress_code ?? ceremony.dress_code ?? 'Formal Attire'}
-      description={(settings.dress_code_description ?? ceremony.dress_code_description)
-        ? (settings.dress_code_description ?? ceremony.dress_code_description ?? null)
+      dressCode={settings.dress_code ?? ceremony.dress_code ?? "Formal Attire"}
+      description={(settings.dress_code_description ??
+      ceremony.dress_code_description)
+        ? (settings.dress_code_description ??
+          ceremony.dress_code_description ??
+          null)
         : null}
     />
   </section>
-  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+  <div class="section-divider" aria-hidden="true">
+    <Image src={AccentMark} class="divider-accent" alt="" />
+  </div>
 
-  {registries.length > 0 && (
-    <>
-      <section class="page-wide section-block">
-        <div class="section-header">
-          <p class="section-eyebrow">For Those Who Wish to Give</p>
-          <h2 class="section-title" id="registry">Gift Registry</h2>
-          <p class="registry-intro">Your presence is the greatest gift.</p>
+  {
+    registries.length > 0 && (
+      <>
+        <section class="page-wide section-block">
+          <div class="section-header">
+            <p class="section-eyebrow">For Those Who Wish to Give</p>
+            <h2 class="section-title" id="registry">
+              Gift Registry
+            </h2>
+            <p class="registry-intro">Your presence is the greatest gift.</p>
+          </div>
+          <RegistrySection registries={registries} />
+        </section>
+        <div class="section-divider" aria-hidden="true">
+          <Image src={AccentMark} class="divider-accent" alt="" />
         </div>
-        <RegistrySection registries={registries} />
-      </section>
-      <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
-    </>
-  )}
+      </>
+    )
+  }
 
-  {vendors.length > 0 && (
-    <>
-      <section class="page-wide section-block">
-        <div class="section-header">
-          <p class="section-eyebrow">With Gratitude</p>
-          <h2 class="section-title" id="partners">Our Partners</h2>
+  {
+    vendors.length > 0 && (
+      <>
+        <section class="page-wide section-block">
+          <div class="section-header">
+            <p class="section-eyebrow">With Gratitude</p>
+            <h2 class="section-title" id="partners">
+              Our Partners
+            </h2>
+          </div>
+          <VendorsGrid vendors={vendors} />
+        </section>
+        <div class="section-divider" aria-hidden="true">
+          <Image src={AccentMark} class="divider-accent" alt="" />
         </div>
-        <VendorsGrid vendors={vendors} />
-      </section>
-      <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
-    </>
-  )}
+      </>
+    )
+  }
 
   <section class="page-wide section-block">
     <div class="section-header">
@@ -151,7 +213,9 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
     </div>
     <GalleryPreview photos={photos} photographer={settings.photographer} />
   </section>
-  <div class="section-divider" aria-hidden="true"><Image src={AccentMark} class="divider-accent" alt="" /></div>
+  <div class="section-divider" aria-hidden="true">
+    <Image src={AccentMark} class="divider-accent" alt="" />
+  </div>
 
   <section class="page-wide section-block">
     <CalendarExport groomName={groom} brideName={bride} />
@@ -168,36 +232,56 @@ const receptionVenue  = reception.venue?.name ?? 'Venue TBD';
     <Hashtag tag={settings.hashtag} class="footer-hashtag" />
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
-
 </Layout>
 
 <style>
-.program-coming-soon {
-  width: 100%;
-  background: var(--ivory);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow-card);
-  padding: 56px 32px;
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  text-align: center;
-  position: relative; overflow: hidden;
-}
-.program-coming-soon::before {
-  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, var(--cp), var(--cs));
-}
-.program-cs-icon {
-  font-size: 22px; color: var(--cp); opacity: 0.7;
-}
-.program-cs-heading {
-  font-family: var(--fd); font-size: 26px; font-weight: 400;
-  font-style: italic; color: var(--dark); line-height: 1.2;
-}
-.program-cs-note {
-  font-family: var(--fb); font-size: 13px; font-weight: 300;
-  color: var(--muted); max-width: 380px; line-height: 1.7;
-}
+  .program-coming-soon {
+    width: 100%;
+    background: var(--ivory);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 56px 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .program-coming-soon::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--cp), var(--cs));
+  }
+  .program-cs-icon {
+    font-size: 22px;
+    color: var(--cp);
+    opacity: 0.7;
+  }
+  .program-cs-heading {
+    font-family: var(--fd);
+    font-size: 26px;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--dark);
+    line-height: 1.2;
+  }
+  .program-cs-note {
+    font-family: var(--fb);
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted);
+    max-width: 380px;
+    line-height: 1.7;
+  }
 </style>
 
-<script>import '../scripts/confetti';</script>
+<script>
+  import "../scripts/confetti";
+</script>
