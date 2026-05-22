@@ -35,19 +35,18 @@ export const onRequest = defineMiddleware(
       const tokenCookie = cookies.get(PREVIEW_COOKIE)?.value;
 
       if (tokenParam === secret) {
-        // Redirect to the same URL without ?preview= so the cookie lands
-        // on a fresh response we fully control. cookies.set() + next() does
-        // not serialise into the response for prerendered (static) pages on
-        // the Vercel adapter — only a response we construct ourselves does.
+        // Delegate cookie-setting to /api/preview-auth, which always runs
+        // through the Vercel server function and flushes cookies reliably.
+        // Middleware cannot set cookies for prerendered (static) pages because
+        // the Vercel adapter serves them before the middleware response pipeline.
         const cleanUrl = new URL(url);
         cleanUrl.searchParams.delete("preview");
-        return new Response(null, {
-          status: 302,
-          headers: {
-            Location: cleanUrl.toString(),
-            "Set-Cookie": `${PREVIEW_COOKIE}=${secret}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${PREVIEW_COOKIE_TTL}`,
-          },
-        });
+        const then = cleanUrl.pathname + cleanUrl.search;
+
+        const authUrl = new URL("/api/preview-auth", url.origin);
+        authUrl.searchParams.set("token", secret);
+        authUrl.searchParams.set("then", then || "/");
+        return redirect(authUrl.toString(), 302);
       }
 
       if (tokenCookie === secret) {
