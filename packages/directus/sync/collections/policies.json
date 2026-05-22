@@ -32,22 +32,5 @@
       }
     ],
     "_syncId": "_sync_default_public_policy"
-  },
-  {
-    "name": "$t:public_label",
-    "icon": "public",
-    "description": "$t:public_description",
-    "ip_access": null,
-    "enforce_tfa": false,
-    "admin_access": false,
-    "app_access": false,
-    "roles": [
-      {
-        "role": null,
-        "user": null,
-        "sort": 1
-      }
-    ],
-    "_syncId": "1acbe9c5-5a2d-4257-ad63-c6b16d365d7d"
   }
 ]

@@ -487,17 +487,5 @@
     ],
     "policy": "_sync_default_public_policy",
     "_syncId": "50828606-91a3-4e5e-bd09-623ebe580b1c"
-  },
-  {
-    "collection": "directus_files",
-    "action": "read",
-    "permissions": null,
-    "validation": null,
-    "presets": null,
-    "fields": [
-      "*"
-    ],
-    "policy": "1acbe9c5-5a2d-4257-ad63-c6b16d365d7d",
-    "_syncId": "2c8ed983-ae3a-4697-b9e0-f4e2507de0ba"
   }
 ]
