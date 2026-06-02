@@ -375,7 +375,13 @@ export const server = {
     input: z.object({ name: z.string().min(2) }),
     handler: async ({ name }) => {
       const parties = await searchPartiesByName(name);
-      return { parties };
+      return {
+        parties: parties.map(({ id, name, status }) => ({
+          id,
+          name,
+          hasResponded: status === "confirmed" || status === "declined",
+        })),
+      };
     },
   }),
 
