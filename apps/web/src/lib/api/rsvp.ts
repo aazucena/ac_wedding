@@ -22,7 +22,14 @@ export async function searchPartiesByName(
     return await get<Pick<Parties, "id" | "name" | "rsvp_token">[]>(
       "/items/parties",
       {
-        filter: { name: { _icontains: name } },
+        filter: {
+          _or: [
+            { name: { _icontains: name } },
+            { members: { person: { first_name: { _icontains: name } } } },
+            { members: { person: { last_name: { _icontains: name } } } },
+            { members: { person: { preferred_name: { _icontains: name } } } },
+          ],
+        },
         fields: ["id", "name", "rsvp_token"],
         limit: 5,
       },
