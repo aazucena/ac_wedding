@@ -17,9 +17,9 @@ export async function getPartyByToken(token: string): Promise<Parties | null> {
 
 export async function searchPartiesByName(
   name: string,
-): Promise<Pick<Parties, "id" | "name">[]> {
+): Promise<Pick<Parties, "id" | "name" | "status">[]> {
   try {
-    return await get<Pick<Parties, "id" | "name">[]>(
+    return await get<Pick<Parties, "id" | "name" | "status">[]>(
       "/items/parties",
       {
         filter: {
@@ -30,7 +30,7 @@ export async function searchPartiesByName(
             { members: { person: { preferred_name: { _icontains: name } } } },
           ],
         },
-        fields: ["id", "name"],
+        fields: ["id", "name", "status"],
         limit: 5,
       },
     );

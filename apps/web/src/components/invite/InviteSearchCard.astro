@@ -50,7 +50,7 @@
   let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   function renderSuggestions(
-    parties: Array<{ id: string; name: string }>,
+    parties: Array<{ id: string; name: string; status?: string }>,
   ) {
     const box = document.getElementById("suggestions") as HTMLElement;
     box.replaceChildren();
@@ -64,8 +64,24 @@
     parties.forEach((party) => {
       const btn = document.createElement("button");
       btn.className = "suggestion-item";
-      btn.textContent = party.name;
       btn.onclick = () => { window.location.href = `/api/rsvp/party?id=${party.id}`; };
+
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = party.name;
+      btn.appendChild(nameSpan);
+
+      if (party.status === "confirmed") {
+        const badge = document.createElement("span");
+        badge.className = "suggestion-badge suggestion-badge--confirmed";
+        badge.textContent = "RSVP'd";
+        btn.appendChild(badge);
+      } else if (party.status === "declined") {
+        const badge = document.createElement("span");
+        badge.className = "suggestion-badge suggestion-badge--declined";
+        badge.textContent = "Declined";
+        btn.appendChild(badge);
+      }
+
       box.appendChild(btn);
     });
 
@@ -244,9 +260,37 @@
     color: var(--dark);
     text-align: left;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
     transition:
       background 0.2s ease,
       border-left-color 0.2s ease;
+  }
+
+  :global(.suggestion-badge) {
+    flex-shrink: 0;
+    font-family: var(--fb);
+    font-size: 9px;
+    font-weight: 600;
+    font-style: normal;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+
+  :global(.suggestion-badge--confirmed) {
+    background: color-mix(in srgb, var(--cp) 22%, white);
+    color: color-mix(in srgb, var(--cp) 60%, var(--dark));
+    border: 1px solid color-mix(in srgb, var(--cp) 40%, transparent);
+  }
+
+  :global(.suggestion-badge--declined) {
+    background: rgba(212, 100, 100, 0.08);
+    color: #8a3a3a;
+    border: 1px solid rgba(212, 100, 100, 0.25);
   }
 
   :global(.suggestion-item:last-child) {
