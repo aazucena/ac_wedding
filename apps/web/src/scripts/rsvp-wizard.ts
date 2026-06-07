@@ -745,7 +745,7 @@ document.addEventListener("astro:page-load", () => {
 
       const selectedGuestId =
         document.querySelector<HTMLInputElement>(
-          'input[name="representative"]:checked',
+          'input[name="representative"]:checked, input[name="representative"][type="hidden"]',
         )?.value ?? null;
       const selectedGuest = selectedGuestId
         ? (guestList.find((g) => g.id === selectedGuestId) ?? null)

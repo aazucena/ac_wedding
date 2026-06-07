@@ -4,40 +4,48 @@ interface Props {
   guests: Array<{ id: string; name: string; type: string }>;
 }
 const { guests } = Astro.props;
+const isSolo = guests.length === 1;
 ---
 
 <div class="wizard-step" id="step-2">
   <p class="step-eyebrow">Contact Details</p>
   <p class="step-sub">
-    We'll use these to reach your party representative with any updates.
+    {isSolo
+      ? "We'll use these to reach you with any updates."
+      : "We'll use these to reach your party representative with any updates."}
   </p>
   <div class="step-fields">
-    <div class="field">
-      <label class="field-label">Party Representative</label>
-      <div class="card-option-list" id="rep-list">
-        {
-          guests.map((g, i) => (
-            <label
-              class="card-option card-option--radio"
-              id={`rep-option-${g.id}`}
-              data-type={g.type}
-            >
-              <input
-                type="radio"
-                name="representative"
-                value={g.id}
-                checked={i === 0}
-              />
-              <span class="card-option-icon">👤</span>
-              <span class="card-option-body">
-                <span class="card-option-title">{g.name}</span>
-              </span>
-              <span class="card-option-check">✓</span>
-            </label>
-          ))
-        }
+    {!isSolo && (
+      <div class="field">
+        <label class="field-label">Party Representative</label>
+        <div class="card-option-list" id="rep-list">
+          {
+            guests.map((g, i) => (
+              <label
+                class="card-option card-option--radio"
+                id={`rep-option-${g.id}`}
+                data-type={g.type}
+              >
+                <input
+                  type="radio"
+                  name="representative"
+                  value={g.id}
+                  checked={i === 0}
+                />
+                <span class="card-option-icon">👤</span>
+                <span class="card-option-body">
+                  <span class="card-option-title">{g.name}</span>
+                </span>
+                <span class="card-option-check">✓</span>
+              </label>
+            ))
+          }
+        </div>
       </div>
-    </div>
+    )}
+    {isSolo && (
+      <input type="hidden" name="representative" value={guests[0]!.id} />
+    )}
     <div class="field">
       <label class="field-label" for="contact-phone">
         Phone Number <span class="optional">at least one required</span>
