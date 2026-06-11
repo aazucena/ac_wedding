@@ -1,6 +1,17 @@
 # Catholic Wedding Planner
 **Aldrin & Christine - September 26, 2026**
 
+![Astro](https://img.shields.io/badge/Astro-6-FF5D01?logo=astro&logoColor=white)
+![Directus](https://img.shields.io/badge/Directus-11-6644FF?logo=directus&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-6-DC382D?logo=redis&logoColor=white)
+![pnpm](https://img.shields.io/badge/pnpm-10-F69220?logo=pnpm&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-deployed-000000?logo=vercel&logoColor=white)
+![Railway](https://img.shields.io/badge/Railway-deployed-0B0D0E?logo=railway&logoColor=white)
+
 A self-hosted wedding management system built on [Directus](https://directus.io), PostgreSQL, and Astro. Manages everything from guest RSVPs and entourage lineups to Parish music approval and canonical marriage requirements - all in one place.
 
 ---
