@@ -71,6 +71,11 @@ const {
   </div>
 </dialog>
 
+<script>
+  import Dropzone from "dropzone";
+  (window as any)._Dropzone = Dropzone;
+</script>
+
 <script is:inline define:vars={{ dzId, token, initVisible: visible }}>
   var _uploadAbort = null;
 
@@ -162,8 +167,7 @@ const {
 
     // ── Dropzone init — exposed globally so RsvpCard can call it after submit ──
     window.initDropzone = async function (containerId, tok) {
-      var mod = await import("/node_modules/dropzone/dist/dropzone.mjs");
-      var Dropzone = mod.default;
+      var Dropzone = window._Dropzone;
       Dropzone.autoDiscover = false;
 
       var el = document.getElementById(containerId);
