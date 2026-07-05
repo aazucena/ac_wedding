@@ -167,10 +167,19 @@
   left: 24px;
   z-index: 50;
   width: 400px;
+  max-width: 400px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.24);
   transition:
     width 0.35s ease,
     border-radius 0.35s ease;
+}
+/* Neutralize page-wide / page-narrow layout when the player is fixed-position */
+.spotify-player--fixed.page-wide,
+.spotify-player--fixed.page-narrow {
+  margin-left: unset;
+  margin-right: unset;
+  margin-top: unset;
+  max-width: 400px;
 }
 .spotify-player--fixed.spotify-player--minimized {
   width: 48px;
