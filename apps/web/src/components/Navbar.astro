@@ -207,27 +207,31 @@ function groupIsActive(group: NavGroup): boolean {
     nav.classList.add("visible");
 
     // ── Scroll hide/show ───────────────────────────────────
+    // rAF-gated with a movement deadband: iOS fires scroll far more often than
+    // it paints, and a slow drag makes scrollY oscillate sub-pixel. Without the
+    // deadband that thrashes .hidden/.visible, restarting the 0.4s transform
+    // transition every few frames on a fixed, blurred layer.
     let prevScrollPos = window.scrollY;
-    if (scrollSpy) {
-      const spyOnScroll = () => {
-        nav.classList.toggle(
-          "scrolled",
-          window.scrollY > window.innerHeight * 0.75,
-        );
-      };
-      window.addEventListener("scroll", spyOnScroll, { passive: true, ...sig });
-      spyOnScroll();
-    }
-    window.addEventListener(
-      "scroll",
-      () => {
-        const cur = window.scrollY;
-        if (prevScrollPos > cur) nav.classList.replace("hidden", "visible");
+    let scrollTicking = false;
+
+    const onScroll = () => {
+      if (scrollTicking) return;
+      scrollTicking = true;
+      requestAnimationFrame(() => {
+        scrollTicking = false;
+        const cur = Math.max(0, window.scrollY); // clamp iOS negative overscroll
+        if (scrollSpy) {
+          nav.classList.toggle("scrolled", cur > window.innerHeight * 0.75);
+        }
+        const delta = cur - prevScrollPos;
+        if (Math.abs(delta) < 8) return; // ignore rubber-band / sub-pixel jitter
+        if (delta < 0) nav.classList.replace("hidden", "visible");
         else if (cur > 60) nav.classList.replace("visible", "hidden");
         prevScrollPos = cur;
-      },
-      { passive: true, ...sig },
-    );
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true, ...sig });
+    onScroll();
 
     // ── Desktop dropdowns ──────────────────────────────────
     const groups = nav.querySelectorAll(".nav-group");

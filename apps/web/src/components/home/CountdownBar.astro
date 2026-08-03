@@ -70,8 +70,7 @@ const { weddingDate } = Astro.props;
     display: flex;
     align-items: stretch;
     justify-content: center;
-    background: rgba(26, 26, 46, 0.52);
-    backdrop-filter: blur(12px);
+    background: rgba(26, 26, 46, 0.72);
     border-top: 1px solid rgba(255, 255, 255, 0.12);
     flex-wrap: nowrap;
     border-radius: var(--radius-sm);
@@ -121,6 +120,18 @@ const { weddingDate } = Astro.props;
     font-style: italic;
     color: color-mix(in srgb, var(--cp) 80%, white);
     padding: 22px;
+  }
+
+  /* This sits inside .hero-content, which the parallax loop transforms every
+     frame on desktop — a backdrop-filter under a transforming ancestor has to
+     re-sample every frame. On touch that's pure cost (the loop doesn't even
+     run there), so the flat scrim above is the base and the blur is a
+     desktop-only enhancement. */
+  @media (hover: hover) and (pointer: fine) {
+    .countdown-bar {
+      background: rgba(26, 26, 46, 0.52);
+      backdrop-filter: blur(12px);
+    }
   }
 
   @media (max-width: 768px) {

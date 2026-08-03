@@ -125,20 +125,26 @@ function initHero() {
   };
   document.addEventListener("keydown", _keydownHandler);
 
-  _heroObserver = new IntersectionObserver(
-    ([entry]) => {
-      if (!entry!.isIntersecting) exitFocus();
-    },
-    { threshold: 0 },
-  );
-  _heroObserver.observe(hero);
-
   // ── Parallax ──────────────────────────────────────────────
   const BG_STR = 16;
   const ORB_STR = 8;
   const CNT_STR = 4;
 
-  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  // Cursor parallax is a fine-pointer effect. On touch, mousemove never fires,
+  // and neither does deviceorientation — iOS 13+ gates it behind an explicit
+  // DeviceOrientationEvent.requestPermission() from a user gesture, which we
+  // never call. So on a phone this loop would just rewrite translate3d(0,0,0)
+  // onto three composited layers at 60fps forever — one of which
+  // (.hero-content) wraps the countdown bar's backdrop-filter and forces it to
+  // re-sample every frame.
+  const parallaxEnabled =
+    window.matchMedia("(pointer: fine)").matches &&
+    !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  let startParallax = () => {};
+  let stopParallax = () => {};
+
+  if (parallaxEnabled) {
     let tx = 0,
       ty = 0;
     let cx = 0,
@@ -165,7 +171,7 @@ function initHero() {
       });
     }
 
-    function tick() {
+    const tick = () => {
       cx += (tx - cx) * 0.025;
       cy += (ty - cy) * 0.025;
       heroBg!.style.transform = `translate3d(${cx * -BG_STR}px,  ${cy * -BG_STR * 0.5}px, 0)`;
@@ -173,9 +179,35 @@ function initHero() {
         heroOrb.style.transform = `translate3d(${cx * -ORB_STR}px, ${cy * -ORB_STR * 0.5}px, 0)`;
       heroCnt!.style.transform = `translate3d(${cx * CNT_STR}px, ${cy * CNT_STR * 0.5}px, 0)`;
       _rafId = requestAnimationFrame(tick);
-    }
-    _rafId = requestAnimationFrame(tick);
+    };
+
+    startParallax = () => {
+      if (_rafId === null) _rafId = requestAnimationFrame(tick);
+    };
+    stopParallax = () => {
+      if (_rafId !== null) {
+        cancelAnimationFrame(_rafId);
+        _rafId = null;
+      }
+    };
+
+    startParallax();
   }
+
+  // Also the exit-focus trigger it already was — now it additionally parks the
+  // RAF loop whenever the hero is off-screen, where the effect is invisible.
+  _heroObserver = new IntersectionObserver(
+    ([entry]) => {
+      if (entry!.isIntersecting) {
+        startParallax();
+      } else {
+        exitFocus();
+        stopParallax();
+      }
+    },
+    { threshold: 0 },
+  );
+  _heroObserver.observe(hero);
 }
 
 document.addEventListener("astro:before-swap", cleanup);

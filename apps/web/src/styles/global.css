@@ -824,11 +824,26 @@ html.tod-night {
   opacity: 0;
   animation: fadeUp 0.7s 0.4s ease forwards;
 }
+/* Mobile-first by necessity: a flat scrim is the base, and the frosted glass is
+   a desktop-only enhancement. A position:fixed element with backdrop-filter
+   re-blurs the entire scrolling page every frame — over the homepage hero's
+   full-bleed slides and blurred orbs that pins the GPU and gets iOS Safari to
+   kill the tab under memory pressure during a sustained slow scroll.
+   Written this way round rather than resetting to `none` in a coarse-pointer
+   query: a reset would have to null both the prefixed and unprefixed property,
+   and Lightning CSS collapses that pair to one, silently leaving the blur live
+   on half the Safari versions. Declaring the blur only where it's wanted can't
+   fail that way. */
 .nav[data-scroll-spy="true"] .navbar {
-  background: rgba(253, 250, 247, 0.08);
-  backdrop-filter: blur(8px);
+  background: rgba(26, 26, 46, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .nav[data-scroll-spy="true"] .navbar {
+    background: rgba(253, 250, 247, 0.08);
+    backdrop-filter: blur(8px);
+  }
 }
 .nav.scrolled .navbar {
   background: color-mix(in srgb, var(--ivory) 88%, transparent);

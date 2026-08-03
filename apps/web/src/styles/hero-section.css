@@ -373,9 +373,7 @@
   z-index: 12;
   margin: 0;
   padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.55);
   border-radius: 6px 0px 0px 0px;
   font-family: var(--fb);
   font-size: 11px;
@@ -491,9 +489,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px 24px;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.55);
   border: none;
   border-radius: 0 6px 0 0;
   color: rgba(255, 255, 255, 0.65);
@@ -558,6 +554,35 @@
   -webkit-user-drag: none;
   -webkit-touch-callout: none;
   user-select: none;
+}
+
+/* ── Touch-device compositing diet ──────────────────────────── */
+/* iOS Safari kills the tab under memory pressure when a sustained slow scroll
+   keeps this hero recompositing. Trim everything that costs GPU memory but
+   buys nothing on a phone. */
+@media (hover: none) and (pointer: coarse) {
+  /* hero.ts skips the parallax RAF loop on touch, so these promotion hints
+     hold full-screen layers with nothing animating them. */
+  .hero-bg,
+  .hero-content {
+    will-change: auto;
+  }
+  .hero-slide {
+    will-change: opacity;
+  }
+}
+
+/* backdrop-filter inside a hero that recomposites during scroll is the other
+   major iOS memory sink, so the flat scrim above is the base and the blur is a
+   desktop-only enhancement — same mobile-first inversion as the navbar, and for
+   the same reason: a coarse-pointer reset can't reliably null both the prefixed
+   and unprefixed property once the minifier has collapsed them. */
+@media (hover: hover) and (pointer: fine) {
+  .hero-photo-credit,
+  .hero-focus-btn {
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);
+  }
 }
 
 /* Countdown margin when inside hero */
