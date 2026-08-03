@@ -1,0 +1,121 @@
+---
+// rsvp/RsvpEventSummary.astro — the when/where/what-to-wear a guest needs
+// BEFORE the form asks them to commit to a yes or no.
+//
+// Guests arrive here straight from the invitation email's "Kindly Reply" button,
+// which is the only page-level CTA they get. Without this block the RSVP page
+// showed nothing but the attending/declining toggles, so a guest who hadn't
+// memorised the email had no way to decide.
+import EventStrip from "../EventStrip.astro";
+
+interface Props {
+  ceremonyVenue: string;
+  ceremonyTime: string;
+  receptionVenue: string;
+  receptionTime: string;
+  dressCode?: string | null;
+}
+
+const {
+  ceremonyVenue,
+  ceremonyTime,
+  receptionVenue,
+  receptionTime,
+  dressCode,
+} = Astro.props;
+
+const links = [
+  { url: "/ceremony", text: "Full program" },
+  { url: "/info", text: "Travel & FAQ" },
+  { url: "/events", text: "Other events" },
+];
+---
+
+<section class="rsvp-summary" aria-label="Wedding details">
+  <p class="section-eyebrow">Before you reply</p>
+
+  <EventStrip
+    ceremonyVenue={ceremonyVenue}
+    ceremonyTime={ceremonyTime}
+    receptionVenue={receptionVenue}
+    receptionTime={receptionTime}
+  />
+
+  {
+    dressCode && (
+      <p class="rsvp-summary-dress">
+        <span class="rsvp-summary-dress-label">Attire</span>
+        {dressCode}
+      </p>
+    )
+  }
+
+  <nav class="rsvp-summary-links" aria-label="More wedding details">
+    {links.map((l) => <a href={l.url}>{l.text}</a>)}
+  </nav>
+</section>
+
+<style>
+  .rsvp-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    max-width: 580px;
+    margin: 0 auto 32px;
+  }
+
+  .rsvp-summary .section-eyebrow {
+    margin-bottom: 18px;
+  }
+
+  .rsvp-summary-dress {
+    font-family: var(--fb);
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    line-height: 1.7;
+    margin-top: -4px;
+  }
+
+  .rsvp-summary-dress-label {
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 9px;
+    color: var(--dark);
+    margin-right: 8px;
+  }
+
+  .rsvp-summary-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 8px 20px;
+    margin-top: 16px;
+  }
+
+  .rsvp-summary-links a {
+    font-family: var(--fb);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 1px;
+    color: var(--cp);
+    text-decoration: none;
+    border-bottom: 1px solid
+      color-mix(in srgb, var(--cp) 45%, transparent);
+    padding-bottom: 2px;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .rsvp-summary-links a:hover,
+  .rsvp-summary-links a:focus-visible {
+    color: var(--dark);
+    border-bottom-color: var(--dark);
+  }
+</style>

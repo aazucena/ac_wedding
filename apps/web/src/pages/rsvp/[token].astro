@@ -4,8 +4,14 @@ import Layout from "../../layouts/Layout.astro";
 import PageHeader from "../../components/PageHeader.astro";
 import RsvpCard from "../../components/RsvpCard.astro";
 import ClosedCard from "../../components/ClosedCard.astro";
-import { getSettings, getPartyByToken } from "../../lib/directus";
-import { formatDate } from "../../lib/utils/format";
+import RsvpEventSummary from "../../components/rsvp/RsvpEventSummary.astro";
+import {
+  getSettings,
+  getPartyByToken,
+  getCeremony,
+  getReception,
+} from "../../lib/directus";
+import { formatDate, formatTime } from "../../lib/utils/format";
 import Hashtag from "~/components/Hashtag.astro";
 
 const { token } = Astro.params;
@@ -17,14 +23,27 @@ if (!token || INVALID_TOKENS.has(token)) {
   return Astro.redirect("/invite", 307);
 }
 
-const [settings, party] = await Promise.all([
+const [settings, party, ceremony, reception] = await Promise.all([
   getSettings(),
   getPartyByToken(token),
+  getCeremony(),
+  getReception(),
 ]);
 
 const groom = settings.groom?.first_name ?? "Aldrin";
 const bride = settings.bride?.first_name ?? "Christine";
 const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
+
+// Same fallbacks the homepage uses (pages/index.astro) so the two views can't
+// disagree about the venue or time.
+const ceremonyTime = ceremony.start_time
+  ? formatTime(ceremony.start_time)
+  : "TBD";
+const receptionTime = reception.start_time
+  ? formatTime(reception.start_time)
+  : "TBD";
+const ceremonyVenue = ceremony.venue?.name ?? "Venue TBD";
+const receptionVenue = reception.venue?.name ?? "Venue TBD";
 
 const rsvpDeadline = formatDate(settings.rsvp_deadline ?? "2026-08-26");
 const plusOnesAllowed =
@@ -60,6 +79,13 @@ const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
           brideName={bride}
           date={`${weddingDateLabel} · Nuptial Mass & Reception`}
         />
+        <RsvpEventSummary
+          ceremonyVenue={ceremonyVenue}
+          ceremonyTime={ceremonyTime}
+          receptionVenue={receptionVenue}
+          receptionTime={receptionTime}
+          dressCode={ceremony.dress_code}
+        />
         <RsvpCard
           party={party}
           groomName={groom}
@@ -70,7 +96,7 @@ const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
         />
       </div>
     ) : (
-      <div class="page-narrow">
+      <div class="page-narrow rsvp-not-found">
         <PageHeader
           groomName={groom}
           brideName={bride}
@@ -86,6 +112,13 @@ const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
             </p>
           </div>
         </div>
+        <RsvpEventSummary
+          ceremonyVenue={ceremonyVenue}
+          ceremonyTime={ceremonyTime}
+          receptionVenue={receptionVenue}
+          receptionTime={receptionTime}
+          dressCode={ceremony.dress_code}
+        />
       </div>
     )
   }
@@ -102,6 +135,11 @@ const isClosed = !settings.rsvp_enabled || deadlinePassed || weddingPassed;
     justify-content: center;
     padding-top: 48px;
     padding-bottom: 48px;
+  }
+  /* Here the summary sits below the error card rather than above the form,
+     so it needs its own breathing room. */
+  .rsvp-not-found :global(.rsvp-summary) {
+    margin-top: 40px;
   }
   .token-error {
     text-align: center;
