@@ -53,7 +53,7 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
         <p class="letter-date">{weddingDateLabel}</p>
         <p class="letter-location">{weddingLocation}</p>
         <div class="letter-cta">
-          <button id="env-accept" type="button">I Accept</button>
+          <button id="env-enter" type="button">Enter</button>
         </div>
       </div>
     </div>
@@ -410,7 +410,7 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
   .letter-cta {
     margin-top: 6px;
   }
-  #env-accept {
+  #env-enter {
     padding: 11px 30px;
     background: linear-gradient(135deg, var(--dark), var(--dark2));
     color: color-mix(in srgb, var(--cp) 85%, white);
@@ -427,15 +427,15 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
       opacity 0.2s ease,
       transform 0.18s ease;
   }
-  #env-accept:hover {
+  #env-enter:hover {
     opacity: 0.87;
     transform: translateY(-2px);
   }
-  #env-accept:active {
+  #env-enter:active {
     transform: translateY(0);
     opacity: 1;
   }
-  #env-accept:focus-visible {
+  #env-enter:focus-visible {
     outline: 2px solid var(--cp);
     outline-offset: 3px;
   }
@@ -739,7 +739,8 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
 <script is:inline>
   // Runs synchronously during every View Transition swap, before the browser
   // paints the new frame. Removing the overlay here prevents the flash where
-  // it briefly appears then disappears on pages visited after "I Accept".
+  // it briefly appears then disappears on pages visited after the overlay is
+  // dismissed via the "Enter" button.
   document.addEventListener("astro:after-swap", function () {
     try {
       if (!localStorage.getItem("invitation_seen")) return;
@@ -794,7 +795,7 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
     var flash = document.getElementById("env-flash");
     var letter = document.getElementById("env-letter");
     var inner = letter && letter.querySelector(".letter-inner");
-    var btn = document.getElementById("env-accept");
+    var btn = document.getElementById("env-enter");
     var dearEl = document.getElementById("env-dear");
     var nameEl = document.getElementById("env-name");
     var genericEl = document.getElementById("env-generic");
@@ -823,7 +824,7 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
           if (!sig.aborted) applyName(n);
         });
       if (inner) inner.classList.add("visible");
-      setupAccept();
+      setupEnter();
       return;
     }
 
@@ -905,8 +906,8 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
       );
     }
 
-    // ── Accept button ─────────────────────────────────
-    function setupAccept() {
+    // ── Enter button ──────────────────────────────────
+    function setupEnter() {
       if (!btn) return;
       btn.addEventListener(
         "click",
@@ -931,7 +932,7 @@ const { groomFull, brideFull, weddingDateLabel, weddingLocation } = Astro.props;
         { signal: sig },
       );
     }
-    setupAccept();
+    setupEnter();
 
     // ── SPA navigation cleanup ────────────────────────
     document.addEventListener(
