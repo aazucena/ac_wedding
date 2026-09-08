@@ -62,6 +62,9 @@ export async function getHeroPhotos(): Promise<Gallery[]> {
       ],
       filter: { status: { _eq: "published" }, featured: { _eq: true } },
       sort: ["sort"],
+      // Safe to raise: hero.ts keeps at most two slides decoded at a time, so
+      // peak image memory no longer scales with this number. It did once -- 20
+      // slides held ~166MB of bitmap and got iOS Safari to kill the tab.
       limit: 20,
     });
   } catch {

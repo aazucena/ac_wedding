@@ -38,6 +38,23 @@ for (let i = slides.length - 1; i > 0; i--) {
   slides[i] = slides[j]!;
   slides[j] = tmp;
 }
+
+// Two decode sizes per slide. A decoded bitmap costs width x height x 4 bytes
+// no matter how well the JPEG compressed, so 1920x1080 is ~8.3MB of resident
+// memory and 1280x720 is ~3.7MB. hero.ts picks one per pointer type at runtime
+// and holds at most two slides decoded at a time -- see the comment there.
+//
+// srcset can't express this: it scales the layout width by devicePixelRatio, so
+// a DPR-3 phone asks for ~1521px and lands on the 1920w candidate regardless.
+// Serving phones the smaller decode has to be an explicit choice.
+const heroSrc = (photo: Gallery, width: number, height: number) =>
+  assetUrl(photo.image!, {
+    width,
+    height,
+    quality: 80,
+    fit: "cover",
+    format: "auto",
+  });
 ---
 
 <section class="hero" id="hero-parallax">
@@ -48,30 +65,13 @@ for (let i = slides.length - 1; i > 0; i--) {
         slides.map((photo, i) => (
           <img
             class="hero-slide"
-            src={
-              i === 0
-                ? assetUrl(photo.image!, {
-                    width: 1920,
-                    height: 1080,
-                    quality: 80,
-                    fit: "cover",
-                    format: "auto",
-                  })
-                : undefined
-            }
-            data-src={
-              i > 0
-                ? assetUrl(photo.image!, {
-                    width: 1920,
-                    height: 1080,
-                    quality: 80,
-                    fit: "cover",
-                    format: "auto",
-                  })
-                : undefined
-            }
+            src={i === 0 ? heroSrc(photo, 1920, 1080) : undefined}
+            data-src-lg={heroSrc(photo, 1920, 1080)}
+            data-src-sm={heroSrc(photo, 1280, 720)}
             alt=""
+            decoding="async"
             loading={i === 0 ? "eager" : undefined}
+            fetchpriority={i === 0 ? "high" : undefined}
             style={`object-position: ${focalPoint(photo.image)}`}
             data-download-protected={String(!allowDownload)}
           />
