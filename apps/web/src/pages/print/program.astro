@@ -21,7 +21,7 @@ import {
   getEntourage,
   getReadings,
 } from "../../lib/directus";
-import { formatDate } from "../../lib/utils/format";
+import { formatDate, formatTime } from "../../lib/utils/format";
 import PrintLayout from "@layouts/PrintLayout.astro";
 import FoldLine from "@components/FoldLine.astro";
 import ProgramCover from "@components/print/ProgramCover.astro";
@@ -55,22 +55,20 @@ const weddingDateLabel = formatDate(
 const groomFull = getFullName(settings.groom!);
 const brideFull = getFullName(settings.bride!);
 
-function formatTime(t: string | undefined | null, fallback = "TBD") {
-  if (!t) return fallback;
-  const [h, m] = t.split(":").map(Number);
-  if (!h || (!m && m !== 0)) return fallback;
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+/** Shared luxon formatter, with a fallback for times that aren't set. */
+function fmtTime(t: string | undefined | null, fallback = "TBD") {
+  return t ? formatTime(t) : fallback;
 }
 
 const BASE_URL =
   import.meta.env.PUBLIC_SITE_URL ?? "https://wedding.aazucena.com";
-const ceremonyTime = formatTime(ceremony.start_time);
+const ceremonyTime = fmtTime(ceremony.start_time);
 const venueName = ceremony.venue?.name ?? "Lethbridge, Alberta";
 const receptionVenueName = reception.venue?.name ?? "Reception Venue TBD";
 const receptionAddress = reception.venue?.address_line1
   ? `${reception.venue.address_line1}, ${reception.venue.city ?? "Lethbridge"}, AB`
   : "";
-const receptionTime = formatTime(reception.start_time);
+const receptionTime = fmtTime(reception.start_time);
 ---
 
 <PrintLayout

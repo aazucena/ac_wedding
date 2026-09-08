@@ -5,7 +5,7 @@ export const prerender = true;
 // Front: timeline   Back: venue + hashtag + table number
 
 import { getSettings, getReception } from "@lib/directus";
-import { formatDate } from "@lib/utils/format";
+import { formatDate, formatTime } from "@lib/utils/format";
 import PrintLayout from "@layouts/PrintLayout.astro";
 import Hashtag from "@components/Hashtag.astro";
 import CardWatermark from "@components/CardWatermark.astro";
@@ -25,11 +25,9 @@ const groomFirst = settings.groom?.first_name ?? "Aldrin";
 const brideFirst = settings.bride?.first_name ?? "Christine";
 const weddingDateLabel = formatDate(settings.wedding_date ?? "2026-09-26");
 
+/** Shared luxon formatter, with a fallback for times that aren't set. */
 function fmt(t: string | null | undefined, fallback = "") {
-  if (!t) return fallback;
-  const [h, m] = t.split(":").map(Number);
-  if (!h || !m) return fallback;
-  return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  return t ? formatTime(t) : fallback;
 }
 
 const fallbackTimeline = [
