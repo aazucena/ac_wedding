@@ -1,30 +1,42 @@
-let currentFace = "front";
+// Thank You card preview — style switcher + paper-size switcher.
+// Buttons are discovered by data attribute, so adding a style or paper size
+// needs no change here.
+//
+// Initial state can be driven from the URL, which keeps a chosen style
+// linkable:  /print/thank-you?style=b&paper=2up
+(function () {
+  var STYLES = ["a", "b", "c"];
+  var PAPERS = ["5x7", "letter", "a4", "2up"];
 
-function toggleFlip() {
-  currentFace = currentFace === "front" ? "back" : "front";
-  syncUI();
-}
+  function activate(selector, key, selected) {
+    document.querySelectorAll(selector).forEach(function (btn) {
+      btn.classList.toggle("active", btn.dataset[key] === selected);
+    });
+  }
 
-function showFace(face) {
-  currentFace = face;
-  syncUI();
-}
+  function setVariant(id) {
+    document.querySelectorAll(".variant-pane").forEach(function (pane) {
+      pane.classList.toggle("is-active", pane.dataset.pane === id);
+    });
+    activate("[data-variant-btn]", "variantBtn", id);
+  }
 
-function setPaper(paper) {
-  document.body.dataset.paper = paper;
-  document.getElementById("btn5x7").classList.toggle("active", paper === "5x7");
-  document
-    .getElementById("btnLetter")
-    .classList.toggle("active", paper === "letter");
-  document.getElementById("btnA4").classList.toggle("active", paper === "a4");
-}
+  function setPaper(paper) {
+    document.body.dataset.paper = paper;
+    activate("[data-paper-btn]", "paperBtn", paper);
+  }
 
-function syncUI() {
-  const flipper = document.getElementById("flipper");
-  const btnFront = document.getElementById("btnFront");
-  const btnBack = document.getElementById("btnBack");
-  if (!flipper || !btnFront || !btnBack) return;
-  flipper.classList.toggle("is-flipped", currentFace === "back");
-  btnFront.classList.toggle("active", currentFace === "front");
-  btnBack.classList.toggle("active", currentFace === "back");
-}
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-variant-btn], [data-paper-btn]");
+    if (!btn) return;
+    if (btn.dataset.variantBtn) setVariant(btn.dataset.variantBtn);
+    else setPaper(btn.dataset.paperBtn);
+  });
+
+  var params = new URLSearchParams(location.search);
+  var style = params.get("style");
+  var paper = params.get("paper");
+
+  setVariant(STYLES.indexOf(style) >= 0 ? style : STYLES[0]);
+  setPaper(PAPERS.indexOf(paper) >= 0 ? paper : PAPERS[0]);
+})();

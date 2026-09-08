@@ -1,0 +1,135 @@
+---
+// src/components/print/ThankYouCard.astro
+// One single-sided 5×7 thank-you card face.
+//
+// Three interchangeable designs are selected via `variant`; all of them carry
+// the same content — "Thank You", the salutation, both message paragraphs, the
+// closing line and both names. The layout differences live entirely in
+// thank-you.css, keyed off [data-variant], so the copy below is written once.
+//
+//   a — "Letter"        centred letter, gradient accent bars, logo footer
+//   b — "Framed"        hairline frame with corner gems, no accent bars
+//   c — "Monogram band" tinted header band with wax seal + names
+
+import { Image } from "astro:assets";
+import CardWatermark from "@components/CardWatermark.astro";
+import Hashtag from "@components/Hashtag.astro";
+import AccentMark from "@assets/accent_mark.png";
+import MinimalMark from "@assets/minimal.png";
+import StackedImg from "@assets/stacked.png";
+
+interface Props {
+  variant: "a" | "b" | "c";
+  groomFirst: string;
+  brideFirst: string;
+  weddingDate: string;
+  hashtag?: string | null;
+  class?: string;
+}
+
+const {
+  variant,
+  groomFirst,
+  brideFirst,
+  weddingDate,
+  hashtag,
+  class: className,
+} = Astro.props;
+
+const SALUTATION = "To our dearest friends & families,";
+const CLOSING = "With our dearest love,";
+const MESSAGE = [
+  "Words cannot fully capture the gratitude we carry in our hearts. Having you with us on our wedding day was one of the greatest gifts we could have asked for — your presence, your warmth, and your joy made our celebration truly complete.",
+  "Thank you for your love, your generous blessings, and for being part of the beginning of our forever. We are so deeply grateful to have each of you in our lives, and we look forward to sharing many more beautiful moments together.",
+];
+
+---
+
+<div class:list={["card", "ty-card", className]} data-variant={variant}>
+  {variant === "a" && <div class="ty-accent-top" />}
+
+  {
+    variant === "c" && (
+      <div class="ty-band">
+        <Image src={StackedImg} class="ty-band-lockup" alt="" />
+        <div class="ty-band-date">{weddingDate}</div>
+      </div>
+    )
+  }
+
+  <div class="ty-body">
+    <CardWatermark opacity={0.04} size={160} />
+
+    {
+      variant === "b" && (
+        <div class="ty-frame" aria-hidden="true">
+          <span class="ty-frame-gem tl">✦</span>
+          <span class="ty-frame-gem tr">✦</span>
+          <span class="ty-frame-gem bl">✦</span>
+          <span class="ty-frame-gem br">✦</span>
+        </div>
+      )
+    }
+
+    <div class="ty-content">
+      {variant === "a" && <Image src={AccentMark} class="ty-accent" alt="" />}
+      {variant === "b" && <div class="ty-eyebrow">With Gratitude</div>}
+
+      <div class="ty-title">Thank You</div>
+
+      <div class="ty-rule">
+        <span class="ty-rule-line"></span>
+        <span class="ty-rule-gem">✦</span>
+        <span class="ty-rule-line"></span>
+      </div>
+
+      <div class="ty-salutation">{SALUTATION}</div>
+
+      <div class="ty-message">
+        {MESSAGE.map((para) => <p>{para}</p>)}
+      </div>
+
+      {
+        variant === "b" && (
+          <div class="ty-rule ty-rule-lower">
+            <span class="ty-rule-line" />
+            <span class="ty-rule-gem">✦</span>
+            <span class="ty-rule-line" />
+          </div>
+        )
+      }
+
+      <div class="ty-closing">
+        <div class="ty-closing-line">{CLOSING}</div>
+        <div class="ty-names">
+          {groomFirst}<span class="ty-amp">&amp;</span>{brideFirst}
+        </div>
+      </div>
+
+      {
+        variant === "b" && (
+          <Image src={MinimalMark} class="ty-seal-mark" alt="" />
+        )
+      }
+
+      {variant !== "c" && <div class="ty-date">{weddingDate}</div>}
+      {
+        variant !== "a" && (
+          <Hashtag tag={hashtag} class="ty-inline-hashtag" />
+        )
+      }
+    </div>
+  </div>
+
+  {
+    variant === "a" && (
+      <div class="ty-footer">
+        <Image src={StackedImg} class="ty-footer-logo" alt="" />
+        <span class="ty-footer-gem">✦</span>
+        <Hashtag tag={hashtag} class="ty-footer-hashtag" />
+      </div>
+    )
+  }
+
+  {variant === "a" && <div class="ty-accent-bottom" />}
+</div>

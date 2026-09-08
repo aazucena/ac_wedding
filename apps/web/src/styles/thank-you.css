@@ -1,244 +1,168 @@
+/* Thank You Card — single-sided 5×7, three interchangeable styles.
+ *
+ * Structure (see pages/print/thank-you.astro + components/print/ThankYouCard.astro):
+ *   .variant-pane[data-variant]  one per style; only .is-active is rendered
+ *     .sheet                     the printed page box; goes flex-row for 2-up
+ *       .ty-card                 the 5×7 face
+ *       .ty-card.card-dupe       second copy, 2-up only
+ */
+
+/* ══ Print pages ═══════════════════════════════════════════ */
 @media print {
   /* 5×7 native */
   @page {
-    size: 5in 7in portrait;
+    size: 5in 7in;
     margin: 0;
   }
 
-  /* Named pages for standard-paper + cut mode */
+  /* Named pages for standard-paper + cut modes */
   @page ty-letter {
-    size: 8.5in 11in portrait;
+    size: 8.5in 11in;
     margin: 0;
   }
   @page ty-a4 {
-    size: 210mm 297mm portrait;
+    size: 210mm 297mm;
+    margin: 0;
+  }
+  @page ty-2up {
+    size: 11in 8.5in;
     margin: 0;
   }
 
-  /* Assign named pages and centre the card on the larger sheet */
-  body[data-paper="letter"] .face {
+  /* Assign named pages and centre the card(s) on the larger sheet */
+  body[data-paper="letter"] .sheet {
     page: ty-letter;
     width: 8.5in;
     min-height: 11in;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
   }
-  body[data-paper="a4"] .face {
+  body[data-paper="a4"] .sheet {
     page: ty-a4;
     width: 210mm;
     min-height: 297mm;
+  }
+  body[data-paper="2up"] .sheet {
+    page: ty-2up;
+    width: 11in;
+    min-height: 8.5in;
+  }
+  body[data-paper="letter"] .sheet,
+  body[data-paper="a4"] .sheet,
+  body[data-paper="2up"] .sheet {
     display: flex !important;
     align-items: center;
     justify-content: center;
+    transform: none !important;
   }
 
-  /* Dashed cut guides around the card */
-  body[data-paper="letter"] .card,
-  body[data-paper="a4"] .card {
+  /* Dashed cut guides around each card on oversized sheets */
+  body[data-paper="letter"] .ty-card,
+  body[data-paper="a4"] .ty-card,
+  body[data-paper="2up"] .ty-card {
     outline: 0.5pt dashed rgba(130, 130, 130, 0.8);
     outline-offset: 8px;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-
-  .photo-placeholder {
-    border-color: #ccc;
-  }
-  .photo-hint {
-    display: none;
-  }
 }
 
-/* ── Card shell ───────────────────────────────────────────── */
-.card {
-  width: 5in;
-  height: 7in;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+/* ══ Pane + sheet ══════════════════════════════════════════ */
+/* Governs screen *and* print, so only the chosen style is printed. */
+.variant-pane {
+  display: none;
 }
-.accent-bar {
-  height: 5px;
-  width: 100%;
-  flex-shrink: 0;
-  background: linear-gradient(
-    90deg,
-    var(--cp) 0%,
-    var(--cs) 50%,
-    var(--cp) 100%
-  );
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-.accent-bar-bottom {
-  height: 5px;
-  width: 100%;
-  flex-shrink: 0;
-  background: linear-gradient(
-    90deg,
-    var(--cs) 0%,
-    var(--cp) 50%,
-    var(--cs) 100%
-  );
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-/* ── FRONT ────────────────────────────────────────────────── */
-.photo-area {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-  background: #f0ece6;
-}
-.photo-placeholder {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  border: 1.5px dashed rgba(197, 184, 224, 0.6);
-  margin: 16px;
-  border-radius: 2px;
-}
-.photo-icon {
-  width: 40px;
-  height: 40px;
-  opacity: 0.3;
-}
-.photo-hint {
-  font-family: var(--fb);
-  font-size: 9px;
-  font-weight: 500;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: var(--muted);
-  opacity: 0.7;
-}
-.photo-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.variant-pane.is-active {
   display: block;
 }
-.photo-area::before,
-.photo-area::after {
-  content: "✦";
-  position: absolute;
-  font-size: 8px;
-  color: rgba(197, 184, 224, 0.5);
-  z-index: 1;
+
+.sheet {
+  display: block;
 }
-.photo-area::before {
-  top: 10px;
-  left: 12px;
-}
-.photo-area::after {
-  top: 10px;
-  right: 12px;
+body[data-paper="2up"] .sheet {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5in;
 }
 
-.front-title {
+/* Second copy only exists for the 2-up cut sheet. Specificity has to match
+ * `.sheet .ty-card` below, which also sets display. */
+.sheet .ty-card.card-dupe {
+  display: none;
+}
+body[data-paper="2up"] .sheet .ty-card.card-dupe {
+  display: flex;
+}
+
+/* Screen-only: shrink the 10.5in-wide 2-up row so it fits the viewport */
+@media screen {
+  body[data-paper="2up"] .sheet {
+    transform: scale(0.62);
+    transform-origin: top center;
+    margin-bottom: -240px;
+  }
+}
+
+/* ══ Card shell ════════════════════════════════════════════ */
+.sheet .ty-card {
+  width: 5in;
+  height: 7in;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 18px 32px 14px;
-  text-align: center;
-  background: var(--ivory);
-  gap: 4px;
-}
-.title-script {
-  font-family: var(--fd);
-  font-size: 52px;
-  font-weight: 300;
-  font-style: italic;
-  color: var(--dark);
-  line-height: 1;
-  letter-spacing: -0.5px;
-}
-.title-rule {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  margin: 6px 0;
-}
-.title-rule-line {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(197, 184, 224, 0.6),
-    transparent
-  );
-}
-.title-rule-gem {
-  font-size: 7px;
-  color: var(--cs);
-}
-.title-names {
-  font-family: var(--fb);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: var(--dark);
-}
-.title-date {
-  font-family: var(--fd);
-  font-size: 12px;
-  font-style: italic;
-  color: var(--muted);
-  margin-top: 2px;
+  overflow: hidden;
 }
 
-/* ── BACK ─────────────────────────────────────────────────── */
-.back-body {
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 28px 40px 20px;
-  text-align: center;
-  gap: 0;
-}
-.back-accent {
-  width: 30px;
-  height: 30px;
-  opacity: 0.45;
-  margin-bottom: 14px;
+.ty-accent-top,
+.ty-accent-bottom {
+  height: 5px;
+  width: 100%;
+  flex-shrink: 0;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
-.back-title {
+.ty-accent-top {
+  background: linear-gradient(90deg, var(--cp) 0%, var(--cs) 50%, var(--cp) 100%);
+}
+.ty-accent-bottom {
+  background: linear-gradient(90deg, var(--cs) 0%, var(--cp) 50%, var(--cs) 100%);
+}
+
+.ty-body {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.ty-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+
+/* ══ Shared letter typography ══════════════════════════════ */
+.ty-title {
   font-family: var(--fd);
-  font-size: 60px;
   font-weight: 300;
   font-style: italic;
   color: var(--dark);
   line-height: 1;
   letter-spacing: -0.5px;
-  margin-bottom: 18px;
 }
-.letter-salutation {
-  font-family: var(--fd);
-  font-size: 16px;
-  font-style: italic;
-  font-weight: 400;
-  color: var(--dark);
-  line-height: 1.4;
-  margin-bottom: 14px;
+.ty-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.letter-rule {
-  width: 40px;
+.ty-rule-line {
+  flex: 1;
   height: 1px;
   background: linear-gradient(
     90deg,
@@ -246,48 +170,108 @@
     rgba(197, 184, 224, 0.7),
     transparent
   );
-  margin-bottom: 14px;
-  flex-shrink: 0;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
-.letter-body {
+.ty-rule-gem {
+  font-size: 7px;
+  color: var(--cs);
+  line-height: 1;
+}
+.ty-salutation {
   font-family: var(--fd);
-  font-size: 13.5px;
+  font-style: italic;
   font-weight: 400;
-  line-height: 1.75;
-  color: #2c2c3e;
-  max-width: 100%;
+  color: var(--dark);
+  line-height: 1.4;
 }
-.letter-closing {
-  margin-top: 36px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-}
-.closing-line {
+.ty-message {
   font-family: var(--fd);
-  font-size: 14px;
+  font-weight: 400;
+  color: #2c2c3e;
+}
+.ty-message p + p {
+  margin-top: 0.85em;
+}
+.ty-closing-line {
+  font-family: var(--fd);
   font-style: italic;
   color: var(--dark);
   line-height: 1.5;
 }
-.closing-names {
+.ty-names {
   font-family: var(--fd);
-  font-size: 36px;
   font-weight: 300;
   font-style: italic;
   color: var(--dark);
   line-height: 1.1;
-  margin-top: 4px;
   letter-spacing: -0.5px;
 }
-.closing-amp {
-  font-size: 28px;
+.ty-amp {
   color: var(--cs);
-  margin: 0 4px;
+  margin: 0 5px;
+}
+.ty-date {
+  font-family: var(--fd);
+  font-style: italic;
+  color: var(--muted);
+}
+.ty-inline-hashtag {
+  font-family: var(--fd);
+  font-style: italic;
+  color: var(--muted);
 }
 
-.back-footer {
+/* ══════════════════════════════════════════════════════════
+   VARIANT A — "Letter"
+   Centred letter, gradient accent bars top and bottom, logo footer.
+   ══════════════════════════════════════════════════════════ */
+[data-variant="a"] .ty-body {
+  padding: 26px 40px 16px;
+}
+[data-variant="a"] .ty-accent {
+  width: 52px;
+  height: 52px;
+  opacity: 0.45;
+  margin-bottom: 12px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+[data-variant="a"] .ty-title {
+  font-size: 58px;
+  margin-bottom: 14px;
+}
+[data-variant="a"] .ty-rule {
+  width: 100%;
+  margin-bottom: 12px;
+}
+[data-variant="a"] .ty-salutation {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+[data-variant="a"] .ty-message {
+  font-size: 13.5px;
+  line-height: 1.75;
+}
+[data-variant="a"] .ty-closing {
+  margin-top: 28px;
+}
+[data-variant="a"] .ty-closing-line {
+  font-size: 14px;
+}
+[data-variant="a"] .ty-names {
+  font-size: 36px;
+  margin-top: 4px;
+}
+[data-variant="a"] .ty-amp {
+  font-size: 28px;
+}
+[data-variant="a"] .ty-date {
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+.ty-footer {
   position: relative;
   z-index: 1;
   display: flex;
@@ -298,14 +282,211 @@
   border-top: 1px solid var(--border);
   flex-shrink: 0;
 }
-.footer-hashtag {
+/* Deliberately above the 14-18px house footer convention (mass.css,
+ * enclosure.css) — the medallion-plus-script lockup is illegible there. */
+.ty-footer-logo {
+  height: 30px;
+  width: auto;
+  opacity: 0.45;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.ty-footer-gem {
+  font-size: 6px;
+  color: var(--cs);
+}
+.ty-footer-hashtag {
   font-family: var(--fd);
   font-size: 12px;
   font-style: italic;
   color: var(--muted);
 }
-.footer-logo {
-  height: 16px;
-  opacity: 0.45;
-  width: auto;
+
+/* ══════════════════════════════════════════════════════════
+   VARIANT B — "Framed"
+   Double hairline frame with corner gems; no accent bars, no logo.
+   ══════════════════════════════════════════════════════════ */
+[data-variant="b"] .ty-body {
+  padding: 0 48px;
+}
+.ty-frame {
+  position: absolute;
+  inset: 22px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.ty-frame::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(197, 184, 224, 0.35);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.ty-frame-gem {
+  position: absolute;
+  font-size: 7px;
+  line-height: 1;
+  color: var(--cs);
+  background: var(--ivory);
+  padding: 2px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.ty-frame-gem.tl {
+  top: -4px;
+  left: -4px;
+}
+.ty-frame-gem.tr {
+  top: -4px;
+  right: -4px;
+}
+.ty-frame-gem.bl {
+  bottom: -4px;
+  left: -4px;
+}
+.ty-frame-gem.br {
+  bottom: -4px;
+  right: -4px;
+}
+
+.ty-eyebrow {
+  font-family: var(--fb);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+[data-variant="b"] .ty-title {
+  font-size: 64px;
+  margin-bottom: 10px;
+}
+[data-variant="b"] .ty-rule {
+  width: 130px;
+  margin-bottom: 14px;
+  gap: 0; /* gem is hidden here — keep the hairline continuous */
+}
+[data-variant="b"] .ty-rule-gem {
+  display: none;
+}
+[data-variant="b"] .ty-rule-lower {
+  margin: 18px 0;
+}
+[data-variant="b"] .ty-salutation {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+[data-variant="b"] .ty-message {
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 340px;
+}
+[data-variant="b"] .ty-closing-line {
+  font-size: 14px;
+}
+[data-variant="b"] .ty-names {
+  font-size: 38px;
+  margin-top: 2px;
+}
+[data-variant="b"] .ty-amp {
+  font-size: 29px;
+}
+.ty-seal-mark {
+  width: 54px;
+  height: auto;
+  margin-top: 12px;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+[data-variant="b"] .ty-date {
+  font-family: var(--fb);
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 16px;
+}
+[data-variant="b"] .ty-inline-hashtag {
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   VARIANT C — "Monogram band"
+   Full-bleed tinted header band with wax seal; names stated twice.
+   ══════════════════════════════════════════════════════════ */
+.ty-band {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 32px 18px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--cp) 24%, var(--ivory)),
+    color-mix(in srgb, var(--cs) 20%, var(--ivory))
+  );
+  border-bottom: 1px solid var(--border);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+/* The real lockup — medallion + "Aldrin & Christine" in the brand script.
+ * It supplies the names itself, so no type is set over it. */
+.ty-band-lockup {
+  width: 150px;
+  height: auto;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.ty-band-date {
+  font-family: var(--fb);
+  font-size: 8px;
+  font-weight: 400;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+[data-variant="c"] .ty-body {
+  padding: 24px 40px 20px;
+}
+[data-variant="c"] .ty-title {
+  font-size: 56px;
+  margin-bottom: 12px;
+}
+[data-variant="c"] .ty-rule {
+  width: 150px;
+  margin-bottom: 14px;
+}
+[data-variant="c"] .ty-salutation {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+[data-variant="c"] .ty-message {
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 360px;
+}
+[data-variant="c"] .ty-closing {
+  margin-top: 24px;
+}
+[data-variant="c"] .ty-closing-line {
+  font-size: 13px;
+}
+[data-variant="c"] .ty-names {
+  font-size: 26px;
+  margin-top: 2px;
+}
+[data-variant="c"] .ty-amp {
+  font-size: 21px;
+}
+[data-variant="c"] .ty-inline-hashtag {
+  font-size: 12px;
+  margin-top: 16px;
 }

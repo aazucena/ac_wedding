@@ -1,153 +1,107 @@
 ---
 export const prerender = true;
 // apps/web/src/pages/print/thank-you.astro
-// Thank You Card — two-sided 5×7 vertical card
-// Front: couple photo placeholder + "Thank You" title + names
-// Back:  letter — "To our dearest friends & families" + script + closing
+// Thank You Card — single-sided 5×7 vertical card, three selectable styles.
+//
+// The printer available can only print one side, so each style puts the whole
+// message — "Thank You", the salutation, both paragraphs, the closing and both
+// names — on a single face. No photo.
+//
+// Only the active .variant-pane is displayed, on screen and in print, so
+// printing emits exactly the style currently selected.
 
 import { getSettings } from "@lib/directus";
 import { formatDate } from "@lib/utils/format";
 import PrintLayout from "@layouts/PrintLayout.astro";
-import Hashtag from "@components/Hashtag.astro";
-import CardWatermark from "@components/CardWatermark.astro";
-import StackedImg from "@assets/stacked.png";
-import AccentMark from "@assets/accent_mark.png";
-import { Image } from "astro:assets";
+import ThankYouCard from "@components/print/ThankYouCard.astro";
 import "~/styles/thank-you.css";
-
-const CouplePhoto = null;
 
 const settings = await getSettings();
 
-const groomFirst = settings.groom?.first_name ?? "Aldrin";
-const brideFirst = settings.bride?.first_name ?? "Christine";
+// Familiar names, not legal first names — matches place-cards/escort-cards
+// and keeps the monogram as "A&C" (cf. the #AlTine2026 hashtag).
+const groomFirst =
+  settings.groom?.preferred_name ?? settings.groom?.first_name ?? "Aldrin";
+const brideFirst =
+  settings.bride?.preferred_name ?? settings.bride?.first_name ?? "Christine";
 
 const weddingDate = formatDate(settings.wedding_date ?? "2026-09-26");
+
+const VARIANTS = [
+  { id: "a", label: "Letter" },
+  { id: "b", label: "Framed" },
+  { id: "c", label: "Monogram" },
+] as const;
+
+const PAPERS = [
+  { id: "5x7", label: "5×7 in" },
+  { id: "letter", label: "Letter" },
+  { id: "a4", label: "A4" },
+  { id: "2up", label: "2-up" },
+] as const;
 ---
 
 <PrintLayout
   title="Thank You Card — Print"
   cardWidth="5in"
   cardHeight="7in"
-  toolbarHint="5 × 7 in · Portrait · Double-sided · Select Letter or A4 to print on standard paper and cut"
+  toolbarHint="5 × 7 in · Portrait · Single-sided · Pick a style, then a paper size. 2-up puts two cards on one landscape Letter sheet to cut apart."
 >
   <div class="toolbar-controls" slot="toolbar-controls">
     <div class="seg-control">
-      <button class="seg-btn active" id="btnFront" onclick="showFace('front')"
-        >Front</button
-      >
-      <button class="seg-btn" id="btnBack" onclick="showFace('back')"
-        >Back</button
-      >
+      {
+        VARIANTS.map((v, i) => (
+          <button
+            type="button"
+            class:list={["seg-btn", i === 0 && "active"]}
+            data-variant-btn={v.id}
+          >
+            {v.label}
+          </button>
+        ))
+      }
     </div>
     <div class="seg-control">
-      <button class="seg-btn active" id="btn5x7" onclick="setPaper('5x7')"
-        >5×7 in</button
-      >
-      <button class="seg-btn" id="btnLetter" onclick="setPaper('letter')"
-        >Letter</button
-      >
-      <button class="seg-btn" id="btnA4" onclick="setPaper('a4')">A4</button>
+      {
+        PAPERS.map((p, i) => (
+          <button
+            type="button"
+            class:list={["seg-btn", i === 0 && "active"]}
+            data-paper-btn={p.id}
+          >
+            {p.label}
+          </button>
+        ))
+      }
     </div>
   </div>
 
-  <div class="flip-container" id="flipContainer" onclick="toggleFlip()">
-    <div class="flipper" id="flipper">
-      <!-- ████ FRONT ████ -->
-      <div class="face front">
-        <div class="card">
-          <div class="accent-bar"></div>
-
-          <!-- Photo area -->
-          <div class="photo-area">
-            {
-              CouplePhoto ? (
-                <Image
-                  src={CouplePhoto}
-                  alt={`${groomFirst} & ${brideFirst}`}
-                  class="photo-img"
-                />
-              ) : (
-                <div class="photo-placeholder no-print">
-                  <svg
-                    class="photo-icon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.2"
-                  >
-                    <rect x="3" y="8" width="18" height="13" rx="2" />
-                    <circle cx="12" cy="14" r="3.5" />
-                    <path d="M9 8V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                  </svg>
-                  <span class="photo-hint">Add couple photo</span>
-                </div>
-              )
-            }
-          </div>
-
-          <!-- Title section -->
-          <div class="front-title">
-            <div class="title-script">Thank You</div>
-            <div class="title-rule">
-              <div class="title-rule-line"></div>
-              <span class="title-rule-gem">✦</span>
-              <div class="title-rule-line"></div>
-            </div>
-            <div class="title-names">{groomFirst} &amp; {brideFirst}</div>
-            <div class="title-date">{weddingDate}</div>
-          </div>
-
-          <div class="accent-bar-bottom"></div>
+  {
+    VARIANTS.map((v, i) => (
+      <div
+        class:list={["variant-pane", i === 0 && "is-active"]}
+        data-pane={v.id}
+      >
+        <div class="sheet">
+          <ThankYouCard
+            variant={v.id}
+            groomFirst={groomFirst}
+            brideFirst={brideFirst}
+            weddingDate={weddingDate}
+            hashtag={settings.hashtag}
+          />
+          <ThankYouCard
+            variant={v.id}
+            class="card-dupe"
+            groomFirst={groomFirst}
+            brideFirst={brideFirst}
+            weddingDate={weddingDate}
+            hashtag={settings.hashtag}
+          />
         </div>
       </div>
-
-      <!-- ████ BACK ████ -->
-      <div class="face back">
-        <div class="card" style="position:relative;">
-          <div class="accent-bar"></div>
-
-          <CardWatermark opacity={0.04} size={160} />
-
-          <div class="back-body">
-            <Image src={AccentMark} class="back-accent" alt="" />
-            <div class="back-title">Thank You 💕</div>
-
-            <div class="letter-salutation">
-              To our dearest friends &amp; families,
-            </div>
-
-            <div class="letter-rule"></div>
-
-            <div class="letter-body">
-              Words cannot fully capture the gratitude we carry in our hearts.
-              Having you with us on our wedding day was one of the greatest
-              gifts we could have asked for, especially your presence, your
-              warmth, and your joy made our celebration truly complete.
-              <br /><br />
-              Thank you for your love, your generous blessings, and for being part
-              of the beginning of our forever. We are so deeply grateful to have each
-              of you in our lives, and we look forward to sharing many more beautiful
-              moments together.
-            </div>
-
-            <div class="letter-closing">
-              <div class="closing-line">With our dearest love,</div>
-              <div class="closing-names">
-                {groomFirst}<span class="closing-amp">&amp;</span>{brideFirst}
-              </div>
-            </div>
-          </div>
-
-          <div class="back-footer">
-            <Image src={StackedImg} class="footer-logo" alt="" />
-            <span style="font-size:6px;color:var(--cs);">✦</span>
-            <Hashtag tag={settings.hashtag} class="footer-hashtag" />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    ))
+  }
 </PrintLayout>
 
 <script is:inline src="/scripts/thank-you-preview.js"></script>
