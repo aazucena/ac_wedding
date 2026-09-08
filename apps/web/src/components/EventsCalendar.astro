@@ -6,7 +6,8 @@ interface CalendarEvent {
   id: string;
   title: string;
   start: string; // 'YYYY-MM-DD HH:mm'
-  end: string;
+  end: string; // equals `start` when the event has no end time
+  timeLabel: string; // pre-formatted for the hover tooltip
   location?: string;
   calendarId: string;
 }

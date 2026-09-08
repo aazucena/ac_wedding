@@ -7,7 +7,8 @@ import Hashtag from "~/components/Hashtag.astro";
 import EventsCalendar from "../components/EventsCalendar.astro";
 import EventsTimeline from "../components/EventsTimeline.astro";
 import { getSettings, getEvents } from "../lib/directus";
-import { formatDate } from "../lib/utils/format";
+import { eventRange } from "../lib/date";
+import { formatDate, formatTime } from "../lib/utils/format";
 import "../styles/events.css";
 
 const [settings, events] = await Promise.all([getSettings(), getEvents()]);
@@ -17,26 +18,30 @@ const bride = settings.bride?.first_name ?? "Christine";
 const weddingDate = settings.wedding_date ?? "2026-09-26";
 const weddingDateLabel = formatDate(weddingDate);
 
+/** schedule-x payload format, and Directus-style time for formatTime(). */
+const CAL_FMT = "yyyy-MM-dd HH:mm";
+const TIME_FMT = "HH:mm:ss";
+
 // Build synthetic timeline entries from ceremony / reception settings
 type TimelineEvent = (typeof events)[number] & { icsKey?: string };
-
-function addMins(time: string, mins: number): string {
-  const [h = 0, m = 0] = time.slice(0, 5).split(":").map(Number);
-  const total = h * 60 + m + mins;
-  return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}:00`;
-}
 
 const settingsTimelineEvents: TimelineEvent[] = [];
 
 if (settings.ceremony?.start_time) {
-  const dur = settings.ceremony.estimated_duration;
+  // The ceremony has no end_time field — derive one from estimated_duration.
+  const { end, hasEnd } = eventRange(
+    weddingDate,
+    settings.ceremony.start_time,
+    null,
+    settings.ceremony.estimated_duration,
+  );
   settingsTimelineEvents.push({
     id: "__ceremony",
     status: "published",
     name: "Wedding Ceremony",
     date: weddingDate,
     start_time: settings.ceremony.start_time,
-    end_time: dur ? addMins(settings.ceremony.start_time, dur) : undefined,
+    end_time: hasEnd ? end.toFormat(TIME_FMT) : undefined,
     venue: settings.ceremony.venue ?? undefined,
     public: true,
     icsKey: "ceremony",
@@ -50,7 +55,7 @@ if (settings.reception?.start_time) {
     name: "Wedding Reception",
     date: weddingDate,
     start_time: settings.reception.start_time,
-    end_time: settings.reception.end_time ?? "21:00:00",
+    end_time: settings.reception.end_time ?? undefined,
     venue: settings.reception.venue ?? undefined,
     public: true,
     icsKey: "reception",
@@ -77,75 +82,75 @@ const groupedDates = [...byDate.keys()].sort().map((date) => ({
 
 // ── Calendar events ──────────────────────────────────────────────────────────
 
-function toCalendarTime(date: string, time?: string | null): string {
-  const t = time ? time.slice(0, 5) : "00:00";
-  return `${date} ${t}`;
-}
-
-function defaultEnd(
-  date: string,
-  start?: string | null,
-  end?: string | null,
-): string {
-  if (end) return toCalendarTime(date, end);
-  if (!start) return `${date} 01:00`;
-  const [h = 0, m = 0] = start.slice(0, 5).split(":").map(Number);
-  const endH = String((h + 1) % 24).padStart(2, "0");
-  return `${date} ${endH}:${String(m).padStart(2, "0")}`;
+/**
+ * schedule-x payload for one event. When an event has no end time, end === start
+ * — schedule-x then renders a single time rather than a fabricated range. The
+ * `timeLabel` is formatted here so the client tooltip does no date math.
+ */
+function toCalendarEvent(opts: {
+  id: string;
+  title: string;
+  date: string;
+  start?: string | null;
+  end?: string | null;
+  durationMinutes?: number | null;
+  location?: string | null;
+}) {
+  const r = eventRange(opts.date, opts.start, opts.end, opts.durationMinutes);
+  const startLabel = formatTime(r.start.toFormat(TIME_FMT));
+  return {
+    id: opts.id,
+    title: opts.title,
+    start: r.start.toFormat(CAL_FMT),
+    end: r.end.toFormat(CAL_FMT),
+    timeLabel: r.hasEnd
+      ? `${startLabel} – ${formatTime(r.end.toFormat(TIME_FMT))}`
+      : startLabel,
+    ...(opts.location ? { location: opts.location } : {}),
+    calendarId: "wedding",
+  };
 }
 
 const calendarEvents = events
   .filter((ev) => ev.date)
-  .map((ev, i) => ({
-    id: String(i + 1),
-    title: ev.name,
-    start: toCalendarTime(ev.date!, ev.start_time),
-    end: defaultEnd(ev.date!, ev.start_time, ev.end_time),
-    ...(ev.venue?.name ? { location: ev.venue.name } : {}),
-    calendarId: "wedding",
-  }));
+  .map((ev, i) =>
+    toCalendarEvent({
+      id: String(i + 1),
+      title: ev.name,
+      date: ev.date!,
+      start: ev.start_time,
+      end: ev.end_time,
+      location: ev.venue?.name,
+    }),
+  );
 
 // Prepend ceremony & reception from settings as fixed wedding-day events
 const settingsEvents: typeof calendarEvents = [];
 
 if (settings.ceremony?.start_time) {
-  const dur = settings.ceremony.estimated_duration;
-  settingsEvents.push({
-    id: "ceremony",
-    title: "Wedding Ceremony",
-    start: toCalendarTime(weddingDate, settings.ceremony.start_time),
-    end: dur
-      ? (() => {
-          const [h = 0, m = 0] = settings.ceremony
-            .start_time!.slice(0, 5)
-            .split(":")
-            .map(Number);
-          const total = h * 60 + m + dur;
-          return `${weddingDate} ${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
-        })()
-      : defaultEnd(weddingDate, settings.ceremony.start_time, null),
-    ...(settings.ceremony.venue?.name
-      ? { location: settings.ceremony.venue.name }
-      : {}),
-    calendarId: "wedding",
-  });
+  settingsEvents.push(
+    toCalendarEvent({
+      id: "ceremony",
+      title: "Wedding Ceremony",
+      date: weddingDate,
+      start: settings.ceremony.start_time,
+      durationMinutes: settings.ceremony.estimated_duration,
+      location: settings.ceremony.venue?.name,
+    }),
+  );
 }
 
 if (settings.reception?.start_time) {
-  settingsEvents.push({
-    id: "reception",
-    title: "Wedding Reception",
-    start: toCalendarTime(weddingDate, settings.reception.start_time),
-    end: defaultEnd(
-      weddingDate,
-      settings.reception.start_time,
-      settings.reception.end_time ?? "21:00:00",
-    ),
-    ...(settings.reception.venue?.name
-      ? { location: settings.reception.venue.name }
-      : {}),
-    calendarId: "wedding",
-  });
+  settingsEvents.push(
+    toCalendarEvent({
+      id: "reception",
+      title: "Wedding Reception",
+      date: weddingDate,
+      start: settings.reception.start_time,
+      end: settings.reception.end_time,
+      location: settings.reception.venue?.name,
+    }),
+  );
 }
 
 const allCalendarEvents = [...settingsEvents, ...calendarEvents];

@@ -23,8 +23,10 @@ function mountCalendar(mount: HTMLElement) {
       .trim() || "#c9a8b8";
 
   const tz = "America/Edmonton" as const;
+  // timeLabel is formatted server-side for the tooltip only — schedule-x
+  // derives its own labels from start/end, so strip it before handing events over.
   const calEvents = (data.events as Array<Record<string, string>>).map(
-    (ev) => ({
+    ({ timeLabel: _timeLabel, ...ev }) => ({
       ...ev,
       id: ev.id ?? "",
       start: Temporal.ZonedDateTime.from(
@@ -87,13 +89,6 @@ function mountCalendar(mount: HTMLElement) {
 
 // ── Hover tooltip ────────────────────────────────────────────────────────
 
-function fmtTime(str: string): string {
-  const [h = 0, m = 0] = str.slice(11, 16).split(":").map(Number);
-  const ampm = h >= 12 ? "PM" : "AM";
-  const h12 = h % 12 || 12;
-  return `${h12}:${String(m).padStart(2, "0")} ${ampm}`;
-}
-
 function buildTooltipContent(tip: HTMLElement, ev: Record<string, string>) {
   tip.replaceChildren();
 
@@ -104,7 +99,7 @@ function buildTooltipContent(tip: HTMLElement, ev: Record<string, string>) {
 
   const timeEl = document.createElement("p");
   timeEl.className = "ct-time";
-  timeEl.textContent = `${fmtTime(ev.start ?? "")} – ${fmtTime(ev.end ?? "")}`;
+  timeEl.textContent = ev.timeLabel ?? "";
   tip.appendChild(timeEl);
 
   if (ev.location) {

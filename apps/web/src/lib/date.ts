@@ -40,6 +40,57 @@ export function toISODateString(
   return toDateTime(input, timezone).toISODate()!;
 }
 
+// ── Event ranges ──────────────────────────────────────────────────────────────
+
+/**
+ * Combine a Directus date (`YYYY-MM-DD`) with a time (`HH:mm` or `HH:mm:ss`)
+ * into a zoned DateTime. Missing or unparseable time → midnight.
+ */
+export function atTime(
+  date: string,
+  time?: string | null,
+  timezone = DEFAULT_TIMEZONE,
+): DateTime {
+  const dt = DateTime.fromISO(`${date}T${time ?? "00:00:00"}`, {
+    zone: timezone,
+  });
+  return dt.isValid ? dt : DateTime.fromISO(`${date}T00:00:00`, { zone: timezone });
+}
+
+export interface EventRange {
+  start: DateTime;
+  end: DateTime;
+  /** false when the event has no end — `end` is then a copy of `start`. */
+  hasEnd: boolean;
+}
+
+/**
+ * Resolve an event's start/end into concrete DateTimes.
+ *  - explicit end before start → next day (overnight event, e.g. 21:00 → 01:00)
+ *  - no end but a duration → start + duration
+ *  - no end and no duration → a point in time (end === start, hasEnd false)
+ *
+ * Never fabricates an end time: callers that require one (ICS/Google/Outlook
+ * exports) opt in via `hasEnd`, while display code renders the start alone.
+ */
+export function eventRange(
+  date: string,
+  start?: string | null,
+  end?: string | null,
+  durationMinutes?: number | null,
+  timezone = DEFAULT_TIMEZONE,
+): EventRange {
+  const s = atTime(date, start, timezone);
+  if (end) {
+    const e = atTime(date, end, timezone);
+    return { start: s, end: e < s ? e.plus({ days: 1 }) : e, hasEnd: true };
+  }
+  if (durationMinutes) {
+    return { start: s, end: s.plus({ minutes: durationMinutes }), hasEnd: true };
+  }
+  return { start: s, end: s, hasEnd: false };
+}
+
 // ── Duration ──────────────────────────────────────────────────────────────────
 
 /** Duration between two datetimes, normalised to hours + minutes. */

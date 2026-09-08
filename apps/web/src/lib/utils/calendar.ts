@@ -1,4 +1,10 @@
 // lib/utils/calendar.ts — helpers for building "Add to Calendar" deep links
+import { atTime, eventRange } from "../date";
+
+const ICS_FMT = "yyyyMMdd'T'HHmmss";
+
+/** Duration given to an event with no end time, for export targets that demand one. */
+export const EXPORT_FALLBACK_MINUTES = 60;
 
 export interface CalendarEvent {
   title: string;
@@ -36,18 +42,23 @@ export function buildOutlookUrl(e: CalendarEvent): string {
 
 /** Convert YYYY-MM-DD + HH:MM(:SS) → YYYYMMDDTHHMMSS */
 export function toCalDt(date: string, time?: string | null): string {
-  const t = (time ?? "00:00").slice(0, 5).replace(":", "");
-  return date.replace(/-/g, "") + "T" + t + "00";
+  return atTime(date, time).toFormat(ICS_FMT);
 }
 
-/** Derive an end datetime, defaulting to start + 1 hour if no end time given */
+/**
+ * End datetime for a calendar export. Uses the real end when one is set,
+ * rolling into the next day for overnight events. Endless events fall back to a
+ * one-hour block because Google, Outlook and ICS all require a concrete DTEND —
+ * unlike the on-page views, which render the start time alone.
+ */
 export function toCalEndDt(
   date: string,
   start?: string | null,
   end?: string | null,
 ): string {
-  if (end) return toCalDt(date, end);
-  const [h = 0, m = 0] = (start ?? "00:00").slice(0, 5).split(":").map(Number);
-  const endH = String((h + 1) % 24).padStart(2, "0");
-  return toCalDt(date, `${endH}:${String(m).padStart(2, "0")}`);
+  const r = eventRange(date, start, end);
+  const dt = r.hasEnd
+    ? r.end
+    : r.start.plus({ minutes: EXPORT_FALLBACK_MINUTES });
+  return dt.toFormat(ICS_FMT);
 }
