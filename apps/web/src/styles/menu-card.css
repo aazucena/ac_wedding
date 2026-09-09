@@ -1,16 +1,58 @@
+/* Menu Card — one face, selectable stock: 5×7 (default) or 4×9.
+ *
+ * Size is driven by body[data-size] (set by /scripts/menu-preview.js) and
+ * must be declared as a NAMED @page here, because @page size cannot be
+ * changed at runtime any other way. Same approach as thank-you.css.
+ *
+ * NOTE: `size` takes two lengths OR a named size + orientation keyword,
+ * never both — `4in 9in portrait` is invalid and silently falls back to
+ * Letter. Keep these as bare length pairs.
+ */
 @media print {
+  /* Fallback for the first paint, before the switcher sets data-size. */
   @page {
-    size: 4in 9in portrait;
+    size: 5in 7in;
     margin: 0;
+  }
+  @page menu-5x7 {
+    size: 5in 7in;
+    margin: 0;
+  }
+  @page menu-a5 {
+    size: A5 portrait;
+    margin: 0;
+  }
+  @page menu-4x9 {
+    size: 4in 9in;
+    margin: 0;
+  }
+  body[data-size="5x7"] .card {
+    page: menu-5x7;
+  }
+  body[data-size="a5"] .card {
+    page: menu-a5;
+  }
+  body[data-size="4x9"] .card {
+    page: menu-4x9;
   }
 }
 
 /* ── Card shell ───────────────────────────────────────────── */
 .card {
-  width: 4in;
+  width: 5in;
+  height: 7in;
   background: var(--ivory);
   border: 1px solid var(--border);
   box-shadow: 0 8px 40px rgba(26, 26, 46, 0.14);
+
+  /* WCAG 2.1 AAA — 1.4.6 Contrast (Enhanced), 7:1 for normal text.
+     The global --cs (1.79:1) and --muted (3.46:1) tokens both fail against
+     --ivory, so this card uses darkened, hue-matched inks. Hue is preserved
+     (lilac 260deg, grey 257deg); only lightness drops. Purely decorative
+     parts — accent bars, hairline rules, the watermark — are exempt. */
+  --cs-ink: #5d4195; /* 7.60:1 on --ivory */
+  --muted-ink: #534f5f; /* 7.62:1 on --ivory */
+
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -49,7 +91,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 28px 14px;
+  padding: 16px 28px 8px;
   text-align: center;
   gap: 4px;
 }
@@ -65,37 +107,16 @@
   font-weight: 700;
   letter-spacing: 3.5px;
   text-transform: uppercase;
-  color: var(--cs);
+  color: var(--cs-ink);
 }
 .header-title {
   font-family: var(--fd);
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 300;
   font-style: italic;
   color: var(--dark);
   line-height: 1;
   letter-spacing: -0.3px;
-}
-.header-rule {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  margin: 6px 0 4px;
-}
-.header-rule-line {
-  flex: 1;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(197, 184, 224, 0.6),
-    transparent
-  );
-}
-.header-rule-gem {
-  font-size: 6px;
-  color: var(--cs);
 }
 .header-names {
   font-family: var(--fb);
@@ -106,13 +127,13 @@
   color: var(--dark);
 }
 .header-amp {
-  color: var(--cs);
+  color: var(--cs-ink);
 }
 .header-date {
   font-family: var(--fd);
   font-size: 11px;
   font-style: italic;
-  color: var(--muted);
+  color: var(--muted-ink);
   margin-top: 1px;
 }
 
@@ -123,7 +144,8 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 4px 28px 8px;
+  justify-content: center;
+  padding: 4px 30px 8px;
   gap: 0;
 }
 .menu-section {
@@ -132,11 +154,7 @@
   align-items: center;
   text-align: center;
   gap: 0;
-  padding: 10px 0 8px;
-  border-top: 1px solid var(--border);
-}
-.menu-section:first-child {
-  border-top: none;
+  padding: 11px 0 2px;
 }
 .section-label {
   font-family: var(--fb);
@@ -144,18 +162,18 @@
   font-weight: 700;
   letter-spacing: 3px;
   text-transform: uppercase;
-  color: var(--cs);
-  margin-bottom: 7px;
+  color: var(--cs-ink);
+  margin-bottom: 4px;
 }
 .menu-item {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 3px 0;
+  padding: 2px 0;
 }
 .item-name {
   font-family: var(--fd);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 400;
   color: var(--dark);
   line-height: 1.2;
@@ -164,38 +182,12 @@
   font-family: var(--fb);
   font-size: 7.5px;
   font-weight: 300;
-  color: var(--muted);
+  color: var(--muted-ink);
   letter-spacing: 0.3px;
   font-style: italic;
 }
 
 /* ── Footer ───────────────────────────────────────────────── */
-.card-footer {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 9px 24px 11px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.footer-logo {
-  height: 16px;
-  opacity: 0.4;
-  width: auto;
-}
-.footer-gem {
-  font-size: 5px;
-  color: var(--cs);
-}
-.footer-hashtag {
-  font-family: var(--fd);
-  font-size: 12px;
-  font-style: italic;
-  color: var(--muted);
-}
 
 /* ── Print ────────────────────────────────────────────────── */
 @media print {
@@ -203,4 +195,111 @@
     box-shadow: none;
     border: 0.5pt solid #ccc;
   }
+}
+
+/* ── Opener / closer flourishes ───────────────────────────── */
+/* Bread and coffee are not courses — they carry no section label and are
+   set in italic display type to read as bookends rather than list items. */
+.menu-flourish .item-name {
+  font-style: italic;
+}
+
+/* ── 4 × 9 in stock ───────────────────────────────────────── */
+/* Taller and narrower than 5×7: ~200px of extra vertical room to spend on
+   type, and tighter side gutters so "Chicken with Lemon Pan Sauce" still
+   sets on a single line at 4in wide. Colours are inherited unchanged, so
+   the AAA contrast holds across both sizes. */
+body[data-size="4x9"] .card {
+  width: 4in;
+  height: 9in;
+}
+body[data-size="4x9"] .header-title {
+  font-size: 32px;
+}
+body[data-size="4x9"] .menu-body {
+  padding: 4px 24px 8px;
+}
+body[data-size="4x9"] .menu-section {
+  padding: 16px 0 3px;
+}
+body[data-size="4x9"] .section-label {
+  font-size: 7.5px;
+  margin-bottom: 5px;
+}
+body[data-size="4x9"] .menu-item {
+  padding: 3px 0;
+}
+body[data-size="4x9"] .item-name {
+  font-size: 17.5px;
+}
+body[data-size="4x9"] .item-note {
+  font-size: 9px;
+}
+
+/* ── A5 stock ─────────────────────────────────────────────── */
+/* 148 × 210 mm — the ISO half-of-A4 sheet. Note this is NOT 5 × 8.5in
+   (Half Letter): A5 is ~0.83in wider and ~0.23in shorter. Wider than the
+   5×7 and 122px taller, so the type sits between the 5×7 and 4×9 scales.
+   `size: A5 portrait` is the valid named-size form (a named size MAY take
+   an orientation keyword; only a length pair may not). */
+body[data-size="a5"] .card {
+  width: 148mm;
+  height: 210mm;
+}
+body[data-size="a5"] .header-title {
+  font-size: 32px;
+}
+body[data-size="a5"] .menu-section {
+  padding: 14px 0 3px;
+}
+body[data-size="a5"] .section-label {
+  font-size: 7px;
+}
+body[data-size="a5"] .menu-item {
+  padding: 3px 0;
+}
+body[data-size="a5"] .item-name {
+  font-size: 16.5px;
+}
+body[data-size="a5"] .item-note {
+  font-size: 8.5px;
+}
+
+/* ── Back face — embellished crest ────────────────────────── */
+.back-body {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 28px;
+}
+.back-crest {
+  width: 100%;
+  height: auto;
+}
+.back-hashtag {
+  font-family: var(--fd);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted-ink);
+}
+
+/* PrintLayout sizes .flip-container / .flipper from --card-w / --card-h, which
+   are pinned by the layout props (5in / 7in). The stock switcher changes the
+   card, so the flip wrapper has to follow it. */
+body[data-size="a5"] .flip-container {
+  width: 148mm;
+}
+body[data-size="a5"] .flipper {
+  min-height: 210mm;
+}
+body[data-size="4x9"] .flip-container {
+  width: 4in;
+}
+body[data-size="4x9"] .flipper {
+  min-height: 9in;
 }
