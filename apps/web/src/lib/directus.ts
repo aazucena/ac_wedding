@@ -94,8 +94,7 @@ export {
 export {
   getReception,
   getTables,
-  getGuests,
-  getGuestsWithTables,
+  getSeatedPersons,
 } from "./api/reception";
 export {
   getGallery,
@@ -119,7 +118,7 @@ export {
   patchParty,
   patchGuest,
 } from "./api/rsvp";
-export { searchGuestsForSeating, getTablemates } from "./api/reception";
+export { searchSeatedPersons, getTablemates } from "./api/reception";
 export { getGameProofFiles } from "./api/game";
 export type { GameSubmission } from "./api/game";
 export { uploadGuestFile, deleteFile, createMemoryRecord } from "./api/media";

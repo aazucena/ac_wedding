@@ -1,6 +1,6 @@
 // lib/api/reception.ts
 import { get } from "../directus";
-import type { Reception, Guests, Tables } from "../types";
+import type { Reception, Persons, Tables } from "../types";
 
 export async function getReception(): Promise<Reception> {
   try {
@@ -28,37 +28,56 @@ export async function getTables(): Promise<Tables[]> {
   }
 }
 
-export async function getGuests(): Promise<Guests[]> {
+/**
+ * Person IDs whose guest record isn't a confirmed "attending". Seating lives on
+ * persons.table, but only guests carry `attending` — non-guests (parents,
+ * vendor staff) have no guest record and are always considered seated.
+ */
+async function getNonAttendingPersonIds(): Promise<Set<string>> {
+  const rows = await get<{ person: string | null }[]>("/items/guests", {
+    filter: {
+      _or: [{ attending: { _eq: false } }, { attending: { _null: true } }],
+    },
+    fields: ["person"],
+    limit: -1,
+  });
+  return new Set(rows.map((r) => r.person).filter((id): id is string => !!id));
+}
+
+async function withoutNonAttending<T extends { id: string }>(
+  rows: T[],
+): Promise<T[]> {
+  const excluded = await getNonAttendingPersonIds();
+  return rows.filter((r) => !excluded.has(r.id));
+}
+
+export async function getSeatedPersons(): Promise<Persons[]> {
   try {
-    return await get<Guests[]>("/items/guests", {
+    const persons = await get<Persons[]>("/items/persons", {
       fields: [
         "id",
-        "attending",
-        "person.id",
-        "person.first_name",
-        "person.last_name",
-        "person.preferred_name",
+        "first_name",
+        "last_name",
+        "preferred_name",
         "table.id",
         "table.number",
         "table.name",
       ],
-      filter: { attending: { _eq: true }, table: { _nnull: true } },
-      sort: ["table.number", "person.last_name", "person.first_name"],
+      filter: { table: { _nnull: true } },
+      sort: ["table.number", "table_sort", "last_name", "first_name"],
       limit: 500,
     });
+    return await withoutNonAttending(persons);
   } catch {
     return [];
   }
 }
 
-// alias for backward compatibility
-export { getGuests as getGuestsWithTables };
-
-const SEATING_GUEST_FIELDS = [
+const SEATING_PERSON_FIELDS = [
   "id",
-  "person.first_name",
-  "person.last_name",
-  "person.preferred_name",
+  "first_name",
+  "last_name",
+  "preferred_name",
   "table.id",
   "table.number",
   "table.name",
@@ -66,19 +85,15 @@ const SEATING_GUEST_FIELDS = [
   "table.party.name",
 ];
 
-export async function searchGuestsForSeating(
-  nameFilter: object,
-): Promise<any[]> {
+export async function searchSeatedPersons(nameFilter: object): Promise<any[]> {
   try {
-    return await get<any[]>("/items/guests", {
-      filter: {
-        ...nameFilter,
-        attending: { _eq: true },
-        table: { _nnull: true },
-      },
-      fields: SEATING_GUEST_FIELDS,
-      limit: 10,
+    const persons = await get<any[]>("/items/persons", {
+      filter: { ...nameFilter, table: { _nnull: true } },
+      fields: SEATING_PERSON_FIELDS,
+      // Over-fetch so non-attendees filtered below don't eat result slots
+      limit: 25,
     });
+    return (await withoutNonAttending(persons)).slice(0, 10);
   } catch {
     return [];
   }
@@ -86,18 +101,13 @@ export async function searchGuestsForSeating(
 
 export async function getTablemates(tableIds: string[]): Promise<any[]> {
   try {
-    return await get<any[]>("/items/guests", {
-      filter: { table: { _in: tableIds }, attending: { _eq: true } },
-      fields: [
-        "id",
-        "person.first_name",
-        "person.last_name",
-        "person.preferred_name",
-        "table.id",
-      ],
-      sort: ["person.last_name", "person.first_name"],
+    const persons = await get<any[]>("/items/persons", {
+      filter: { table: { _in: tableIds } },
+      fields: ["id", "first_name", "last_name", "preferred_name", "table.id"],
+      sort: ["table_sort", "last_name", "first_name"],
       limit: 200,
     });
+    return await withoutNonAttending(persons);
   } catch {
     return [];
   }

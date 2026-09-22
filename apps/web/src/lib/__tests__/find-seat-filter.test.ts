@@ -48,4 +48,20 @@ describe("buildNameFilter", () => {
     >;
     expect(double).toHaveProperty("_and");
   });
+
+  it("applies conditions at the root when relation is null", () => {
+    expect(buildNameFilter("Aldrin", null)).toEqual({
+      _or: [
+        { first_name: { _icontains: "Aldrin" } },
+        { last_name: { _icontains: "Aldrin" } },
+        { preferred_name: { _icontains: "Aldrin" } },
+      ],
+    });
+    expect(buildNameFilter("Aldrin Azucena", null)).toEqual({
+      _and: [
+        { first_name: { _icontains: "Aldrin" } },
+        { last_name: { _icontains: "Azucena" } },
+      ],
+    });
+  });
 });

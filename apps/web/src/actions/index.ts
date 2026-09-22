@@ -8,7 +8,7 @@ import {
   patchParty,
   patchGuest,
   searchPartiesByName,
-  searchGuestsForSeating,
+  searchSeatedPersons,
   getTablemates,
   lookupGuestIdByName,
   createGuestbookEntry,
@@ -388,10 +388,10 @@ export const server = {
   findSeat: defineAction({
     input: z.object({ name: z.string().min(2) }),
     handler: async ({ name }) => {
-      const matches = await searchGuestsForSeating(buildNameFilter(name));
+      const matches = await searchSeatedPersons(buildNameFilter(name, null));
       if (!matches.length) return { seats: [] };
 
-      // Fetch all attending guests at those tables in one query
+      // Fetch everyone seated at those tables in one query
       const tableIds = [
         ...new Set(matches.map((g: any) => g.table.id as string)),
       ];
@@ -423,6 +423,17 @@ export const server = {
         others: PersonSnippet[];
       };
 
+      // Seating rows are persons; reshape to the { id, person } snippet the
+      // seat-finder client renders
+      const toSnippet = (p: any): PersonSnippet => ({
+        id: p.id,
+        person: {
+          first_name: p.first_name,
+          last_name: p.last_name,
+          preferred_name: p.preferred_name,
+        },
+      });
+
       // Deduplicate by table — multiple Platas at the same table = one card
       const matchesByTable = new Map<string, any[]>();
       for (const m of matches) {
@@ -443,13 +454,10 @@ export const server = {
               name: first.table.name ?? first.table.party?.name ?? null,
               section: first.table.section ?? "unknown",
             },
-            matched: tableMatches.map((m: any) => ({
-              id: m.id,
-              person: m.person,
-            })),
-            others: (byTable[tableId] ?? []).filter(
-              (g: any) => !matchedIds.has(g.id),
-            ),
+            matched: tableMatches.map(toSnippet),
+            others: (byTable[tableId] ?? [])
+              .filter((g: any) => !matchedIds.has(g.id))
+              .map(toSnippet),
           };
         },
       );

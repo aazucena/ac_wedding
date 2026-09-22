@@ -221,6 +221,7 @@ export interface Guests {
   person?: Persons;
   attending?: boolean;
   attendance?: Array<"ceremony" | "reception">;
+  /** @deprecated seating lives on persons.table */
   table?: Tables;
   party?: Parties;
   type?: string;
@@ -455,6 +456,8 @@ export interface Persons {
   vendor?: Vendors;
   id: string;
   gender?: string;
+  table?: Tables;
+  table_sort?: number;
 }
 
 export interface Petitions {
@@ -607,6 +610,7 @@ export interface Tables {
   reception?: Reception;
   reception_sort?: number;
   guests?: Guests[];
+  seats?: Persons[];
 }
 
 export interface Vendors {

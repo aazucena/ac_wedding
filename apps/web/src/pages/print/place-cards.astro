@@ -6,21 +6,19 @@ export const prerender = true;
 // Layout: 6 cards per printed page (3 cols × 2 rows), score line in center
 // Data: all attending guests with table assignments, sorted by table number
 
-import { getSettings, getGuestsWithTables } from "@lib/directus";
+import { getSettings, getSeatedPersons } from "@lib/directus";
 import PrintLayout from "@layouts/PrintLayout.astro";
 import CardWatermark from "@components/CardWatermark.astro";
 import FoldLine from "@components/FoldLine.astro";
 import "../../styles/place-card.css";
 
-const [, guests] = await Promise.all([getSettings(), getGuestsWithTables()]);
+const [, guests] = await Promise.all([getSettings(), getSeatedPersons()]);
 
 // Build display name: preferred or first + last
-function displayName(g: (typeof guests)[0]): string {
-  const p = g.person;
-  if (!p) return "Guest";
+function displayName(p: (typeof guests)[0]): string {
   const first = p.preferred_name || p.first_name || "";
   const last = p.last_name || "";
-  return [first, last].filter(Boolean).join(" ");
+  return [first, last].filter(Boolean).join(" ") || "Guest";
 }
 
 function tableLabel(g: (typeof guests)[0]): string {
@@ -35,7 +33,8 @@ function tableLabel(g: (typeof guests)[0]): string {
 if (guests.length <= 0)
   guests.push({
     id: "",
-    person: { id: "", first_name: "Test", last_name: "Guest" },
+    first_name: "Test",
+    last_name: "Guest",
     table: { id: "", number: 1, name: "Guest Family" },
   });
 const padded = [...guests];

@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request }) => {
       );
 
     const res = await fetch(
-      `${DIRECTUS_URL}/items/guests/${guestId}?fields=table.number`,
+      `${DIRECTUS_URL}/items/guests/${guestId}?fields=person.table.number`,
       {
         headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}` },
         signal: AbortSignal.timeout(8_000),
@@ -65,7 +65,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (!res.ok) return json({ ok: false, error: "Guest not found." }, 404);
 
     const { data } = await res.json();
-    const assignedTable = data?.table?.number;
+    const assignedTable = data?.person?.table?.number;
 
     if (assignedTable === undefined || assignedTable === null) {
       return json(
