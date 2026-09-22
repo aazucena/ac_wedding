@@ -1,6 +1,11 @@
 import satori from "satori";
 import sharp from "sharp";
-import { THEMES, FONTS, type CardData, type SocialTheme } from "./helpers";
+import {
+  THEMES,
+  getFonts,
+  type CardData,
+  type SocialTheme,
+} from "./helpers";
 import { buildSquare, buildDM, buildStory } from "./save-the-date";
 import {
   buildSplitPanel,
@@ -76,6 +81,10 @@ export async function renderSocialCard(
                         ? buildThankYou(data, photoSrc, t)
                         : buildSquare(data, photoSrc, t);
 
-  const svg = await satori(tree, { width: w, height: ht, fonts: FONTS });
+  const svg = await satori(tree, {
+    width: w,
+    height: ht,
+    fonts: getFonts(),
+  });
   return sharp(Buffer.from(svg)).png().toBuffer();
 }

@@ -123,6 +123,15 @@ export default defineConfig({
   },
 
   adapter: vercel({
+    // Satori reads these at runtime (lib/social-cards/helpers.ts). Nothing
+    // imports them statically, so the function tracer can't see them — without
+    // this they don't ship and /api/social/*.png 500s.
+    includeFiles: [
+      "./src/assets/fonts/cormorant-garamond-latin-300-italic.woff",
+      "./src/assets/fonts/cormorant-garamond-latin-400-normal.woff",
+      "./src/assets/fonts/jost-latin-400-normal.woff",
+      "./src/assets/fonts/jost-latin-600-normal.woff",
+    ],
     webAnalytics: {
       enabled: true,
     },

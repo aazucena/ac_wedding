@@ -1,5 +1,6 @@
 import satori from "satori";
 import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
 import { resolve } from "path";
 
 export const MINT = "#A8D4B8";
@@ -47,23 +48,80 @@ export const THEMES: Record<SocialTheme, Theme> = {
   },
 };
 
-function loadFont(pkg: string, file: string): ArrayBuffer {
-  const buf = readFileSync(resolve(`node_modules/${pkg}/files/${file}.woff`));
-  return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+// Satori needs the font bytes, so these are read from disk rather than linked.
+// They used to come from node_modules/@fontsource/... at module scope, which
+// broke on Vercel: the tracer only bundles files it can see statically, so the
+// .woff never shipped and the read threw during module import — taking the
+// whole /api/social route down with a 500 (every request since 2026-06-18).
+//
+// Now the files are vendored in src/assets/fonts and force-copied into the
+// function by `includeFiles` in astro.config.mjs. Their path relative to the
+// function's cwd depends on the monorepo layout, so try each plausible root
+// instead of betting on one.
+const FONT_DIRS = [
+  resolve("apps/web/src/assets/fonts"),
+  resolve("src/assets/fonts"),
+  // Relative to this module: src/lib/social-cards/ in dev, dist/server/chunks/
+  // once bundled.
+  fileURLToPath(new URL("../../assets/fonts", import.meta.url)),
+  fileURLToPath(new URL("../../../src/assets/fonts", import.meta.url)),
+];
+
+function loadFont(file: string): ArrayBuffer {
+  const tried: string[] = [];
+  for (const dir of FONT_DIRS) {
+    const path = `${dir}/${file}.woff`;
+    try {
+      const buf = readFileSync(path);
+      return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+    } catch {
+      tried.push(path);
+    }
+  }
+  throw new Error(
+    `[social-cards] font ${file}.woff not found — looked in: ${tried.join(", ")}`,
+  );
 }
 
 const CG = "cormorant-garamond";
-const CG_ITALIC = loadFont(`@fontsource/${CG}`, `${CG}-latin-300-italic`);
-const CG_NORMAL = loadFont(`@fontsource/${CG}`, `${CG}-latin-400-normal`);
-const JOST_400 = loadFont("@fontsource/jost", "jost-latin-400-normal");
-const JOST_600 = loadFont("@fontsource/jost", "jost-latin-600-normal");
 
-export const FONTS: Parameters<typeof satori>[1]["fonts"] = [
-  { name: "CG", data: CG_ITALIC, weight: 300, style: "italic" },
-  { name: "CG", data: CG_NORMAL, weight: 400, style: "normal" },
-  { name: "Jost", data: JOST_400, weight: 400, style: "normal" },
-  { name: "Jost", data: JOST_600, weight: 600, style: "normal" },
-];
+let cached: Parameters<typeof satori>[1]["fonts"] | null = null;
+
+/**
+ * Loaded on first render, not at import. A missing font then fails the one
+ * request with a real error instead of breaking the whole route on startup.
+ */
+export function getFonts(): Parameters<typeof satori>[1]["fonts"] {
+  if (!cached) {
+    cached = [
+      {
+        name: "CG",
+        data: loadFont(`${CG}-latin-300-italic`),
+        weight: 300,
+        style: "italic",
+      },
+      {
+        name: "CG",
+        data: loadFont(`${CG}-latin-400-normal`),
+        weight: 400,
+        style: "normal",
+      },
+      {
+        name: "Jost",
+        data: loadFont("jost-latin-400-normal"),
+        weight: 400,
+        style: "normal",
+      },
+      {
+        name: "Jost",
+        data: loadFont("jost-latin-600-normal"),
+        weight: 600,
+        style: "normal",
+      },
+    ];
+  }
+  return cached;
+}
 
 export type El = Record<string, any>;
 export type Child = El | string | null | undefined | false;
