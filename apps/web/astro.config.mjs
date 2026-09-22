@@ -35,6 +35,16 @@ export default defineConfig({
         access: "secret",
         default: "",
       }),
+      // How server-side code reaches Directus — see lib/cms-transport.ts.
+      // auto = proxy at runtime, direct while building (breaks the build-time
+      // dependency on the deployed site being healthy).
+      CMS_TRANSPORT: envField.enum({
+        context: "server",
+        access: "secret",
+        values: ["auto", "proxy", "direct"],
+        optional: true,
+        default: "auto",
+      }),
       INTERNAL_URL: envField.string({
         context: "server",
         access: "secret",

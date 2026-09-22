@@ -1,20 +1,18 @@
 // apps/web/src/middleware.ts
 import { defineMiddleware } from "astro:middleware";
-import {
-  MAINTENANCE_MODE,
-  INTERNAL_URL,
-  PREVIEW_TOKEN,
-} from "astro:env/server";
+import { MAINTENANCE_MODE, PREVIEW_TOKEN } from "astro:env/server";
+import { cmsTarget } from "./lib/cms-transport";
 
 const PREVIEW_COOKIE = "preview_session";
 const PREVIEW_COOKIE_TTL = 60 * 60 * 2; // 2 hours
 
 async function checkDirectusMaintenance(): Promise<boolean> {
   try {
-    const res = await fetch(
-      `${INTERNAL_URL}/api/cms/items/wedding_settings?fields=maintenance`,
-      { signal: AbortSignal.timeout(3_000) },
-    );
+    const { url, headers } = cmsTarget("/items/wedding_settings");
+    const res = await fetch(`${url}?fields=maintenance`, {
+      headers,
+      signal: AbortSignal.timeout(3_000),
+    });
     if (!res.ok) return false;
     const json = await res.json();
     return json?.data?.maintenance === true;

@@ -2,32 +2,44 @@
 // HTTP client + barrel re-export.
 // Domain-specific fetchers live in lib/api/*.ts — import from there or from here.
 
-import { INTERNAL_URL, DIRECTUS_TOKEN } from "astro:env/server";
+import { cmsTarget, reportFailure } from "./cms-transport";
 import qs from "qs";
 
 // ── HTTP helpers — used by lib/api/* ─────────────────────────────────────────
-// All calls route through the /api/cms proxy, which injects auth server-side.
+// These can only run server-side (importing astro:env/server does that), so the
+// transport is a choice, not a security boundary: see lib/cms-transport.ts for
+// proxy vs direct and why builds go direct. The /api/cms proxy still serves
+// browser traffic — asset URLs from format.ts, EnvelopePreloader, print/social.
 
 function q(params: object): string {
   return qs.stringify(params, { encodeValuesOnly: true });
 }
 
 export async function get<T>(path: string, params?: object): Promise<T> {
-  const base = `${INTERNAL_URL}/api/cms`;
-  const url = params ? `${base}${path}?${q(params)}` : `${base}${path}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
-  if (!res.ok) throw new Error(`Directus ${res.status} on GET ${path}`);
+  const { url, headers } = cmsTarget(path);
+  let res: Response;
+  try {
+    res = await fetch(params ? `${url}?${q(params)}` : url, {
+      headers,
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch (err) {
+    reportFailure(`GET ${path} (${(err as Error).name})`);
+    throw err;
+  }
+  if (!res.ok) {
+    reportFailure(`GET ${path} returned ${res.status}`);
+    throw new Error(`Directus ${res.status} on GET ${path}`);
+  }
   const json = await res.json();
   return json.data as T;
 }
 
 export async function post<T>(path: string, body: object): Promise<T> {
-  const res = await fetch(`${INTERNAL_URL}/api/cms${path}`, {
+  const { url, headers } = cmsTarget(path, true);
+  const res = await fetch(url, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Internal-Key": DIRECTUS_TOKEN,
-    },
+    headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(10_000),
   });
@@ -42,9 +54,10 @@ export async function upload<T>(
   form: FormData,
   timeout = 30_000,
 ): Promise<T> {
-  const res = await fetch(`${INTERNAL_URL}/api/cms${path}`, {
+  const { url, headers } = cmsTarget(path, true);
+  const res = await fetch(url, {
     method: "POST",
-    headers: { "X-Internal-Key": DIRECTUS_TOKEN },
+    headers,
     body: form,
     signal: AbortSignal.timeout(timeout),
   });
@@ -54,12 +67,10 @@ export async function upload<T>(
 }
 
 export async function patch<T>(path: string, body: object): Promise<T> {
-  const res = await fetch(`${INTERNAL_URL}/api/cms${path}`, {
+  const { url, headers } = cmsTarget(path, true);
+  const res = await fetch(url, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Internal-Key": DIRECTUS_TOKEN,
-    },
+    headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(10_000),
   });
@@ -69,9 +80,10 @@ export async function patch<T>(path: string, body: object): Promise<T> {
 }
 
 export async function del(path: string): Promise<void> {
-  const res = await fetch(`${INTERNAL_URL}/api/cms${path}`, {
+  const { url, headers } = cmsTarget(path, true);
+  const res = await fetch(url, {
     method: "DELETE",
-    headers: { "X-Internal-Key": DIRECTUS_TOKEN },
+    headers,
     signal: AbortSignal.timeout(10_000),
   });
   if (!res.ok) throw new Error(`Directus ${res.status} on DELETE ${path}`);
