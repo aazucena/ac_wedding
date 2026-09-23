@@ -85,10 +85,21 @@ const SEATING_PERSON_FIELDS = [
   "table.party.name",
 ];
 
+/**
+ * Name search over seated people, for the seat finder and the Roll Call gate.
+ *
+ * Vendors are excluded here but NOT in getSeatedPersons: the photographer and
+ * coordinator still need a place card at their seat, they just shouldn't turn
+ * up when a guest searches for themselves.
+ */
 export async function searchSeatedPersons(nameFilter: object): Promise<any[]> {
   try {
     const persons = await get<any[]>("/items/persons", {
-      filter: { ...nameFilter, table: { _nnull: true } },
+      filter: {
+        ...nameFilter,
+        table: { _nnull: true },
+        vendor: { _null: true },
+      },
       fields: SEATING_PERSON_FIELDS,
       // Over-fetch so non-attendees filtered below don't eat result slots
       limit: 25,
