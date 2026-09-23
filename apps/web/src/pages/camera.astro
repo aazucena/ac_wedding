@@ -1,0 +1,484 @@
+---
+// src/pages/camera.astro — Roll Call, the reception's disposable camera.
+//
+// Reached only by scanning the QR code on the table card (/print/camera); there
+// is no nav link. Guests confirm who they are once (same name + table check the
+// reception game uses), then get 12 shots. Nothing they take is visible until
+// the couple approves `source = camera` the next morning.
+//
+// Written phone-first — see styles/camera.css. The <head> here is deliberately
+// NOT the shared Layout: this page needs viewport-fit=cover for the safe-area
+// insets, which the site-wide viewport tag doesn't set.
+
+import { getSettings } from "@lib/directus";
+import { formatDate } from "@lib/utils/format";
+import { DateTime } from "luxon";
+import { SHOT_LIMIT, CAPTION_MAX } from "@lib/constants/camera";
+import { isHandheldUA } from "@lib/device";
+import QRCode from "@components/QRCode.astro";
+import Hashtag from "@components/Hashtag.astro";
+import "../styles/camera.css";
+
+const TZ = "America/Edmonton";
+
+const settings = await getSettings();
+const groomFirst = settings.groom?.first_name ?? "Aldrin";
+const brideFirst = settings.bride?.first_name ?? "Christine";
+const weddingDate = settings.wedding_date ?? "2026-09-26";
+const weddingDateLabel = formatDate(weddingDate);
+
+// The camera closes at the game deadline if one is set, otherwise at 4am the
+// morning after the wedding — long after the last dance, before anyone can
+// stumble onto the page a week later.
+const closesAt = settings.game_deadline
+  ? DateTime.fromISO(`${weddingDate}T${settings.game_deadline}`, { zone: TZ })
+  : DateTime.fromISO(`${weddingDate}T04:00`, { zone: TZ }).plus({ days: 1 });
+const closed = closesAt.isValid && DateTime.now().setZone(TZ) >= closesAt;
+
+// Phones and tablets only — this is a full-bleed, thumb-driven camera, and a
+// laptop webcam would burn a guest's shots on a screen it was never built for.
+// The preview token is the only way past it — dev mode included, so what you
+// see locally is what a guest sees. To work on the camera from a desktop
+// browser use ?preview=<token>, or DevTools device emulation (touch emulation
+// trips the client-side correction in <head>). See lib/device.ts for why the
+// user-agent check alone isn't enough: iPadOS claims to be a Mac.
+const isHandheld =
+  isHandheldUA(Astro.request.headers.get("user-agent")) ||
+  Astro.locals.isPreview;
+
+const cameraUrl = `${Astro.site?.origin ?? Astro.url.origin}/camera`;
+
+// Film develops the morning after.
+const developsOn = DateTime.fromISO(weddingDate)
+  .plus({ days: 1 })
+  .toFormat("LLLL d");
+---
+
+<!doctype html>
+<html lang="en" data-device={isHandheld ? "handheld" : "desktop"}>
+  <head>
+    <meta charset="UTF-8" />
+    <!-- viewport-fit=cover is what makes env(safe-area-inset-*) resolve on
+         notched iPhones, which is how the shutter clears the home bar. -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#12121f" />
+    <title>Roll Call — {groomFirst} & {brideFirst}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    {
+      /* Runs before first paint: the server can't see touch support, and an
+        iPad claims to be a Mac. A module script would run too late and the QR
+        panel would flash on a tablet. */
+    }
+    <script is:inline>
+      (function () {
+        var el = document.documentElement;
+        if (el.dataset.device === "handheld") return;
+        // Touch alone is NOT enough: a touchscreen laptop reports
+        // maxTouchPoints > 1 while still being a laptop. The distinguishing
+        // signal is hover — a phone or tablet has no hovering pointer, a
+        // laptop does even when its screen is touch-capable.
+        var mm = window.matchMedia;
+        if (!mm) return;
+        // Three conditions, all required:
+        //   hover: none      — no hovering pointer at all
+        //   pointer: coarse  — the PRIMARY input is a finger
+        //   no any-pointer: fine — nothing precise attached either
+        // A touchscreen laptop passes the first two on some browsers but never
+        // the third: its trackpad is a fine pointer.
+        var handheld =
+          mm("(hover: none)").matches &&
+          mm("(pointer: coarse)").matches &&
+          !mm("(any-pointer: fine)").matches;
+        if (handheld) el.dataset.device = "handheld";
+      })();
+    </script>
+  </head>
+  <body>
+    <main class="cam-shell">
+      {
+        closed ? (
+          <>
+            <header class="cam-head">
+              <p class="cam-eyebrow">Roll Call</p>
+              <h1 class="cam-title">That's a wrap</h1>
+              <p class="cam-sub">
+                {groomFirst} &amp; {brideFirst} · {weddingDateLabel}
+              </p>
+            </header>
+            <div class="cam-done">
+              <p class="cam-done-title">The film is being developed</p>
+              <p class="cam-done-body">
+                Thank you for shooting with us. Every photo lands in the album
+                at wedding.aazucena.com/memories.
+              </p>
+              <Hashtag as="p" tag={settings.hashtag} class="cam-done-tag" />
+            </div>
+          </>
+        ) : (
+          <>
+            {/* ── Desktop: scan to continue on a phone ──────────── */}
+            <section id="cam-desktop" class="cam-desktop">
+              <div class="cam-gate-card cam-desktop-card">
+                <p class="cam-eyebrow">Roll Call</p>
+                <h2 class="cam-gate-title">Open this on your phone</h2>
+                <p class="cam-gate-intro">
+                  Roll Call is your camera for the night — {SHOT_LIMIT} shots,
+                  developed in the album tomorrow. Scan the code to start
+                  shooting.
+                </p>
+                <div class="cam-desktop-qr">
+                  <QRCode url={cameraUrl} size={200} />
+                </div>
+                <p class="cam-desktop-url">
+                  {cameraUrl.replace(/^https?:\/\//, "")}
+                </p>
+              </div>
+            </section>
+
+            {/* ── The gate ──────────────────────────────────────── */}
+            {/* Layered OVER the camera rather than replacing it, so the guest
+                sees what they're being let into. The camera stream itself
+                doesn't start until they're through — no permission prompt
+                before we know who is asking. */}
+            <div id="cam-gate" class="cam-gate hidden">
+              <div class="cam-gate-card">
+                {/* Only shown when there's an identity to go back TO — on the
+                    first visit there is no camera behind the gate yet. */}
+                <button
+                  type="button"
+                  id="gate-close"
+                  class="cam-gate-close hidden"
+                  aria-label="Back to the camera"
+                >
+                  ✕
+                </button>
+
+                {/* Step 1 — who are you */}
+                <div id="gate-name" class="cam-step">
+                  <p class="cam-eyebrow">Roll Call</p>
+                  <h2 class="cam-gate-title">Who's shooting?</h2>
+                  <p class="cam-gate-intro">
+                    You have {SHOT_LIMIT} shots for the night. Type your name as
+                    it appears on your place card.
+                  </p>
+                  <label class="cam-label" for="name-input">
+                    Your name
+                  </label>
+                  <input
+                    id="name-input"
+                    class="cam-input"
+                    type="text"
+                    placeholder="e.g. Maria Santos"
+                    autocomplete="off"
+                    autocapitalize="words"
+                  />
+                  <div
+                    id="name-suggestions"
+                    class="cam-suggestions hidden"
+                    role="listbox"
+                    aria-label="Guest matches"
+                  />
+                </div>
+
+                {/* Step 2 — prove it, in the SAME card. A second stacked modal
+                    is what this replaced. */}
+                <div id="gate-table" class="cam-step hidden">
+                  <p class="cam-eyebrow">Verify it's you</p>
+                  <h2 class="cam-gate-title">What's your table?</h2>
+                  <p class="cam-gate-intro">
+                    Confirming as <strong id="pending-name-display" />. It's on
+                    your place card.
+                  </p>
+                  <label class="cam-label" for="table-number-input">
+                    Table number
+                  </label>
+                  <input
+                    id="table-number-input"
+                    class="cam-input"
+                    type="number"
+                    min="1"
+                    max="99"
+                    inputmode="numeric"
+                    placeholder="e.g. 7"
+                    autocomplete="off"
+                  />
+                  <p id="table-verify-error" class="cam-error hidden" />
+                  <div class="cam-step-actions">
+                    <button type="button" id="table-back" class="cam-btn-ghost">
+                      Back
+                    </button>
+                    <button type="button" id="table-verify-btn" class="cam-btn">
+                      Confirm
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* ── State B — camera ──────────────────────────────── */}
+            <section id="camera-view" data-limit={SHOT_LIMIT}>
+              <div class="cam-bar">
+                {/* The name is the button — tapping it reopens the gate. */}
+                <button
+                  type="button"
+                  id="cam-identity"
+                  class="cam-identity hidden"
+                  aria-label="Change who's shooting"
+                >
+                  <span id="cam-identity-name" />
+                  <svg
+                    class="cam-identity-icon"
+                    viewBox="0 0 24 24"
+                    width="12"
+                    height="12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Live viewfinder. playsinline is required or iOS Safari takes
+                  the video fullscreen and hides the shutter behind it. */}
+              <div id="cam-stage" class="cam-stage">
+                <video
+                  id="viewfinder"
+                  class="cam-viewfinder"
+                  playsinline
+                  autoplay
+                  muted
+                />
+                <div id="cam-grid" class="cam-grid hidden" aria-hidden="true" />
+                <div id="cam-flash" class="cam-flash" aria-hidden="true" />
+                <div id="cam-countdown" class="cam-countdown hidden" />
+
+                <div id="permit-panel" class="cam-permit">
+                  <p class="cam-permit-title">Open the camera</p>
+                  <p id="permit-note" class="cam-permit-note">
+                    We'll ask your phone for camera access — nothing is recorded
+                    until you tap the shutter.
+                  </p>
+                  <button type="button" id="permit-btn" class="cam-permit-btn">
+                    Allow camera
+                  </button>
+                  {/* Only from the second time this panel appears: iPhone
+                      re-asks on every page load until the guest grants it for
+                      the site. First-timers don't need the lecture. */}
+                  <p id="permit-hint" class="cam-permit-hint hidden">
+                    Asked again? On iPhone, tap <strong>aA</strong> in the
+                    address bar → Website Settings → Camera → Allow.
+                  </p>
+                </div>
+              </div>
+
+              <div id="roll-done" class="cam-done hidden">
+                <p class="cam-eyebrow">Roll Call</p>
+                <p class="cam-done-title">That's your roll 💛</p>
+                <p class="cam-done-body">
+                  All {SHOT_LIMIT} shots, <span id="done-name">friend</span> —
+                  thank you. They develop on {developsOn}.
+                </p>
+                {/* Signs this guest out so a partner sharing the phone starts
+                    clean with a full roll of their own. */}
+                <button type="button" id="done-switch" class="cam-done-action">
+                  Someone else's turn
+                </button>
+                <Hashtag as="p" tag={settings.hashtag} class="cam-done-tag" />
+              </div>
+
+              <div class="cam-controls">
+                {/* Anchored to the top of the control stack, so it clears the
+                    tool strip and the shutter whatever their heights are —
+                    a fixed offset silently covered the tools when the strip
+                    was added. */}
+                <p id="camera-status" class="cam-status hidden" />
+
+                {/* Controls that only appear once the camera is live; flash
+                    hides itself entirely where neither torch nor a front-facing
+                    screen flash is possible. */}
+                <div id="cam-tools" class="cam-tools hidden">
+                  <button
+                    type="button"
+                    id="grid-btn"
+                    class="cam-tool"
+                    aria-pressed="false"
+                    aria-label="Grid"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="3" width="18" height="18" rx="2" />
+                      <path d="M9 3v18M15 3v18M3 9h18M3 15h18" />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="flash-btn"
+                    class="cam-tool hidden"
+                    aria-pressed="false"
+                    aria-label="Flash"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="timer-btn"
+                    class="cam-tool"
+                    aria-label="Self-timer"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="13" r="8" />
+                      <path d="M12 9v4l2.5 2.5M9 2h6" />
+                    </svg>
+                    <span id="timer-label" class="cam-tool-badge hidden" />
+                  </button>
+
+                  <div class="cam-zoom" role="group" aria-label="Zoom">
+                    <button
+                      type="button"
+                      class="cam-zoom-btn is-on"
+                      data-zoom="1"
+                    >
+                      1×
+                    </button>
+                    <button type="button" class="cam-zoom-btn" data-zoom="2">
+                      2×
+                    </button>
+                  </div>
+                </div>
+
+                <div class="cam-deck">
+                  {/* Left slot — mirrors the flip button on the right, the way
+                      a camera app balances thumbnail against lens switch. */}
+                  <div class="cam-counter">
+                    <span id="shot-counter" class="cam-counter-num">
+                      {SHOT_LIMIT}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    id="flip-btn"
+                    class="cam-side-btn hidden"
+                    aria-label="Switch camera"
+                  >
+                    ⟲
+                  </button>
+
+                  <button
+                    type="button"
+                    id="shutter"
+                    class="cam-shutter hidden"
+                    aria-label="Take a photo"
+                  />
+
+                  {/* Fallback when getUserMedia is unavailable (blocked
+                      permission, old browser, or a non-HTTPS origin). */}
+                  <label id="picker" class="cam-picker hidden">
+                    Choose a photo
+                    <input
+                      id="picker-input"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Post-capture: the shot is held in memory until it's sent, so
+                  a caption can be written for the photo that was actually
+                  taken. Still no preview — the roll stays undeveloped. */}
+              <div id="cam-sheet" class="cam-sheet hidden">
+                {/* Full-screen review of the frame just taken — the photo is
+                    the page, the caption sits on top of it. */}
+                <img id="sheet-preview" class="cam-sheet-preview" alt="" />
+
+                <div class="cam-sheet-bar">
+                  <div class="cam-sheet-field">
+                    <textarea
+                      id="caption-input"
+                      class="cam-caption-input"
+                      rows="2"
+                      maxlength={CAPTION_MAX}
+                      placeholder="Say something about this shot"
+                      autocomplete="off"
+                    />
+                    <span id="caption-count" class="cam-caption-count">
+                      {CAPTION_MAX}
+                    </span>
+                  </div>
+                  <div class="cam-sheet-actions">
+                    <button
+                      type="button"
+                      id="sheet-discard"
+                      class="cam-btn-ghost"
+                    >
+                      Discard
+                    </button>
+                    <button type="button" id="sheet-send" class="cam-btn">
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </>
+        )
+      }
+
+      <footer class="cam-foot">
+        <Hashtag tag={settings.hashtag} />
+      </footer>
+    </main>
+  </body>
+</html>
+
+<script>
+  // No-ops on the closed state — every element lookup simply misses.
+  import "../scripts/camera";
+</script>

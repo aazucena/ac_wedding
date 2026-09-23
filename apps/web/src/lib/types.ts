@@ -395,7 +395,9 @@ export interface Memories {
   description?: string;
   reception?: Reception;
   guest?: Guests;
-  source?: "game" | "rsvp" | null;
+  source?: "game" | "rsvp" | "camera" | null;
+  /** Who took it — set by Roll Call for guests and non-guests alike. */
+  person?: Persons;
 }
 
 export interface Parties {

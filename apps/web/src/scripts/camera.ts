@@ -1,0 +1,1061 @@
+// scripts/camera.ts — Roll Call (/camera)
+//
+// A real viewfinder: the page opens the camera with getUserMedia and shows a
+// live preview, so shooting feels like a camera app rather than a file upload.
+// The OS file picker stays as a fallback for the cases getUserMedia can't
+// serve — permission denied, an old browser, or a non-HTTPS origin (which
+// silently disables camera access everywhere but localhost).
+//
+// Shooters are identified by PERSON id, not guest id: seating lives on
+// persons.table, so parents and other seated hosts can shoot too, while vendors
+// are filtered out. That's why these keys are the camera's own — the reception
+// game stores a guest id under gup-ls-*, and handing one of those to
+// /api/camera/* would 403 every upload.
+
+const LSK = {
+  name: "pc-name",
+  personId: "pc-person",
+  token: "pc-token",
+  /** Set once the camera has opened successfully on this device, so a return
+   *  visit doesn't make the guest tap "Allow camera" again. */
+  cameraOk: "pc-cam-ok",
+  grid: "pc-grid",
+} as const;
+
+/** Long edge of the uploaded frame. ~1 MB of JPEG — sharp on any screen and
+ *  well under Vercel's ~4.5 MB request body ceiling. */
+const MAX_EDGE = 2048;
+const JPEG_QUALITY = 0.85;
+
+import { coverSourceRect } from "@lib/camera-frame";
+
+const $ = <T extends HTMLElement>(id: string) =>
+  document.getElementById(id) as T | null;
+
+// ── Elements ────────────────────────────────────────────────────────────────
+const gate = $("cam-gate");
+const cameraView = $("camera-view");
+
+const nameInput = $<HTMLInputElement>("name-input");
+const nameSuggestions = $("name-suggestions");
+// The camera view has its own identity chip, separate from the gate form:
+// duplicate ids would resolve to whichever copy came first in the DOM.
+const identityChip = $("cam-identity");
+const identityName = $("cam-identity-name");
+
+const gateClose = $<HTMLButtonElement>("gate-close");
+const stepName = $("gate-name");
+const stepTable = $("gate-table");
+const tableInput = $<HTMLInputElement>("table-number-input");
+const tableBtn = $<HTMLButtonElement>("table-verify-btn");
+const tableBack = $<HTMLButtonElement>("table-back");
+const tableError = $("table-verify-error");
+const pendingNameDisplay = $("pending-name-display");
+
+const viewfinder = $<HTMLVideoElement>("viewfinder");
+const stage = $("cam-stage");
+const permitBtn = $<HTMLButtonElement>("permit-btn");
+const permitPanel = $("permit-panel");
+const permitNote = $("permit-note");
+const permitHint = $("permit-hint");
+const flashEl = $("cam-flash");
+
+const counter = $("shot-counter");
+const shutter = $<HTMLButtonElement>("shutter");
+const flipBtn = $<HTMLButtonElement>("flip-btn");
+const pickerLabel = $("picker");
+const pickerInput = $<HTMLInputElement>("picker-input");
+const status = $("camera-status");
+const sheet = $("cam-sheet");
+const sheetPreview = $<HTMLImageElement>("sheet-preview");
+const sheetSend = $<HTMLButtonElement>("sheet-send");
+const sheetDiscard = $<HTMLButtonElement>("sheet-discard");
+const captionInput = $<HTMLTextAreaElement>("caption-input");
+const captionCount = $("caption-count");
+
+/** Keep in sync with CAPTION_MAX in lib/constants/camera.ts (the input's
+ *  maxlength is rendered from it, so this only drives the readout). */
+const CAPTION_MAX = Number(captionInput?.maxLength || 120);
+const rollDone = $("roll-done");
+const doneName = $("done-name");
+const doneSwitch = $<HTMLButtonElement>("done-switch");
+
+const gridEl = $("cam-grid");
+const gridBtn = $<HTMLButtonElement>("grid-btn");
+const flashBtn = $<HTMLButtonElement>("flash-btn");
+const timerBtn = $<HTMLButtonElement>("timer-btn");
+const timerLabel = $("timer-label");
+const countdownEl = $("cam-countdown");
+const toolsEl = $("cam-tools");
+const zoomBtns = Array.from(
+  document.querySelectorAll<HTMLButtonElement>(".cam-zoom-btn"),
+);
+
+// ── State ───────────────────────────────────────────────────────────────────
+let personId: string | null = null;
+let personToken: string | null = null;
+let guestName = "";
+let pendingId: string | null = null;
+let pendingName = "";
+let remaining = Number(cameraView?.dataset.limit ?? 12);
+let busy = false;
+
+/** The shot waiting on a caption. Held only between the shutter and Send —
+ *  one blob at a time, dropped as soon as it's sent or discarded. */
+let pendingShot: Blob | null = null;
+/** Object URL for the held shot's preview; revoked as soon as it's gone. */
+let previewUrl: string | null = null;
+
+let stream: MediaStream | null = null;
+/** True once the guest has allowed the camera, so returning to the tab can
+ *  resume the stream without asking again. Cleared only when they leave the
+ *  camera for good (gate reopened, roll finished). */
+let cameraWanted = false;
+let facing: "environment" | "user" = "environment";
+/** One canvas for the whole session — allocating a new one per shot is what
+ *  fills iOS Safari's image memory and kills the tab. */
+const frameCanvas = document.createElement("canvas");
+
+/** Digital zoom, 1–4. Applied to the preview as a CSS transform and to the
+ *  capture as a smaller source rect — unless the camera supports real zoom,
+ *  in which case the hardware does it and the preview isn't touched. */
+let zoom = 1;
+const MAX_ZOOM = 4;
+let hardwareZoom: { min: number; max: number } | null = null;
+let torchCapable = false;
+let torchOn = false;
+/** 0 = off, otherwise seconds. */
+let timerSeconds = 0;
+const TIMER_STEPS = [0, 3, 5, 10];
+let countdownTimer: number | undefined;
+
+// ── Identity ────────────────────────────────────────────────────────────────
+function saveIdentity() {
+  try {
+    localStorage.setItem(LSK.name, guestName);
+    localStorage.setItem(LSK.personId, personId ?? "");
+    localStorage.setItem(LSK.token, personToken ?? "");
+  } catch {
+    /* private mode — identity just won't persist across reloads */
+  }
+}
+
+function restoreIdentity(): boolean {
+  try {
+    const id = localStorage.getItem(LSK.personId);
+    const token = localStorage.getItem(LSK.token);
+    const name = localStorage.getItem(LSK.name);
+    if (!id || !token) return false;
+    personId = id;
+    personToken = token;
+    guestName = name ?? "";
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function forgetIdentity() {
+  personId = personToken = null;
+  guestName = "";
+  try {
+    Object.values(LSK).forEach((k) => localStorage.removeItem(k));
+  } catch {
+    /* ignore */
+  }
+}
+
+function showCamera() {
+  gate?.classList.add("hidden");
+  if (identityName) identityName.textContent = guestName;
+  identityChip?.classList.toggle("hidden", !guestName);
+  void refreshCount();
+  // Open straight into the viewfinder when the browser has already granted the
+  // camera; otherwise wait for a tap. A page that demands the camera from a
+  // first-time visitor is hostile, but asking someone who already said yes on
+  // every single reload is worse.
+  void resumeOrPrompt();
+}
+
+/**
+ * What the browser already knows about camera permission.
+ *
+ * Chrome/Android answers through the Permissions API. Safari throws on
+ * `{ name: "camera" }`, so the stored flag is the fallback — written the first
+ * time the camera opened successfully on this device.
+ */
+async function cameraPermission(): Promise<"granted" | "denied" | "unknown"> {
+  try {
+    const status = await navigator.permissions?.query({
+      name: "camera" as PermissionName,
+    });
+    if (status) {
+      // Revoking in another tab should take effect without a reload.
+      status.onchange = () => {
+        if (status.state === "denied") {
+          forgetCameraGrant();
+          stopCamera();
+          fallbackToPicker(BLOCKED_MSG);
+        }
+      };
+      if (status.state === "granted") return "granted";
+      if (status.state === "denied") return "denied";
+    }
+  } catch {
+    /* Safari: no camera permission descriptor. Use the flag below. */
+  }
+  try {
+    if (localStorage.getItem(LSK.cameraOk) === "1") return "granted";
+  } catch {
+    /* private mode */
+  }
+  return "unknown";
+}
+
+const BLOCKED_MSG =
+  "Camera access is blocked in your browser settings — you can still pick a photo.";
+
+function rememberCameraGrant() {
+  try {
+    localStorage.setItem(LSK.cameraOk, "1");
+  } catch {
+    /* private mode — they'll tap once per session */
+  }
+}
+
+function forgetCameraGrant() {
+  try {
+    localStorage.removeItem(LSK.cameraOk);
+  } catch {
+    /* ignore */
+  }
+}
+
+async function resumeOrPrompt() {
+  const perm = await cameraPermission();
+  if (perm === "denied") {
+    // Don't call getUserMedia just to be refused, and don't leave a stale
+    // "they allowed it once" flag behind.
+    forgetCameraGrant();
+    fallbackToPicker(BLOCKED_MSG);
+    return;
+  }
+  if (perm === "granted") {
+    void openCamera();
+    return;
+  }
+  showPermitPanel();
+}
+
+/** Ready state: camera not yet open, waiting for the guest to allow it. */
+/** Times this panel has been shown in this session — the hint is for people
+ *  being asked repeatedly, not for first-timers. */
+function bumpPermitCount(): number {
+  try {
+    const n = Number(sessionStorage.getItem("pc-permit-shown") ?? "0") + 1;
+    sessionStorage.setItem("pc-permit-shown", String(n));
+    return n;
+  } catch {
+    return 1;
+  }
+}
+
+function showPermitPanel() {
+  cameraWanted = false;
+  toolsEl?.classList.add("hidden");
+  stage?.classList.remove("is-live");
+  permitPanel?.classList.remove("hidden");
+  permitHint?.classList.toggle("hidden", bumpPermitCount() < 2);
+  shutter?.classList.add("hidden");
+  flipBtn?.classList.add("hidden");
+  pickerLabel?.classList.add("hidden");
+}
+
+/**
+ * Put the sign-in card back on top and release the camera.
+ *
+ * The close button only appears when there's a confirmed identity to return to
+ * — otherwise "Change" would strand the guest at a gate with no way out.
+ */
+function showGate() {
+  stopCamera();
+  gate?.classList.remove("hidden");
+  gateClose?.classList.toggle("hidden", !personId || !personToken);
+  stepTable?.classList.add("hidden");
+  stepName?.classList.remove("hidden");
+  identityChip?.classList.add("hidden");
+  if (nameInput) nameInput.value = "";
+  nameSuggestions?.classList.add("hidden");
+  nameInput?.focus();
+}
+
+// ── Name search ─────────────────────────────────────────────────────────────
+let searchTimer: number | undefined;
+
+nameInput?.addEventListener("input", () => {
+  window.clearTimeout(searchTimer);
+  const q = nameInput.value.trim();
+  if (q.length < 2) {
+    nameSuggestions?.classList.add("hidden");
+    return;
+  }
+  searchTimer = window.setTimeout(() => void search(q), 220);
+});
+
+async function search(q: string) {
+  if (!nameSuggestions) return;
+  try {
+    // Seated non-vendor persons only — see api/camera/search.ts.
+    const res = await fetch(`/api/camera/search?q=${encodeURIComponent(q)}`);
+    const { results } = (await res.json()) as {
+      results: { id: string; name: string }[];
+    };
+
+    nameSuggestions.innerHTML = "";
+    if (!results.length) {
+      const empty = document.createElement("div");
+      empty.className = "cam-suggestions-empty";
+      empty.textContent = "No match — check the spelling on your place card.";
+      nameSuggestions.append(empty);
+    } else {
+      for (const r of results) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "cam-suggestion";
+        const label = document.createElement("span");
+        label.textContent = r.name;
+        const hint = document.createElement("span");
+        hint.className = "cam-suggestion-hint";
+        hint.textContent = "Select";
+        btn.append(label, hint);
+        btn.addEventListener("click", () => openTableStep(r.id, r.name));
+        nameSuggestions.append(btn);
+      }
+    }
+    nameSuggestions.classList.remove("hidden");
+  } catch {
+    nameSuggestions.classList.add("hidden");
+  }
+}
+
+// ── Table verification ──────────────────────────────────────────────────────
+/** Second step of the same card — not a second modal on top of the gate. */
+function openTableStep(id: string, name: string) {
+  pendingId = id;
+  pendingName = name;
+  if (pendingNameDisplay) pendingNameDisplay.textContent = name;
+  if (tableInput) tableInput.value = "";
+  tableError?.classList.add("hidden");
+  stepName?.classList.add("hidden");
+  stepTable?.classList.remove("hidden");
+  tableInput?.focus();
+}
+
+function backToNameStep() {
+  stepTable?.classList.add("hidden");
+  stepName?.classList.remove("hidden");
+  pendingId = null;
+  nameInput?.focus();
+}
+
+tableBack?.addEventListener("click", backToNameStep);
+
+tableBtn?.addEventListener("click", () => void verifyTable());
+tableInput?.addEventListener("keydown", (e) => {
+  if ((e as KeyboardEvent).key === "Enter") void verifyTable();
+});
+
+async function verifyTable() {
+  if (!pendingId || !tableBtn) return;
+  const tableNumber = tableInput?.value.trim();
+  if (!tableNumber) {
+    showTableError("Please enter your table number.");
+    return;
+  }
+
+  tableBtn.disabled = true;
+  tableBtn.textContent = "Checking…";
+  try {
+    const res = await fetch("/api/camera/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personId: pendingId, tableNumber }),
+    });
+    const data = (await res.json()) as {
+      ok: boolean;
+      token?: string;
+      error?: string;
+    };
+
+    if (!data.ok || !data.token) {
+      showTableError(data.error ?? "That didn't match. Try again.");
+      return;
+    }
+
+    personId = pendingId;
+    personToken = data.token;
+    guestName = pendingName;
+    saveIdentity();
+    showCamera();
+  } catch {
+    showTableError("Connection problem. Try again.");
+  } finally {
+    tableBtn.disabled = false;
+    tableBtn.textContent = "Confirm";
+  }
+}
+
+function showTableError(msg: string) {
+  if (!tableError) return;
+  tableError.textContent = msg;
+  tableError.classList.remove("hidden");
+}
+
+// Tapping your own name reopens the gate — it doesn't sign you out, so closing
+// the gate puts you straight back behind the viewfinder. The identity is only
+// replaced once a different person clears the table check.
+identityChip?.addEventListener("click", showGate);
+
+gateClose?.addEventListener("click", () => {
+  if (!personId || !personToken) return; // nothing to go back to
+  backToNameStep();
+  showCamera();
+});
+
+// Escape is free on a desktop and costs nothing on a phone.
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  if (gate?.classList.contains("hidden")) return;
+  if (personId && personToken) {
+    backToNameStep();
+    showCamera();
+  }
+});
+
+// ── Viewfinder ──────────────────────────────────────────────────────────────
+/**
+ * Open the live preview. Requires a secure context — on plain http over a LAN
+ * IP the browser reports no camera at all, which is why the file-picker
+ * fallback exists rather than a dead end.
+ */
+async function openCamera() {
+  if (remaining <= 0) return;
+  if (!navigator.mediaDevices?.getUserMedia) {
+    fallbackToPicker("This browser can't open the camera here.");
+    return;
+  }
+
+  stopCamera();
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: facing }, width: { ideal: 1920 } },
+      audio: false,
+    });
+  } catch (err) {
+    const name = (err as DOMException)?.name;
+    if (name === "NotAllowedError") {
+      // Permission was revoked since we last recorded it — stop auto-retrying
+      // on every load, or the guest gets a prompt they can't escape.
+      forgetCameraGrant();
+    }
+    fallbackToPicker(
+      name === "NotAllowedError"
+        ? BLOCKED_MSG
+        : "Couldn't open the camera — you can still pick a photo.",
+    );
+    return;
+  }
+
+  if (viewfinder) {
+    viewfinder.srcObject = stream;
+    viewfinder.classList.toggle("is-mirrored", facing === "user");
+    try {
+      await viewfinder.play();
+    } catch {
+      /* autoplay policies — the stream still renders once visible */
+    }
+  }
+  cameraWanted = true;
+  readCapabilities();
+  zoom = 1;
+  paintZoom();
+  rememberCameraGrant();
+  permitPanel?.classList.add("hidden");
+  stage?.classList.add("is-live");
+  shutter?.classList.remove("hidden");
+  pickerLabel?.classList.add("hidden");
+  flipBtn?.classList.remove("hidden");
+}
+
+function stopCamera() {
+  // Leaving the torch on after the stream stops would leave the light burning.
+  if (torchOn) void setTorch(false);
+  torchOn = false;
+  stream?.getTracks().forEach((t) => t.stop());
+  stream = null;
+  if (viewfinder) viewfinder.srcObject = null;
+  stage?.classList.remove("is-live");
+}
+
+/** No live preview available — show the OS picker path instead of nothing. */
+function fallbackToPicker(note: string) {
+  toolsEl?.classList.add("hidden");
+  stage?.classList.remove("is-live");
+  permitPanel?.classList.remove("hidden");
+  if (permitNote) permitNote.textContent = note;
+  shutter?.classList.add("hidden");
+  flipBtn?.classList.add("hidden");
+  pickerLabel?.classList.remove("hidden");
+}
+
+permitBtn?.addEventListener("click", () => void openCamera());
+
+flipBtn?.addEventListener("click", () => {
+  facing = facing === "environment" ? "user" : "environment";
+  void openCamera();
+});
+
+// Release the camera when the tab is hidden — iOS Safari kills a backgrounded
+// tab that keeps a live stream, and nobody wants the lens warm all night.
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopCamera();
+  } else if (
+    gate?.classList.contains("hidden") &&
+    remaining > 0 &&
+    cameraWanted
+  ) {
+    // Only resume a stream the guest had already allowed.
+    void openCamera();
+  }
+});
+window.addEventListener("pagehide", stopCamera);
+
+/**
+ * The server refused our token. That happens if the signing secret rotated
+ * between deploys, so the stored identity is dead rather than wrong — clear it
+ * and send the guest back through the gate instead of failing every shot.
+ */
+function rejectIdentity() {
+  forgetIdentity();
+  showGate();
+  setStatus("Please confirm your name again", "error");
+}
+
+// ── Film counter ────────────────────────────────────────────────────────────
+function paintCounter() {
+  if (counter) counter.textContent = String(remaining);
+
+  const done = remaining <= 0;
+  rollDone?.classList.toggle("hidden", !done);
+  // One class hides the bar, stage, tools, controls and toast (see camera.css).
+  // Toggling each of them here is how the tool strip ended up showing through.
+  cameraView?.classList.toggle("is-finished", done);
+  if (done) {
+    stopCamera();
+    if (doneName) doneName.textContent = guestName.split(" ")[0] || "friend";
+  }
+}
+
+// Not the same as the pencil beside the name: that keeps you signed in, this
+// signs the finished guest out so the next person gets a clean, full roll.
+doneSwitch?.addEventListener("click", () => {
+  forgetIdentity();
+  remaining = Number(cameraView?.dataset.limit ?? 12);
+  paintCounter();
+  showGate();
+});
+
+async function refreshCount() {
+  if (!personId || !personToken) return;
+  try {
+    const res = await fetch(
+      `/api/camera/upload?personId=${encodeURIComponent(personId)}&personToken=${encodeURIComponent(personToken)}`,
+    );
+    if (res.status === 403) return rejectIdentity();
+    const data = (await res.json()) as { ok: boolean; remaining?: number };
+    if (data.ok && typeof data.remaining === "number") {
+      remaining = data.remaining;
+      paintCounter();
+    }
+  } catch {
+    /* keep whatever the page rendered with */
+  }
+}
+
+// ── Capture ─────────────────────────────────────────────────────────────────
+/**
+ * Grab what the guest can actually see.
+ *
+ * The viewfinder is `object-fit: cover`, so the visible region is a centre crop
+ * of the video — capturing the raw frame would save the edges they never
+ * framed. coverSourceRect() works out that region, narrowed by digital zoom.
+ * When the camera does the zooming in hardware the stream is already zoomed, so
+ * only the cover crop applies.
+ */
+async function captureFrame(): Promise<Blob | null> {
+  if (!viewfinder || !viewfinder.videoWidth) return null;
+  const rect = viewfinder.getBoundingClientRect();
+  const { sx, sy, sw, sh } = coverSourceRect({
+    videoW: viewfinder.videoWidth,
+    videoH: viewfinder.videoHeight,
+    viewW: rect.width,
+    viewH: rect.height,
+    zoom: hardwareZoom ? 1 : zoom,
+  });
+
+  const scale = Math.min(1, MAX_EDGE / Math.max(sw, sh));
+  frameCanvas.width = Math.round(sw * scale);
+  frameCanvas.height = Math.round(sh * scale);
+
+  const ctx = frameCanvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(
+    viewfinder,
+    sx,
+    sy,
+    sw,
+    sh,
+    0,
+    0,
+    frameCanvas.width,
+    frameCanvas.height,
+  );
+
+  return new Promise<Blob | null>((resolve) =>
+    frameCanvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
+  );
+}
+
+/**
+ * Fallback path: shrink a file from the OS picker. Also normalises two
+ * phone-specific problems — HEIC becomes JPEG, and EXIF rotation is baked in
+ * via `imageOrientation`, so portrait shots don't arrive sideways.
+ */
+async function shrinkFile(file: File): Promise<Blob> {
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
+  } catch {
+    return file; // unsupported codec — send as-is and let Directus deal with it
+  }
+
+  const scale = Math.min(1, MAX_EDGE / Math.max(bitmap.width, bitmap.height));
+  frameCanvas.width = Math.round(bitmap.width * scale);
+  frameCanvas.height = Math.round(bitmap.height * scale);
+
+  const ctx = frameCanvas.getContext("2d");
+  if (!ctx) {
+    bitmap.close();
+    return file;
+  }
+  ctx.drawImage(bitmap, 0, 0, frameCanvas.width, frameCanvas.height);
+  bitmap.close(); // free the decoded image immediately
+
+  const blob = await new Promise<Blob | null>((resolve) =>
+    frameCanvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
+  );
+  return blob ?? file;
+}
+
+function flash() {
+  if (!flashEl || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    return;
+  flashEl.classList.remove("is-firing");
+  void flashEl.offsetWidth; // restart the animation
+  flashEl.classList.add("is-firing");
+}
+
+// ── Capabilities ────────────────────────────────────────────────────────────
+/**
+ * What this camera can actually do. Chrome/Android reports zoom and torch;
+ * iOS Safari reports neither, so those controls stay hidden there rather than
+ * sitting on screen doing nothing.
+ */
+function readCapabilities() {
+  const track = stream?.getVideoTracks()[0];
+  hardwareZoom = null;
+  torchCapable = false;
+  try {
+    const caps = track?.getCapabilities?.() as
+      | (MediaTrackCapabilities & {
+          zoom?: { min: number; max: number };
+          torch?: boolean;
+        })
+      | undefined;
+    if (caps?.zoom && caps.zoom.max > caps.zoom.min) {
+      hardwareZoom = { min: caps.zoom.min, max: caps.zoom.max };
+    }
+    torchCapable = caps?.torch === true;
+  } catch {
+    /* getCapabilities is optional; treat absence as "can't" */
+  }
+
+  // Flash: the torch when the hardware has one, otherwise a white screen — but
+  // a white screen only lights a face on the FRONT camera, so on a rear-facing
+  // iPhone there's nothing honest to offer and the button stays hidden.
+  const screenFlashUseful = facing === "user";
+  flashBtn?.classList.toggle("hidden", !torchCapable && !screenFlashUseful);
+  toolsEl?.classList.remove("hidden");
+}
+
+async function applyHardwareZoom() {
+  const track = stream?.getVideoTracks()[0];
+  if (!track || !hardwareZoom) return;
+  const { min, max } = hardwareZoom;
+  // Map our 1–4 scale onto whatever range this camera exposes.
+  const target = min + ((zoom - 1) / (MAX_ZOOM - 1)) * (max - min);
+  try {
+    await track.applyConstraints({
+      advanced: [{ zoom: target } as MediaTrackConstraintSet],
+    });
+  } catch {
+    // Hardware refused — fall back to cropping so the button still does
+    // something.
+    hardwareZoom = null;
+    paintZoom();
+  }
+}
+
+function paintZoom() {
+  if (viewfinder) {
+    // Hardware zoom already changed the stream; scaling again would double it.
+    viewfinder.style.transform = hardwareZoom ? "" : `scale(${zoom})`;
+  }
+  for (const b of zoomBtns) {
+    b.classList.toggle("is-on", Number(b.dataset.zoom) === zoom);
+  }
+}
+
+function setZoom(next: number) {
+  zoom = Math.min(MAX_ZOOM, Math.max(1, next));
+  if (hardwareZoom) void applyHardwareZoom();
+  paintZoom();
+}
+
+for (const b of zoomBtns) {
+  b.addEventListener("click", () => setZoom(Number(b.dataset.zoom) || 1));
+}
+
+// Pinch: track two pointers and scale by the change in their distance.
+const pointers = new Map<number, { x: number; y: number }>();
+let pinchStart = 0;
+let pinchZoomStart = 1;
+const spread = () => {
+  const [a, b] = [...pointers.values()];
+  if (!a || !b) return 0;
+  return Math.hypot(a.x - b.x, a.y - b.y);
+};
+stage?.addEventListener("pointerdown", (e) => {
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2) {
+    pinchStart = spread();
+    pinchZoomStart = zoom;
+  }
+});
+stage?.addEventListener("pointermove", (e) => {
+  if (!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (pointers.size === 2 && pinchStart > 0) {
+    e.preventDefault();
+    setZoom(pinchZoomStart * (spread() / pinchStart));
+  }
+});
+const endPointer = (e: PointerEvent) => {
+  pointers.delete(e.pointerId);
+  if (pointers.size < 2) pinchStart = 0;
+};
+stage?.addEventListener("pointerup", endPointer);
+stage?.addEventListener("pointercancel", endPointer);
+
+// ── Grid ────────────────────────────────────────────────────────────────────
+function paintGrid(on: boolean) {
+  gridEl?.classList.toggle("hidden", !on);
+  gridBtn?.setAttribute("aria-pressed", String(on));
+}
+gridBtn?.addEventListener("click", () => {
+  const on = gridEl?.classList.contains("hidden") ?? true;
+  paintGrid(on);
+  try {
+    localStorage.setItem(LSK.grid, on ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+});
+
+// ── Flash ───────────────────────────────────────────────────────────────────
+async function setTorch(on: boolean) {
+  const track = stream?.getVideoTracks()[0];
+  if (!track || !torchCapable) return;
+  try {
+    await track.applyConstraints({
+      advanced: [{ torch: on } as MediaTrackConstraintSet],
+    });
+    torchOn = on;
+  } catch {
+    torchOn = false;
+  }
+  flashBtn?.setAttribute("aria-pressed", String(torchOn));
+}
+
+let screenFlashArmed = false;
+flashBtn?.addEventListener("click", () => {
+  if (torchCapable) {
+    void setTorch(!torchOn);
+    return;
+  }
+  screenFlashArmed = !screenFlashArmed;
+  flashBtn.setAttribute("aria-pressed", String(screenFlashArmed));
+});
+
+/** White the screen out for a moment so a front-camera selfie has some light. */
+function screenFlash(): Promise<void> {
+  if (!screenFlashArmed || !flashEl) return Promise.resolve();
+  return new Promise((resolve) => {
+    flashEl.classList.add("is-holding");
+    window.setTimeout(() => {
+      flashEl.classList.remove("is-holding");
+      resolve();
+    }, 450);
+  });
+}
+
+// ── Self-timer ──────────────────────────────────────────────────────────────
+function paintTimer() {
+  if (timerLabel) {
+    timerLabel.textContent = timerSeconds ? `${timerSeconds}s` : "";
+    timerLabel.classList.toggle("hidden", timerSeconds === 0);
+  }
+  timerBtn?.classList.toggle("is-on", timerSeconds > 0);
+}
+timerBtn?.addEventListener("click", () => {
+  const i = TIMER_STEPS.indexOf(timerSeconds);
+  timerSeconds = TIMER_STEPS[(i + 1) % TIMER_STEPS.length] ?? 0;
+  paintTimer();
+});
+
+function cancelCountdown() {
+  window.clearInterval(countdownTimer);
+  countdownTimer = undefined;
+  countdownEl?.classList.add("hidden");
+}
+countdownEl?.addEventListener("click", () => {
+  cancelCountdown();
+  setStatus("Timer cancelled", "info");
+});
+
+/** Resolves when the countdown finishes; rejects nothing — a cancel just never
+ *  resolves, and the shutter is re-enabled by the caller. */
+function runCountdown(): Promise<boolean> {
+  if (!timerSeconds || !countdownEl) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    let left = timerSeconds;
+    countdownEl.textContent = String(left);
+    countdownEl.classList.remove("hidden");
+    countdownTimer = window.setInterval(() => {
+      left -= 1;
+      if (!countdownTimer) return resolve(false); // cancelled
+      if (left <= 0) {
+        cancelCountdown();
+        resolve(true);
+      } else {
+        countdownEl.textContent = String(left);
+      }
+    }, 1000);
+  });
+}
+
+shutter?.addEventListener("click", () => {
+  if (busy || pendingShot || countdownTimer) return;
+  void takeShot();
+});
+
+/** Countdown (if armed) → screen flash (if armed) → capture. */
+async function takeShot() {
+  if (shutter) shutter.disabled = true;
+  try {
+    if (!(await runCountdown())) return; // cancelled
+    await screenFlash();
+    flash();
+    const blob = await captureFrame();
+    if (blob) openSheet(blob);
+    else setStatus("That didn't catch — try once more", "error");
+  } finally {
+    if (shutter) shutter.disabled = remaining <= 0 || !!pendingShot;
+  }
+}
+
+pickerInput?.addEventListener("change", () => {
+  const file = pickerInput.files?.[0];
+  pickerInput.value = ""; // so the same photo can be picked twice
+  if (file) void shrinkFile(file).then(openSheet);
+});
+
+/** Hold the shot, show it, ask for a caption. Nothing is uploaded yet. */
+function openSheet(blob: Blob) {
+  pendingShot = blob;
+  // Exactly one object URL alive at a time, revoked in closeSheet — the same
+  // discipline the homepage hero needs to stay alive on iOS Safari.
+  if (sheetPreview) {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = URL.createObjectURL(blob);
+    sheetPreview.src = previewUrl;
+  }
+  if (captionInput) captionInput.value = "";
+  paintCaptionCount();
+  clearStatus();
+  sheet?.classList.remove("hidden");
+  if (shutter) shutter.disabled = true;
+}
+
+function closeSheet() {
+  pendingShot = null;
+  sheet?.classList.add("hidden");
+  if (sheetPreview) sheetPreview.removeAttribute("src");
+  if (previewUrl) {
+    URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+  }
+  if (captionInput) captionInput.value = "";
+  if (shutter) shutter.disabled = remaining <= 0;
+}
+
+sheetSend?.addEventListener("click", () => {
+  if (!pendingShot) return;
+  const blob = pendingShot;
+  const caption = captionInput?.value.trim() || "";
+  closeSheet();
+  void send(blob, caption);
+});
+
+// Discarding costs nothing: the shot was never uploaded, so the count on the
+// server is untouched and the roll is unaffected.
+sheetDiscard?.addEventListener("click", () => {
+  closeSheet();
+  // Discarding *feels* like it should cost a shot; it doesn't, because the
+  // count comes from the server and nothing was uploaded. Say so.
+  setStatus("Gone. No shot used.", "info");
+});
+
+// Enter now writes a newline, as it should in a textarea; ⌘/Ctrl+Enter sends
+// for anyone on a keyboard.
+captionInput?.addEventListener("keydown", (e) => {
+  const ev = e as KeyboardEvent;
+  if (ev.key === "Enter" && (ev.metaKey || ev.ctrlKey)) {
+    ev.preventDefault();
+    sheetSend?.click();
+  }
+});
+
+/** Characters left, turning warm near the end. maxlength already stops typing;
+ *  this just makes the ceiling visible instead of silent. */
+function paintCaptionCount() {
+  if (!captionCount) return;
+  const left = CAPTION_MAX - (captionInput?.value.length ?? 0);
+  captionCount.textContent = String(left);
+  captionCount.dataset.low = String(left <= 20);
+}
+captionInput?.addEventListener("input", paintCaptionCount);
+
+async function send(blob: Blob, caption: string) {
+  if (busy || !personId || !personToken) return;
+  busy = true;
+  setStatus("Sending your shot…", "working");
+  shutter?.classList.add("is-busy");
+  if (shutter) shutter.disabled = true;
+
+  try {
+    const form = new FormData();
+    form.append("file", blob, "partycam.jpg");
+    form.append("personId", personId);
+    form.append("personToken", personToken);
+    if (guestName) form.append("name", guestName);
+    if (caption) form.append("caption", caption);
+
+    const res = await fetch("/api/camera/upload", {
+      method: "POST",
+      body: form,
+    });
+    const data = (await res.json()) as {
+      ok: boolean;
+      remaining?: number;
+      error?: string;
+    };
+
+    if (res.status === 403) return rejectIdentity();
+    if (typeof data.remaining === "number") remaining = data.remaining;
+
+    if (!data.ok) {
+      setStatus(data.error ?? "That didn't send. Try again.", "error");
+    } else {
+      // The count is the only thing a guest really wants back, and the small
+      // [11] box is easy to miss mid-party — so say it in words.
+      setStatus(
+        remaining > 0
+          ? `Thank you! ${remaining} shot${remaining === 1 ? "" : "s"} left`
+          : "That's your last — thank you 💛",
+        "ok",
+      );
+    }
+    paintCounter();
+  } catch {
+    // The shot isn't spent — the count comes from the server, so a failed
+    // upload simply never happened.
+    setStatus("That didn't send — try once more", "error");
+  } finally {
+    busy = false;
+    shutter?.classList.remove("is-busy");
+    if (shutter) shutter.disabled = remaining <= 0;
+  }
+}
+
+let statusTimer: number | undefined;
+let statusFade: number | undefined;
+
+/** Take the toast down with a fade, so it reads as dismissed rather than
+ *  blinking out of existence. */
+function clearStatus() {
+  if (!status) return;
+  window.clearTimeout(statusTimer);
+  window.clearTimeout(statusFade);
+  if (status.classList.contains("hidden")) return;
+  status.classList.add("is-leaving");
+  statusFade = window.setTimeout(() => {
+    status.classList.add("hidden");
+    status.classList.remove("is-leaving");
+  }, 260);
+}
+
+/**
+ * Toast. Everything dismisses — "working" just gets a long leash because an
+ * upload is genuinely in flight, and a stuck pill over the picture is worse
+ * than a stale one.
+ */
+function setStatus(msg: string, kind: "ok" | "error" | "working" | "info") {
+  if (!status) return;
+  window.clearTimeout(statusTimer);
+  window.clearTimeout(statusFade);
+  status.textContent = msg;
+  status.dataset.kind = kind;
+  status.classList.remove("hidden", "is-leaving");
+
+  const life = kind === "working" ? 12000 : kind === "error" ? 6000 : 3500;
+  statusTimer = window.setTimeout(clearStatus, life);
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────────
+// Desktop never wires anything up: no listeners, no counter fetch, and above
+// all no getUserMedia, so a laptop is never even asked for camera permission.
+if (document.documentElement.dataset.device === "handheld") {
+  try {
+    paintGrid(localStorage.getItem(LSK.grid) === "1");
+  } catch {
+    /* private mode — the grid just starts off */
+  }
+  paintTimer();
+  paintZoom();
+
+  if (restoreIdentity()) showCamera();
+  else showGate();
+  paintCounter();
+}

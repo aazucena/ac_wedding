@@ -1,0 +1,1173 @@
+/* styles/camera.css — Roll Call (/camera)
+ *
+ * Phone-first by construction: the base rules ARE the phone layout, and the two
+ * media queries at the bottom only handle landscape and the rare laptop guest.
+ *
+ * Context this is designed for: one hand, a dark reception hall, and a screen
+ * that doubles as the only light at the table. So: dark surface, one enormous
+ * number, one enormous button, nothing else to hit by accident.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --cp: #a8d4b8;
+  --cs: #c5b8e0;
+  --dark: #1a1a2e;
+  --ivory: #fdfaf7;
+  --muted: #8a8499;
+  --border: rgba(197, 184, 224, 0.45);
+  --fd: "Cormorant Garamond", Georgia, serif;
+  --fb: "Jost", Arial, sans-serif;
+
+  /* Dark surface — the page's own palette */
+  --night: #12121f;
+  --night-soft: #1c1c30;
+  --on-night: #f4f1ee;
+  --on-night-muted: #a9a4bb;
+}
+
+html {
+  background: var(--night);
+}
+
+body {
+  font-family: var(--fb);
+  background: var(--night);
+  color: var(--on-night);
+  -webkit-font-smoothing: antialiased;
+  /* dvh, never vh: on iOS Safari `vh` is the TALLEST viewport, so a 100vh
+     layout hides its own bottom behind the toolbar until you scroll. */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ── Shell ──────────────────────────────────────────────── */
+.cam-shell {
+  flex: 1;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  /* Centred on both axes — the sign-in screen is short, and a lone card
+     stranded at the top of a tall phone reads as a loading state. */
+  justify-content: center;
+  align-items: stretch;
+  padding: 24px 16px max(24px, env(safe-area-inset-bottom));
+  padding-top: max(24px, env(safe-area-inset-top));
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.cam-head {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.cam-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--cp);
+}
+.cam-title {
+  font-family: var(--fd);
+  font-size: clamp(1.75rem, 9vw, 2.5rem);
+  font-weight: 400;
+  line-height: 1.1;
+}
+.cam-sub {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--on-night-muted);
+}
+
+/* ── Full-bleed camera ──────────────────────────────────── */
+/* The viewfinder gets the entire screen — a preview boxed inside the page
+   flow wastes the two things that matter most on a phone: height and dark.
+   #camera-view carries `hidden` while signing in, so this only applies once
+   the guest is actually shooting. */
+#camera-view {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: #0b0b14;
+}
+
+/* Scrims: without them the counter and shutter vanish against a bright frame.
+   Gradients rather than bars, so the picture stays the loudest thing. */
+#camera-view::before,
+#camera-view::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+#camera-view::before {
+  top: 0;
+  height: 22vh;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent);
+}
+#camera-view::after {
+  bottom: 0;
+  height: 34vh;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent);
+}
+
+/* ── Top bar: counter + who you are ─────────────────────── */
+/* Top bar: just who's shooting. The frame count lives in the corner. */
+.cam-bar {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: max(14px, env(safe-area-inset-top)) 16px 0;
+}
+/* The left slot of the control deck — mirroring the flip button's position,
+   but deliberately NOT its styling. A raised, bordered, blurred pill reads as
+   "tap me"; this is a recessed film window: darker than the scrim, no outline,
+   an inset shadow instead of a raised edge, and no hover or active state. */
+.cam-counter {
+  grid-column: 1;
+  grid-row: 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.42);
+  box-shadow:
+    inset 0 1px 4px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  pointer-events: none;
+}
+.cam-counter-num {
+  font-family: var(--fb);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--cp);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+/* One tappable label, not a sentence: the name IS the button, the pencil says
+   so, and there's no box competing with the photo behind it. */
+.cam-identity {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  max-width: 100%;
+  margin: 0 auto;
+  border: none;
+  /* A capsule, not an outlined chip: white text alone disappears over a bright
+     frame, and a text-shadow only survives so much. Dark + blur reads on a
+     white tablecloth and a dark suit alike, without drawing a box. */
+  background: rgba(10, 10, 18, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 999px;
+  /* 44px is the floor for something people tap without looking. */
+  min-height: 44px;
+  padding: 8px 16px;
+  font-family: var(--fb);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  color: var(--on-night);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.cam-identity > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cam-identity-icon {
+  flex-shrink: 0;
+  opacity: 0.65; /* the name leads; the icon only hints that it's editable */
+  transition: opacity 0.15s ease;
+}
+.cam-identity:active .cam-identity-icon {
+  opacity: 1;
+}
+
+/* ── Viewfinder ─────────────────────────────────────────── */
+/* Absolutely filling the view, underneath the controls: the picture gets every
+   pixel, and the iOS toolbar collapsing can't reflow anything. */
+.cam-stage {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background: #0b0b14;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cam-viewfinder {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+  background: #0b0b14;
+}
+.cam-stage.is-live .cam-viewfinder {
+  display: block;
+}
+/* Selfies read as a mirror — un-mirrored front video feels wrong to everyone. */
+.cam-viewfinder.is-mirrored {
+  transform: scaleX(-1);
+}
+
+/* ── Grid ───────────────────────────────────────────────── */
+/* Rule of thirds, drawn with gradients rather than elements. The dark line
+   under the light one keeps it visible on a white tablecloth and a dark suit
+   alike. */
+.cam-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      to right,
+      transparent calc(33.333% - 1px),
+      rgba(0, 0, 0, 0.28) calc(33.333% - 1px),
+      rgba(255, 255, 255, 0.45) 33.333%,
+      rgba(0, 0, 0, 0.28) calc(33.333% + 1px),
+      transparent calc(33.333% + 1px),
+      transparent calc(66.666% - 1px),
+      rgba(0, 0, 0, 0.28) calc(66.666% - 1px),
+      rgba(255, 255, 255, 0.45) 66.666%,
+      rgba(0, 0, 0, 0.28) calc(66.666% + 1px),
+      transparent calc(66.666% + 1px)
+    ),
+    linear-gradient(
+      to bottom,
+      transparent calc(33.333% - 1px),
+      rgba(0, 0, 0, 0.28) calc(33.333% - 1px),
+      rgba(255, 255, 255, 0.45) 33.333%,
+      rgba(0, 0, 0, 0.28) calc(33.333% + 1px),
+      transparent calc(33.333% + 1px),
+      transparent calc(66.666% - 1px),
+      rgba(0, 0, 0, 0.28) calc(66.666% - 1px),
+      rgba(255, 255, 255, 0.45) 66.666%,
+      rgba(0, 0, 0, 0.28) calc(66.666% + 1px),
+      transparent calc(66.666% + 1px)
+    );
+}
+
+/* ── Self-timer countdown ───────────────────────────────── */
+.cam-countdown {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--fd);
+  font-size: clamp(5rem, 30vw, 9rem);
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.18);
+  /* Tapping the countdown cancels it, so it must accept the tap. */
+  cursor: pointer;
+}
+
+/* ── Tool strip ─────────────────────────────────────────── */
+.cam-tools {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 16px 10px;
+  flex-shrink: 0;
+}
+.cam-tool {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(18, 18, 31, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--on-night);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+/* On = mint fill, so the active state is obvious at a glance in a dark room. */
+.cam-tool[aria-pressed="true"],
+.cam-tool.is-on {
+  background: var(--cp);
+  border-color: var(--cp);
+  color: var(--dark);
+}
+/* Lilac, not mint: the button's "on" state is already mint, so a mint badge on
+   a mint button would disappear. This is the one place the secondary colour
+   earns its keep. */
+.cam-tool-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(18, 18, 31, 0.85);
+  background: var(--cs);
+  color: var(--dark);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
+/* ── Zoom ───────────────────────────────────────────────── */
+.cam-zoom {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(18, 18, 31, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.cam-zoom-btn {
+  min-width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--on-night);
+  font-family: var(--fb);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cam-zoom-btn.is-on {
+  background: var(--cp);
+  color: var(--dark);
+}
+
+.cam-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+}
+/* Held bright for the duration of a front-camera "flash" — the screen IS the
+   light source, so it can't be a 300ms blink. */
+.cam-flash.is-holding {
+  opacity: 1;
+  transition: opacity 0.12s ease;
+}
+.cam-flash.is-firing {
+  animation: cam-flash 0.32s ease-out;
+}
+@keyframes cam-flash {
+  0% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Permission / fallback panel, shown until the stream is live */
+.cam-permit {
+  position: relative;
+  z-index: 1;
+  padding: 28px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.cam-stage.is-live .cam-permit {
+  display: none;
+}
+.cam-permit-title {
+  font-family: var(--fd);
+  font-size: 1.5rem;
+  color: var(--on-night);
+}
+.cam-permit-note {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--on-night-muted);
+  max-width: 34ch;
+}
+.cam-permit-hint {
+  margin-top: 6px;
+  max-width: 32ch;
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.cam-permit-hint strong {
+  font-weight: 600;
+  color: var(--on-night-muted);
+}
+.cam-permit-btn {
+  margin-top: 8px;
+  padding: 14px 26px;
+  min-height: 48px;
+  border: none;
+  border-radius: 999px;
+  background: var(--cp);
+  color: var(--dark);
+  font-family: var(--fb);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* ── Toast ──────────────────────────────────────────────── */
+/* A pill that floats over the picture and asks to be noticed, rather than a
+   line of text that blends into a bright frame. Portrait: just above the
+   shutter, where the eye already is. Landscape: up top, clear of the control
+   column on the right. Centred on the long axis in both. */
+.cam-status {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Relative to .cam-controls, so it rides above the tools + shutter rather
+     than at a hand-tuned distance from the bottom of the screen. */
+  bottom: calc(100% + 12px);
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(12, 12, 21, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  animation: cam-toast-in 0.22s ease-out;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+.cam-status.is-leaving {
+  opacity: 0;
+  transform: translate(-50%, 6px);
+}
+.cam-status[data-kind="ok"] {
+  color: var(--cp);
+  border: 1px solid rgba(168, 212, 184, 0.4);
+}
+.cam-status[data-kind="working"],
+.cam-status[data-kind="info"] {
+  color: var(--on-night);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.cam-status[data-kind="error"] {
+  color: #ffb4a8;
+  border: 1px solid rgba(255, 180, 168, 0.45);
+}
+
+@keyframes cam-toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cam-status {
+    animation: none;
+  }
+}
+
+/* ── Control deck ───────────────────────────────────────── */
+.cam-controls {
+  position: relative;
+  z-index: 2;
+  margin-top: auto; /* pinned to the bottom, whatever the screen height */
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px max(18px, env(safe-area-inset-bottom));
+}
+.cam-deck {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center;
+  gap: 12px;
+  padding-top: 6px;
+}
+.cam-shutter {
+  /* Explicit placement: the shutter holds the middle column so it stays on the
+     screen's centre line regardless of what sits beside it. */
+  grid-column: 2;
+  grid-row: 1;
+  /* 68px — well past the 44px minimum for a one-handed tap, but small enough
+     that it reads as a control sitting on the photo rather than covering it.
+     The ring around it adds presence without adding footprint. */
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: var(--cp);
+  border: 4px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 0 0 2px rgba(168, 212, 184, 0.3);
+  cursor: pointer;
+  /* kills the 300ms double-tap-zoom delay */
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    transform 0.12s ease,
+    opacity 0.12s ease;
+}
+.cam-shutter:active {
+  transform: scale(0.94);
+}
+.cam-shutter.is-busy,
+.cam-shutter:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.cam-shutter.is-busy {
+  animation: cam-pulse 1.1s ease-in-out infinite;
+}
+/* Flip sits to the RIGHT of the shutter; the spacer on the left keeps the
+   shutter itself centred on the screen. */
+.cam-side-btn {
+  grid-column: 3;
+  grid-row: 1;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(18, 18, 31, 0.6);
+  backdrop-filter: blur(6px);
+  color: var(--on-night);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+  justify-self: center;
+}
+.cam-picker {
+  grid-column: 2;
+  padding: 16px 28px;
+  min-height: 48px;
+  border-radius: 999px;
+  background: var(--cp);
+  color: var(--dark);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cam-picker input {
+  display: none;
+}
+
+@keyframes cam-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cam-shutter,
+  .cam-shutter.is-busy,
+  /* Held bright for the duration of a front-camera "flash" — the screen IS the
+   light source, so it can't be a 300ms blink. */
+.cam-flash.is-holding {
+    opacity: 1;
+    transition: opacity 0.12s ease;
+  }
+  .cam-flash.is-firing {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* Post-capture review — the photo takes the whole screen, exactly like the
+   viewfinder it replaces, with the caption and the two decisions floating on
+   top of it. */
+.cam-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+/* `cover`, matching the viewfinder: the live preview crops to fill the screen,
+   so a `contain` review would show MORE than the guest framed and sit in black
+   bars. What you saw when you shot is what you see now. */
+.cam-sheet-preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+.cam-sheet-bar {
+  position: relative;
+  z-index: 1;
+  padding: 40px 16px max(18px, env(safe-area-inset-bottom));
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.88) 55%,
+    rgba(0, 0, 0, 0)
+  );
+}
+.cam-sheet-field {
+  position: relative;
+}
+.cam-caption-count {
+  position: absolute;
+  right: 12px;
+  bottom: -18px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--on-night-muted);
+}
+.cam-caption-count[data-low="true"] {
+  color: #ffb4a8;
+}
+.cam-sheet-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+}
+.cam-sheet .cam-btn {
+  background: var(--cp);
+  color: var(--dark);
+}
+.cam-sheet .cam-btn-ghost {
+  color: var(--on-night-muted);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.cam-caption-input {
+  width: 100%;
+  /* A textarea so a caption can run to a couple of lines without scrolling
+     sideways. Fixed rows + no resize handle: the sheet's height is budgeted
+     around the buttons staying reachable one-handed. */
+  display: block;
+  resize: none;
+  min-height: 72px;
+  line-height: 1.45;
+  padding: 14px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: var(--night-soft);
+  color: var(--on-night);
+  font-family: var(--fb);
+  /* 16px minimum — anything smaller and iOS zooms the page on focus and stays
+     zoomed, leaving the guest pinching to find the shutter again. */
+  font-size: 16px;
+  outline: none;
+}
+.cam-caption-input:focus {
+  border-color: var(--cp);
+}
+.cam-caption-input::placeholder {
+  color: var(--muted);
+}
+
+/* ── Roll finished / closed ─────────────────────────────── */
+/* The bookend to the gate — same ivory card, so the app ends where it began
+   rather than trailing off into black. */
+.cam-done {
+  position: relative;
+  z-index: 2;
+  margin: auto;
+  width: 100%;
+  max-width: 340px;
+  padding: 28px 24px;
+  border-radius: 20px;
+  background: var(--ivory);
+  color: var(--dark);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+.cam-done .cam-eyebrow {
+  color: #6aa383; /* mint is too pale on ivory */
+}
+.cam-done-title {
+  font-family: var(--fd);
+  font-size: 1.6rem;
+  line-height: 1.2;
+  color: var(--dark);
+  margin-bottom: 8px;
+}
+.cam-done-body {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  color: var(--dark);
+}
+.cam-done-body #done-name {
+  font-weight: 500;
+}
+.cam-done-action {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 999px;
+  background: var(--dark);
+  color: var(--cp);
+  font-family: var(--fb);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cam-done-tag {
+  margin-top: 18px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Finished: the panel is the whole screen ────────────── */
+/* One rule instead of hiding controls individually — that approach missed the
+   tool strip, the counter and the identity line, which sat there behind the
+   panel. Anything added later is covered by this automatically. */
+#camera-view.is-finished .cam-bar,
+#camera-view.is-finished .cam-stage,
+#camera-view.is-finished .cam-counter,
+#camera-view.is-finished #cam-tools,
+#camera-view.is-finished .cam-controls,
+#camera-view.is-finished .cam-status {
+  display: none !important;
+}
+#camera-view.is-finished {
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+/* ── The gate ───────────────────────────────────────────── */
+/* Sits above the camera (z-index 40) rather than replacing it: the guest sees
+   the app they're being let into, and the blur makes it obvious the camera is
+   waiting rather than broken. NameVerifyField's own table modal is z-index 200,
+   so it still lands on top of this. */
+.cam-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px max(24px, env(safe-area-inset-bottom));
+  background: rgba(9, 9, 16, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow-y: auto;
+}
+/* A light card, so NameVerifyField's global styles (written against
+   --ivory/--dark) work unchanged. */
+.cam-gate-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: var(--ivory);
+  color: var(--dark);
+  border-radius: 20px;
+  padding: 26px 20px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+}
+.cam-gate-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cam-gate-close:active {
+  color: var(--dark);
+}
+
+.cam-gate-card .cam-eyebrow {
+  color: #6aa383; /* mint is too pale on the ivory card */
+  text-align: center;
+}
+.cam-gate-title {
+  font-family: var(--fd);
+  font-size: 1.85rem;
+  font-weight: 400;
+  text-align: center;
+  margin-top: 4px;
+}
+.cam-gate-intro {
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1.6;
+  text-align: center;
+  margin: 10px 0 20px;
+}
+
+/* One card, two steps — name, then table. Stacking a second modal on top of
+   the gate was the thing this replaced. */
+.cam-step {
+  display: flex;
+  flex-direction: column;
+}
+.cam-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--dark);
+  margin-bottom: 8px;
+}
+.cam-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  font-family: var(--fb);
+  /* 16px minimum: anything smaller and iOS zooms the page on focus and leaves
+     it zoomed, so the guest has to pinch back out to reach the shutter. */
+  font-size: 16px;
+  color: var(--dark);
+  outline: none;
+}
+.cam-input:focus {
+  border-color: var(--cp);
+}
+
+.cam-suggestions {
+  margin-top: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.cam-suggestion {
+  width: 100%;
+  padding: 14px 16px;
+  min-height: 48px;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  font-family: var(--fb);
+  font-size: 15px;
+  color: var(--dark);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cam-suggestion:last-child {
+  border-bottom: none;
+}
+.cam-suggestion-hint {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.cam-suggestions-empty {
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.cam-error {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #b3261e;
+}
+.cam-step-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.cam-btn,
+.cam-btn-ghost {
+  flex: 1;
+  min-height: 48px;
+  border-radius: 999px;
+  font-family: var(--fb);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cam-btn {
+  border: none;
+  background: var(--dark);
+  color: var(--cp);
+}
+.cam-btn:disabled {
+  opacity: 0.6;
+}
+.cam-btn-ghost {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+}
+
+/* ── Footer ─────────────────────────────────────────────── */
+.cam-foot {
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 24px;
+  flex-shrink: 0;
+}
+
+/* ── Landscape phones ───────────────────────────────────── */
+/* Held sideways, the thumb sits at the RIGHT edge — so the controls go there,
+   the way every native camera app does it. Bottom-pinned controls would mean
+   reaching across the screen and would eat the scarce height on a ~390px-tall
+   viewport. The counter moves to the top-left, out of the thumb's way.
+   max-height guards it to phones: an iPad in landscape has the height for the
+   portrait layout. */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Scrims rotate with the controls: dark down the right edge instead of
+     across the bottom, so the counter and shutter stay readable. */
+  #camera-view::before {
+    top: 0;
+    bottom: 0;
+    right: auto;
+    width: 30vw;
+    height: auto;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.6), transparent);
+  }
+  #camera-view::after {
+    top: 0;
+    bottom: 0;
+    left: auto;
+    width: 38vw;
+    height: auto;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.75), transparent);
+  }
+
+  .cam-bar {
+    padding: max(10px, env(safe-area-inset-top)) 140px 0 140px;
+  }
+  .cam-counter {
+    grid-column: auto;
+    grid-row: auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 9px;
+  }
+  .cam-identity {
+    font-size: 11px;
+  }
+  .cam-counter-num {
+    font-size: 1.1rem;
+  }
+
+  /* The control deck becomes a vertical column hugging the right edge. */
+  /* FIXED, not absolute: .cam-tools sits inside .cam-controls, which is the
+     120px column pinned to the right here — so `absolute; left: 12px` put the
+     strip 12px inside that column, on top of the shutter. #camera-view is
+     itself fixed inset:0, so viewport coordinates are view coordinates. */
+  /* Both columns span the full height and distribute their buttons, rather
+     than clustering in the middle of a 390px-tall screen with dead space above
+     and below. */
+  .cam-tools {
+    position: fixed;
+    left: max(12px, env(safe-area-inset-left));
+    top: max(14px, env(safe-area-inset-top));
+    bottom: max(14px, env(safe-area-inset-bottom));
+    flex-direction: column;
+    justify-content: space-evenly;
+    gap: 0;
+    padding: 0;
+  }
+  .cam-zoom {
+    flex-direction: column;
+  }
+  .cam-controls {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    margin-top: 0;
+    width: 120px;
+    justify-content: stretch;
+    gap: 0;
+    padding: 0 max(12px, env(safe-area-inset-right)) 0 0;
+  }
+  .cam-deck {
+    grid-template-columns: none;
+    grid-auto-flow: row;
+    /* Full height + space-evenly: stacked controls sit under one thumb, so the
+       air between them is what prevents mis-taps — and spreading it beats a
+       fixed gap floating in the middle. */
+    height: 100%;
+    align-content: space-evenly;
+    gap: 0;
+    padding-top: 0;
+  }
+  /* Flip on top, count at the bottom: held sideways the thumb rests low, so
+     the control you actually press sits away from it and the read-only tally
+     takes the spot most likely to be brushed. */
+  .cam-side-btn {
+    order: 1;
+  }
+  .cam-shutter {
+    order: 2;
+  }
+  .cam-counter {
+    order: 3;
+  }
+  .cam-picker {
+    order: 4;
+  }
+  .cam-shutter {
+    grid-column: auto;
+    grid-row: auto;
+    width: 62px;
+    height: 62px;
+  }
+  .cam-side-btn {
+    grid-column: auto;
+    grid-row: auto;
+    width: 42px;
+    height: 42px;
+    font-size: 19px;
+  }
+  .cam-picker {
+    grid-column: auto;
+    padding: 12px 16px;
+    font-size: 13px;
+    text-align: center;
+  }
+
+  /* Caption sits left of the deck so the keyboard never covers the shutter. */
+
+  /* Bottom centre, same as portrait. Nothing sits along the bottom in
+     landscape — the controls are the right-hand column — so the pill clears
+     them and the eye looks in one place in both orientations. */
+  /* The controls are a column on the right here, so anchoring to them would
+     put the toast beside the buttons. Pin it to the viewport instead. */
+  .cam-status {
+    position: fixed;
+    bottom: max(14px, env(safe-area-inset-bottom));
+    max-width: min(60vw, 420px);
+  }
+
+  .cam-done {
+    margin: auto;
+  }
+  .cam-sheet-actions {
+    margin-top: 10px;
+  }
+}
+
+/* ── Device split ───────────────────────────────────────── */
+/* Exactly one of these is ever visible. data-device is set by the server from
+   the user-agent and corrected before paint by the inline script in
+   camera.astro — see lib/device.ts. */
+[data-device="desktop"] #camera-view,
+[data-device="desktop"] #cam-gate {
+  display: none !important;
+}
+[data-device="handheld"] #cam-desktop {
+  display: none !important;
+}
+
+.cam-desktop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+.cam-desktop-card {
+  text-align: center;
+}
+.cam-desktop-qr {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+.cam-desktop-url {
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+}
