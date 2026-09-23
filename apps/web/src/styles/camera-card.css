@@ -6,13 +6,37 @@
  */
 
 @media print {
-  @page {
-    /* Bare dimensions — NEVER `4in 6in portrait`. Per CSS Paged Media 3 the
-       portrait/landscape keyword may only follow a NAMED size, so the mixed
-       form is invalid, the whole declaration is dropped, and the sheet
-       silently falls back to Letter. The numbers already encode orientation. */
+  /* One named page per format. Bare dimensions throughout — NEVER
+     `4in 6in portrait`: per CSS Paged Media 3 the portrait/landscape keyword
+     may only follow a NAMED size, so the mixed form is invalid, the whole
+     declaration is dropped, and the sheet silently falls back to Letter. The
+     numbers already encode orientation. */
+  @page rc-card {
     size: 4in 6in;
     margin: 0;
+  }
+  @page rc-4up {
+    size: 8.5in 11in;
+    margin: 0.25in;
+  }
+  @page rc-sign {
+    size: 5in 7in;
+    margin: 0;
+  }
+  @page {
+    size: 4in 6in;
+    margin: 0;
+  }
+
+  body[data-paper="tent"] .paper-pane.is-active,
+  body[data-paper="flat"] .paper-pane.is-active {
+    page: rc-card;
+  }
+  body[data-paper="4up"] .paper-pane.is-active {
+    page: rc-4up;
+  }
+  body[data-paper="sign"] .paper-pane.is-active {
+    page: rc-sign;
   }
   body {
     background: white !important;
@@ -137,4 +161,99 @@
 .tent-steps .step-n {
   color: #a8d4b8;
   font-weight: 600;
+}
+
+/* ── Formats ──────────────────────────────────────────────── */
+/* Exactly one pane is shown, on screen and in print, so printing emits the
+   selected format and nothing else. */
+.paper-pane {
+  display: none;
+}
+.paper-pane.is-active {
+  display: block;
+}
+
+/* 4-up: four 4 × 5 tents on a Letter sheet. Four 4 × 6 cards would need
+   8 × 12in and Letter is 8.5 × 11, so the compact size is what makes this
+   format possible at all — 15 tables becomes 4 sheets instead of 15. */
+.sheet-4up {
+  display: grid;
+  grid-template-columns: repeat(2, 4in);
+  grid-template-rows: repeat(2, 5in);
+  justify-content: center;
+  align-content: center;
+  background: white;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.sheet-4up .tent {
+  outline: 0.5pt dashed rgba(130, 130, 130, 0.8); /* cut guide */
+}
+
+.tent.is-compact {
+  height: 5in;
+}
+.tent.is-compact .tent-face {
+  height: 2.5in;
+  padding: 0.12in 0.24in;
+  gap: 0.02in;
+}
+.tent.is-compact .tent-title {
+  font-size: 16pt;
+}
+.tent.is-compact .tent-rule {
+  margin: 0.01in 0;
+}
+.tent.is-compact .tent-url {
+  font-size: 7.5pt;
+}
+/* The QR does not shrink with the card — below ~1.2in it stops scanning
+   reliably in low light, which is the one thing this card has to do. */
+.tent.is-compact .tent-qr .qr-inner canvas,
+.tent.is-compact .tent-qr .qr-inner svg {
+  width: 1.2in !important;
+  height: 1.2in !important;
+}
+.tent.is-compact .tent-steps {
+  font-size: 7.5pt;
+}
+.tent.is-compact .tent-lede {
+  font-size: 7.5pt;
+}
+
+/* Flat: no fold, one face, steps under the QR — for acrylic stands. */
+.tent.is-flat .tent-face {
+  height: 6in;
+  justify-content: center;
+  gap: 0.1in;
+}
+.tent-steps.is-inline {
+  margin-top: 0.08in;
+  max-width: 2.6in;
+}
+
+/* Sign: read from a few feet away, so the QR more than doubles and the step
+   list goes — at that distance it's a signpost, not instructions. */
+.tent.is-sign {
+  width: 5in;
+  height: 7in;
+}
+.tent.is-sign .tent-face {
+  width: 5in;
+  height: 7in;
+  justify-content: center;
+  padding: 0.4in;
+  gap: 0.12in;
+}
+.tent.is-sign .tent-title {
+  font-size: 34pt;
+}
+.tent.is-sign .tent-lede {
+  font-size: 11pt;
+  max-width: 3.6in;
+}
+.tent.is-sign .tent-qr .qr-inner canvas,
+.tent.is-sign .tent-qr .qr-inner svg {
+  width: 2.6in !important;
+  height: 2.6in !important;
 }

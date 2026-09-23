@@ -1,0 +1,116 @@
+---
+// components/print/RollCallTent.astro
+// One Roll Call card. Used four times on the 4-up sheet and once everywhere
+// else, so the artwork lives in exactly one place.
+//
+// variant:
+//   tent    folded card — back face rotated 180 so it reads once folded
+//   flat    single face, no fold; steps move under the QR (acrylic stands)
+//   sign    one face, big QR, no steps — read from a few feet away
+import QRCode from "@components/QRCode.astro";
+import Hashtag from "@components/Hashtag.astro";
+
+interface Props {
+  variant?: "tent" | "flat" | "sign";
+  /** 4 × 5 in instead of 4 × 6 — the size that fits four to a Letter sheet. */
+  compact?: boolean;
+  shots: number;
+  cameraUrl: string;
+  shortUrl: string;
+  developsOn: string;
+  weddingDateLabel: string;
+  hashtag?: string | null;
+}
+
+const {
+  variant = "tent",
+  compact = false,
+  shots,
+  cameraUrl,
+  shortUrl,
+  developsOn,
+  weddingDateLabel,
+  hashtag,
+} = Astro.props;
+
+// The sign is read at a distance, so its QR is more than twice the size.
+// 120px ≈ 1.25in at 96dpi. The compact card keeps the same QR — shrinking it
+// below ~1.2in is where scanning in a dim room starts to fail, so the card
+// gives up padding instead.
+const qrSize = variant === "sign" ? 260 : 120;
+---
+
+<div class:list={["tent", `is-${variant}`, compact && "is-compact"]}>
+  {
+    variant === "tent" && (
+      <>
+        {/* Back — rotated so it reads right-way-up once the card is folded. */}
+        <div class="tent-face is-flipped">
+          <p class="tent-eyebrow">How it works</p>
+          <ul class="tent-steps">
+            <li>
+              <span class="step-n">1</span>
+              <span>Scan the code on the other side.</span>
+            </li>
+            <li>
+              <span class="step-n">2</span>
+              <span>Find your name, then enter your table number.</span>
+            </li>
+            <li>
+              <span class="step-n">3</span>
+              <span>Shoot — you have {shots} shots for the night.</span>
+            </li>
+          </ul>
+          <p class="tent-lede">
+            Your photos stay hidden until they're developed on {developsOn}.
+          </p>
+          <Hashtag as="p" tag={hashtag} class="tent-foot" />
+        </div>
+
+        <div class="tent-fold" />
+      </>
+    )
+  }
+
+  {/* Front — what a seated guest sees. */}
+  <div class="tent-face">
+    <p class="tent-eyebrow">Roll Call · {shots} shots</p>
+    <h1 class="tent-title">Be our photographer</h1>
+    <div class="tent-rule">
+      <span class="tent-rule-line"></span>
+      <span class="tent-rule-gem">✦</span>
+      <span class="tent-rule-line"></span>
+    </div>
+    <div class="tent-qr">
+      <QRCode url={cameraUrl} size={qrSize} />
+    </div>
+    <p class="tent-url">{shortUrl}</p>
+
+    {
+      variant === "flat" && (
+        <ul class="tent-steps is-inline">
+          <li>
+            <span class="step-n">1</span>
+            <span>Find your name, then your table number.</span>
+          </li>
+          <li>
+            <span class="step-n">2</span>
+            <span>
+              {shots} shots, developed on {developsOn}.
+            </span>
+          </li>
+        </ul>
+      )
+    }
+
+    {
+      variant === "sign" ? (
+        <p class="tent-lede">
+          Twelve shots to remember us by. Developed on {developsOn}.
+        </p>
+      ) : (
+        <p class="tent-foot">{weddingDateLabel}</p>
+      )
+    }
+  </div>
+</div>

@@ -1,16 +1,22 @@
 ---
 export const prerender = true;
 // apps/web/src/pages/print/camera.astro
-// Roll Call table tent — 4 × 6 in, folded to a 4 × 3 in tent that stands on
-// each table. Front: the QR code guests scan. Back (upside-down before the
-// fold): how it works, so both sides of the table can read something.
+// Roll Call table cards, in four formats. The artwork is identical across all
+// of them (components/print/RollCallTent.astro); only the sheet changes.
+//
+//   tent  4 × 6 in  folded to a 4 × 3 tent — the default, one per table
+//   4up   Letter    four 4 × 5 tents to cut apart (15 tables → 4 sheets)
+//   flat  4 × 6 in  single-sided, for venues with acrylic stands
+//   sign  5 × 7 in  one big QR for the entrance or a photo corner
+//
+// Four 4 × 6 cards would need 8 × 12 in, so the 4-up sheet uses 4 × 5 cards —
+// 8 × 10 in of card on a Letter sheet, with room for the cut guides.
 
 import { getSettings } from "@lib/directus";
 import { formatDate } from "@lib/utils/format";
 import { SHOT_LIMIT } from "@lib/constants/camera";
 import PrintLayout from "@layouts/PrintLayout.astro";
-import QRCode from "@components/QRCode.astro";
-import Hashtag from "@components/Hashtag.astro";
+import RollCallTent from "@components/print/RollCallTent.astro";
 import { DateTime } from "luxon";
 import "../../styles/camera-card.css";
 
@@ -25,57 +31,71 @@ const shortUrl = cameraUrl.replace(/^https?:\/\//, "");
 const developsOn = DateTime.fromISO(weddingDate)
   .plus({ days: 1 })
   .toFormat("LLLL d");
+
+const PAPERS = [
+  { id: "tent", label: "Tent 4×6" },
+  { id: "4up", label: "4-up Letter" },
+  { id: "flat", label: "Flat 4×6" },
+  { id: "sign", label: "Sign 5×7" },
+] as const;
+
+const card = {
+  shots: SHOT_LIMIT,
+  cameraUrl,
+  shortUrl,
+  developsOn,
+  weddingDateLabel,
+  hashtag: settings.hashtag,
+};
 ---
 
 <PrintLayout
-  title="Roll Call Table Tent — Print"
+  title="Roll Call Cards — Print"
   cardWidth="4in"
   cardHeight="6in"
-  toolbarHint="4 × 6 in · Folds to a 4 × 3 in tent · One per table"
+  toolbarHint="Pick a format. Tent folds to 4 × 3 in; 4-up puts four smaller tents on one Letter sheet to cut apart; flat suits acrylic stands; sign is for the entrance."
 >
-  <div class="tent">
-    {/* Back — rotated so it reads right-way-up once the card is folded. */}
-    <div class="tent-face is-flipped">
-      <p class="tent-eyebrow">How it works</p>
-      <ul class="tent-steps">
-        <li>
-          <span class="step-n">1</span><span
-            >Scan the code on the other side.</span
+  <div class="toolbar-controls" slot="toolbar-controls">
+    <div class="seg-control">
+      {
+        PAPERS.map((p, i) => (
+          <button
+            type="button"
+            class:list={["seg-btn", i === 0 && "active"]}
+            data-paper-btn={p.id}
           >
-        </li>
-        <li>
-          <span class="step-n">2</span><span
-            >Find your name, then enter your table number.</span
-          >
-        </li>
-        <li>
-          <span class="step-n">3</span><span
-            >Shoot — you have {SHOT_LIMIT} shots for the night.</span
-          >
-        </li>
-      </ul>
-      <p class="tent-lede">
-        Your photos stay hidden until they're developed on {developsOn}.
-      </p>
-      <Hashtag as="p" tag={settings.hashtag} class="tent-foot" />
-    </div>
-
-    <div class="tent-fold"></div>
-
-    {/* Front — what a seated guest sees. */}
-    <div class="tent-face">
-      <p class="tent-eyebrow">Roll Call · {SHOT_LIMIT} shots</p>
-      <h1 class="tent-title">Be our photographer</h1>
-      <div class="tent-rule">
-        <span class="tent-rule-line"></span>
-        <span class="tent-rule-gem">✦</span>
-        <span class="tent-rule-line"></span>
-      </div>
-      <div class="tent-qr">
-        <QRCode url={cameraUrl} size={120} />
-      </div>
-      <p class="tent-url">{shortUrl}</p>
-      <p class="tent-foot">{weddingDateLabel}</p>
+            {p.label}
+          </button>
+        ))
+      }
     </div>
   </div>
+
+  {
+    /* Only the pane matching data-paper shows, on screen and in print, so
+      printing emits exactly the format selected. */
+  }
+  <div class="paper-pane is-active" data-pane="tent">
+    <RollCallTent variant="tent" {...card} />
+  </div>
+
+  <div class="paper-pane" data-pane="4up">
+    <div class="sheet-4up">
+      {
+        Array.from({ length: 4 }).map(() => (
+          <RollCallTent variant="tent" compact {...card} />
+        ))
+      }
+    </div>
+  </div>
+
+  <div class="paper-pane" data-pane="flat">
+    <RollCallTent variant="flat" {...card} />
+  </div>
+
+  <div class="paper-pane" data-pane="sign">
+    <RollCallTent variant="sign" {...card} />
+  </div>
 </PrintLayout>
+
+<script is:inline src="/scripts/camera-preview.js"></script>
