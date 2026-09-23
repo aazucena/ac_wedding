@@ -242,7 +242,9 @@ export const POST: APIRoute = async ({ request }) => {
     fileForm.append("title", title);
     if (caption) fileForm.append("description", caption);
     if (folderId) fileForm.append("folder", folderId);
-    fileForm.append("file", file, file.name || "partycam.jpg");
+    // The client sends a unique name (roll-call-<name>-<stamp>-<rand>.jpg);
+    // this only covers a request that arrives without one.
+    fileForm.append("file", file, file.name || `roll-call-${Date.now()}.jpg`);
 
     const uploadRes = await fetch(`${DIRECTUS_URL}/files`, {
       method: "POST",

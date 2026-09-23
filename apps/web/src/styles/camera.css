@@ -293,7 +293,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--fd);
+  /* Jost, not the display serif. Cormorant Garamond ships OLD-STYLE figures —
+     3 and 5 descend below the baseline while 1 and 2 don't — so the count
+     visibly jumped as it ticked down. Measured ink centres at 117px:
+       Cormorant  -22, -24, -8, -8, -22.5   → 16px spread
+       Jost       -42, -42, -40.5, -41, -41.5 → 1.5px spread
+     font-variant-numeric: lining-nums does NOT fix it: Google's webfont build
+     of Cormorant carries no lnum feature, so there's nothing to switch to.
+     Jost's ink centre also coincides with its line-box centre, so flex
+     centring alone lands it optically true — no nudge needed. */
+  font-family: var(--fb);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   font-size: clamp(5rem, 30vw, 9rem);
   line-height: 1;
   color: #fff;

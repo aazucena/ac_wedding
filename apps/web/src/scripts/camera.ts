@@ -972,6 +972,84 @@ function exposedFrames(): Promise<void> {
   });
 }
 
+/**
+ * Take the photo with the PLATFORM firing the flash, rather than us switching a
+ * torch on and guessing when the LED caught up. takePhoto() synchronises the
+ * flash and the exposure the way the native camera app does, which is the only
+ * way to stop racing a camera HAL whose timing we can't observe.
+ *
+ * Returns null when this route isn't available or doesn't work, and the caller
+ * falls back to the canvas path.
+ */
+async function captureWithFlash(): Promise<Blob | null> {
+  const Ctor = (window as unknown as { ImageCapture?: typeof ImageCapture })
+    .ImageCapture;
+  const track = stream?.getVideoTracks()[0];
+  if (!Ctor || !track || !viewfinder) return null;
+
+  try {
+    const ic = new Ctor(track);
+    const caps = (await ic.getPhotoCapabilities()) as PhotoCapabilities & {
+      fillLightMode?: string[];
+    };
+    if (!caps.fillLightMode?.includes("flash")) return null;
+
+    // takePhoto can hang outright on some Android devices; never let the
+    // shutter be the thing that waits forever.
+    const shot = (await Promise.race([
+      ic.takePhoto({ fillLightMode: "flash" }),
+      new Promise((_, reject) =>
+        window.setTimeout(() => reject(new Error("takePhoto timed out")), 2000),
+      ),
+    ])) as Blob;
+
+    // takePhoto returns the FULL sensor frame at full resolution — not what the
+    // viewfinder showed. Put it through the same cover-crop, zoom, mirror and
+    // size cap as every other shot, or flash photos would be framed
+    // differently from the rest of the roll.
+    const bitmap = await createImageBitmap(shot);
+    const rect = coverSourceRect({
+      videoW: bitmap.width,
+      videoH: bitmap.height,
+      viewW: viewfinder.getBoundingClientRect().width,
+      viewH: viewfinder.getBoundingClientRect().height,
+      zoom: hardwareZoom ? 1 : zoom,
+    });
+    const scale = Math.min(1, MAX_EDGE / Math.max(rect.sw, rect.sh));
+    frameCanvas.width = Math.round(rect.sw * scale);
+    frameCanvas.height = Math.round(rect.sh * scale);
+    const ctx = frameCanvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close();
+      return null;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    if (facing === "user") {
+      ctx.translate(frameCanvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+    ctx.drawImage(
+      bitmap,
+      rect.sx,
+      rect.sy,
+      rect.sw,
+      rect.sh,
+      0,
+      0,
+      frameCanvas.width,
+      frameCanvas.height,
+    );
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    bitmap.close();
+
+    return await new Promise<Blob | null>((resolve) =>
+      frameCanvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
+    );
+  } catch {
+    return null; // any failure → the tested canvas path
+  }
+}
+
 async function fireFlash(): Promise<boolean> {
   if (!flashArmed) return false;
 
@@ -1062,14 +1140,24 @@ async function takeShot() {
   try {
     if (!(await runCountdown())) return; // cancelled
 
-    // Light first, grab while it's lit, then dim — a flash, not a blink after
-    // the fact. The decorative shutter blink is skipped when a real flash
-    // fired: is-firing animates opacity to 0, and a CSS animation overrides
-    // is-holding's opacity: 1, so it used to black out the screen flash in the
-    // instant before the frame was grabbed.
-    const fired = await fireFlash();
-    if (!fired) flash();
-    const blob = await captureFrame();
+    // Preferred route when the flash is armed: let the platform fire the flash
+    // and take the picture as one operation. No torch to switch, nothing to
+    // time. Falls through to the hand-rolled path when unavailable.
+    let blob: Blob | null = null;
+    if (flashArmed && torchCapable) {
+      blob = await captureWithFlash();
+    }
+
+    if (!blob) {
+      // Light first, grab while it's lit, then dim — a flash, not a blink after
+      // the fact. The decorative shutter blink is skipped when a real flash
+      // fired: is-firing animates opacity to 0, and a CSS animation overrides
+      // is-holding's opacity: 1, so it used to black out the screen flash in
+      // the instant before the frame was grabbed.
+      const fired = await fireFlash();
+      if (!fired) flash();
+      blob = await captureFrame();
+    }
     endFlash(); // light goes out only once the frame is in hand
     if (blob) openSheet(blob);
     else setStatus("That didn't catch — try once more", "error");
@@ -1085,11 +1173,41 @@ pickerInput?.addEventListener("change", () => {
   if (file) void shrinkFile(file).then(openSheet);
 });
 
+/**
+ * A unique, legible filename for one shot:
+ *   roll-call-nelson-plata-20260926-193004-k7f2.jpg
+ *
+ * The name makes it findable in a camera roll and in the Directus library, the
+ * timestamp keeps a guest's own photos in the order they took them, and the
+ * random suffix covers two people tapping in the same second. Generated once
+ * per shot so the file a guest saves matches the one you receive.
+ */
+function makeShotName(): string {
+  const slug =
+    guestName
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // strip accents
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 24) || "guest";
+  const d = new Date();
+  const p2 = (n: number) => String(n).padStart(2, "0");
+  const stamp =
+    `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}` +
+    `-${p2(d.getHours())}${p2(d.getMinutes())}${p2(d.getSeconds())}`;
+  const rand = Math.random().toString(36).slice(2, 6);
+  return `roll-call-${slug}-${stamp}-${rand}.jpg`;
+}
+
+/** Name for the shot currently held in the review sheet. */
+let pendingShotName = "";
+
 /** The shot as a File, for the OS share sheet. Built lazily — most shots are
  *  never shared, and the blob is already in memory either way. */
 function pendingShotFile(): File | null {
   if (!pendingShot) return null;
-  return new File([pendingShot], "rollcall.jpg", {
+  return new File([pendingShot], pendingShotName || makeShotName(), {
     type: "image/jpeg",
     lastModified: Date.now(),
   });
@@ -1117,6 +1235,7 @@ sheetShare?.addEventListener("click", () => void shareShot());
 /** Hold the shot, show it, ask for a caption. Nothing is uploaded yet. */
 function openSheet(blob: Blob) {
   pendingShot = blob;
+  pendingShotName = makeShotName(); // one name per shot, shared by save and send
   // Exactly one object URL alive at a time, revoked in closeSheet — the same
   // discipline the homepage hero needs to stay alive on iOS Safari.
   if (sheetPreview) {
@@ -1196,7 +1315,7 @@ async function send(blob: Blob, caption: string) {
 
   try {
     const form = new FormData();
-    form.append("file", blob, "partycam.jpg");
+    form.append("file", blob, pendingShotName || makeShotName());
     form.append("personId", personId);
     form.append("personToken", personToken);
     if (guestName) form.append("name", guestName);
