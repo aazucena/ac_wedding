@@ -132,6 +132,10 @@ let torchOn = false;
 let timerSeconds = 0;
 const TIMER_STEPS = [0, 3, 5, 10];
 let countdownTimer: number | undefined;
+/** Settles runCountdown()'s promise. Held here because cancelling has to
+ *  resolve it from OUTSIDE the interval — clearing the interval means the
+ *  callback can never resolve it itself. */
+let countdownResolve: ((completed: boolean) => void) | null = null;
 
 // ── Identity ────────────────────────────────────────────────────────────────
 function saveIdentity() {
@@ -1102,6 +1106,11 @@ function cancelCountdown() {
   window.clearInterval(countdownTimer);
   countdownTimer = undefined;
   countdownEl?.classList.add("hidden");
+  // Settle the promise takeShot() is awaiting. Without this it never resolves,
+  // takeShot()'s finally never runs, and the shutter stays disabled until the
+  // page is reloaded — cancelling the timer bricked the camera.
+  countdownResolve?.(false);
+  countdownResolve = null;
 }
 countdownEl?.addEventListener("click", () => {
   cancelCountdown();
@@ -1110,16 +1119,25 @@ countdownEl?.addEventListener("click", () => {
 
 /** Resolves when the countdown finishes; rejects nothing — a cancel just never
  *  resolves, and the shutter is re-enabled by the caller. */
+/**
+ * Resolves true when the countdown finishes, false when it's cancelled.
+ *
+ * MUST settle on every path: takeShot() awaits this and only re-enables the
+ * shutter in its finally, so a promise left hanging disables the camera until
+ * a reload. Cancellation is settled by cancelCountdown() via countdownResolve,
+ * not from inside the interval — clearing the interval kills that callback.
+ */
 function runCountdown(): Promise<boolean> {
   if (!timerSeconds || !countdownEl) return Promise.resolve(true);
   return new Promise((resolve) => {
+    countdownResolve = resolve;
     let left = timerSeconds;
     countdownEl.textContent = String(left);
     countdownEl.classList.remove("hidden");
     countdownTimer = window.setInterval(() => {
       left -= 1;
-      if (!countdownTimer) return resolve(false); // cancelled
       if (left <= 0) {
+        countdownResolve = null; // completed; cancel must not settle it again
         cancelCountdown();
         resolve(true);
       } else {
@@ -1135,6 +1153,12 @@ shutter?.addEventListener("click", () => {
 });
 
 /** Countdown (if armed) → screen flash (if armed) → capture. */
+/**
+ * Everything awaited in here MUST be guaranteed to settle: the finally below is
+ * the only thing that re-enables the shutter, so one hanging promise takes the
+ * camera down until a reload. runCountdown() settles on cancel, captureWithFlash()
+ * races a 2s timeout, and the torch wait is capped.
+ */
 async function takeShot() {
   if (shutter) shutter.disabled = true;
   try {
