@@ -635,6 +635,17 @@ async function captureFrame(): Promise<Blob | null> {
 
   const ctx = frameCanvas.getContext("2d");
   if (!ctx) return null;
+
+  // The front camera preview is mirrored (.is-mirrored) because an unmirrored
+  // selfie feels wrong to everyone — so the capture has to be mirrored too, or
+  // the photo comes out flipped from what the guest framed. Reset afterwards:
+  // this canvas is reused for every shot, and a leftover transform would flip
+  // the next rear-camera photo.
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  if (facing === "user") {
+    ctx.translate(frameCanvas.width, 0);
+    ctx.scale(-1, 1);
+  }
   ctx.drawImage(
     viewfinder,
     sx,
@@ -646,6 +657,7 @@ async function captureFrame(): Promise<Blob | null> {
     frameCanvas.width,
     frameCanvas.height,
   );
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   return new Promise<Blob | null>((resolve) =>
     frameCanvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
