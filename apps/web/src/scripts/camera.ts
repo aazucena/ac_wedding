@@ -821,6 +821,20 @@ gridBtn?.addEventListener("click", () => {
 });
 
 // ── Flash ───────────────────────────────────────────────────────────────────
+// The button ARMS the flash; it doesn't switch a light on. Holding the torch
+// lit between shots is a flashlight — it blinds the people you're pointing at,
+// eats battery, and gets left on by accident. A flash belongs around the
+// shutter and nowhere else.
+
+/** Armed, not lit. Applies to both the torch and the front-camera screen. */
+let flashArmed = false;
+
+/** How long the LED is lit before the frame is grabbed. The sensor's auto
+ *  exposure needs a moment to react, or the "flash" photo comes out as dark as
+ *  the one without it. */
+const TORCH_SETTLE_MS = 300;
+const SCREEN_FLASH_MS = 450;
+
 async function setTorch(on: boolean) {
   const track = stream?.getVideoTracks()[0];
   if (!track || !torchCapable) return;
@@ -832,29 +846,40 @@ async function setTorch(on: boolean) {
   } catch {
     torchOn = false;
   }
-  flashBtn?.setAttribute("aria-pressed", String(torchOn));
 }
 
-let screenFlashArmed = false;
 flashBtn?.addEventListener("click", () => {
-  if (torchCapable) {
-    void setTorch(!torchOn);
-    return;
-  }
-  screenFlashArmed = !screenFlashArmed;
-  flashBtn.setAttribute("aria-pressed", String(screenFlashArmed));
+  flashArmed = !flashArmed;
+  flashBtn.setAttribute("aria-pressed", String(flashArmed));
+  flashBtn.classList.toggle("is-on", flashArmed);
 });
 
-/** White the screen out for a moment so a front-camera selfie has some light. */
-function screenFlash(): Promise<void> {
-  if (!screenFlashArmed || !flashEl) return Promise.resolve();
-  return new Promise((resolve) => {
-    flashEl.classList.add("is-holding");
-    window.setTimeout(() => {
-      flashEl.classList.remove("is-holding");
-      resolve();
-    }, 450);
-  });
+/**
+ * Fire the flash for this one shot: the LED where there is one, otherwise a
+ * white screen, which only lights a face on the front camera. Resolves once
+ * there's enough light to take the picture.
+ */
+async function fireFlash(): Promise<void> {
+  if (!flashArmed) return;
+
+  if (torchCapable) {
+    await setTorch(true);
+    await new Promise((r) => window.setTimeout(r, TORCH_SETTLE_MS));
+    return;
+  }
+
+  if (facing === "user" && flashEl) {
+    await new Promise<void>((resolve) => {
+      flashEl.classList.add("is-holding");
+      window.setTimeout(resolve, SCREEN_FLASH_MS);
+    });
+  }
+}
+
+/** Always called after the frame is grabbed, including on failure. */
+function endFlash() {
+  flashEl?.classList.remove("is-holding");
+  if (torchOn) void setTorch(false);
 }
 
 // ── Self-timer ──────────────────────────────────────────────────────────────
@@ -912,12 +937,14 @@ async function takeShot() {
   if (shutter) shutter.disabled = true;
   try {
     if (!(await runCountdown())) return; // cancelled
-    await screenFlash();
+    await fireFlash();
     flash();
     const blob = await captureFrame();
+    endFlash();
     if (blob) openSheet(blob);
     else setStatus("That didn't catch — try once more", "error");
   } finally {
+    endFlash(); // the LED must never outlive the shot, even on an error
     if (shutter) shutter.disabled = remaining <= 0 || !!pendingShot;
   }
 }
