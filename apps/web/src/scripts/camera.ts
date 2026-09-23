@@ -890,8 +890,8 @@ let flashArmed = false;
 /** How long the LED is lit before the frame is grabbed. The sensor's auto
  *  exposure needs a moment to react, or the "flash" photo comes out as dark as
  *  the one without it. */
-const TORCH_SETTLE_MS = 300;
-const SCREEN_FLASH_MS = 450;
+const TORCH_SETTLE_MS = 250;
+const SCREEN_FLASH_MS = 350;
 
 async function setTorch(on: boolean) {
   const track = stream?.getVideoTracks()[0];
@@ -917,13 +917,13 @@ flashBtn?.addEventListener("click", () => {
  * white screen, which only lights a face on the front camera. Resolves once
  * there's enough light to take the picture.
  */
-async function fireFlash(): Promise<void> {
-  if (!flashArmed) return;
+async function fireFlash(): Promise<boolean> {
+  if (!flashArmed) return false;
 
   if (torchCapable) {
     await setTorch(true);
     await new Promise((r) => window.setTimeout(r, TORCH_SETTLE_MS));
-    return;
+    return true;
   }
 
   if (facing === "user" && flashEl) {
@@ -931,7 +931,9 @@ async function fireFlash(): Promise<void> {
       flashEl.classList.add("is-holding");
       window.setTimeout(resolve, SCREEN_FLASH_MS);
     });
+    return true;
   }
+  return false;
 }
 
 /** Always called after the frame is grabbed, including on failure. */
@@ -995,10 +997,16 @@ async function takeShot() {
   if (shutter) shutter.disabled = true;
   try {
     if (!(await runCountdown())) return; // cancelled
-    await fireFlash();
-    flash();
+
+    // Light first, grab while it's lit, then dim — a flash, not a blink after
+    // the fact. The decorative shutter blink is skipped when a real flash
+    // fired: is-firing animates opacity to 0, and a CSS animation overrides
+    // is-holding's opacity: 1, so it used to black out the screen flash in the
+    // instant before the frame was grabbed.
+    const fired = await fireFlash();
+    if (!fired) flash();
     const blob = await captureFrame();
-    endFlash();
+    endFlash(); // light goes out only once the frame is in hand
     if (blob) openSheet(blob);
     else setStatus("That didn't catch — try once more", "error");
   } finally {
