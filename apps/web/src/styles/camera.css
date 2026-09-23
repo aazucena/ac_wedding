@@ -225,6 +225,9 @@ body {
   inset: 0;
   z-index: 0;
   overflow: hidden;
+  /* none, not manipulation: `manipulation` still lets the browser own pinch,
+     so a two-finger gesture zoomed the PAGE instead of the camera. */
+  touch-action: none;
   background: #0b0b14;
   display: flex;
   align-items: center;

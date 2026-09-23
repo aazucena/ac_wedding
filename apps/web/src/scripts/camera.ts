@@ -774,6 +774,24 @@ for (const b of zoomBtns) {
   b.addEventListener("click", () => setZoom(Number(b.dataset.zoom) || 1));
 }
 
+// iOS Safari ignores user-scalable=no and drives pinch through its own gesture
+// recogniser, which `touch-action` and pointermove preventDefault don't stop.
+// These non-standard gesture* events are the only way to keep a pinch inside
+// the viewfinder from zooming the whole page. Scoped to the camera view, so the
+// sign-in card can still be pinched like any other page.
+for (const type of ["gesturestart", "gesturechange", "gestureend"]) {
+  cameraView?.addEventListener(type, (e) => e.preventDefault());
+}
+// Android/Chrome path: a multi-touch move inside the stage is ours, not the
+// browser's. Must be passive: false or preventDefault is ignored.
+stage?.addEventListener(
+  "touchmove",
+  (e) => {
+    if ((e as TouchEvent).touches.length > 1) e.preventDefault();
+  },
+  { passive: false },
+);
+
 // Pinch: track two pointers and scale by the change in their distance.
 const pointers = new Map<number, { x: number; y: number }>();
 let pinchStart = 0;
