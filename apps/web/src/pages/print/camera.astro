@@ -1,0 +1,81 @@
+---
+export const prerender = true;
+// apps/web/src/pages/print/camera.astro
+// Roll Call table tent — 4 × 6 in, folded to a 4 × 3 in tent that stands on
+// each table. Front: the QR code guests scan. Back (upside-down before the
+// fold): how it works, so both sides of the table can read something.
+
+import { getSettings } from "@lib/directus";
+import { formatDate } from "@lib/utils/format";
+import { SHOT_LIMIT } from "@lib/constants/camera";
+import PrintLayout from "@layouts/PrintLayout.astro";
+import QRCode from "@components/QRCode.astro";
+import Hashtag from "@components/Hashtag.astro";
+import { DateTime } from "luxon";
+import "../../styles/camera-card.css";
+
+const settings = await getSettings();
+const weddingDate = settings.wedding_date ?? "2026-09-26";
+const weddingDateLabel = formatDate(weddingDate);
+
+const BASE_URL = import.meta.env.SITE ?? "https://wedding.aazucena.com";
+const cameraUrl = `${BASE_URL}/camera`;
+const shortUrl = cameraUrl.replace(/^https?:\/\//, "");
+
+const developsOn = DateTime.fromISO(weddingDate)
+  .plus({ days: 1 })
+  .toFormat("LLLL d");
+---
+
+<PrintLayout
+  title="Roll Call Table Tent — Print"
+  cardWidth="4in"
+  cardHeight="6in"
+  toolbarHint="4 × 6 in · Folds to a 4 × 3 in tent · One per table"
+>
+  <div class="tent">
+    {/* Back — rotated so it reads right-way-up once the card is folded. */}
+    <div class="tent-face is-flipped">
+      <p class="tent-eyebrow">How it works</p>
+      <ul class="tent-steps">
+        <li>
+          <span class="step-n">1</span><span
+            >Scan the code on the other side.</span
+          >
+        </li>
+        <li>
+          <span class="step-n">2</span><span
+            >Find your name, then enter your table number.</span
+          >
+        </li>
+        <li>
+          <span class="step-n">3</span><span
+            >Shoot — you have {SHOT_LIMIT} shots for the night.</span
+          >
+        </li>
+      </ul>
+      <p class="tent-lede">
+        Your photos stay hidden until they're developed on {developsOn}.
+      </p>
+      <Hashtag as="p" tag={settings.hashtag} class="tent-foot" />
+    </div>
+
+    <div class="tent-fold"></div>
+
+    {/* Front — what a seated guest sees. */}
+    <div class="tent-face">
+      <p class="tent-eyebrow">Roll Call · {SHOT_LIMIT} shots</p>
+      <h1 class="tent-title">Be our photographer</h1>
+      <div class="tent-rule">
+        <span class="tent-rule-line"></span>
+        <span class="tent-rule-gem">✦</span>
+        <span class="tent-rule-line"></span>
+      </div>
+      <div class="tent-qr">
+        <QRCode url={cameraUrl} size={120} />
+      </div>
+      <p class="tent-url">{shortUrl}</p>
+      <p class="tent-foot">{weddingDateLabel}</p>
+    </div>
+  </div>
+</PrintLayout>

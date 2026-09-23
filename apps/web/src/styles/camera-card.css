@@ -1,0 +1,140 @@
+/* styles/camera-card.css — Roll Call table tent (/print/camera)
+ *
+ * 4 × 6 in, folded across the middle into a 4 × 3 in tent that stands on the
+ * table. The top half is rotated 180° so it reads right-way-up on the far side
+ * of the fold.
+ */
+
+@media print {
+  @page {
+    /* Bare dimensions — NEVER `4in 6in portrait`. Per CSS Paged Media 3 the
+       portrait/landscape keyword may only follow a NAMED size, so the mixed
+       form is invalid, the whole declaration is dropped, and the sheet
+       silently falls back to Letter. The numbers already encode orientation. */
+    size: 4in 6in;
+    margin: 0;
+  }
+  body {
+    background: white !important;
+    padding: 0 !important;
+    display: block !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+.tent {
+  width: 4in;
+  height: 6in;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.tent-face {
+  width: 4in;
+  height: 3in;
+  padding: 0.3in 0.32in;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.07in;
+  text-align: center;
+}
+
+/* Back of the tent — upside-down so it reads correctly once folded. */
+.tent-face.is-flipped {
+  transform: rotate(180deg);
+}
+
+/* Fold line: a hairline guide, not a design element. */
+.tent-fold {
+  border-top: 1px dashed rgba(26, 26, 46, 0.25);
+  width: 100%;
+}
+
+.tent-eyebrow {
+  font-family: var(--fb, "Jost", sans-serif);
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #8a8499;
+}
+.tent-title {
+  font-family: var(--fd, "Cormorant Garamond", serif);
+  font-size: 26pt;
+  font-weight: 400;
+  line-height: 1;
+  color: #1a1a2e;
+}
+.tent-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 1.5in;
+  margin: 0.04in 0;
+}
+.tent-rule-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(26, 26, 46, 0.18);
+}
+.tent-rule-gem {
+  font-size: 7pt;
+  color: #a8d4b8;
+}
+.tent-lede {
+  font-family: var(--fb, "Jost", sans-serif);
+  font-size: 9pt;
+  font-weight: 300;
+  line-height: 1.45;
+  color: #1a1a2e;
+  max-width: 2.9in;
+}
+.tent-qr {
+  margin-top: 0.06in;
+}
+/* ≥1.2in so it still scans at arm's length in a dimly lit room. */
+.tent-qr .qr-inner canvas,
+.tent-qr .qr-inner svg {
+  width: 1.25in !important;
+  height: 1.25in !important;
+}
+.tent-url {
+  font-family: var(--fb, "Jost", sans-serif);
+  font-size: 8.5pt;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  color: #1a1a2e;
+}
+.tent-foot {
+  font-family: var(--fb, "Jost", sans-serif);
+  font-size: 7pt;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8a8499;
+}
+.tent-steps {
+  font-family: var(--fb, "Jost", sans-serif);
+  font-size: 8.5pt;
+  font-weight: 300;
+  line-height: 1.5;
+  color: #1a1a2e;
+  list-style: none;
+  text-align: left;
+  max-width: 2.9in;
+}
+.tent-steps li {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 0.04in;
+}
+.tent-steps .step-n {
+  color: #a8d4b8;
+  font-weight: 600;
+}
