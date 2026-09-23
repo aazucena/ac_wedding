@@ -378,6 +378,16 @@ const developsOn = DateTime.fromISO(weddingDate)
                   </button>
 
                   <div class="cam-zoom" role="group" aria-label="Zoom">
+                    {/* Ultra-wide: revealed only when the camera reports it can
+                        zoom below 1. Hidden on every iPhone, where Safari
+                        exposes no zoom capability at all. */}
+                    <button
+                      type="button"
+                      class="cam-zoom-btn hidden"
+                      data-zoom="0.5"
+                    >
+                      0.5×
+                    </button>
                     <button
                       type="button"
                       class="cam-zoom-btn is-on"

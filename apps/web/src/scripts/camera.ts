@@ -122,6 +122,9 @@ const frameCanvas = document.createElement("canvas");
  *  in which case the hardware does it and the preview isn't touched. */
 let zoom = 1;
 const MAX_ZOOM = 4;
+/** 1 unless the camera reports it can go wider (ultra-wide lens). Digital zoom
+ *  can only crop, so below 1 is impossible without hardware. */
+let minZoom = 1;
 let hardwareZoom: { min: number; max: number } | null = null;
 let torchCapable = false;
 let torchOn = false;
@@ -728,6 +731,15 @@ function readCapabilities() {
     /* getCapabilities is optional; treat absence as "can't" */
   }
 
+  // 0.5x is an ultra-wide LENS, not a crop, so it only exists where the camera
+  // says it can go below 1. Shown only then — never a pill that does nothing.
+  minZoom = hardwareZoom ? Math.max(0.5, Math.min(1, hardwareZoom.min)) : 1;
+  for (const b of zoomBtns) {
+    if ((Number(b.dataset.zoom) || 1) < 1) {
+      b.classList.toggle("hidden", minZoom >= 1);
+    }
+  }
+
   // Flash: the torch when the hardware has one, otherwise a white screen — but
   // a white screen only lights a face on the FRONT camera, so on a rear-facing
   // iPhone there's nothing honest to offer and the button stays hidden.
@@ -740,8 +752,11 @@ async function applyHardwareZoom() {
   const track = stream?.getVideoTracks()[0];
   if (!track || !hardwareZoom) return;
   const { min, max } = hardwareZoom;
-  // Map our 1–4 scale onto whatever range this camera exposes.
-  const target = min + ((zoom - 1) / (MAX_ZOOM - 1)) * (max - min);
+  // The capability values ARE multipliers, so pass the factor straight through
+  // and just clamp it. The old code stretched our 1–4 scale across the device
+  // range, which made "2x" mean 4x on a phone that could reach 10x — and made
+  // "1x" mean 0.5x on one with an ultra-wide.
+  const target = Math.min(max, Math.max(min, zoom));
   try {
     await track.applyConstraints({
       advanced: [{ zoom: target } as MediaTrackConstraintSet],
@@ -757,21 +772,46 @@ async function applyHardwareZoom() {
 function paintZoom() {
   if (viewfinder) {
     // Hardware zoom already changed the stream; scaling again would double it.
-    viewfinder.style.transform = hardwareZoom ? "" : `scale(${zoom})`;
+    // Without it, never scale below 1 — cropping can't widen a field of view.
+    viewfinder.style.transform = hardwareZoom
+      ? ""
+      : `scale(${Math.max(1, zoom)})`;
+  }
+  // A pinch lands between the presets, so highlight the nearest one and let it
+  // show the real factor — otherwise pinching to 1.7x left both pills looking
+  // inactive and the guest with no idea how far they'd zoomed.
+  let nearest: HTMLButtonElement | undefined;
+  let best = Infinity;
+  for (const b of zoomBtns) {
+    const v = Number(b.dataset.zoom) || 1;
+    const d = Math.abs(v - zoom);
+    if (d < best) {
+      best = d;
+      nearest = b;
+    }
   }
   for (const b of zoomBtns) {
-    b.classList.toggle("is-on", Number(b.dataset.zoom) === zoom);
+    const v = Number(b.dataset.zoom) || 1;
+    const on = b === nearest;
+    b.classList.toggle("is-on", on);
+    const exact = Math.abs(v - zoom) < 0.05;
+    b.textContent = on && !exact ? `${zoom.toFixed(1)}×` : `${v}×`;
   }
 }
 
 function setZoom(next: number) {
-  zoom = Math.min(MAX_ZOOM, Math.max(1, next));
+  zoom = Math.min(MAX_ZOOM, Math.max(minZoom, next));
   if (hardwareZoom) void applyHardwareZoom();
   paintZoom();
 }
 
 for (const b of zoomBtns) {
-  b.addEventListener("click", () => setZoom(Number(b.dataset.zoom) || 1));
+  b.addEventListener("click", () => {
+    const v = Number(b.dataset.zoom) || 1;
+    // Tapping the level you're already on goes back to 1x, so the pill is a
+    // toggle rather than a button that sometimes does nothing.
+    setZoom(Math.abs(zoom - v) < 0.05 && v !== 1 ? 1 : v);
+  });
 }
 
 // iOS Safari ignores user-scalable=no and drives pinch through its own gesture
