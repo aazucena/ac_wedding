@@ -397,9 +397,25 @@ body {
 }
 /* Held bright for the duration of a front-camera "flash" — the screen IS the
    light source, so it can't be a 300ms blink. */
+/* The screen IS the light source for a selfie, so it snaps to full white —
+   a 120ms fade-in would waste a third of the exposure window ramping up. It
+   fades only on the way out. Raised above the controls (z-index 5) because
+   dark pills sitting on top of a lamp are just shade. */
 .cam-flash.is-holding {
+  z-index: 5;
   opacity: 1;
+  transition: none;
+}
+.cam-flash {
   transition: opacity 0.12s ease;
+}
+
+/* Everything else gets out of the way while the screen is the flash. */
+#camera-view.is-flashing .cam-bar,
+#camera-view.is-flashing #cam-tools,
+#camera-view.is-flashing .cam-controls,
+#camera-view.is-flashing .cam-status {
+  visibility: hidden;
 }
 .cam-flash.is-firing {
   animation: cam-flash 0.32s ease-out;

@@ -744,7 +744,15 @@ function readCapabilities() {
   // a white screen only lights a face on the FRONT camera, so on a rear-facing
   // iPhone there's nothing honest to offer and the button stays hidden.
   const screenFlashUseful = facing === "user";
-  flashBtn?.classList.toggle("hidden", !torchCapable && !screenFlashUseful);
+  const canFlash = torchCapable || screenFlashUseful;
+  flashBtn?.classList.toggle("hidden", !canFlash);
+  // Armed must mean "this will fire". Arming on the front camera and flipping
+  // to the rear used to leave it armed behind a hidden button.
+  if (!canFlash && flashArmed) {
+    flashArmed = false;
+    flashBtn?.setAttribute("aria-pressed", "false");
+    flashBtn?.classList.remove("is-on");
+  }
   toolsEl?.classList.remove("hidden");
 }
 
@@ -887,10 +895,14 @@ gridBtn?.addEventListener("click", () => {
 /** Armed, not lit. Applies to both the torch and the front-camera screen. */
 let flashArmed = false;
 
-/** How long the LED is lit before the frame is grabbed. The sensor's auto
- *  exposure needs a moment to react, or the "flash" photo comes out as dark as
- *  the one without it. */
-const TORCH_SETTLE_MS = 250;
+/** Caps, not delays. applyConstraints resolves when the constraint is ACCEPTED,
+ *  not when the LED is on — the camera HAL queues it and the light follows
+ *  300–600ms later on Android. Waiting a fixed guess meant grabbing the frame
+ *  while the lamp was still dark, so the flash appeared to happen after the
+ *  photo. These bound the waiting; the signals below end it. */
+const TORCH_WAIT_CAP_MS = 900;
+const EXPOSURE_FRAMES = 3;
+const EXPOSURE_CAP_MS = 150;
 const SCREEN_FLASH_MS = 350;
 
 async function setTorch(on: boolean) {
@@ -917,16 +929,64 @@ flashBtn?.addEventListener("click", () => {
  * white screen, which only lights a face on the front camera. Resolves once
  * there's enough light to take the picture.
  */
+/** Resolves once the device reports the torch actually lit, or the cap expires. */
+async function torchLit(): Promise<void> {
+  const track = stream?.getVideoTracks()[0];
+  if (!track?.getSettings) return;
+  const deadline = Date.now() + TORCH_WAIT_CAP_MS;
+  while (Date.now() < deadline) {
+    const on = (track.getSettings() as MediaTrackSettings & { torch?: boolean })
+      .torch;
+    if (on === true) return;
+    if (on === undefined) return; // device never reports it; don't stall here
+    await new Promise((r) => window.setTimeout(r, 50));
+  }
+}
+
+/**
+ * Wait for frames that were actually exposed with the light on. Even once the
+ * LED reports lit, auto-exposure needs a few frames to adapt, or the photo
+ * comes out as dark as one taken without any flash at all.
+ */
+function exposedFrames(): Promise<void> {
+  const v = viewfinder as
+    | (HTMLVideoElement & {
+        requestVideoFrameCallback?: (cb: () => void) => number;
+      })
+    | null;
+  if (!v?.requestVideoFrameCallback) {
+    return new Promise((r) => window.setTimeout(r, EXPOSURE_CAP_MS));
+  }
+  return new Promise((resolve) => {
+    let left = EXPOSURE_FRAMES;
+    const bail = window.setTimeout(resolve, EXPOSURE_CAP_MS * 3); // never hang
+    const step = () => {
+      if (--left <= 0) {
+        window.clearTimeout(bail);
+        resolve();
+      } else {
+        v.requestVideoFrameCallback!(step);
+      }
+    };
+    v.requestVideoFrameCallback!(step);
+  });
+}
+
 async function fireFlash(): Promise<boolean> {
   if (!flashArmed) return false;
 
   if (torchCapable) {
     await setTorch(true);
-    await new Promise((r) => window.setTimeout(r, TORCH_SETTLE_MS));
+    await torchLit(); // the LED is on per the device, not per our guess
+    await exposedFrames(); // ...and the sensor has seen it
     return true;
   }
 
   if (facing === "user" && flashEl) {
+    // The page can't touch screen brightness — no browser exposes it — so the
+    // most light we can give a selfie is every pixel white, with nothing dark
+    // sitting on top of it.
+    cameraView?.classList.add("is-flashing");
     await new Promise<void>((resolve) => {
       flashEl.classList.add("is-holding");
       window.setTimeout(resolve, SCREEN_FLASH_MS);
@@ -939,6 +999,10 @@ async function fireFlash(): Promise<boolean> {
 /** Always called after the frame is grabbed, including on failure. */
 function endFlash() {
   flashEl?.classList.remove("is-holding");
+  cameraView?.classList.remove("is-flashing");
+  // Not awaited: switching the LED off is another queued constraint, and the
+  // review sheet shouldn't wait on the lamp. Light lingering a moment after the
+  // photo is fine; light arriving then is not.
   if (torchOn) void setTorch(false);
 }
 
