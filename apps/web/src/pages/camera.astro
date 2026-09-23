@@ -464,6 +464,31 @@ const developsOn = DateTime.fromISO(weddingDate)
                       Send
                     </button>
                   </div>
+
+                  {/* Tertiary on purpose: sharing neither sends nor discards,
+                      so Send stays the only primary action. Hidden unless the
+                      phone can actually share a file. */}
+                  <button
+                    type="button"
+                    id="sheet-share"
+                    class="cam-sheet-share hidden"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M12 16V3M8 7l4-4 4 4" />
+                      <path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5" />
+                    </svg>
+                    Save or share this one
+                  </button>
                 </div>
               </div>
             </section>

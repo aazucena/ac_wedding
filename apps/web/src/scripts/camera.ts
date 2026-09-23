@@ -70,6 +70,7 @@ const sheet = $("cam-sheet");
 const sheetPreview = $<HTMLImageElement>("sheet-preview");
 const sheetSend = $<HTMLButtonElement>("sheet-send");
 const sheetDiscard = $<HTMLButtonElement>("sheet-discard");
+const sheetShare = $<HTMLButtonElement>("sheet-share");
 const captionInput = $<HTMLTextAreaElement>("caption-input");
 const captionCount = $("caption-count");
 
@@ -439,9 +440,26 @@ document.addEventListener("keydown", (e) => {
  * fallback exists rather than a dead end.
  */
 async function openCamera() {
-  if (remaining <= 0) return;
+  // Silent returns here read as "the button is broken". Every path below now
+  // changes something on screen.
+  if (remaining <= 0) {
+    paintCounter(); // shows the finished panel instead of doing nothing
+    return;
+  }
+
+  // getUserMedia only exists in a secure context. Over plain http on a LAN
+  // address navigator.mediaDevices is undefined outright, which is the usual
+  // reason "Allow camera" appears to do nothing while testing.
+  if (!window.isSecureContext) {
+    fallbackToPicker(
+      "The camera needs a secure (https) connection — you can still pick a photo.",
+    );
+    setStatus("Camera needs https on this device", "error");
+    return;
+  }
   if (!navigator.mediaDevices?.getUserMedia) {
     fallbackToPicker("This browser can't open the camera here.");
+    setStatus("This browser can't open the camera", "error");
     return;
   }
 
@@ -462,6 +480,13 @@ async function openCamera() {
       name === "NotAllowedError"
         ? BLOCKED_MSG
         : "Couldn't open the camera — you can still pick a photo.",
+    );
+    // Name the actual failure; "nothing happened" is the worst outcome.
+    setStatus(
+      name === "NotAllowedError"
+        ? "Camera permission was declined"
+        : `Camera didn't open (${name ?? "unknown error"})`,
+      "error",
     );
     return;
   }
@@ -891,6 +916,35 @@ pickerInput?.addEventListener("change", () => {
   if (file) void shrinkFile(file).then(openSheet);
 });
 
+/** The shot as a File, for the OS share sheet. Built lazily — most shots are
+ *  never shared, and the blob is already in memory either way. */
+function pendingShotFile(): File | null {
+  if (!pendingShot) return null;
+  return new File([pendingShot], "rollcall.jpg", {
+    type: "image/jpeg",
+    lastModified: Date.now(),
+  });
+}
+
+/**
+ * Share the shot to whatever the phone offers — a story, Messages, the camera
+ * roll. Deliberately does NOT send or discard: the guest still chooses after.
+ *
+ * The point is that Roll Call shouldn't compete with the native camera. A
+ * guest who wants a photo for themselves can have one without taking it
+ * outside the album.
+ */
+async function shareShot() {
+  const file = pendingShotFile();
+  if (!file || !navigator.canShare?.({ files: [file] })) return;
+  try {
+    await navigator.share({ files: [file] });
+  } catch {
+    // AbortError when they back out of the share sheet — not worth a toast.
+  }
+}
+sheetShare?.addEventListener("click", () => void shareShot());
+
 /** Hold the shot, show it, ask for a caption. Nothing is uploaded yet. */
 function openSheet(blob: Blob) {
   pendingShot = blob;
@@ -903,6 +957,13 @@ function openSheet(blob: Blob) {
   }
   if (captionInput) captionInput.value = "";
   paintCaptionCount();
+  // Feature-detected per shot: canShare() needs the actual file, and a phone
+  // that can't share one should never be shown the button.
+  const file = pendingShotFile();
+  sheetShare?.classList.toggle(
+    "hidden",
+    !file || !navigator.canShare?.({ files: [file] }),
+  );
   clearStatus();
   sheet?.classList.remove("hidden");
   if (shutter) shutter.disabled = true;

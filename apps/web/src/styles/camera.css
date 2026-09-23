@@ -693,6 +693,28 @@ body {
   gap: 10px;
   margin-top: 28px;
 }
+.cam-sheet-share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 10px;
+  border: none;
+  background: none;
+  font-family: var(--fb);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--on-night-muted);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.cam-sheet-share:active {
+  color: var(--cp);
+}
+
 .cam-sheet .cam-btn {
   background: var(--cp);
   color: var(--dark);
