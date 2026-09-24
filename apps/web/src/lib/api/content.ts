@@ -13,7 +13,17 @@ import type {
 export async function getMemories(): Promise<Memories[]> {
   try {
     return await get<Memories[]>("/items/memories", {
-      fields: ["id", "title", "description", "image.id", "date_created"],
+      // width/height drive the masonry tiles on /memories — without them the
+      // grid can't know a photo's orientation and has to crop to a square.
+      fields: [
+        "id",
+        "title",
+        "description",
+        "image.id",
+        "image.width",
+        "image.height",
+        "date_created",
+      ],
       filter: { approved: { _eq: true } },
       sort: ["-date_created"],
       limit: 200,

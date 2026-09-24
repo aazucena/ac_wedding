@@ -1,11 +1,28 @@
 ---
 // components/memories/MemoryGrid.astro
-// Paginated 9-per-page photo grid for /memories.
+// Paginated masonry photo album for /memories.
 // All items are rendered in the DOM so the lightbox can navigate across pages.
+//
+// Tiles keep each photo's native aspect ratio rather than cropping to a square.
+// Roll Call captures at the phone's SCREEN ratio (a full-bleed viewfinder, see
+// camera.css:236) — about 9:19.5 in portrait — so a square tile threw away more
+// than half the frame, and faces live in the top third of a portrait shot.
 import type { DirectusFiles } from "../../lib/types";
 import { assetUrl } from "../../lib/utils/format";
 
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 12;
+
+/**
+ * The tile's aspect-ratio, from the file metadata Directus records on upload.
+ * Set inline so column heights are known before a single image loads and the
+ * layout never jumps. Falls back to 4:5 when the dimensions are missing —
+ * older rows, or anything that isn't an image.
+ */
+function ratioOf(image?: DirectusFiles | null): string {
+  const w = image?.width;
+  const h = image?.height;
+  return w && h && w > 0 && h > 0 ? `${w} / ${h}` : "4 / 5";
+}
 
 interface GalleryItem {
   id: string;
@@ -22,11 +39,12 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
 ---
 
 <div class="mg-wrap">
-  <div class="mg-grid" id="mg-grid">
+  <div class="mg-grid" id="mg-grid" data-page-size={PAGE_SIZE}>
     {
       items.map((photo, i) => (
         <button
           class="gallery-item"
+          style={`aspect-ratio:${ratioOf(photo.image)}`}
           data-index={i}
           data-page={Math.floor(i / PAGE_SIZE)}
           data-src={photo.image ? assetUrl(photo.image) : null}
@@ -38,9 +56,13 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
           {photo.image ? (
             <img
               src={assetUrl(photo.image, {
+                // `inside` fits the photo WITHIN the box preserving its ratio —
+                // it never crops. The 900 cap stops a 9:19.5 portrait rendering
+                // at 600×1300.
                 width: 600,
-                height: 600,
-                fit: "cover",
+                height: 900,
+                fit: "inside",
+                withoutEnlargement: true,
               })}
               alt={photo.title ?? `Photo ${i + 1}`}
               loading="lazy"
@@ -98,7 +120,10 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
 
   if (!grid) throw new Error("MemoryGrid: #mg-grid not found");
 
-  const PAGE_SIZE = 6;
+  // Read from the DOM rather than repeating the literal: this was declared
+  // twice, here and in the frontmatter, and the two silently mis-page if they
+  // ever drift apart.
+  const PAGE_SIZE = parseInt(grid.dataset.pageSize ?? "12", 10);
   const allItems = Array.from(
     grid.querySelectorAll<HTMLElement>(".gallery-item"),
   );
@@ -145,19 +170,26 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
     gap: 20px;
   }
 
+  /* Multi-column, not grid: tiles keep their own height, so a tall portrait
+     and a wide landscape can sit in the same album without either being
+     cropped. The browser balances the column heights itself. */
   .mg-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    column-count: 3;
+    column-gap: 12px;
     width: 100%;
     opacity: 0;
     animation: fadeUp 0.8s 0.2s ease forwards;
   }
 
-  /* ── Tiles (shared with GalleryGrid) ───────────────────── */
+  /* ── Tiles ─────────────────────────────────────────────── */
+  /* `aspect-ratio` is set inline per tile from the file's real dimensions. */
   .gallery-item {
     position: relative;
-    aspect-ratio: 1;
+    display: block;
+    width: 100%;
+    /* Without this a tile splits across the column boundary mid-photo. */
+    break-inside: avoid;
+    margin-bottom: 12px;
     border-radius: var(--radius-sm);
     overflow: hidden;
     cursor: pointer;
@@ -270,10 +302,15 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
     text-align: center;
   }
 
+  /* Two columns, not three: a 9:19.5 portrait at a third of a 390px viewport
+     is a ~120px sliver. Two columns give it ~190px, which is legible. */
   @media (max-width: 640px) {
     .mg-grid {
-      grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      column-count: 2;
+      column-gap: 6px;
+    }
+    .gallery-item {
+      margin-bottom: 6px;
     }
   }
 </style>
