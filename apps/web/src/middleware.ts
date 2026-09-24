@@ -28,15 +28,25 @@ export const onRequest = defineMiddleware(
 
     // Preview token — bypasses maintenance mode and grants access to gated pages
     //
-    // Normalised on both sides before comparing. A strict === against the raw
-    // env value fails silently for two things that happen every time a token is
-    // pasted into a dashboard: a trailing newline, and a case difference in a
-    // hex token. The failure looks identical to a wrong token, which makes it
-    // expensive to diagnose.
-    const norm = (v: string | null | undefined) =>
-      (v ?? "").trim().toLowerCase();
+    // A strict === on the raw values fails silently on a trailing newline or a
+    // case difference, and that failure is indistinguishable from a wrong
+    // token — expensive to diagnose at exactly the moment you need in.
+    //
+    // Normalised only when the secret is hex/UUID-shaped, where case carries NO
+    // information — "A1B2" and "a1b2" are the same number, so folding case on
+    // hex costs zero entropy. A token of any other character class is compared
+    // exactly as stored, untouched.
+    //
+    // Both sides are normalised in the hex case, because the whitespace that
+    // breaks this usually rides on the STORED value (pasted into a dashboard),
+    // not on the URL.
+    const hexish = /^\s*[0-9a-f-]+\s*$/i.test(PREVIEW_TOKEN);
+    const norm = (v: string | null | undefined) => {
+      const raw = (v ?? "").trim();
+      return hexish ? raw.toLowerCase() : raw;
+    };
 
-    const secret = norm(PREVIEW_TOKEN);
+    const secret = hexish ? norm(PREVIEW_TOKEN) : PREVIEW_TOKEN;
     if (secret) {
       const tokenParam = norm(url.searchParams.get("preview"));
       const tokenCookie = norm(cookies.get(PREVIEW_COOKIE)?.value);
