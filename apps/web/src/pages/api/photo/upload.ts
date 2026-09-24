@@ -107,8 +107,16 @@ export const POST: APIRoute = async ({ request }) => {
     let fileId: string;
     try {
       fileId = await uploadGuestFile(file, caption ?? file.name);
-    } catch {
-      return json({ error: "Upload failed. Please try again." }, 500);
+    } catch (err) {
+      // A bare `catch {}` here meant a failed upload reported nothing at all —
+      // same opaque 500 whether Directus was down, the token was stale or the
+      // payload was rejected. Log the reason; the guest still sees the short
+      // message, but the server tells us which it was.
+      console.error(
+        `[photo/upload] file upload failed (${file.name}, ${file.type}, ${file.size} bytes):`,
+        err,
+      );
+      return json({ error: "Couldn't save the photo. Please try again." }, 500);
     }
 
     // Create memories record (approved: false — moderated before publishing)
@@ -125,7 +133,11 @@ export const POST: APIRoute = async ({ request }) => {
         partyToken ? null : personId,
         partyToken ? null : await findGuestId(personId),
       );
-    } catch {
+    } catch (err) {
+      console.error(
+        `[photo/upload] memory record failed (file ${fileId}):`,
+        err,
+      );
       // Delete the orphaned file so it doesn't accumulate in Directus files
       await deleteFile(fileId).catch(() => {});
       return json({ error: "Photo saved but memory entry failed." }, 500);

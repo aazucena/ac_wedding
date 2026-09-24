@@ -54,6 +54,30 @@ export function cmsTarget(path: string, mutation = false): CmsTarget {
 }
 
 /**
+ * Always direct, whatever CMS_TRANSPORT says. For multipart uploads only.
+ *
+ * Astro's CSRF guard (security.checkOrigin, on by default) rejects any POST
+ * carrying a form content type — multipart/form-data among them — whose Origin
+ * header doesn't match the host. A server-side fetch sends no Origin at all, so
+ * routing an upload through our own /api/cms route makes the app refuse its own
+ * request with 403 "Cross-site POST form submissions are forbidden".
+ *
+ * JSON POSTs and bodyless DELETEs aren't form content types, so they proxy
+ * fine — which is why only file uploads broke, in dev and in production alike
+ * (usesDirect is true only during a build).
+ *
+ * api/camera/upload.ts has always posted straight to DIRECTUS_URL. Uploads are
+ * server-side only, so going direct exposes nothing to the browser; the proxy's
+ * job is to keep credentials out of browser traffic, and this isn't that.
+ */
+export function directTarget(path: string): CmsTarget {
+  return {
+    url: `${DIRECTUS_URL}${path}`,
+    headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}` },
+  };
+}
+
+/**
  * Fetchers swallow errors so a live page survives a Directus hiccup. During a
  * build that's wrong — the failure gets frozen into static HTML — so log it and
  * fail the deploy instead of shipping empty pages.

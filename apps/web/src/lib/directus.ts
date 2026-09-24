@@ -2,7 +2,7 @@
 // HTTP client + barrel re-export.
 // Domain-specific fetchers live in lib/api/*.ts — import from there or from here.
 
-import { cmsTarget, reportFailure } from "./cms-transport";
+import { cmsTarget, directTarget, reportFailure } from "./cms-transport";
 import qs from "qs";
 
 // ── HTTP helpers — used by lib/api/* ─────────────────────────────────────────
@@ -48,20 +48,34 @@ export async function post<T>(path: string, body: object): Promise<T> {
   return json.data as T;
 }
 
-/** Multipart file upload — omits Content-Type so fetch sets the boundary. */
+/**
+ * Multipart file upload — omits Content-Type so fetch sets the boundary.
+ *
+ * Always direct, never through /api/cms: Astro's CSRF guard 403s a multipart
+ * POST that carries no Origin, which is exactly what a server-side fetch to our
+ * own route is. See directTarget().
+ */
 export async function upload<T>(
   path: string,
   form: FormData,
   timeout = 30_000,
 ): Promise<T> {
-  const { url, headers } = cmsTarget(path, true);
+  const { url, headers } = directTarget(path);
   const res = await fetch(url, {
     method: "POST",
     headers,
     body: form,
     signal: AbortSignal.timeout(timeout),
   });
-  if (!res.ok) throw new Error(`Directus ${res.status} on upload ${path}`);
+  if (!res.ok) {
+    // The status alone says nothing useful — Directus puts the reason in the
+    // body ("Invalid payload", a permission error, a size limit), and without
+    // it an upload failure is undiagnosable.
+    const detail = await res.text().catch(() => "");
+    throw new Error(
+      `Directus ${res.status} on upload ${path} → ${url}${detail ? `: ${detail.slice(0, 500)}` : ""}`,
+    );
+  }
   const json = await res.json();
   return json.data as T;
 }
@@ -103,11 +117,7 @@ export {
   getReadings,
   getEntourage,
 } from "./api/ceremony";
-export {
-  getReception,
-  getTables,
-  getSeatedPersons,
-} from "./api/reception";
+export { getReception, getTables, getSeatedPersons } from "./api/reception";
 export {
   getGallery,
   getGalleryPhotos,

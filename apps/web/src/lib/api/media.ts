@@ -6,8 +6,12 @@ export async function uploadGuestFile(
   title: string,
 ): Promise<string> {
   const form = new FormData();
-  form.append("file", file, file.name);
+  // Metadata MUST precede the binary — Directus parses the multipart stream in
+  // order and ignores (or rejects) any field that arrives after the file.
+  // api/camera/upload.ts has always done this; this helper had it backwards,
+  // so the title was being dropped.
   form.append("title", title);
+  form.append("file", file, file.name || `memory-${Date.now()}.jpg`);
   const data = await upload<{ id: string }>("/files", form, 30_000);
   return data.id;
 }
