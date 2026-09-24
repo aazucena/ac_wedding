@@ -14,6 +14,7 @@ import { parseMarkdown } from "../lib/markdown";
 import { DateTime } from "luxon";
 import { toDateTime } from "../lib/date";
 import Hashtag from "~/components/Hashtag.astro";
+import type { Persons } from "../lib/types";
 
 const [settings, memories, entries] = await Promise.all([
   getSettings(),
@@ -42,6 +43,19 @@ function shortDate(iso?: string): string {
   return formatDate(iso, "MMM d, yyyy");
 }
 
+/**
+ * Who took the photo. Preferred name wins — it's the name they'd be called at
+ * the reception. Empty for photos uploaded with a party invitation token,
+ * which identifies a household rather than a person.
+ */
+function authorName(
+  person?: Pick<Persons, "first_name" | "preferred_name" | "last_name"> | null,
+): string {
+  if (!person) return "";
+  const first = person.preferred_name ?? person.first_name ?? "";
+  return [first, person.last_name ?? ""].filter(Boolean).join(" ").trim();
+}
+
 const slides = entries.map((e) => ({
   name: e.name,
   messageHtml: e.message ? parseMarkdown(e.message) : "",
@@ -58,6 +72,7 @@ const items = memories.map((m) => ({
   // Formatted here rather than in the grid: the same helper already dates the
   // guestbook slides, so both read the same way.
   date: shortDate(m.date_created),
+  author: authorName(m.person),
 }));
 ---
 

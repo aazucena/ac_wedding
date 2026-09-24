@@ -22,6 +22,11 @@ export async function getMemories(): Promise<Memories[]> {
         "image.id",
         "image.width",
         "image.height",
+        // Who took it. Both upload paths already record this; nothing read it
+        // back until now, so the album showed no credit.
+        "person.first_name",
+        "person.preferred_name",
+        "person.last_name",
         "date_created",
       ],
       filter: { approved: { _eq: true } },

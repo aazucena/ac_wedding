@@ -61,7 +61,11 @@ const {
     <div class="lightbox-meta" id="lightbox-meta">
       <p class="lightbox-title" id="lightbox-title"></p>
       <p class="lightbox-desc" id="lightbox-desc"></p>
-      {/* Empty unless the tile carries data-date — /gallery items don't. */}
+      {
+        /* Empty unless the tile carries data-author / data-date — /gallery
+          items carry neither, and :empty collapses them there. */
+      }
+      <p class="lightbox-author" id="lightbox-author"></p>
       <p class="lightbox-date" id="lightbox-date"></p>
       {
         photographer && (
@@ -143,6 +147,7 @@ const {
     const title = document.getElementById("lightbox-title");
     const desc = document.getElementById("lightbox-desc");
     const date = document.getElementById("lightbox-date");
+    const author = document.getElementById("lightbox-author");
     const ctr = document.getElementById("lightbox-counter");
     const dlBtn = document.getElementById("lightbox-download");
 
@@ -196,6 +201,11 @@ const {
         : "";
     desc.textContent =
       btn.dataset.desc && btn.dataset.desc !== "null" ? btn.dataset.desc : "";
+    if (author)
+      author.textContent =
+        btn.dataset.author && btn.dataset.author !== "null"
+          ? `Photo by ${btn.dataset.author}`
+          : "";
     if (date)
       date.textContent =
         btn.dataset.date && btn.dataset.date !== "null" ? btn.dataset.date : "";
@@ -380,6 +390,19 @@ const {
     font-weight: 300;
     color: rgba(255, 255, 255, 0.6);
     margin-bottom: 4px;
+  }
+
+  /* Credit for a guest photo. Display face and near-full white, so it reads as
+     a byline rather than as metadata — the date below stays quiet. */
+  .lightbox-author {
+    font-family: var(--fd);
+    font-size: 14px;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 3px;
+  }
+  .lightbox-author:empty {
+    display: none;
   }
 
   /* Only /memories tiles carry a date. `:empty` keeps this from adding a gap

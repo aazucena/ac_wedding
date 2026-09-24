@@ -32,6 +32,8 @@ interface GalleryItem {
   sort?: number | null;
   /** Pre-formatted upload date, e.g. "Sep 27, 2026". */
   date?: string | null;
+  /** Who took it. Empty for photos uploaded against a party invitation token. */
+  author?: string | null;
 }
 interface Props {
   items: GalleryItem[];
@@ -53,6 +55,7 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
           data-title={photo.title}
           data-desc={photo.description}
           data-date={photo.date}
+          data-author={photo.author}
           onclick="openLightbox(this)"
           aria-label={photo.title ?? `Photo ${i + 1}`}
         >
@@ -78,6 +81,7 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
           )}
           <div class="gallery-overlay">
             {photo.title && <p class="gallery-item-title">{photo.title}</p>}
+            {photo.author && <p class="gallery-item-author">{photo.author}</p>}
             {photo.date && <p class="gallery-item-date">{photo.date}</p>}
           </div>
         </button>
@@ -265,6 +269,16 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
     font-style: italic;
     color: #fff;
     line-height: 1.2;
+  }
+
+  /* Credit sits between the caption and the date, in the display face, so the
+     person reads as the subject of the line rather than as more metadata. */
+  .gallery-item-author {
+    font-family: var(--fd);
+    font-size: 12px;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.92);
+    line-height: 1.25;
   }
 
   /* The overlay is hover-only, so this is a desktop affordance; the lightbox
