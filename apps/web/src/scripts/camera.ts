@@ -540,7 +540,82 @@ function fallbackToPicker(note: string) {
   pickerLabel?.classList.remove("hidden");
 }
 
-permitBtn?.addEventListener("click", () => void openCamera());
+// ── Fullscreen ──────────────────────────────────────────────────────────────
+// The page is already full-bleed — #camera-view is fixed to all four edges. The
+// only thing left on screen that we don't own is the browser's own chrome: the
+// URL bar, and Android's system nav bar. Fullscreen buys us those two and
+// nothing else, which is why failing at it is a non-event.
+//
+// It can never be automatic: requestFullscreen needs transient user activation,
+// so it has to ride on a tap the guest was making anyway.
+
+/** Minimal shape for the prefixed Safari spelling, which TS doesn't know. */
+type WebkitFullscreen = {
+  webkitRequestFullscreen?: () => Promise<void> | void;
+};
+
+/**
+ * Ask for fullscreen, quietly. Must be called synchronously from a user
+ * gesture — any await before it spends the activation.
+ *
+ * Does nothing on an iPhone: Safari there has no element Fullscreen API at all,
+ * only <video>.webkitEnterFullscreen(), which would take the bare stream
+ * fullscreen and hide the shutter, tools and counter. That's the same takeover
+ * `playsinline` on the viewfinder exists to prevent. iPad Safari and Android
+ * Chrome do support it.
+ */
+function tryFullscreen() {
+  // A desktop preview session (?preview=<token>) reports data-device="handheld"
+  // — see camera.astro — so that attribute can't gate this. Pointer coarseness
+  // is the honest signal, and nobody working on this page wants their browser
+  // swallowed every time they tap "Allow camera".
+  if (!window.matchMedia("(pointer: coarse)").matches) return;
+  if (document.fullscreenElement) return;
+
+  // documentElement, deliberately NOT #camera-view: a fullscreen element
+  // becomes the root of the top layer, which outranks every z-index. #cam-gate
+  // is a SIBLING of #camera-view that clears it on z-index alone, so
+  // fullscreening the camera would make the identity chip open a gate nobody
+  // can see or tap.
+  const root = document.documentElement as HTMLElement & WebkitFullscreen;
+  const request = root.requestFullscreen ?? root.webkitRequestFullscreen;
+  if (!request) return;
+
+  try {
+    // Rejection is an ordinary outcome here (no activation, user declined, an
+    // embedded context without the permission) — never worth a status toast.
+    void Promise.resolve(request.call(root)).catch(() => {});
+  } catch {
+    /* older engines throw synchronously instead of rejecting */
+  }
+}
+
+// Guests swipe out of fullscreen by accident. Record the state so CSS has
+// something to hang off, but never re-enter: that needs a fresh gesture, and
+// grabbing the screen back would feel like a fight.
+document.addEventListener("fullscreenchange", () => {
+  document.documentElement.classList.toggle(
+    "is-fullscreen",
+    !!document.fullscreenElement,
+  );
+});
+
+permitBtn?.addEventListener("click", () => {
+  tryFullscreen(); // synchronous — openCamera's awaits would spend the gesture
+  void openCamera();
+});
+
+// A returning guest never touches the permit button: resumeOrPrompt() opens the
+// camera outright once permission is remembered. So take the first touch on the
+// camera, whatever it lands on — shutter, flip, grid, zoom. Capture phase to run
+// ahead of the target's own handler; `once` so it can't fire twice.
+//
+// Safe to collide with a shutter press: captureFrame() reads pixels from the
+// <video>, not from DOM geometry, so a resize on the same tap can't skew a shot.
+cameraView?.addEventListener("pointerdown", tryFullscreen, {
+  once: true,
+  capture: true,
+});
 
 flipBtn?.addEventListener("click", () => {
   facing = facing === "environment" ? "user" : "environment";
