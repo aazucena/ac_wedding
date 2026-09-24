@@ -14,9 +14,16 @@ const previewImg = document.getElementById(
 const removeBtn = document.getElementById(
   "mu-remove",
 ) as HTMLButtonElement | null;
-const tokenInput = document.getElementById(
-  "mu-token",
+const nameInput = document.getElementById("mu-name") as HTMLInputElement | null;
+const suggestionsEl = document.getElementById("mu-suggestions");
+const tableField = document.getElementById("mu-table-field");
+const tableInput = document.getElementById(
+  "mu-table",
 ) as HTMLInputElement | null;
+
+/** Chosen person, and the HMAC the server issues once the table matches. */
+let personId: string | null = null;
+let personToken: string | null = null;
 const captionInput = document.getElementById(
   "mu-caption",
 ) as HTMLInputElement | null;
@@ -141,9 +148,106 @@ function resetForm() {
   clearFile();
   clearError();
   setLoading(false);
+  personId = null;
+  personToken = null;
+  if (nameInput) nameInput.value = "";
+  if (tableInput) tableInput.value = "";
+  if (tableField) tableField.hidden = true;
+  if (suggestionsEl) suggestionsEl.hidden = true;
   if (captionInput) captionInput.value = "";
   if (successEl) successEl.hidden = true;
   if (form) form.hidden = false;
+}
+
+// ── Who's uploading ───────────────────────────────────────
+// Same two steps as the camera gate: find the name, then prove it with the
+// table number from the place card.
+let searchTimer: number | undefined;
+
+nameInput?.addEventListener("input", () => {
+  // Typing again invalidates a previous confirmation.
+  personId = null;
+  personToken = null;
+  if (tableField) tableField.hidden = true;
+
+  window.clearTimeout(searchTimer);
+  const q = nameInput.value.trim();
+  if (q.length < 2) {
+    if (suggestionsEl) suggestionsEl.hidden = true;
+    return;
+  }
+  searchTimer = window.setTimeout(() => void searchNames(q), 220);
+});
+
+async function searchNames(q: string) {
+  if (!suggestionsEl) return;
+  try {
+    const res = await fetch(`/api/camera/search?q=${encodeURIComponent(q)}`);
+    const { results } = (await res.json()) as {
+      results: { id: string; name: string }[];
+    };
+
+    suggestionsEl.innerHTML = "";
+    if (!results.length) {
+      const empty = document.createElement("p");
+      empty.className = "mu-suggestion-empty";
+      empty.textContent = "No match — check the spelling on your place card.";
+      suggestionsEl.append(empty);
+    } else {
+      for (const r of results) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mu-suggestion";
+        btn.textContent = r.name;
+        btn.addEventListener("click", () => pickPerson(r.id, r.name));
+        suggestionsEl.append(btn);
+      }
+    }
+    suggestionsEl.hidden = false;
+  } catch {
+    suggestionsEl.hidden = true;
+  }
+}
+
+function pickPerson(id: string, name: string) {
+  personId = id;
+  personToken = null; // not proven until the table number matches
+  if (nameInput) nameInput.value = name;
+  if (suggestionsEl) suggestionsEl.hidden = true;
+  if (tableField) tableField.hidden = false;
+  tableInput?.focus();
+}
+
+/** Exchange the table number for an upload token. */
+async function confirmTable(): Promise<boolean> {
+  if (!personId) return false;
+  const tableNumber = tableInput?.value.trim();
+  if (!tableNumber) {
+    showError("Please enter your table number.");
+    tableInput?.focus();
+    return false;
+  }
+  try {
+    const res = await fetch("/api/camera/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ personId, tableNumber }),
+    });
+    const data = (await res.json()) as {
+      ok: boolean;
+      token?: string;
+      error?: string;
+    };
+    if (!data.ok || !data.token) {
+      showError(data.error ?? "That didn't match. Check your place card.");
+      return false;
+    }
+    personToken = data.token;
+    return true;
+  } catch {
+    showError("Connection problem. Please try again.");
+    return false;
+  }
 }
 
 // ── Submit ────────────────────────────────────────────────
@@ -151,16 +255,15 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearError();
 
-  const token = tokenInput?.value.trim() ?? "";
   const caption = captionInput?.value.trim() || null;
 
   if (!selectedFile) {
     showError("Please select a photo.");
     return;
   }
-  if (!token) {
-    showError("Please enter your invitation code.");
-    tokenInput?.focus();
+  if (!personId) {
+    showError("Please find your name in the list first.");
+    nameInput?.focus();
     return;
   }
   if (selectedFile.size > 10 * 1024 * 1024) {
@@ -168,12 +271,19 @@ form.addEventListener("submit", async (e) => {
     return;
   }
 
+  setLoading(true);
+
+  // Verify the table number on submit, so the guest fills the form once.
+  if (!personToken && !(await confirmTable())) {
+    setLoading(false);
+    return;
+  }
+
   const fd = new FormData();
   fd.append("file", selectedFile);
-  fd.append("token", token);
+  fd.append("personId", personId);
+  fd.append("personToken", personToken ?? "");
   if (caption) fd.append("caption", caption);
-
-  setLoading(true);
   try {
     const res = await fetch("/api/photo/upload", { method: "POST", body: fd });
     const data = (await res.json()) as { success?: boolean; error?: string };

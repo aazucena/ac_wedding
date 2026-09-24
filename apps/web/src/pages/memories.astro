@@ -1,6 +1,7 @@
 ---
 // apps/web/src/pages/memories.astro — guest-submitted wedding photos + guestbook messages
 import Layout from "../layouts/Layout.astro";
+import PageHeader from "../components/PageHeader.astro";
 import MemoryGrid from "../components/memories/MemoryGrid.astro";
 import GalleryLightbox from "../components/gallery/GalleryLightbox.astro";
 import GuestbookSwiper from "../components/guestbook/GuestbookSwiper.astro";
@@ -14,17 +15,18 @@ import { DateTime } from "luxon";
 import { toDateTime } from "../lib/date";
 import Hashtag from "~/components/Hashtag.astro";
 
-const urlToken = Astro.url.searchParams.get("token") ?? "";
-
 const [settings, memories, entries] = await Promise.all([
   getSettings(),
   getMemories(),
   getGuestbookEntries(),
 ]);
 
-// Post-wedding gate
+// Post-wedding gate. Dev mode is exempt so the page can be worked on before
+// the wedding date, matching how /print/* and /admin/* are already gated in
+// middleware.ts. Production is unaffected: import.meta.env.DEV is false there.
 if (
   !Astro.locals.isPreview &&
+  !import.meta.env.DEV &&
   DateTime.now() < toDateTime(settings.wedding_date ?? "2099-12-31")
 ) {
   return Astro.redirect("/", 307);
@@ -63,23 +65,26 @@ const items = memories.map((m) => ({
   activeNav="memories"
 >
   <div class="page-wide memories-page" id="memories">
-    <!-- ── Header ────────────────────────────────────────────── -->
-    <header class="header">
-      <div class="header-eyebrow">Our Wedding Memories</div>
-      <h1 class="header-title font-display">{groom} & {bride}</h1>
-      <p class="header-subtitle">
-        Photos and wishes shared by our guests on {weddingDateLabel}.
-      </p>
-      {
-        hashtag && (
-          <p class="header-hashtag">
-            Tag your photos with{" "}
-            <Hashtag tag={hashtag} as="strong" class="header-hashtag-tag" /> to
-            be featured here.
-          </p>
-        )
-      }
-    </header>
+    {
+      /* The same header every other page uses. This page used to hand-roll
+        its own, which is why it looked like a different site. */
+    }
+    <PageHeader
+      groomName={groom}
+      brideName={bride}
+      eyebrow="Our wedding memories"
+      date={`Photos & wishes from our guests · ${weddingDateLabel}`}
+    />
+
+    {
+      hashtag && (
+        <p class="memories-hashtag">
+          Tag your photos with{" "}
+          <Hashtag tag={hashtag} as="strong" class="memories-hashtag-tag" /> to
+          be featured here.
+        </p>
+      )
+    }
 
     <!-- ── Photo gallery ─────────────────────────────────────── -->
     {
@@ -106,7 +111,7 @@ const items = memories.map((m) => ({
     }
 
     <!-- ── Photo upload ───────────────────────────────────────── -->
-    <MemoryUpload defaultToken={urlToken} />
+    <MemoryUpload />
 
     {
       slides.length > 0 && (
@@ -142,15 +147,24 @@ const items = memories.map((m) => ({
   }
 
   /* ── Header ────────────────────────────────────────────── */
-  .header-hashtag {
-    font-family: var(--fb);
-    font-size: 12px;
-    font-weight: 300;
-    color: var(--muted);
-    margin: 8px 0 0;
-    line-height: 1.5;
+  /* The tag line belongs to the header, so it sits tight under the date
+     instead of floating 60px below it: PageHeader carries margin-bottom 52px,
+     and the line's own 8px sat on top of that. The header's trailing space
+     moves onto this line, so the rhythm reads header → tag → content. */
+  .memories-page :global(.header) {
+    margin-bottom: 12px;
   }
-  :global(.header-hashtag-tag) {
+  .memories-hashtag {
+    font-family: var(--fb);
+    font-size: 13.5px;
+    font-weight: 300;
+    /* 12px muted grey was too faint to read as part of the header. */
+    color: color-mix(in srgb, var(--muted) 65%, var(--dark));
+    margin: 0 0 28px;
+    line-height: 1.5;
+    text-align: center;
+  }
+  :global(.memories-hashtag-tag) {
     font-weight: 600;
     color: color-mix(in srgb, var(--cp) 75%, var(--dark));
   }

@@ -23,6 +23,9 @@ export async function createMemoryRecord(
   description?: string,
   source?: string,
   approved = false,
+  /** Who uploaded it. Every shooter is a person; only some are guests. */
+  personId?: string | null,
+  guestId?: string | null,
 ): Promise<void> {
   await post("/items/memories", {
     image: fileId,
@@ -31,5 +34,7 @@ export async function createMemoryRecord(
     description: description ?? null,
     source: source ?? null,
     approved,
+    ...(personId ? { person: personId } : {}),
+    ...(guestId ? { guest: guestId } : {}),
   });
 }

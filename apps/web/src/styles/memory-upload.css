@@ -222,6 +222,50 @@
   margin: 0;
 }
 
+/* ── Name suggestions ──────────────────────────────────── */
+/* Inline list rather than a floating dropdown: the form already scrolls on a
+   phone, and an absolutely-positioned menu would be clipped by .mu-expand. */
+.mu-suggestions {
+  display: flex;
+  flex-direction: column;
+  max-height: 168px;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--cp) 28%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--ivory);
+}
+
+.mu-suggestion {
+  padding: 9px 12px;
+  text-align: left;
+  font-family: var(--fb);
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--dark);
+  background: none;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--cp) 14%, transparent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.mu-suggestion:last-child {
+  border-bottom: none;
+}
+.mu-suggestion:hover,
+.mu-suggestion:focus-visible {
+  background: color-mix(in srgb, var(--cp) 12%, transparent);
+  outline: none;
+}
+
+.mu-suggestion-empty {
+  margin: 0;
+  padding: 9px 12px;
+  font-family: var(--fb);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--muted);
+}
+
 /* ── Error ─────────────────────────────────────────────── */
 .mu-error {
   font-family: var(--fb);

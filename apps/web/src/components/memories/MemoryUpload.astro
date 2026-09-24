@@ -1,12 +1,12 @@
 ---
 // components/memories/MemoryUpload.astro
 // "Share your photo" form — POSTs multipart to /api/photo/upload.
-// defaultToken pre-fills the token field when navigated from the RSVP link.
+//
+// Identity is name + table number, the same check Roll Call uses at /camera,
+// rather than the RSVP invitation code. Nobody at a reception wants to dig an
+// email link out of their phone, and a guest who used the camera already knows
+// this flow.
 import "../../styles/memory-upload.css";
-interface Props {
-  defaultToken?: string;
-}
-const { defaultToken = "" } = Astro.props;
 ---
 
 <section class="mu-section" id="mu-section">
@@ -67,21 +67,44 @@ const { defaultToken = "" } = Astro.props;
         </div>
       </div>
 
-      <!-- Invitation token -->
+      <!-- Who's uploading: name, then the table number on their place card -->
       <div class="mu-field">
-        <label class="mu-label" for="mu-token">Invitation code</label>
+        <label class="mu-label" for="mu-name">Your name</label>
         <input
           class="mu-input"
-          id="mu-token"
+          id="mu-name"
           type="text"
-          value={defaultToken}
-          placeholder="Paste the code from your RSVP link"
+          placeholder="e.g. Maria Santos"
           autocomplete="off"
+          autocapitalize="words"
           spellcheck={false}
         />
-        <p class="mu-hint">
-          The unique code at the end of your invitation email link.
+        <div
+          class="mu-suggestions"
+          id="mu-suggestions"
+          role="listbox"
+          aria-label="Guest matches"
+          hidden
+        >
+        </div>
+        <p class="mu-hint" id="mu-name-hint">
+          Type your name as it appears on your place card.
         </p>
+      </div>
+
+      <div class="mu-field" id="mu-table-field" hidden>
+        <label class="mu-label" for="mu-table">Table number</label>
+        <input
+          class="mu-input"
+          id="mu-table"
+          type="number"
+          min="1"
+          max="99"
+          inputmode="numeric"
+          placeholder="e.g. 7"
+          autocomplete="off"
+        />
+        <p class="mu-hint">It's on your place card.</p>
       </div>
 
       <!-- Caption (optional) -->
