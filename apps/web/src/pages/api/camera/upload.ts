@@ -18,7 +18,7 @@ import type { APIRoute } from "astro";
 import { DIRECTUS_URL, DIRECTUS_TOKEN } from "astro:env/server";
 import { DateTime } from "luxon";
 import qs from "qs";
-import { getSettings } from "@lib/directus";
+import { getSettings, memoriesFolder } from "@lib/directus";
 import { verifyGuestToken } from "@lib/game-token";
 import { isRateLimited } from "@lib/ratelimit";
 import { SHOT_LIMIT, CAMERA_SOURCE, CAPTION_MAX } from "@lib/constants/camera";
@@ -189,14 +189,10 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ ok: false, error: "That photo is too large." }, 400);
 
     // Folder + settings in parallel; both are non-fatal except the deadline.
+    // The folder is resolved by the shared helper so a Roll Call shot and a
+    // /memories upload file together, rather than into Uploads and Memories.
     const [folderId, settings] = await Promise.all([
-      fetch(`${DIRECTUS_URL}/folders?filter[name][_eq]=Uploads&limit=1`, {
-        headers: auth,
-      })
-        .then((r) =>
-          r.ok ? r.json().then(({ data }) => data?.[0]?.id ?? null) : null,
-        )
-        .catch(() => null),
+      memoriesFolder(),
       getSettings().catch(() => null),
     ]);
 

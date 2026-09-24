@@ -143,7 +143,12 @@ export {
 export { searchSeatedPersons, getTablemates } from "./api/reception";
 export { getGameProofFiles } from "./api/game";
 export type { GameSubmission } from "./api/game";
-export { uploadGuestFile, deleteFile, createMemoryRecord } from "./api/media";
+export {
+  uploadGuestFile,
+  deleteFile,
+  createMemoryRecord,
+  memoriesFolder,
+} from "./api/media";
 export {
   getGuestbookEntries,
   lookupGuestIdByName,

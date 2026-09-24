@@ -8,7 +8,7 @@ import type { APIRoute } from "astro";
 import { DIRECTUS_URL, DIRECTUS_TOKEN } from "astro:env/server";
 import { z } from "zod";
 import { DateTime } from "luxon";
-import { getSettings } from "@lib/directus";
+import { getSettings, memoriesFolder } from "@lib/directus";
 import { verifyGuestToken } from "@lib/game-token";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -58,17 +58,14 @@ export const POST: APIRoute = async ({ request }) => {
     if (!parsed.success)
       return json({ ok: false, error: parsed.error.issues[0]?.message }, 400);
 
-    // Look up the "Uploads" folder UUID and settings in parallel — both non-fatal.
+    // Folder + settings in parallel — both non-fatal.
     // Must happen before deadline check (settings needed) and before file upload (folderId needed).
     // Metadata fields must be appended BEFORE the file binary in multipart or Directus ignores them.
+    // Shared resolver, so game proofs file alongside Roll Call shots and
+    // /memories uploads — these become memories rows too, and approved ones at
+    // that, so they belong in the same folder.
     const [folderId, settings] = await Promise.all([
-      fetch(`${DIRECTUS_URL}/folders?filter[name][_eq]=Uploads&limit=1`, {
-        headers: { Authorization: `Bearer ${DIRECTUS_TOKEN}` },
-      })
-        .then((r) =>
-          r.ok ? r.json().then(({ data }) => data?.[0]?.id ?? null) : null,
-        )
-        .catch(() => null),
+      memoriesFolder(),
       getSettings().catch(() => null),
     ]);
     const receptionId = settings?.reception?.id ?? null;
