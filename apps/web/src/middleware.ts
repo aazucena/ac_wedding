@@ -27,10 +27,19 @@ export const onRequest = defineMiddleware(
     if (url.pathname.startsWith("/api/")) return next();
 
     // Preview token — bypasses maintenance mode and grants access to gated pages
-    const secret = PREVIEW_TOKEN;
+    //
+    // Normalised on both sides before comparing. A strict === against the raw
+    // env value fails silently for two things that happen every time a token is
+    // pasted into a dashboard: a trailing newline, and a case difference in a
+    // hex token. The failure looks identical to a wrong token, which makes it
+    // expensive to diagnose.
+    const norm = (v: string | null | undefined) =>
+      (v ?? "").trim().toLowerCase();
+
+    const secret = norm(PREVIEW_TOKEN);
     if (secret) {
-      const tokenParam = url.searchParams.get("preview");
-      const tokenCookie = cookies.get(PREVIEW_COOKIE)?.value;
+      const tokenParam = norm(url.searchParams.get("preview"));
+      const tokenCookie = norm(cookies.get(PREVIEW_COOKIE)?.value);
 
       if (tokenParam === secret) {
         locals.isPreview = true;
