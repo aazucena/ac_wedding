@@ -146,15 +146,36 @@ import "../../styles/memory-upload.css";
     </form>
 
     <!-- ── Success state ──────────────────────────────────── -->
-    <div class="mu-success" id="mu-success" hidden>
-      <span class="mu-success-icon" aria-hidden="true">✦</span>
-      <p class="mu-success-title font-display">Photo submitted!</p>
-      <p class="mu-success-body">
-        Your photo will appear in our memories once it's approved. Thank you!
-      </p>
-      <button class="mu-another-btn" id="mu-another" type="button">
-        Upload another
-      </button>
+    <!-- Shows the photo back to the guest. "Submitted" is a receipt; seeing
+         the actual picture is what reads as "you got it". -->
+    <div class="mu-success" id="mu-success" role="status" hidden>
+      <div class="mu-success-card">
+        <div class="mu-success-thumb-wrap">
+          <img class="mu-success-thumb" id="mu-success-thumb" alt="" />
+          <span class="mu-success-check" aria-hidden="true">✓</span>
+        </div>
+
+        <div class="mu-success-text">
+          <p class="mu-success-eyebrow">Added to the album</p>
+          <p class="mu-success-title font-display" id="mu-success-title">
+            Thank you 💛
+          </p>
+          <p class="mu-success-body">
+            It'll appear on this page once we've had a look — we're reading
+            every one.
+          </p>
+          <p class="mu-success-caption" id="mu-success-caption" hidden></p>
+        </div>
+      </div>
+
+      <p class="mu-success-count" id="mu-success-count" hidden></p>
+
+      <div class="mu-success-actions">
+        <button class="mu-another-btn" id="mu-another" type="button">
+          Add another
+        </button>
+        <button class="mu-done-btn" id="mu-done" type="button">Done</button>
+      </div>
     </div>
   </div>
 </section>

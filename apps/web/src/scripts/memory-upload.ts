@@ -21,9 +21,6 @@ const tableInput = document.getElementById(
   "mu-table",
 ) as HTMLInputElement | null;
 
-/** Chosen person, and the HMAC the server issues once the table matches. */
-let personId: string | null = null;
-let personToken: string | null = null;
 const captionInput = document.getElementById(
   "mu-caption",
 ) as HTMLInputElement | null;
@@ -38,6 +35,21 @@ const successEl = document.getElementById("mu-success") as HTMLElement | null;
 const anotherBtn = document.getElementById(
   "mu-another",
 ) as HTMLButtonElement | null;
+const doneBtn = document.getElementById("mu-done") as HTMLButtonElement | null;
+const successThumb = document.getElementById(
+  "mu-success-thumb",
+) as HTMLImageElement | null;
+const successTitle = document.getElementById("mu-success-title");
+const successCaption = document.getElementById("mu-success-caption");
+const successCount = document.getElementById("mu-success-count");
+
+/** Chosen person, and the HMAC the server issues once the table matches. */
+let personId: string | null = null;
+let personToken: string | null = null;
+/** How many this guest has added since opening the form. */
+let uploadCount = 0;
+/** Object URL behind the success thumbnail; revoked when replaced. */
+let successThumbUrl: string | null = null;
 
 if (!openBtn || !cta || !expand || !form || !fileInput || !drop) {
   throw new Error("MemoryUpload: required elements missing");
@@ -144,19 +156,32 @@ function setLoading(on: boolean) {
 }
 
 // ── Reset ────────────────────────────────────────────────
-function resetForm() {
+/**
+ * Clear the photo and caption, but keep who the guest is.
+ *
+ * "Add another" used to run the full reset, which meant searching your name
+ * and re-entering your table number for every single photo — the one thing
+ * guaranteed to stop someone at two.
+ */
+function resetForPhoto() {
   clearFile();
   clearError();
   setLoading(false);
+  if (captionInput) captionInput.value = "";
+  if (successEl) successEl.hidden = true;
+  if (form) form.hidden = false;
+}
+
+/** Full reset, including identity — for closing the form entirely. */
+function resetForm() {
+  resetForPhoto();
   personId = null;
   personToken = null;
+  uploadCount = 0;
   if (nameInput) nameInput.value = "";
   if (tableInput) tableInput.value = "";
   if (tableField) tableField.hidden = true;
   if (suggestionsEl) suggestionsEl.hidden = true;
-  if (captionInput) captionInput.value = "";
-  if (successEl) successEl.hidden = true;
-  if (form) form.hidden = false;
 }
 
 // ── Who's uploading ───────────────────────────────────────
@@ -293,8 +318,7 @@ form.addEventListener("submit", async (e) => {
       return;
     }
 
-    form.hidden = true;
-    if (successEl) successEl.hidden = false;
+    showSuccess(selectedFile, caption);
   } catch {
     showError("Something went wrong. Please try again.");
   } finally {
@@ -302,7 +326,49 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
-// ── Upload another ────────────────────────────────────────
+// ── Success ───────────────────────────────────────────────
+/** First name only — "Thank you, Maria" reads better than the full name. */
+function firstNameOf(full: string): string {
+  return full.trim().split(/\s+/)[0] ?? "";
+}
+
+function showSuccess(file: File, caption: string | null) {
+  uploadCount += 1;
+
+  // Show the photo back. A fresh object URL, because clearFile() revokes the
+  // one the form preview was using.
+  if (successThumb) {
+    if (successThumbUrl) URL.revokeObjectURL(successThumbUrl);
+    successThumbUrl = URL.createObjectURL(file);
+    successThumb.src = successThumbUrl;
+  }
+
+  // The guest verified their name to get here, so use it.
+  const first = firstNameOf(nameInput?.value ?? "");
+  if (successTitle)
+    successTitle.textContent = first
+      ? `Thank you, ${first} 💛`
+      : "Thank you 💛";
+
+  if (successCaption) {
+    successCaption.textContent = caption ? `“${caption}”` : "";
+    successCaption.hidden = !caption;
+  }
+
+  if (successCount) {
+    successCount.textContent =
+      uploadCount > 1 ? `That's ${uploadCount} photos from you so far.` : "";
+    successCount.hidden = uploadCount < 2;
+  }
+
+  if (form) form.hidden = true;
+  if (successEl) successEl.hidden = false;
+}
+
+// ── Add another / done ────────────────────────────────────
 anotherBtn?.addEventListener("click", () => {
-  resetForm();
+  resetForPhoto();
+  drop?.focus();
 });
+
+doneBtn?.addEventListener("click", closeForm);
