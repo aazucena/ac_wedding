@@ -30,6 +30,8 @@ interface GalleryItem {
   description?: string | null;
   image?: DirectusFiles | null;
   sort?: number | null;
+  /** Pre-formatted upload date, e.g. "Sep 27, 2026". */
+  date?: string | null;
 }
 interface Props {
   items: GalleryItem[];
@@ -50,6 +52,7 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
           data-src={photo.image ? assetUrl(photo.image) : null}
           data-title={photo.title}
           data-desc={photo.description}
+          data-date={photo.date}
           onclick="openLightbox(this)"
           aria-label={photo.title ?? `Photo ${i + 1}`}
         >
@@ -75,6 +78,7 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
           )}
           <div class="gallery-overlay">
             {photo.title && <p class="gallery-item-title">{photo.title}</p>}
+            {photo.date && <p class="gallery-item-date">{photo.date}</p>}
           </div>
         </button>
       ))
@@ -235,13 +239,18 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
   .gallery-overlay {
     position: absolute;
     inset: 0;
+    /* Column, so the date stacks under the caption. align-items therefore
+       controls the horizontal edge and justify-content the vertical one. */
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 2px;
     background: linear-gradient(
       180deg,
       transparent 50%,
       rgba(26, 26, 46, 0.6) 100%
     );
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     padding: 12px;
     opacity: 0;
     transition: opacity 0.25s ease;
@@ -255,6 +264,18 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
     font-size: 14px;
     font-style: italic;
     color: #fff;
+    line-height: 1.2;
+  }
+
+  /* The overlay is hover-only, so this is a desktop affordance; the lightbox
+     carries the same date for touch. */
+  .gallery-item-date {
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
     line-height: 1.2;
   }
 
@@ -300,6 +321,16 @@ const totalPages = Math.ceil(items.length / PAGE_SIZE);
     color: var(--muted);
     min-width: 36px;
     text-align: center;
+  }
+
+  /* Tile height is driven entirely by column width, and Roll Call portraits are
+     9:19.5 — at three columns on a 1280px screen one photo renders 884px tall,
+     taller than the viewport, and twelve of them make a 2612px page. A fourth
+     column brings that to ~658px without cropping anything. */
+  @media (min-width: 1100px) {
+    .mg-grid {
+      column-count: 4;
+    }
   }
 
   /* Two columns, not three: a 9:19.5 portrait at a third of a 390px viewport

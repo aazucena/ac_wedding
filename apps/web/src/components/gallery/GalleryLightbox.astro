@@ -61,6 +61,8 @@ const {
     <div class="lightbox-meta" id="lightbox-meta">
       <p class="lightbox-title" id="lightbox-title"></p>
       <p class="lightbox-desc" id="lightbox-desc"></p>
+      {/* Empty unless the tile carries data-date — /gallery items don't. */}
+      <p class="lightbox-date" id="lightbox-date"></p>
       {
         photographer && (
           <p class="lightbox-credit">
@@ -140,6 +142,7 @@ const {
     const ph = document.getElementById("lightbox-placeholder");
     const title = document.getElementById("lightbox-title");
     const desc = document.getElementById("lightbox-desc");
+    const date = document.getElementById("lightbox-date");
     const ctr = document.getElementById("lightbox-counter");
     const dlBtn = document.getElementById("lightbox-download");
 
@@ -193,6 +196,9 @@ const {
         : "";
     desc.textContent =
       btn.dataset.desc && btn.dataset.desc !== "null" ? btn.dataset.desc : "";
+    if (date)
+      date.textContent =
+        btn.dataset.date && btn.dataset.date !== "null" ? btn.dataset.date : "";
     ctr.textContent = `${i + 1} / ${items.length}`;
   }
 
@@ -374,6 +380,21 @@ const {
     font-weight: 300;
     color: rgba(255, 255, 255, 0.6);
     margin-bottom: 4px;
+  }
+
+  /* Only /memories tiles carry a date. `:empty` keeps this from adding a gap
+     on /gallery, where the element renders but never gets text. */
+  .lightbox-date {
+    font-family: var(--fb);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 4px;
+  }
+  .lightbox-date:empty {
+    display: none;
   }
 
   .lightbox-credit {

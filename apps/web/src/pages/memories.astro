@@ -55,6 +55,9 @@ const items = memories.map((m) => ({
   description: m.description ?? null,
   image: m.image,
   sort: null,
+  // Formatted here rather than in the grid: the same helper already dates the
+  // guestbook slides, so both read the same way.
+  date: shortDate(m.date_created),
 }));
 ---
 
