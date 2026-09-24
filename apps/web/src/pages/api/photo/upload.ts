@@ -1,14 +1,26 @@
 // apps/web/src/pages/api/photo/upload.ts
-// Accepts multipart form: file + personId + personToken + optional caption.
-// Identity is the same name + table-number check Roll Call uses — a guest who
-// has been through /camera is already familiar with it, and unlike the old RSVP
-// code it doesn't require digging an email link out of a phone at a wedding.
+// Accepts multipart form: file + an identity + optional caption.
+//
+// Two identities are accepted, because two pages upload here:
+//   personId + personToken  /memories — the name + table-number check Roll Call
+//                           uses. Nobody at a reception wants to dig an email
+//                           link out of their phone, and it records WHO shot it.
+//   token                   /rsvp — the party's invitation token. The guest
+//                           arrived by a signed email link, so it's at least as
+//                           strong; it identifies a party, not a person, so the
+//                           memory carries no person or guest.
+//
 // Uploads to the Directus files API and creates a memories record
 // (approved: false — requires manual approval).
 
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { uploadGuestFile, createMemoryRecord, deleteFile } from "@lib/directus";
+import {
+  validatePartyToken,
+  uploadGuestFile,
+  createMemoryRecord,
+  deleteFile,
+} from "@lib/directus";
 import { verifyGuestToken } from "@lib/game-token";
 import { DIRECTUS_URL, DIRECTUS_TOKEN } from "astro:env/server";
 import qs from "qs";
@@ -17,7 +29,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-const uploadSchema = z.object({
+const personSchema = z.object({
   personId: z.string().regex(UUID_RE, "Please confirm your name first."),
   personToken: z.string().min(1, "Please confirm your name first."),
 });
@@ -52,6 +64,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const form = await request.formData();
     const file = form.get("file") as File | null;
+    const partyToken = (form.get("token") as string | null)?.trim() ?? "";
     const personId = (form.get("personId") as string | null)?.trim() ?? "";
     const personToken =
       (form.get("personToken") as string | null)?.trim() ?? "";
@@ -60,10 +73,16 @@ export const POST: APIRoute = async ({ request }) => {
       ? rawCaption.replace(/<[^>]*>/g, "").trim() || null
       : null;
 
-    const parsed = uploadSchema.safeParse({ personId, personToken });
-    if (!parsed.success || !file) {
+    if (!file) return json({ error: "Missing file." }, 400);
+
+    // Only the /memories form is checked against the person schema — the RSVP
+    // form sends no personId at all, and validating it would reject that page.
+    const parsed = partyToken
+      ? null
+      : personSchema.safeParse({ personId, personToken });
+    if (parsed && !parsed.success) {
       return json(
-        { error: parsed.error?.issues[0]?.message ?? "Missing file or token." },
+        { error: parsed.error.issues[0]?.message ?? "Missing identity." },
         400,
       );
     }
@@ -75,9 +94,12 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ error: "File too large. Maximum size is 10MB." }, 400);
     }
 
-    // Same HMAC identity the camera issues, so a guest verified once is
-    // verified for both.
-    if (!verifyGuestToken(personId, personToken)) {
+    if (partyToken) {
+      if (!(await validatePartyToken(partyToken)))
+        return json({ error: "Invalid invitation token." }, 403);
+    } else if (!verifyGuestToken(personId, personToken)) {
+      // Same HMAC identity the camera issues, so a guest verified once at
+      // /camera is verified here too.
       return json({ error: "Please confirm your name again." }, 403);
     }
 
@@ -98,8 +120,10 @@ export const POST: APIRoute = async ({ request }) => {
         undefined,
         "rsvp",
         false,
-        personId,
-        await findGuestId(personId),
+        // A party token names a party, not a person, so attribution is only
+        // available on the /memories path.
+        partyToken ? null : personId,
+        partyToken ? null : await findGuestId(personId),
       );
     } catch {
       // Delete the orphaned file so it doesn't accumulate in Directus files
