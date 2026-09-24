@@ -7,7 +7,8 @@ export const prerender = true;
 //   tent  4 × 6 in  folded to a 4 × 3 tent — the default, one per table
 //   4up   Letter    four 4 × 5 tents to cut apart (15 tables → 4 sheets)
 //   flat  4 × 6 in  single-sided, for venues with acrylic stands
-//   sign  5 × 7 in  one big QR for the entrance or a photo corner
+//   sign  5 × 7 in  one big QR, fits a standard photo frame
+//   signletter  Letter  the same sign at 8.5 × 11 for a print shop
 //
 // Four 4 × 6 cards would need 8 × 12 in, so the 4-up sheet uses 4 × 5 cards —
 // 8 × 10 in of card on a Letter sheet, with room for the cut guides.
@@ -37,6 +38,7 @@ const PAPERS = [
   { id: "4up", label: "4-up Letter" },
   { id: "flat", label: "Flat 4×6" },
   { id: "sign", label: "Sign 5×7" },
+  { id: "signletter", label: "Sign 8.5×11" },
 ] as const;
 
 const card = {
@@ -95,6 +97,11 @@ const card = {
 
   <div class="paper-pane" data-pane="sign">
     <RollCallTent variant="sign" {...card} />
+  </div>
+
+  {/* Letter sign — the size the printer asked for. Same artwork, bigger QR. */}
+  <div class="paper-pane" data-pane="signletter">
+    <RollCallTent variant="sign" letter {...card} />
   </div>
 </PrintLayout>
 

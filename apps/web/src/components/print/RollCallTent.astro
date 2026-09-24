@@ -14,6 +14,8 @@ interface Props {
   variant?: "tent" | "flat" | "sign";
   /** 4 × 5 in instead of 4 × 6 — the size that fits four to a Letter sheet. */
   compact?: boolean;
+  /** Sign at 8.5 × 11 instead of 5 × 7 — what a print shop expects. */
+  letter?: boolean;
   shots: number;
   cameraUrl: string;
   shortUrl: string;
@@ -25,6 +27,7 @@ interface Props {
 const {
   variant = "tent",
   compact = false,
+  letter = false,
   shots,
   cameraUrl,
   shortUrl,
@@ -37,10 +40,17 @@ const {
 // 120px ≈ 1.25in at 96dpi. The compact card keeps the same QR — shrinking it
 // below ~1.2in is where scanning in a dim room starts to fail, so the card
 // gives up padding instead.
-const qrSize = variant === "sign" ? 260 : 120;
+const qrSize = variant === "sign" ? (letter ? 440 : 260) : 120;
 ---
 
-<div class:list={["tent", `is-${variant}`, compact && "is-compact"]}>
+<div
+  class:list={[
+    "tent",
+    `is-${variant}`,
+    compact && "is-compact",
+    letter && "is-letter",
+  ]}
+>
   {
     variant === "tent" && (
       <>

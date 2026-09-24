@@ -23,6 +23,10 @@
     size: 5in 7in;
     margin: 0;
   }
+  @page rc-sign-letter {
+    size: 8.5in 11in;
+    margin: 0;
+  }
   @page {
     size: 4in 6in;
     margin: 0;
@@ -37,6 +41,9 @@
   }
   body[data-paper="sign"] .paper-pane.is-active {
     page: rc-sign;
+  }
+  body[data-paper="signletter"] .paper-pane.is-active {
+    page: rc-sign-letter;
   }
   body {
     background: white !important;
@@ -256,4 +263,39 @@
 .tent.is-sign .tent-qr .qr-inner svg {
   width: 2.6in !important;
   height: 2.6in !important;
+}
+
+/* Letter sign: the size a print shop asks for. Everything scales with the
+   sheet, and the QR nearly doubles again — at 4.5in it reads from across a
+   room, which is the whole point of a sheet this size. */
+.tent.is-sign.is-letter,
+.tent.is-sign.is-letter .tent-face {
+  width: 8.5in;
+  height: 11in;
+}
+.tent.is-sign.is-letter .tent-face {
+  padding: 0.9in 0.7in;
+  gap: 0.2in;
+}
+.tent.is-sign.is-letter .tent-eyebrow {
+  font-size: 12pt;
+  letter-spacing: 5px;
+}
+.tent.is-sign.is-letter .tent-title {
+  font-size: 58pt;
+}
+.tent.is-sign.is-letter .tent-rule {
+  width: 3in;
+}
+.tent.is-sign.is-letter .tent-lede {
+  font-size: 17pt;
+  max-width: 6in;
+}
+.tent.is-sign.is-letter .tent-url {
+  font-size: 15pt;
+}
+.tent.is-sign.is-letter .tent-qr .qr-inner canvas,
+.tent.is-sign.is-letter .tent-qr .qr-inner svg {
+  width: 4.5in !important;
+  height: 4.5in !important;
 }

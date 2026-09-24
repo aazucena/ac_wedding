@@ -3,7 +3,9 @@
 // here. The initial format can come from the URL, which keeps a chosen one
 // linkable:  /print/camera?paper=4up
 (function () {
-  var PAPERS = ["tent", "4up", "flat", "sign"];
+  // Must match the PAPERS array in print/camera.astro — an id missing here
+  // silently falls back to the first format instead of failing.
+  var PAPERS = ["tent", "4up", "flat", "sign", "signletter"];
 
   function setPaper(paper) {
     document.body.dataset.paper = paper;
