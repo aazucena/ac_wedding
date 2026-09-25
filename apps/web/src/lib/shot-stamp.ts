@@ -98,20 +98,43 @@ export function stampHashtag(tag: string | null | undefined): string | null {
  * "09·26·'26" — the interpunct spacing of a film date back rather than slashes,
  * which read as a filename.
  *
- * Takes the WEDDING date, not the capture time: the reception runs past
- * midnight and the camera stays open until 4am, so capture time would stamp a
- * chunk of the night 09·27.
+ * Stamps the moment the shot was TAKEN, like a real date back. The reception
+ * runs past midnight and the camera stays open until 4am, so shots from the end
+ * of the night genuinely read 09·27 — that's the honest record of when they
+ * happened, and it's the sort of detail that's nice to find later.
  *
- * Returns null for anything unparseable, so a missing setting drops the line
- * rather than stamping "NaN" onto a guest's photo.
+ * Resolved in the VENUE's timezone, not the phone's. Guests travelling in may
+ * still have their phone on another zone, and a photo taken at the reception
+ * should carry the reception's date whoever shot it. Falls back to device local
+ * time if the zone is unknown to the browser.
+ *
+ * Returns null for an invalid Date rather than stamping "NaN" on a photo.
  */
-export function stampDate(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso.trim());
-  if (!m) return null;
-  const [, year, month, day] = m;
-  // The pattern guarantees all three, but the compiler types captures as
-  // possibly-undefined and a thrown error here would break the whole share.
+export function stampDate(when: Date, timeZone?: string | null): string | null {
+  if (!(when instanceof Date) || Number.isNaN(when.getTime())) return null;
+
+  const parts = (tz?: string) =>
+    new Intl.DateTimeFormat("en-CA", {
+      ...(tz ? { timeZone: tz } : {}),
+      year: "2-digit",
+      month: "2-digit",
+      day: "2-digit",
+    }).formatToParts(when);
+
+  let resolved: Intl.DateTimeFormatPart[];
+  try {
+    resolved = parts(timeZone ?? undefined);
+  } catch {
+    // RangeError on an unrecognised zone — better the phone's date than none.
+    resolved = parts();
+  }
+
+  const find = (type: Intl.DateTimeFormatPartTypes) =>
+    resolved.find((p) => p.type === type)?.value;
+  const year = find("year");
+  const month = find("month");
+  const day = find("day");
   if (!year || !month || !day) return null;
-  return `${month}·${day}·'${year.slice(2)}`;
+
+  return `${month}·${day}·'${year}`;
 }

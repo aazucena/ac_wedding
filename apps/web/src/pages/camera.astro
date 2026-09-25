@@ -239,13 +239,15 @@ const developsOn = DateTime.fromISO(weddingDate)
             </div>
 
             {/* ── State B — camera ──────────────────────────────── */}
-            {/* date + hashtag feed the film date stamp burned into a shot the
-                guest SAVES or SHARES — never the copy uploaded to us. See
-                stampForSharing() in scripts/camera.ts. */}
+            {/* tz + hashtag feed the film date stamp burned into a shot the
+                guest SAVES or SHARES — never the copy uploaded to us. The date
+                itself is the moment of capture; the zone is the venue's, so a
+                guest whose phone is still on another timezone doesn't stamp
+                their own. See stampForSharing() in scripts/camera.ts. */}
             <section
               id="camera-view"
               data-limit={SHOT_LIMIT}
-              data-date={weddingDate}
+              data-tz={TZ}
               data-hashtag={settings.hashtag ?? ""}
             >
               <div class="cam-bar">

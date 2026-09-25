@@ -1277,6 +1277,9 @@ function makeShotName(): string {
 
 /** Name for the shot currently held in the review sheet. */
 let pendingShotName = "";
+/** When the shot in the sheet was taken — what the date stamp reads, so a
+ *  photo lingering in the sheet past midnight still carries its own moment. */
+let pendingShotAt: Date | null = null;
 
 /**
  * The shot as a File, for the OS share sheet. Built lazily — most shots are
@@ -1333,7 +1336,10 @@ function loadStampLogo(): Promise<HTMLImageElement | null> {
  * anything goes wrong — an unstamped share beats a broken one.
  */
 async function stampForSharing(blob: Blob): Promise<Blob> {
-  const dateText = stampDate(cameraView?.dataset.date);
+  const dateText = stampDate(
+    pendingShotAt ?? new Date(),
+    cameraView?.dataset.tz,
+  );
   const tagText = stampHashtag(cameraView?.dataset.hashtag);
   if (!dateText && !tagText) return blob;
 
@@ -1448,6 +1454,7 @@ sheetShare?.addEventListener("click", () => void shareShot());
 function openSheet(blob: Blob) {
   pendingShot = blob;
   pendingShotName = makeShotName(); // one name per shot, shared by save and send
+  pendingShotAt = new Date();
   // Start the stamped copy now, not on the share tap: the encode is async and
   // navigator.share() needs a live user gesture. The guest reading the shot and
   // typing a caption is all the time this needs.
@@ -1479,6 +1486,7 @@ function closeSheet() {
   // Drop the stamped copy with the original — one full-size blob alive at a
   // time, and invalidate any encode still in flight for this shot.
   stampedShot = null;
+  pendingShotAt = null;
   stampToken++;
   sheet?.classList.add("hidden");
   if (sheetPreview) sheetPreview.removeAttribute("src");

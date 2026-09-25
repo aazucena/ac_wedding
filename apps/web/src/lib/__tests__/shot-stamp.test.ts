@@ -68,25 +68,40 @@ describe("stampLayout", () => {
 });
 
 describe("stampDate", () => {
-  it("formats a wedding date the way a film date back would", () => {
-    expect(stampDate("2026-09-26")).toBe("09·26·'26");
+  const TZ = "America/Edmonton";
+
+  it("formats capture time the way a film date back would", () => {
+    // 6pm Edmonton on the wedding day.
+    expect(stampDate(new Date("2026-09-27T00:00:00Z"), TZ)).toBe("09·26·'26");
   });
 
-  it("accepts a full ISO timestamp", () => {
-    expect(stampDate("2026-09-26T17:30:00.000Z")).toBe("09·26·'26");
+  it("resolves in the venue's zone, not the device's", () => {
+    // 02:00 UTC on the 27th is still 20:00 on the 26th in Edmonton — a guest
+    // whose phone is on another timezone must still stamp the venue's date.
+    const during = new Date("2026-09-27T02:00:00Z");
+    expect(stampDate(during, TZ)).toBe("09·26·'26");
+    expect(stampDate(during, "Asia/Manila")).toBe("09·27·'26");
+  });
+
+  it("lets a late shot honestly read the next day", () => {
+    // 1am Edmonton, after midnight — the camera stays open until 4am, and this
+    // is the real record of when the photo happened.
+    expect(stampDate(new Date("2026-09-27T07:00:00Z"), TZ)).toBe("09·27·'26");
+  });
+
+  it("falls back to device local time on an unknown zone", () => {
+    const d = new Date("2026-09-26T18:00:00Z");
+    expect(stampDate(d, "Not/AZone")).toMatch(/^\d{2}·\d{2}·'\d{2}$/);
+  });
+
+  it("uses device local time when no zone is given", () => {
+    expect(stampDate(new Date("2026-09-26T18:00:00Z"))).toMatch(
+      /^\d{2}·\d{2}·'\d{2}$/,
+    );
   });
 
   it("drops the line rather than stamping NaN on someone's photo", () => {
-    for (const bad of [
-      null,
-      undefined,
-      "",
-      "   ",
-      "not-a-date",
-      "26/09/2026",
-    ]) {
-      expect(stampDate(bad)).toBeNull();
-    }
+    expect(stampDate(new Date("nonsense"), TZ)).toBeNull();
   });
 });
 
