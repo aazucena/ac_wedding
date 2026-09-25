@@ -16,6 +16,9 @@ const LSK = {
   name: "pc-name",
   personId: "pc-person",
   token: "pc-token",
+  /** Their table, so the gate can show it on a return visit without asking
+   *  the server again. Cosmetic only — never trusted for access. */
+  table: "pc-table",
   /** Set once the camera has opened successfully on this device, so a return
    *  visit doesn't make the guest tap "Allow camera" again. */
   cameraOk: "pc-cam-ok",
@@ -99,6 +102,8 @@ const zoomBtns = Array.from(
 let personId: string | null = null;
 let personToken: string | null = null;
 let guestName = "";
+/** Null for an identity stored before the gate started keeping it. */
+let guestTable: string | null = null;
 let pendingId: string | null = null;
 let pendingName = "";
 let remaining = Number(cameraView?.dataset.limit ?? 12);
@@ -146,6 +151,7 @@ function saveIdentity() {
     localStorage.setItem(LSK.name, guestName);
     localStorage.setItem(LSK.personId, personId ?? "");
     localStorage.setItem(LSK.token, personToken ?? "");
+    localStorage.setItem(LSK.table, guestTable ?? "");
   } catch {
     /* private mode — identity just won't persist across reloads */
   }
@@ -160,6 +166,7 @@ function restoreIdentity(): boolean {
     personId = id;
     personToken = token;
     guestName = name ?? "";
+    guestTable = localStorage.getItem(LSK.table) || null;
     return true;
   } catch {
     return false;
@@ -169,6 +176,7 @@ function restoreIdentity(): boolean {
 function forgetIdentity() {
   personId = personToken = null;
   guestName = "";
+  guestTable = null;
   try {
     Object.values(LSK).forEach((k) => localStorage.removeItem(k));
   } catch {
@@ -314,10 +322,14 @@ function paintGateCurrent() {
   if (!signedIn) return;
   if (gateCurrentName) gateCurrentName.textContent = guestName;
   if (gateCurrentShots) {
-    gateCurrentShots.textContent =
+    // Table first: it's what someone handing the phone over reads out loud,
+    // and it's the half of this line that identifies WHERE they are.
+    const table = guestTable ? ` · Table ${guestTable}` : "";
+    const shots =
       remaining > 0
         ? ` · ${remaining} shot${remaining === 1 ? "" : "s"} left`
         : " · roll finished";
+    gateCurrentShots.textContent = `${table}${shots}`;
   }
 }
 
@@ -425,6 +437,7 @@ async function verifyTable() {
     const data = (await res.json()) as {
       ok: boolean;
       token?: string;
+      table?: number;
       error?: string;
     };
 
@@ -436,6 +449,10 @@ async function verifyTable() {
     personId = pendingId;
     personToken = data.token;
     guestName = pendingName;
+    // Prefer the server's canonical number; fall back to what they typed,
+    // which cleared the check anyway, so an older API still shows a table.
+    guestTable =
+      data.table != null ? String(data.table) : (tableNumber ?? null);
     saveIdentity();
     showCamera();
   } catch {

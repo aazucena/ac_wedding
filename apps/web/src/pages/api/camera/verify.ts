@@ -88,7 +88,15 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Same HMAC helper the reception game uses — it signs an id, and here that
     // id is a person rather than a guest.
-    return json({ ok: true, token: makeGuestToken(personId) });
+    //
+    // `table` goes back so the camera can show it without a second round trip.
+    // The canonical number, not what they typed: both satisfy the check above,
+    // but "07" shouldn't come back at them as their table.
+    return json({
+      ok: true,
+      token: makeGuestToken(personId),
+      table: Number(assignedTable),
+    });
   } catch {
     return json(
       { ok: false, error: "Something went wrong. Please try again." },
