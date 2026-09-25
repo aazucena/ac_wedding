@@ -92,7 +92,11 @@ const qrSize = variant === "sign" ? (letter ? 440 : 260) : 120;
       <span class="tent-rule-line"></span>
     </div>
     <div class="tent-qr">
-      <QRCode url={cameraUrl} size={qrSize} />
+      {
+        /* Card ink, not mint: this one has to scan across a dim reception
+          room, and it prints as pure K rather than a halftone of CMY. */
+      }
+      <QRCode url={cameraUrl} size={qrSize} color="#1a1a2e" />
     </div>
     <p class="tent-url">{shortUrl}</p>
 

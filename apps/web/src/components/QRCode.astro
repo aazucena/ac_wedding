@@ -11,6 +11,13 @@ interface Props {
   class?: string;
   logo?: string; // asset URL to overlay at centre
   logoRatio?: number; // logo size as fraction of QR width (default 0.45)
+  /**
+   * Module colour. Mint reads as ours on screen, but it's a mid-tone — only
+   * ~3.2:1 against paper, and a printer halftones it into a screen of CMY dots
+   * that softens every module edge. Anything printed should pass the near-black
+   * card ink instead: ~16:1, and pure K on the press.
+   */
+  color?: string;
 }
 
 const {
@@ -20,6 +27,7 @@ const {
   class: className,
   logo,
   logoRatio = 0.45,
+  color = "#5a9e7a",
 } = Astro.props;
 ---
 
@@ -30,6 +38,7 @@ const {
     data-size={String(size)}
     data-logo={logo ?? ""}
     data-logo-ratio={String(logoRatio)}
+    data-color={color}
     style={`width:${size}px;height:${size}px;`}
   >
   </div>
@@ -38,12 +47,15 @@ const {
 
 <script>
   import QRCodeStyling from "qr-code-styling";
+  // Printers choke on the library's clip-path; see lib/qr-flatten.ts.
+  import { flattenClipPaths } from "@lib/qr-flatten";
 
   function initQR(el: Element) {
     const url = el.getAttribute("data-url") ?? "";
     const size = parseInt(el.getAttribute("data-size") ?? "120");
     const logo = el.getAttribute("data-logo") || undefined;
     const logoRatio = parseFloat(el.getAttribute("data-logo-ratio") ?? "0.22");
+    const color = el.getAttribute("data-color") || "#5a9e7a";
 
     const qr = new QRCodeStyling({
       type: "svg",
@@ -51,10 +63,14 @@ const {
       height: size,
       data: url,
       margin: 0,
-      qrOptions: { errorCorrectionLevel: "H" },
-      dotsOptions: { type: "dots", color: "#5a9e7a" },
-      cornersSquareOptions: { type: "extra-rounded", color: "#5a9e7a" },
-      cornersDotOptions: { type: "dot", color: "#5a9e7a" },
+      // "H" exists to survive a logo punched through the middle. Without one
+      // it just buys density nobody asked for: a ~45x45 grid where "M" gives
+      // ~33x33, so the dots come out visibly larger. On a sign that has to
+      // scan across a dim reception room, bigger modules beat more redundancy.
+      qrOptions: { errorCorrectionLevel: logo ? "H" : "M" },
+      dotsOptions: { type: "dots", color },
+      cornersSquareOptions: { type: "extra-rounded", color },
+      cornersDotOptions: { type: "dot", color },
       backgroundOptions: { color: "transparent" },
       ...(logo && {
         image: logo,
@@ -67,6 +83,23 @@ const {
     });
 
     qr.append(el as HTMLElement);
+
+    // append() is synchronous for a plain code but not when a logo has to load
+    // first, so watch for the <svg> rather than assuming it's already there.
+    const flattenWhenReady = () => {
+      const svg = el.querySelector("svg");
+      if (!svg) return false;
+      flattenClipPaths(svg);
+      return true;
+    };
+    if (!flattenWhenReady()) {
+      const observer = new MutationObserver(() => {
+        if (flattenWhenReady()) observer.disconnect();
+      });
+      observer.observe(el, { childList: true, subtree: true });
+      // Don't watch forever if the image never resolves.
+      setTimeout(() => observer.disconnect(), 10000);
+    }
   }
 
   function init() {
