@@ -32,8 +32,19 @@ export interface StampLayout {
   dateBaseline: number;
   tagBaseline: number;
   right: number;
-  /** Offset of the drop shadow that keeps the stamp legible over a bright frame. */
+  /** Softening under the halo, so the outline doesn't read as a hard sticker. */
   shadowBlur: number;
+  /**
+   * Width of the dark halo stroked behind every glyph.
+   *
+   * Orange on a bright sky is about 2:1 against the background — legible in
+   * isolation, invisible over a white tablecloth. The page solves the same
+   * problem for its own controls with scrims (camera.css:124), but a scrim here
+   * would darken a strip of the guest's photo. A halo is what subtitles use for
+   * exactly this: it costs nothing but the glyph edges, and works over bright
+   * and dark alike.
+   */
+  outline: number;
 }
 
 /**
@@ -75,7 +86,10 @@ export function stampLayout({ width, height }: StampInput): StampLayout {
     dateBaseline,
     tagBaseline,
     right: width - pad,
-    shadowBlur: Math.max(2, Math.round(dateFont * 0.25)),
+    shadowBlur: Math.max(2, Math.round(dateFont * 0.2)),
+    // Scaled with the type, or it thickens into a blob on small shots and
+    // disappears on large ones.
+    outline: Math.max(2, Math.round(dateFont * 0.16)),
   };
 }
 

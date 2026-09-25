@@ -121,3 +121,26 @@ describe("stampHashtag", () => {
     }
   });
 });
+
+describe("stampLayout halo", () => {
+  it("scales the outline with the type", () => {
+    // Fixed-width would blob on a small shot and vanish on a large one.
+    const big = stampLayout(LANDSCAPE);
+    const small = stampLayout(SMALL);
+    expect(big.outline).toBeGreaterThan(small.outline);
+  });
+
+  it("keeps the halo thin enough not to swallow the glyphs", () => {
+    for (const size of [
+      LANDSCAPE,
+      PORTRAIT,
+      SMALL,
+      { width: 200, height: 150 },
+    ]) {
+      const l = stampLayout(size);
+      expect(l.outline).toBeGreaterThanOrEqual(2);
+      // Stroke is centred on the path, so half of it eats into the glyph.
+      expect(l.outline).toBeLessThan(l.tagFont / 2);
+    }
+  });
+});

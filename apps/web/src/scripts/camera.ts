@@ -1316,13 +1316,38 @@ let stampedShot: Blob | null = null;
 /** Guards against a second openSheet() landing while one is still stamping. */
 let stampToken = 0;
 
-/** The insignia, fetched once and reused. Resolves null if it won't load —
- *  a missing logo drops that mark rather than failing the whole stamp. */
-let logoPromise: Promise<HTMLImageElement | null> | null = null;
-function loadStampLogo(): Promise<HTMLImageElement | null> {
+/**
+ * The insignia as a white silhouette, built once and reused.
+ *
+ * Tinted rather than drawn as-is: the artwork has its own colours, which would
+ * read differently against a bright frame than against a dark one and sit at
+ * odds with the white hashtag beside it. Flattening it to the text's colour
+ * makes the whole mark one thing that one halo can carry.
+ *
+ * Resolves null if it won't load — a missing logo drops that mark rather than
+ * failing the stamp.
+ */
+let logoPromise: Promise<HTMLCanvasElement | null> | null = null;
+function loadStampLogo(): Promise<HTMLCanvasElement | null> {
   logoPromise ??= new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => resolve(img);
+    img.onload = () => {
+      try {
+        const c = document.createElement("canvas");
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        const cx = c.getContext("2d");
+        if (!cx) return resolve(null);
+        cx.drawImage(img, 0, 0);
+        // Keep the artwork's alpha, replace its colour.
+        cx.globalCompositeOperation = "source-in";
+        cx.fillStyle = "#ffffff";
+        cx.fillRect(0, 0, c.width, c.height);
+        resolve(c);
+      } catch {
+        resolve(null);
+      }
+    };
     img.onerror = () => resolve(null);
     // The PNG, not the SVG: every branding SVG here is VTracer auto-trace
     // output — thousands of baked-fill beziers, several larger than the PNG.
@@ -1366,10 +1391,6 @@ async function stampForSharing(blob: Blob): Promise<Blob> {
 
     ctx.textAlign = "right";
     ctx.textBaseline = "alphabetic";
-    // A soft dark shadow is what keeps this legible over a bright frame; real
-    // date backs glowed, so it reads as part of the idiom rather than a fix.
-    ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
-    ctx.shadowBlur = l.shadowBlur;
 
     // System monospace, deliberately. /camera bypasses Layout.astro and pulls
     // Cormorant and Jost from Google with display=swap, and nothing in this
@@ -1378,20 +1399,46 @@ async function stampForSharing(blob: Blob): Promise<Blob> {
     // guest. A blocky mono is also what a real date back actually looked like.
     const mono = `ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace`;
 
+    /**
+     * Halo, then colour.
+     *
+     * Orange sits around 2:1 against a white tablecloth or a bright sky, so on
+     * its own it vanished. This is what subtitles do: a dark stroke behind each
+     * glyph, carrying the shadow, then a clean fill on top with the shadow off
+     * so it isn't drawn twice and muddied.
+     */
+    const inked = (text: string, x: number, y: number, fill: string) => {
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = l.shadowBlur;
+      ctx.lineJoin = "round";
+      ctx.miterLimit = 2;
+      ctx.lineWidth = l.outline;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.55)";
+      ctx.strokeText(text, x, y);
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = fill;
+      ctx.fillText(text, x, y);
+    };
+
     if (dateText) {
       ctx.font = `600 ${l.dateFont}px ${mono}`;
-      ctx.fillStyle = "#ff8c1a";
-      ctx.fillText(dateText, l.right, l.dateBaseline);
+      inked(dateText, l.right, l.dateBaseline, "#ff8c1a");
     }
 
     if (tagText) {
       ctx.font = `500 ${l.tagFont}px ${mono}`;
-      ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
-      ctx.fillText(tagText, l.right, l.tagBaseline);
+      // Near-solid now that the halo does the separating — the old 72% was
+      // what made this disappear first on a bright frame.
+      inked(tagText, l.right, l.tagBaseline, "rgba(255, 255, 255, 0.95)");
 
       if (logo) {
         const tagWidth = ctx.measureText(tagText).width;
-        ctx.globalAlpha = 0.6;
+        // The logo gets the same treatment as the text it sits beside: a soft
+        // dark shadow under a near-solid white silhouette.
+        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+        ctx.shadowBlur = l.shadowBlur;
+        ctx.globalAlpha = 0.95;
         ctx.drawImage(
           logo,
           l.right - tagWidth - l.logoGap - l.logoSize,
@@ -1400,6 +1447,8 @@ async function stampForSharing(blob: Blob): Promise<Blob> {
           l.logoSize,
         );
         ctx.globalAlpha = 1;
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
       }
     }
 
