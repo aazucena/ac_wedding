@@ -45,6 +45,15 @@ export interface StampLayout {
    * and dark alike.
    */
   outline: number;
+  /**
+   * Widest the stamp may draw, passed straight to fillText/strokeText.
+   *
+   * "09·26·2026  10:45 PM" is twenty monospace characters. On a heavily zoomed
+   * crop that can be a third of the frame, and without a ceiling it would run
+   * off the left edge on the narrowest shots. Canvas condenses to fit rather
+   * than clipping, so the worst case is slightly tight lettering.
+   */
+  maxWidth: number;
 }
 
 /**
@@ -90,6 +99,7 @@ export function stampLayout({ width, height }: StampInput): StampLayout {
     // Scaled with the type, or it thickens into a blob on small shots and
     // disappears on large ones.
     outline: Math.max(2, Math.round(dateFont * 0.16)),
+    maxWidth: Math.max(1, width - pad * 2),
   };
 }
 
@@ -109,37 +119,50 @@ export function stampHashtag(tag: string | null | undefined): string | null {
 }
 
 /**
- * "09·26·'26" — the interpunct spacing of a film date back rather than slashes,
- * which read as a filename.
+ * "09·26·2026  10:45 PM" — interpunct spacing like a film date back rather than
+ * slashes, which read as a filename.
+ *
+ * The year is written in full. A two-digit year put the day and the year beside
+ * each other as "26·'26" on the wedding date itself, which reads as a mistake
+ * rather than a date.
  *
  * Stamps the moment the shot was TAKEN, like a real date back. The reception
  * runs past midnight and the camera stays open until 4am, so shots from the end
  * of the night genuinely read 09·27 — that's the honest record of when they
- * happened, and it's the sort of detail that's nice to find later.
+ * happened, and it's the sort of detail that's nice to find later. The time is
+ * the half that makes that worth having: which photos came before the first
+ * dance, which came at 1am.
  *
  * Resolved in the VENUE's timezone, not the phone's. Guests travelling in may
  * still have their phone on another zone, and a photo taken at the reception
- * should carry the reception's date whoever shot it. Falls back to device local
+ * should carry the reception's time whoever shot it. Falls back to device local
  * time if the zone is unknown to the browser.
  *
  * Returns null for an invalid Date rather than stamping "NaN" on a photo.
  */
-export function stampDate(when: Date, timeZone?: string | null): string | null {
+export function stampDateTime(
+  when: Date,
+  timeZone?: string | null,
+): string | null {
   if (!(when instanceof Date) || Number.isNaN(when.getTime())) return null;
 
+  // en-US for the uppercase AM/PM a date back printed; en-CA renders "p.m.".
   const parts = (tz?: string) =>
-    new Intl.DateTimeFormat("en-CA", {
+    new Intl.DateTimeFormat("en-US", {
       ...(tz ? { timeZone: tz } : {}),
-      year: "2-digit",
+      year: "numeric",
       month: "2-digit",
       day: "2-digit",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     }).formatToParts(when);
 
   let resolved: Intl.DateTimeFormatPart[];
   try {
     resolved = parts(timeZone ?? undefined);
   } catch {
-    // RangeError on an unrecognised zone — better the phone's date than none.
+    // RangeError on an unrecognised zone — better the phone's clock than none.
     resolved = parts();
   }
 
@@ -150,5 +173,18 @@ export function stampDate(when: Date, timeZone?: string | null): string | null {
   const day = find("day");
   if (!year || !month || !day) return null;
 
-  return `${month}·${day}·'${year}`;
+  const date = `${month}·${day}·${year}`;
+
+  const hour = find("hour");
+  const minute = find("minute");
+  const period = find("dayPeriod");
+  if (!hour || !minute) return date; // date alone beats a broken clock
+
+  const time = period
+    ? `${hour}:${minute} ${period.toUpperCase()}`
+    : `${hour}:${minute}`;
+
+  // Two spaces: in monospace that's a clear gap between two separate readings,
+  // without needing another separator glyph.
+  return `${date}  ${time}`;
 }

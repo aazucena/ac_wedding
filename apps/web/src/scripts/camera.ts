@@ -31,7 +31,7 @@ const MAX_EDGE = 2048;
 const JPEG_QUALITY = 0.85;
 
 import { coverSourceRect } from "@lib/camera-frame";
-import { stampLayout, stampDate, stampHashtag } from "@lib/shot-stamp";
+import { stampLayout, stampDateTime, stampHashtag } from "@lib/shot-stamp";
 
 const $ = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T | null;
@@ -1361,7 +1361,7 @@ function loadStampLogo(): Promise<HTMLCanvasElement | null> {
  * anything goes wrong — an unstamped share beats a broken one.
  */
 async function stampForSharing(blob: Blob): Promise<Blob> {
-  const dateText = stampDate(
+  const dateText = stampDateTime(
     pendingShotAt ?? new Date(),
     cameraView?.dataset.tz,
   );
@@ -1414,11 +1414,11 @@ async function stampForSharing(blob: Blob): Promise<Blob> {
       ctx.miterLimit = 2;
       ctx.lineWidth = l.outline;
       ctx.strokeStyle = "rgba(0, 0, 0, 0.55)";
-      ctx.strokeText(text, x, y);
+      ctx.strokeText(text, x, y, l.maxWidth);
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
       ctx.fillStyle = fill;
-      ctx.fillText(text, x, y);
+      ctx.fillText(text, x, y, l.maxWidth);
     };
 
     if (dateText) {

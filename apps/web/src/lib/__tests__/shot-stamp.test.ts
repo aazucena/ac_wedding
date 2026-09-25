@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { stampLayout, stampDate, stampHashtag } from "../shot-stamp";
+import { stampLayout, stampDateTime, stampHashtag } from "../shot-stamp";
 
 /** The sizes real shots actually arrive at — see MAX_EDGE in scripts/camera.ts. */
 const LANDSCAPE = { width: 2048, height: 1152 };
@@ -67,41 +67,52 @@ describe("stampLayout", () => {
   });
 });
 
-describe("stampDate", () => {
+describe("stampDateTime", () => {
   const TZ = "America/Edmonton";
 
-  it("formats capture time the way a film date back would", () => {
-    // 6pm Edmonton on the wedding day.
-    expect(stampDate(new Date("2026-09-27T00:00:00Z"), TZ)).toBe("09·26·'26");
+  it("writes the year in full", () => {
+    // "26·'26" on the wedding date read as a typo, not a date.
+    const out = stampDateTime(new Date("2026-09-27T00:00:00Z"), TZ);
+    expect(out).toContain("09·26·2026");
+    expect(out).not.toContain("'26");
+  });
+
+  it("includes the time of capture", () => {
+    // 00:00 UTC on the 27th is 18:00 on the 26th in Edmonton.
+    expect(stampDateTime(new Date("2026-09-27T00:00:00Z"), TZ)).toBe(
+      "09·26·2026  6:00 PM",
+    );
   });
 
   it("resolves in the venue's zone, not the device's", () => {
-    // 02:00 UTC on the 27th is still 20:00 on the 26th in Edmonton — a guest
-    // whose phone is on another timezone must still stamp the venue's date.
+    // A guest whose phone is still on another timezone must stamp the venue's.
     const during = new Date("2026-09-27T02:00:00Z");
-    expect(stampDate(during, TZ)).toBe("09·26·'26");
-    expect(stampDate(during, "Asia/Manila")).toBe("09·27·'26");
+    expect(stampDateTime(during, TZ)).toBe("09·26·2026  8:00 PM");
+    expect(stampDateTime(during, "Asia/Manila")).toBe("09·27·2026  10:00 AM");
   });
 
   it("lets a late shot honestly read the next day", () => {
-    // 1am Edmonton, after midnight — the camera stays open until 4am, and this
-    // is the real record of when the photo happened.
-    expect(stampDate(new Date("2026-09-27T07:00:00Z"), TZ)).toBe("09·27·'26");
+    // 1am Edmonton — the camera stays open until 4am, and this is the real
+    // record of when the photo happened.
+    expect(stampDateTime(new Date("2026-09-27T07:00:00Z"), TZ)).toBe(
+      "09·27·2026  1:00 AM",
+    );
+  });
+
+  it("uses uppercase AM/PM rather than a locale's dotted form", () => {
+    const out = stampDateTime(new Date("2026-09-26T18:00:00Z"), TZ);
+    expect(out).toMatch(/ (AM|PM)$/);
   });
 
   it("falls back to device local time on an unknown zone", () => {
     const d = new Date("2026-09-26T18:00:00Z");
-    expect(stampDate(d, "Not/AZone")).toMatch(/^\d{2}·\d{2}·'\d{2}$/);
-  });
-
-  it("uses device local time when no zone is given", () => {
-    expect(stampDate(new Date("2026-09-26T18:00:00Z"))).toMatch(
-      /^\d{2}·\d{2}·'\d{2}$/,
+    expect(stampDateTime(d, "Not/AZone")).toMatch(
+      /^\d{2}·\d{2}·\d{4}  \d{1,2}:\d{2} (AM|PM)$/,
     );
   });
 
   it("drops the line rather than stamping NaN on someone's photo", () => {
-    expect(stampDate(new Date("nonsense"), TZ)).toBeNull();
+    expect(stampDateTime(new Date("nonsense"), TZ)).toBeNull();
   });
 });
 
@@ -128,6 +139,21 @@ describe("stampLayout halo", () => {
     const big = stampLayout(LANDSCAPE);
     const small = stampLayout(SMALL);
     expect(big.outline).toBeGreaterThan(small.outline);
+  });
+
+  it("never lets the stamp reach past its own padding", () => {
+    // "09·26·2026  10:45 PM" is twenty monospace characters — long enough to
+    // run off a narrow crop without a ceiling.
+    for (const size of [
+      LANDSCAPE,
+      PORTRAIT,
+      SMALL,
+      { width: 200, height: 150 },
+    ]) {
+      const l = stampLayout(size);
+      expect(l.maxWidth).toBeGreaterThan(0);
+      expect(l.maxWidth).toBeLessThanOrEqual(size.width - l.pad);
+    }
   });
 
   it("keeps the halo thin enough not to swallow the glyphs", () => {
