@@ -192,10 +192,19 @@ describe("the mark", () => {
     expect(l.logoSize).toBeGreaterThan(l.tagFont * 2);
   });
 
-  it("never asks for more pixels than the 168px source has", () => {
+  it("never asks for more pixels than the 500px source has", () => {
     // Largest plausible shot is a square at MAX_EDGE. Upscaling would soften
-    // artwork we were asked not to alter.
+    // artwork we were asked not to alter. src/assets/favicon.png is 500px;
+    // public/favicon.png is the same mark at 168 and would have blown past it
+    // at this size, which is why the page passes the bundled URL instead.
     const l = stampLayout({ width: 2048, height: 2048 });
-    expect(l.logoSize).toBeLessThanOrEqual(168);
+    expect(l.logoSize).toBeLessThanOrEqual(500);
+    expect(l.logoSize).toBeGreaterThan(168);
+  });
+
+  it("is big enough to read as a mark rather than a speck", () => {
+    // At 1.5x the date line it looked like an afterthought.
+    const l = stampLayout(LANDSCAPE);
+    expect(l.logoSize).toBeGreaterThan(l.dateFont * 2);
   });
 });

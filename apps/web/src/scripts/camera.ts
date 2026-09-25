@@ -1331,11 +1331,12 @@ function loadStampLogo(): Promise<HTMLImageElement | null> {
     const img = new Image();
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    // 168px and 21KB, a tenth of insignia.png, and still larger than the stamp
-    // ever draws it — so it only ever scales down. The PNG, not the SVG: every
-    // branding SVG here is VTracer auto-trace output, thousands of baked-fill
-    // beziers and in several cases larger than the bitmap.
-    img.src = "/favicon.png";
+    // The 500px copy from src/assets, passed in as a bundled URL, so the mark
+    // can be drawn large without ever being upscaled — public/favicon.png is
+    // the same artwork at 168px and would soften past that. The PNG, not the
+    // SVG: every branding SVG here is VTracer auto-trace output, thousands of
+    // baked-fill beziers and in several cases larger than the bitmap.
+    img.src = cameraView?.dataset.logo || "/favicon.png";
   });
   return logoPromise;
 }

@@ -78,11 +78,11 @@ export function stampLayout({ width, height }: StampInput): StampLayout {
   const tagFont = Math.max(9, Math.round(dateFont * 0.62));
   const pad = Math.max(10, Math.round(short * 0.04));
 
-  // Bottom-left, opposite the date. Standing alone it carries more weight than
-  // it did tucked beside the hashtag, so it's sized against the date line
-  // rather than the small print. Never exceeds the 168px source, so it is only
-  // ever scaled down.
-  const logoSize = Math.max(18, Math.round(dateFont * 1.5));
+  // Bottom-left, opposite the date. Standing alone in a corner it needs real
+  // presence — at 1.5x the date line it read as an afterthought. Tops out
+  // around 180px on the largest shot, well inside the 500px source, so it is
+  // still only ever scaled down.
+  const logoSize = Math.max(26, Math.round(dateFont * 2.3));
 
   // Measured up from the bottom edge: the tag line sits on the padding, the
   // date sits a line above it. Leading is generous — a date stamp reads as two

@@ -16,6 +16,7 @@ import { DateTime } from "luxon";
 import { SHOT_LIMIT, CAPTION_MAX } from "@lib/constants/camera";
 import { isHandheldUA } from "@lib/device";
 import QRCode from "@components/QRCode.astro";
+import FaviconMark from "@assets/favicon.png";
 import Hashtag from "@components/Hashtag.astro";
 import "../styles/camera.css";
 
@@ -249,6 +250,7 @@ const developsOn = DateTime.fromISO(weddingDate)
               data-limit={SHOT_LIMIT}
               data-tz={TZ}
               data-hashtag={settings.hashtag ?? ""}
+              data-logo={FaviconMark.src}
             >
               <div class="cam-bar">
                 {/* The name is the button — tapping it reopens the gate. */}
