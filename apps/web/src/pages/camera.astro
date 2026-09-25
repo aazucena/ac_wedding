@@ -239,7 +239,15 @@ const developsOn = DateTime.fromISO(weddingDate)
             </div>
 
             {/* ── State B — camera ──────────────────────────────── */}
-            <section id="camera-view" data-limit={SHOT_LIMIT}>
+            {/* date + hashtag feed the film date stamp burned into a shot the
+                guest SAVES or SHARES — never the copy uploaded to us. See
+                stampForSharing() in scripts/camera.ts. */}
+            <section
+              id="camera-view"
+              data-limit={SHOT_LIMIT}
+              data-date={weddingDate}
+              data-hashtag={settings.hashtag ?? ""}
+            >
               <div class="cam-bar">
                 {/* The name is the button — tapping it reopens the gate. */}
                 <button

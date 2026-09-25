@@ -31,6 +31,7 @@ const MAX_EDGE = 2048;
 const JPEG_QUALITY = 0.85;
 
 import { coverSourceRect } from "@lib/camera-frame";
+import { stampLayout, stampDate, stampHashtag } from "@lib/shot-stamp";
 
 const $ = <T extends HTMLElement>(id: string) =>
   document.getElementById(id) as T | null;
@@ -1277,14 +1278,147 @@ function makeShotName(): string {
 /** Name for the shot currently held in the review sheet. */
 let pendingShotName = "";
 
-/** The shot as a File, for the OS share sheet. Built lazily — most shots are
- *  never shared, and the blob is already in memory either way. */
-function pendingShotFile(): File | null {
-  if (!pendingShot) return null;
-  return new File([pendingShot], pendingShotName || makeShotName(), {
+/**
+ * The shot as a File, for the OS share sheet. Built lazily — most shots are
+ * never shared, and the blob is already in memory either way.
+ *
+ * `body` lets the caller substitute the stamped copy. It defaults to the raw
+ * pendingShot so the canShare() probe in openSheet() stays synchronous: that
+ * check only asks whether the phone can share a file at all, not which bytes.
+ */
+function pendingShotFile(body?: Blob): File | null {
+  const source = body ?? pendingShot;
+  if (!source) return null;
+  return new File([source], pendingShotName || makeShotName(), {
     type: "image/jpeg",
     lastModified: Date.now(),
   });
+}
+
+// ── The date stamp ──────────────────────────────────────────────────────────
+// A shot a guest saves or shares gets what a disposable print got: the date
+// burned orange into the corner, insignia and hashtag small beneath it.
+//
+// THE COPY ONLY. `pendingShot` is one Blob shared by two paths — this one and
+// send()'s upload — so stamping it in place would burn the hashtag into the
+// couple's permanent archive. Nothing here may reassign or mutate pendingShot.
+//
+// Why bother: sharing is decoupled from Send by design, and costs nothing
+// (`remaining` counts uploads, so share-then-discard never spends a shot). So
+// the photos most likely to leave with no record at all are exactly the ones
+// travelling this path.
+
+/** The stamped copy of the shot currently in the sheet, or null if not ready. */
+let stampedShot: Blob | null = null;
+/** Guards against a second openSheet() landing while one is still stamping. */
+let stampToken = 0;
+
+/** The insignia, fetched once and reused. Resolves null if it won't load —
+ *  a missing logo drops that mark rather than failing the whole stamp. */
+let logoPromise: Promise<HTMLImageElement | null> | null = null;
+function loadStampLogo(): Promise<HTMLImageElement | null> {
+  logoPromise ??= new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    // The PNG, not the SVG: every branding SVG here is VTracer auto-trace
+    // output — thousands of baked-fill beziers, several larger than the PNG.
+    img.src = "/insignia.png";
+  });
+  return logoPromise;
+}
+
+/**
+ * Draw the stamp onto a fresh copy of `blob`. Returns the original untouched if
+ * anything goes wrong — an unstamped share beats a broken one.
+ */
+async function stampForSharing(blob: Blob): Promise<Blob> {
+  const dateText = stampDate(cameraView?.dataset.date);
+  const tagText = stampHashtag(cameraView?.dataset.hashtag);
+  if (!dateText && !tagText) return blob;
+
+  let bitmap: ImageBitmap | null = null;
+  // A fresh canvas, never frameCanvas: that one is shared session state with
+  // its own transform discipline, and borrowing it risks a mirrored or
+  // half-reset stamp on the next real shot.
+  const canvas = document.createElement("canvas");
+  try {
+    bitmap = await createImageBitmap(blob);
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return blob;
+
+    ctx.drawImage(bitmap, 0, 0);
+    // Free the decoded frame the moment it's on the canvas — this runs once per
+    // shot on a phone that already crashed iOS Safari once over image memory.
+    bitmap.close();
+    bitmap = null;
+
+    const logo = tagText ? await loadStampLogo() : null;
+    const l = stampLayout({ width: canvas.width, height: canvas.height });
+
+    ctx.textAlign = "right";
+    ctx.textBaseline = "alphabetic";
+    // A soft dark shadow is what keeps this legible over a bright frame; real
+    // date backs glowed, so it reads as part of the idiom rather than a fix.
+    ctx.shadowColor = "rgba(0, 0, 0, 0.55)";
+    ctx.shadowBlur = l.shadowBlur;
+
+    // System monospace, deliberately. /camera bypasses Layout.astro and pulls
+    // Cormorant and Jost from Google with display=swap, and nothing in this
+    // codebase waits on document.fonts — a webfont here would silently fall
+    // back to Georgia on a slow connection and the stamp would differ per
+    // guest. A blocky mono is also what a real date back actually looked like.
+    const mono = `ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace`;
+
+    if (dateText) {
+      ctx.font = `600 ${l.dateFont}px ${mono}`;
+      ctx.fillStyle = "#ff8c1a";
+      ctx.fillText(dateText, l.right, l.dateBaseline);
+    }
+
+    if (tagText) {
+      ctx.font = `500 ${l.tagFont}px ${mono}`;
+      ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
+      ctx.fillText(tagText, l.right, l.tagBaseline);
+
+      if (logo) {
+        const tagWidth = ctx.measureText(tagText).width;
+        ctx.globalAlpha = 0.6;
+        ctx.drawImage(
+          logo,
+          l.right - tagWidth - l.logoGap - l.logoSize,
+          l.tagBaseline - l.logoSize,
+          l.logoSize,
+          l.logoSize,
+        );
+        ctx.globalAlpha = 1;
+      }
+    }
+
+    const stamped = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
+    );
+    return stamped ?? blob;
+  } catch {
+    // Unsupported codec, a tainted canvas, memory pressure — share it plain.
+    return blob;
+  } finally {
+    bitmap?.close();
+    // Release the backing store rather than waiting for GC; a 2048px canvas is
+    // ~12MB and this runs once per shot.
+    canvas.width = canvas.height = 0;
+  }
+}
+
+/** Stamp in the background while the guest looks at the shot. */
+async function prepareStamped(blob: Blob) {
+  const token = ++stampToken;
+  const stamped = await stampForSharing(blob);
+  // A newer shot opened while this one was encoding — drop the stale result.
+  if (token !== stampToken) return;
+  stampedShot = stamped;
 }
 
 /**
@@ -1296,7 +1430,11 @@ function pendingShotFile(): File | null {
  * outside the album.
  */
 async function shareShot() {
-  const file = pendingShotFile();
+  // Never await the stamp here. navigator.share() needs transient user
+  // activation, and an await between the tap and the call can spend it — the
+  // browser then rejects the share outright. openSheet() started the encode
+  // when the sheet opened; if it somehow isn't done, share it unstamped.
+  const file = pendingShotFile(stampedShot ?? undefined);
   if (!file || !navigator.canShare?.({ files: [file] })) return;
   try {
     await navigator.share({ files: [file] });
@@ -1310,6 +1448,11 @@ sheetShare?.addEventListener("click", () => void shareShot());
 function openSheet(blob: Blob) {
   pendingShot = blob;
   pendingShotName = makeShotName(); // one name per shot, shared by save and send
+  // Start the stamped copy now, not on the share tap: the encode is async and
+  // navigator.share() needs a live user gesture. The guest reading the shot and
+  // typing a caption is all the time this needs.
+  stampedShot = null;
+  void prepareStamped(blob);
   // Exactly one object URL alive at a time, revoked in closeSheet — the same
   // discipline the homepage hero needs to stay alive on iOS Safari.
   if (sheetPreview) {
@@ -1333,6 +1476,10 @@ function openSheet(blob: Blob) {
 
 function closeSheet() {
   pendingShot = null;
+  // Drop the stamped copy with the original — one full-size blob alive at a
+  // time, and invalidate any encode still in flight for this shot.
+  stampedShot = null;
+  stampToken++;
   sheet?.classList.add("hidden");
   if (sheetPreview) sheetPreview.removeAttribute("src");
   if (previewUrl) {
