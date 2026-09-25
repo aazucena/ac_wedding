@@ -1,8 +1,8 @@
 // lib/shot-stamp.ts — where the date stamp sits on a shared Roll Call shot.
 //
 // /camera is a disposable camera, so a shot a guest saves or shares gets what a
-// disposable print got: the date burned orange into the bottom-right corner,
-// with the insignia and hashtag small and quiet beneath it.
+// disposable print got: the date and time burned orange into the bottom-right
+// corner with the hashtag under it, and the mark alone in the bottom-left.
 //
 // Only the SHARED copy is stamped — never the one uploaded to the couple. See
 // stampForSharing() in scripts/camera.ts for why that distinction is delicate.
@@ -24,10 +24,11 @@ export interface StampLayout {
   dateFont: number;
   /** Type size of the insignia + hashtag line. */
   tagFont: number;
-  /** Square logo drawn to the left of the hashtag. */
+  /** Square logo, drawn in the OPPOSITE corner from the text. */
   logoSize: number;
-  /** Gap between the logo and the hashtag. */
-  logoGap: number;
+  /** Top-left corner of the logo; `left` is also the block's left inset. */
+  left: number;
+  logoTop: number;
   /** Baseline y for each line; both lines are right-aligned at `right`. */
   dateBaseline: number;
   tagBaseline: number;
@@ -77,8 +78,11 @@ export function stampLayout({ width, height }: StampInput): StampLayout {
   const tagFont = Math.max(9, Math.round(dateFont * 0.62));
   const pad = Math.max(10, Math.round(short * 0.04));
 
-  const logoSize = Math.round(tagFont * 1.15);
-  const logoGap = Math.max(3, Math.round(tagFont * 0.4));
+  // Bottom-left, opposite the date. Standing alone it carries more weight than
+  // it did tucked beside the hashtag, so it's sized against the date line
+  // rather than the small print. Never exceeds the 168px source, so it is only
+  // ever scaled down.
+  const logoSize = Math.max(18, Math.round(dateFont * 1.5));
 
   // Measured up from the bottom edge: the tag line sits on the padding, the
   // date sits a line above it. Leading is generous — a date stamp reads as two
@@ -91,7 +95,8 @@ export function stampLayout({ width, height }: StampInput): StampLayout {
     dateFont,
     tagFont,
     logoSize,
-    logoGap,
+    left: pad,
+    logoTop: height - pad - logoSize,
     dateBaseline,
     tagBaseline,
     right: width - pad,

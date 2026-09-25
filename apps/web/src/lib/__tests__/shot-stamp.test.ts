@@ -13,6 +13,11 @@ describe("stampLayout", () => {
       expect(l.right).toBeLessThan(size.width);
       expect(l.right).toBeGreaterThan(0);
       expect(l.tagBaseline).toBeLessThan(size.height);
+      // The mark sits in the opposite corner and must clear both edges.
+      expect(l.left).toBeGreaterThan(0);
+      expect(l.logoTop).toBeGreaterThan(0);
+      expect(l.logoTop + l.logoSize).toBeLessThanOrEqual(size.height);
+      expect(l.left + l.logoSize).toBeLessThan(size.width);
       // The date sits above the tag line, and above the top of the frame is a
       // bug that would silently clip the whole stamp away.
       expect(l.dateBaseline).toBeLessThan(l.tagBaseline);
@@ -168,5 +173,29 @@ describe("stampLayout halo", () => {
       // Stroke is centred on the path, so half of it eats into the glyph.
       expect(l.outline).toBeLessThan(l.tagFont / 2);
     }
+  });
+});
+
+describe("the mark", () => {
+  it("sits in the corner opposite the text", () => {
+    const l = stampLayout(LANDSCAPE);
+    expect(l.left).toBeLessThan(l.right);
+    // Left edge of the logo must not reach the right-aligned text block.
+    expect(l.left + l.logoSize).toBeLessThan(l.right - l.maxWidth / 2);
+  });
+
+  it("is sized against the date line, not the small print", () => {
+    // It stands alone now, so it carries more weight than when it was tucked
+    // beside the hashtag at ~1.15x the tag size.
+    const l = stampLayout(LANDSCAPE);
+    expect(l.logoSize).toBeGreaterThan(l.dateFont);
+    expect(l.logoSize).toBeGreaterThan(l.tagFont * 2);
+  });
+
+  it("never asks for more pixels than the 168px source has", () => {
+    // Largest plausible shot is a square at MAX_EDGE. Upscaling would soften
+    // artwork we were asked not to alter.
+    const l = stampLayout({ width: 2048, height: 2048 });
+    expect(l.logoSize).toBeLessThanOrEqual(168);
   });
 });

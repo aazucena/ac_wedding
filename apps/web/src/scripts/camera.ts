@@ -1300,7 +1300,8 @@ function pendingShotFile(body?: Blob): File | null {
 
 // ── The date stamp ──────────────────────────────────────────────────────────
 // A shot a guest saves or shares gets what a disposable print got: the date
-// burned orange into the corner, insignia and hashtag small beneath it.
+// burned orange into the bottom-right with the hashtag under it, and the mark
+// alone in the bottom-left.
 //
 // THE COPY ONLY. `pendingShot` is one Blob shared by two paths — this one and
 // send()'s upload — so stamping it in place would burn the hashtag into the
@@ -1317,41 +1318,24 @@ let stampedShot: Blob | null = null;
 let stampToken = 0;
 
 /**
- * The insignia as a white silhouette, built once and reused.
- *
- * Tinted rather than drawn as-is: the artwork has its own colours, which would
- * read differently against a bright frame than against a dark one and sit at
- * odds with the white hashtag beside it. Flattening it to the text's colour
- * makes the whole mark one thing that one halo can carry.
+ * The mark, fetched once and reused, drawn exactly as authored — its own
+ * colours, untouched. It sits alone in the opposite corner from the text now,
+ * so it no longer has to agree with the hashtag's white.
  *
  * Resolves null if it won't load — a missing logo drops that mark rather than
  * failing the stamp.
  */
-let logoPromise: Promise<HTMLCanvasElement | null> | null = null;
-function loadStampLogo(): Promise<HTMLCanvasElement | null> {
+let logoPromise: Promise<HTMLImageElement | null> | null = null;
+function loadStampLogo(): Promise<HTMLImageElement | null> {
   logoPromise ??= new Promise((resolve) => {
     const img = new Image();
-    img.onload = () => {
-      try {
-        const c = document.createElement("canvas");
-        c.width = img.naturalWidth;
-        c.height = img.naturalHeight;
-        const cx = c.getContext("2d");
-        if (!cx) return resolve(null);
-        cx.drawImage(img, 0, 0);
-        // Keep the artwork's alpha, replace its colour.
-        cx.globalCompositeOperation = "source-in";
-        cx.fillStyle = "#ffffff";
-        cx.fillRect(0, 0, c.width, c.height);
-        resolve(c);
-      } catch {
-        resolve(null);
-      }
-    };
+    img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    // The PNG, not the SVG: every branding SVG here is VTracer auto-trace
-    // output — thousands of baked-fill beziers, several larger than the PNG.
-    img.src = "/insignia.png";
+    // 168px and 21KB, a tenth of insignia.png, and still larger than the stamp
+    // ever draws it — so it only ever scales down. The PNG, not the SVG: every
+    // branding SVG here is VTracer auto-trace output, thousands of baked-fill
+    // beziers and in several cases larger than the bitmap.
+    img.src = "/favicon.png";
   });
   return logoPromise;
 }
@@ -1386,7 +1370,9 @@ async function stampForSharing(blob: Blob): Promise<Blob> {
     bitmap.close();
     bitmap = null;
 
-    const logo = tagText ? await loadStampLogo() : null;
+    // Loaded unconditionally now: the mark stands on its own in the other
+    // corner rather than riding along with the hashtag.
+    const logo = await loadStampLogo();
     const l = stampLayout({ width: canvas.width, height: canvas.height });
 
     ctx.textAlign = "right";
@@ -1431,25 +1417,17 @@ async function stampForSharing(blob: Blob): Promise<Blob> {
       // Near-solid now that the halo does the separating — the old 72% was
       // what made this disappear first on a bright frame.
       inked(tagText, l.right, l.tagBaseline, "rgba(255, 255, 255, 0.95)");
+    }
 
-      if (logo) {
-        const tagWidth = ctx.measureText(tagText).width;
-        // The logo gets the same treatment as the text it sits beside: a soft
-        // dark shadow under a near-solid white silhouette.
-        ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-        ctx.shadowBlur = l.shadowBlur;
-        ctx.globalAlpha = 0.95;
-        ctx.drawImage(
-          logo,
-          l.right - tagWidth - l.logoGap - l.logoSize,
-          l.tagBaseline - l.logoSize,
-          l.logoSize,
-          l.logoSize,
-        );
-        ctx.globalAlpha = 1;
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
-      }
+    if (logo) {
+      // Opposite corner, and drawn as authored — no tint, no alpha. A shadow is
+      // the one concession: it only adds separation underneath and leaves every
+      // pixel of the mark itself as it was drawn.
+      ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+      ctx.shadowBlur = l.shadowBlur;
+      ctx.drawImage(logo, l.left, l.logoTop, l.logoSize, l.logoSize);
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
     }
 
     const stamped = await new Promise<Blob | null>((resolve) =>
