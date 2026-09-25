@@ -163,6 +163,19 @@ const developsOn = DateTime.fromISO(weddingDate)
                   ✕
                 </button>
 
+                {/* Who you are right now. Outside both steps so it stays put
+                    while you move between them — the gate is otherwise
+                    identity-blind, which makes switching feel like signing in
+                    from scratch and leaves the ✕ looking like it does nothing.
+                    Hidden on a first visit, when there's nobody to be yet. */}
+                <p id="gate-current" class="cam-gate-current hidden">
+                  Currently shooting as{" "}
+                  <>
+                    <strong id="gate-current-name" />
+                    <span id="gate-current-shots" />
+                  </>
+                </p>
+
                 {/* Step 1 — who are you */}
                 <div id="gate-name" class="cam-step">
                   <p class="cam-eyebrow">Roll Call</p>

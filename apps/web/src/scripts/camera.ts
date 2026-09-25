@@ -51,6 +51,9 @@ const tableBtn = $<HTMLButtonElement>("table-verify-btn");
 const tableBack = $<HTMLButtonElement>("table-back");
 const tableError = $("table-verify-error");
 const pendingNameDisplay = $("pending-name-display");
+const gateCurrent = $("gate-current");
+const gateCurrentName = $("gate-current-name");
+const gateCurrentShots = $("gate-current-shots");
 
 const viewfinder = $<HTMLVideoElement>("viewfinder");
 const stage = $("cam-stage");
@@ -292,9 +295,30 @@ function showGate() {
   stepTable?.classList.add("hidden");
   stepName?.classList.remove("hidden");
   identityChip?.classList.add("hidden");
+  paintGateCurrent();
   if (nameInput) nameInput.value = "";
   nameSuggestions?.classList.add("hidden");
   nameInput?.focus();
+}
+
+/**
+ * "Currently shooting as Maria Santos · 7 shots left" at the top of the gate.
+ *
+ * Without it the gate reads identically whether you're signing in for the first
+ * time or swapping the phone to someone else, so there's nothing telling you
+ * whose roll the ✕ would send you back to.
+ */
+function paintGateCurrent() {
+  const signedIn = Boolean(personId && personToken && guestName);
+  gateCurrent?.classList.toggle("hidden", !signedIn);
+  if (!signedIn) return;
+  if (gateCurrentName) gateCurrentName.textContent = guestName;
+  if (gateCurrentShots) {
+    gateCurrentShots.textContent =
+      remaining > 0
+        ? ` · ${remaining} shot${remaining === 1 ? "" : "s"} left`
+        : " · roll finished";
+  }
 }
 
 // ── Name search ─────────────────────────────────────────────────────────────
@@ -319,14 +343,23 @@ async function search(q: string) {
       results: { id: string; name: string }[];
     };
 
+    // You opened this gate to hand the phone to someone else, so offering
+    // yourself is a round trip through the table check that lands you back
+    // where you started. The ✕ is how you stay yourself.
+    const matches = results.filter((r) => r.id !== personId);
+
     nameSuggestions.innerHTML = "";
-    if (!results.length) {
+    if (!matches.length) {
       const empty = document.createElement("div");
       empty.className = "cam-suggestions-empty";
-      empty.textContent = "No match — check the spelling on your place card.";
+      // Distinguish "you searched for yourself" from "that name isn't here" —
+      // otherwise typing your own name claims you don't exist.
+      empty.textContent = results.length
+        ? `That's you. Close this to keep shooting as ${guestName || "yourself"}.`
+        : "No match — check the spelling on your place card.";
       nameSuggestions.append(empty);
     } else {
-      for (const r of results) {
+      for (const r of matches) {
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "cam-suggestion";

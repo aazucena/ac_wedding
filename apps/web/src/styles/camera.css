@@ -909,6 +909,23 @@ body {
   color: #6aa383; /* mint is too pale on the ivory card */
   text-align: center;
 }
+/* Who you are right now, above the whole card. Quiet by design — it's context
+   for the decision, not the decision. The rule under it separates "this is the
+   state you're in" from "here's what you're changing it to". */
+.cam-gate-current {
+  font-size: 12.5px;
+  font-weight: 300;
+  text-align: center;
+  color: #6b6678;
+  /* Clears the ✕, which is absolutely positioned at the top right. */
+  padding: 0 34px 12px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(26, 26, 46, 0.1);
+}
+.cam-gate-current strong {
+  font-weight: 500;
+  color: var(--dark);
+}
 .cam-gate-title {
   font-family: var(--fd);
   font-size: 1.85rem;
