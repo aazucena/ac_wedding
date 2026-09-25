@@ -18,6 +18,22 @@ interface Props {
    * card ink instead: ~16:1, and pure K on the press.
    */
   color?: string;
+  /**
+   * Draw to a <canvas> instead of SVG — the belt-and-braces print path.
+   *
+   * Flattening (lib/qr-flatten.ts) should be enough: it leaves plain filled
+   * vector shapes, which is the most ordinary thing a printer can be asked to
+   * render. But if a press still mangles a code, a bitmap has no vector
+   * constructs left to mangle. The trade is resolution instead of infinite
+   * sharpness, which for a QR's hard edges is a fine trade at print DPI.
+   */
+  raster?: boolean;
+  /**
+   * Bitmap resolution when `raster` is on. Independent of `size`, which is only
+   * the layout box — print CSS scales the canvas to inches regardless. Default
+   * targets roughly 300dpi at the sizes these cards actually print at.
+   */
+  rasterPx?: number;
 }
 
 const {
@@ -28,7 +44,13 @@ const {
   logo,
   logoRatio = 0.45,
   color = "#5a9e7a",
+  raster = false,
+  rasterPx,
 } = Astro.props;
+
+// 4x the layout box lands ~300dpi at every size these cards use, and the cap
+// keeps eight of them on one print page from eating hundreds of MB of canvas.
+const rasterResolution = Math.min(rasterPx ?? size * 4, 1600);
 ---
 
 <div class:list={["qr-wrap", className]}>
@@ -39,6 +61,7 @@ const {
     data-logo={logo ?? ""}
     data-logo-ratio={String(logoRatio)}
     data-color={color}
+    data-raster={raster ? String(rasterResolution) : ""}
     style={`width:${size}px;height:${size}px;`}
   >
   </div>
@@ -56,11 +79,15 @@ const {
     const logo = el.getAttribute("data-logo") || undefined;
     const logoRatio = parseFloat(el.getAttribute("data-logo-ratio") ?? "0.22");
     const color = el.getAttribute("data-color") || "#5a9e7a";
+    // Non-empty means raster, and holds the bitmap resolution to draw at.
+    const raster = parseInt(el.getAttribute("data-raster") || "0") || 0;
 
     const qr = new QRCodeStyling({
-      type: "svg",
-      width: size,
-      height: size,
+      type: raster ? "canvas" : "svg",
+      // The canvas is drawn far larger than its layout box and scaled down by
+      // CSS, so it still has print resolution behind it.
+      width: raster || size,
+      height: raster || size,
       data: url,
       margin: 0,
       // "H" exists to survive a logo punched through the middle. Without one
@@ -83,6 +110,9 @@ const {
     });
 
     qr.append(el as HTMLElement);
+
+    // A bitmap has no clip paths in it to begin with — nothing to flatten.
+    if (raster) return;
 
     // append() is synchronous for a plain code but not when a logo has to load
     // first, so watch for the <svg> rather than assuming it's already there.
@@ -125,6 +155,16 @@ const {
   .qr-inner {
     position: relative;
     display: inline-flex;
+  }
+  /* :global because the <svg>/<canvas> is injected at runtime and never gets
+     Astro's scoping attribute. A raster code is drawn at up to 1600px and has
+     to be scaled back into its layout box; the print stylesheets override both
+     of these with !important inch sizes. */
+  .qr-inner :global(svg),
+  .qr-inner :global(canvas) {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
   .qr-label {
     font-family: "Jost", Arial, sans-serif;

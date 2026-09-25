@@ -41,6 +41,20 @@ const {
 // below ~1.2in is where scanning in a dim room starts to fail, so the card
 // gives up padding instead.
 const qrSize = variant === "sign" ? (letter ? 440 : 260) : 120;
+
+/**
+ * THE SWITCH. Flip to true if a press still mangles the code.
+ *
+ * Default (false) draws vector SVG with the clip paths flattened out — see
+ * lib/qr-flatten.ts for why they were what turned the first sign into a solid
+ * green block. That should be enough: what reaches the printer is plain filled
+ * shapes. If some RIP still finds a way to ruin it, true swaps in a bitmap,
+ * which has no vector constructs left to misinterpret.
+ *
+ * Print one card and scan it before committing to a run. Preview proves
+ * nothing here — the first failure looked perfect on screen.
+ */
+const USE_RASTER = false;
 ---
 
 <div
@@ -96,7 +110,12 @@ const qrSize = variant === "sign" ? (letter ? 440 : 260) : 120;
         /* Card ink, not mint: this one has to scan across a dim reception
           room, and it prints as pure K rather than a halftone of CMY. */
       }
-      <QRCode url={cameraUrl} size={qrSize} color="#1a1a2e" />
+      <QRCode
+        url={cameraUrl}
+        size={qrSize}
+        color="#1a1a2e"
+        raster={USE_RASTER}
+      />
     </div>
     <p class="tent-url">{shortUrl}</p>
 
