@@ -9,12 +9,18 @@ interface Props {
   photographer?: string | null;
   photographerLogo?: { id: string } | null;
   showDownload?: boolean;
+  /** Native share sheet for the open photo — /memories only. */
+  showShare?: boolean;
+  /** Sent alongside a shared photo or link, e.g. the wedding hashtag. */
+  shareText?: string | null;
 }
 const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
 const {
   photographer,
   photographerLogo,
   showDownload = allowDownload,
+  showShare = false,
+  shareText = null,
 } = Astro.props;
 ---
 
@@ -25,6 +31,7 @@ const {
   aria-modal="true"
   aria-label="Photo viewer"
   data-allow-download={String(showDownload)}
+  data-share-text={shareText ?? ""}
 >
   <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close"
     >✕</button
@@ -115,6 +122,45 @@ const {
             </a>
           )
         }
+        {
+          showShare && (
+            <button
+              type="button"
+              class="lightbox-download lightbox-share"
+              id="lightbox-share"
+              aria-label="Share photo"
+              hidden
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <>
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                  <polyline points="16 6 12 2 8 6" />
+                  <line x1="12" y1="2" x2="12" y2="15" />
+                </>
+              </svg>
+              Share
+            </button>
+          )
+        }
+        {
+          showShare && (
+            <span
+              class="lightbox-share-feedback"
+              id="lightbox-share-feedback"
+              aria-live="polite"
+            />
+          )
+        }
       </div>
     </div>
   </div>
@@ -126,6 +172,63 @@ const {
   );
   let current = 0;
 
+  // ── Share (/memories) ──────────────────────────────────────────
+  // navigator.share() needs transient user activation, and an await between
+  // the tap and the call can spend it — iOS Safari then rejects the share (see
+  // shareShot() in scripts/camera.ts). So the open photo's File is fetched when
+  // it is SHOWN, never on the tap. One blob alive at a time; shareToken drops a
+  // fetch that finishes after the guest has already swiped on.
+  const shareBtn = document.getElementById("lightbox-share");
+  const shareFeedback = document.getElementById("lightbox-share-feedback");
+  const shareText = document.getElementById("lightbox").dataset.shareText || "";
+  let shareFile = null;
+  let shareToken = 0;
+
+  if (shareBtn && (navigator.share || navigator.clipboard)) {
+    shareBtn.hidden = false;
+  }
+
+  function prepareShare(src, i) {
+    shareFile = null;
+    const t = ++shareToken;
+    if (!shareBtn || !navigator.canShare || !src || src === "null") return;
+    fetch(src)
+      .then((res) => (res.ok ? res.blob() : null))
+      .then((blob) => {
+        if (!blob || t !== shareToken) return;
+        const ext = (blob.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+        const file = new File([blob], `memory-${i + 1}.${ext}`, {
+          type: blob.type,
+        });
+        if (navigator.canShare({ files: [file] })) shareFile = file;
+      })
+      .catch(() => {});
+  }
+
+  function sharePhoto() {
+    const url = `${location.origin}/memories`;
+    // No await before share(): see the note above.
+    const shared = shareFile
+      ? navigator.share({ files: [shareFile], text: shareText || undefined })
+      : navigator.share
+        ? navigator.share({ title: document.title, text: shareText, url })
+        : null;
+    if (shared) {
+      // AbortError when they back out of the sheet — nothing to report.
+      shared.catch(() => {});
+      return;
+    }
+    navigator.clipboard
+      ?.writeText(shareText ? `${shareText} — ${url}` : url)
+      .then(() => {
+        if (!shareFeedback) return;
+        shareFeedback.textContent = "Link copied";
+        setTimeout(() => (shareFeedback.textContent = ""), 3000);
+      })
+      .catch(() => {});
+  }
+  shareBtn?.addEventListener("click", sharePhoto);
+
   function openLightbox(btn) {
     current = parseInt(btn.dataset.index);
     showPhoto(current);
@@ -136,6 +239,9 @@ const {
   function closeLightbox() {
     document.getElementById("lightbox").classList.remove("open");
     document.body.style.overflow = "";
+    // Don't keep a full-size photo in memory after the viewer closes.
+    shareFile = null;
+    shareToken++;
   }
 
   function showPhoto(i) {
@@ -187,12 +293,14 @@ const {
         dlBtn.href = src + (src.includes("?") ? "&" : "?") + "download";
         dlBtn.style.display = "inline-flex";
       }
+      prepareShare(src, i);
     } else {
       img.classList.remove("revealed");
       img.style.display = "none";
       ph.style.display = "flex";
       if (loader) loader.classList.add("hidden");
       if (dlBtn) dlBtn.style.display = "none";
+      prepareShare(null, i);
     }
 
     title.textContent =
@@ -472,6 +580,22 @@ const {
       color 0.2s ease,
       border-color 0.2s ease,
       background 0.2s ease;
+  }
+  .lightbox-share {
+    background: none;
+    cursor: pointer;
+  }
+  .lightbox-share[hidden] {
+    display: none;
+  }
+  .lightbox-share-feedback {
+    font-family: var(--fb);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .lightbox-share-feedback:empty {
+    display: none;
   }
   .lightbox-download:hover {
     color: #fff;

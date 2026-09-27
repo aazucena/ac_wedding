@@ -154,7 +154,12 @@ const items = memories.map((m) => ({
     <p class="footer-note">{groom} & {bride} · {weddingDateLabel}</p>
   </Fragment>
 
-  <GalleryLightbox slot="overlay" showDownload />
+  <GalleryLightbox
+    slot="overlay"
+    showDownload
+    showShare
+    shareText={hashtag}
+  />
 </Layout>
 
 <style>
