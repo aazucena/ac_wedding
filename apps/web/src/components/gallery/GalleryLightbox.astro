@@ -60,6 +60,11 @@ const {
         class="lightbox-mob-btn"
         aria-label="Previous">‹</button
       >
+      <p
+        class="lightbox-counter lightbox-counter--mob"
+        id="lightbox-counter-mob"
+      >
+      </p>
       <button onclick="nextPhoto()" class="lightbox-mob-btn" aria-label="Next"
         >›</button
       >
@@ -318,6 +323,8 @@ const {
       date.textContent =
         btn.dataset.date && btn.dataset.date !== "null" ? btn.dataset.date : "";
     ctr.textContent = `${i + 1} / ${items.length}`;
+    const ctrMob = document.getElementById("lightbox-counter-mob");
+    if (ctrMob) ctrMob.textContent = ctr.textContent;
   }
 
   function prevPhoto() {
@@ -688,12 +695,90 @@ const {
       display: flex;
     }
 
+    /* Photo → who & when → what you can do → prev/next. The action row lives
+       inside .lightbox-meta, so the nav row lands last, in thumb reach.
+       Reordered with `order` so the DOM (and desktop) stay as they are. */
+    .lightbox-content {
+      gap: 14px;
+      width: 100%;
+      max-width: 100%;
+      max-height: 100vh;
+      max-height: 100dvh;
+      padding: 64px 16px max(16px, env(safe-area-inset-bottom));
+    }
+    .lightbox-img-wrap,
+    .lightbox-placeholder {
+      order: 0;
+    }
+    .lightbox-meta {
+      order: 1;
+    }
+    .lightbox-mobile-nav {
+      order: 2;
+    }
+    .lightbox-footer {
+      order: 3;
+    }
+
     .lightbox-img {
-      max-height: 52vh;
+      max-height: 55vh;
+      max-height: 55dvh;
     }
     .lightbox-img-wrap {
       min-height: unset;
       min-width: unset;
+    }
+
+    /* Caption: one tight group, description last and clamped so a long one
+       can never push the buttons off-screen. */
+    .lightbox-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: min(100%, 320px);
+    }
+    .lightbox-meta > * {
+      margin: 0;
+    }
+    .lightbox-title {
+      font-size: 18px;
+    }
+    .lightbox-desc {
+      order: 1;
+      margin-top: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Nav + counter on one row */
+    .lightbox-mobile-nav {
+      justify-content: space-between;
+      width: min(100%, 320px);
+    }
+    .lightbox-footer .lightbox-counter {
+      display: none;
+    }
+
+    /* Actions: equal-width, thumb-sized */
+    .lightbox-footer {
+      flex-wrap: wrap;
+      width: 100%;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .lightbox-download {
+      flex: 1 1 0;
+      justify-content: center;
+      min-height: 44px;
+      font-size: 12px;
+      border-radius: var(--radius-sm);
+    }
+    .lightbox-share-feedback {
+      flex-basis: 100%;
+      text-align: center;
     }
     .lightbox-placeholder {
       height: 52vw;
