@@ -15,6 +15,9 @@ const PASS_DOWN = [
   "cache-control",
   "etag",
   "last-modified",
+  // Directus sets this on ?download asset requests; without it the browser
+  // saves the file as a bare UUID with no extension.
+  "content-disposition",
 ];
 
 // Paths that browser JS is explicitly allowed to PATCH (no internal key needed).
