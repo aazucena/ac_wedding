@@ -15,6 +15,7 @@ const { hashtag, weddingDateLabel } = Astro.props;
   <p class="hashtag-eyebrow">Share the love</p>
   <Hashtag as="p" tag={hashtag} class="hashtag-tag" id="hashtag-display" />
   <p class="hashtag-sub">Use our hashtag to share your photos and memories.</p>
+  <a href="/memories" class="hashtag-memories-link">See everyone's photos →</a>
   <button class="share-btn" id="share-btn">
     <span class="share-btn-icon">🔗</span>
     <span class="share-btn-text">Copy &amp; Share</span>
@@ -30,12 +31,12 @@ const { hashtag, weddingDateLabel } = Astro.props;
       if (navigator.share) {
         await navigator.share({
           title: `Aldrin & Christine — ${weddingDateLabel}`,
-          text: `Join us to celebrate! ${hashtag}`,
-          url: window.location.origin,
+          text: `Relive our wedding day! ${hashtag}`,
+          url: `${window.location.origin}/memories`,
         });
       } else {
         await navigator.clipboard.writeText(
-          `${hashtag} — ${window.location.origin}`,
+          `${hashtag} — ${window.location.origin}/memories`,
         );
         feedback.textContent = "Copied to clipboard!";
         btn.classList.add("shared");
@@ -103,8 +104,25 @@ const { hashtag, weddingDateLabel } = Astro.props;
     font-size: 13px;
     font-weight: 300;
     color: var(--muted);
-    margin-bottom: 24px;
+    margin-bottom: 10px;
     line-height: 1.6;
+  }
+  .hashtag-memories-link {
+    display: block;
+    width: fit-content;
+    margin-inline: auto;
+    font-family: var(--fb);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    color: var(--dark);
+    text-decoration: underline;
+    text-decoration-color: var(--cp);
+    text-underline-offset: 4px;
+    margin-bottom: 24px;
+  }
+  .hashtag-memories-link:hover {
+    text-decoration-thickness: 2px;
   }
   .share-btn {
     display: inline-flex;

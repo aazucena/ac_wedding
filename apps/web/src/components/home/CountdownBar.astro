@@ -34,12 +34,19 @@ const { weddingDate } = Astro.props;
     const target = new Date(parts[0], parts[1] - 1, parts[2], 12, 0, 0);
     const diff = target - Date.now();
     if (diff <= 0) {
+      // Stop ticking — otherwise this branch re-runs every second, rebuilding
+      // the message and firing confetti over it forever.
+      clearInterval(timer);
       const bar = document.getElementById("countdown");
       if (bar) {
         bar.textContent = "";
         const msg = document.createElement("p");
         msg.className = "cd-married";
-        msg.textContent = "We're married! ✦";
+        msg.append("We're married! ");
+        const star = document.createElement("span");
+        star.className = "cd-married-star";
+        star.textContent = "✦";
+        msg.appendChild(star);
         bar.appendChild(msg);
       }
       if (typeof window.__launchConfetti === "function")
@@ -59,8 +66,8 @@ const { weddingDate } = Astro.props;
     if (elSeconds)
       elSeconds.textContent = pad(Math.floor((diff % 60000) / 1000));
   }
+  const timer = setInterval(tickCountdown, 1000);
   tickCountdown();
-  setInterval(tickCountdown, 1000);
 </script>
 
 <style>
@@ -115,12 +122,24 @@ const { weddingDate } = Astro.props;
     padding: 0 4px;
     flex-shrink: 0;
   }
-  .cd-married {
+  /* Built at runtime by the script above, hence :global */
+  .countdown-bar :global(.cd-married) {
+    width: 100%;
     font-family: var(--fd);
-    font-size: 24px;
+    font-size: clamp(28px, 5vw, 40px);
+    font-weight: 400;
     font-style: italic;
-    color: color-mix(in srgb, var(--cp) 80%, white);
-    padding: 22px;
+    line-height: 1.2;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
+    padding: 18px 12px;
+  }
+  .countdown-bar :global(.cd-married-star) {
+    font-style: normal;
+    font-size: 0.6em;
+    vertical-align: middle;
+    color: var(--cp);
   }
 
   @media (max-width: 768px) {

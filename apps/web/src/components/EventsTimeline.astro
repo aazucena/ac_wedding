@@ -1,8 +1,6 @@
 ---
 // components/EventsTimeline.astro — grouped date/time event cards
 import { formatTime } from "~/lib/utils/format";
-import AddToCalendar from "./AddToCalendar.astro";
-import { toCalDt, toCalEndDt } from "~/lib/utils/calendar";
 
 interface TimelineEventItem {
   start_time?: string | null;
@@ -85,18 +83,6 @@ function hostName(person?: TimelineEventItem["host"]): string {
                 )}
 
                 {ev.notes && <p class="event-notes">{ev.notes}</p>}
-
-                {ev.icsKey && (
-                  <div class="event-cal-wrap">
-                    <AddToCalendar
-                      name={ev.name}
-                      icsKey={ev.icsKey}
-                      start={toCalDt(group.date, ev.start_time)}
-                      end={toCalEndDt(group.date, ev.start_time, ev.end_time)}
-                      location={ev.venue?.name ?? undefined}
-                    />
-                  </div>
-                )}
               </div>
             </div>
           ))}
@@ -264,9 +250,6 @@ function hostName(person?: TimelineEventItem["host"]): string {
     margin-top: 2px;
   }
 
-  .event-cal-wrap {
-    margin-top: 8px;
-  }
 
   @media (max-width: 600px) {
     .event-card {

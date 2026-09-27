@@ -30,5 +30,5 @@ export const MAIN_NAV_ITEMS: NavItem[] = [
       { id: "partners", url: "/partners", text: "Partners" },
     ],
   },
-  { type: "link", id: "invite", url: "/invite", text: "RSVP" },
+  { type: "link", id: "memories", url: "/memories", text: "Memories" },
 ];
