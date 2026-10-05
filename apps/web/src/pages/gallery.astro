@@ -7,6 +7,7 @@ import GalleryGrid from "../components/gallery/GalleryGrid.astro";
 import GalleryLightbox from "../components/gallery/GalleryLightbox.astro";
 import { getSettings, getGalleryPhotos, type Vendors } from "../lib/directus";
 import { formatDate, assetUrl } from "../lib/utils/format";
+import { galleryHash } from "../lib/utils/gallery";
 import Hashtag from "~/components/Hashtag.astro";
 import { PUBLIC_DOWNLOAD_GALLERY_IMAGES } from "astro:env/client";
 import "../styles/gallery.css";
@@ -120,6 +121,7 @@ const items =
           <button
             class="gallery-filter-btn active"
             data-filter="all"
+            data-hash=""
             aria-pressed="true"
           >
             All
@@ -128,6 +130,7 @@ const items =
             <button
               class="gallery-filter-btn"
               data-filter={cat}
+              data-hash={galleryHash(cat)}
               aria-pressed="false"
             >
               {CATEGORY_LABELS[cat]}
@@ -137,6 +140,7 @@ const items =
             <button
               class="gallery-filter-btn"
               data-filter="bw"
+              data-hash={galleryHash("bw")}
               aria-pressed="false"
             >
               Black &amp; White
@@ -173,6 +177,7 @@ const items =
                   role="option"
                   aria-selected={i === 0 ? "true" : "false"}
                   data-filter={option.value}
+                  data-hash={galleryHash(option.value)}
                 >
                   <span>{option.label}</span>
                   <span class="gallery-filter-count">{option.count}</span>

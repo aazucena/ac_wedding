@@ -1,3 +1,5 @@
+import { galleryHash } from "../lib/utils/gallery";
+
 // document/window listeners are re-registered on every astro:page-load; abort
 // the previous set first so they don't stack up across client-side navigations
 // (same pattern as Navbar.astro).
@@ -25,6 +27,9 @@ document.addEventListener("astro:page-load", () => {
   );
   const padItems = document.querySelectorAll<HTMLElement>(".gallery-item--pad");
   const sections = document.querySelectorAll<HTMLElement>(".gallery-section");
+  const sectionLinks = document.querySelectorAll<HTMLAnchorElement>(
+    ".gallery-section-link",
+  );
   const emptyMsg = document.getElementById("gallery-filter-empty");
 
   if (!filterBtns.length || !gridItems.length) return;
@@ -66,6 +71,8 @@ document.addEventListener("astro:page-load", () => {
     padItems.forEach((p) => {
       p.style.display = active === "all" ? "" : "none";
     });
+    // Lets the headings drop their "open this category" link styling.
+    grid?.toggleAttribute("data-filtered", active !== "all");
     if (emptyMsg) {
       emptyMsg.textContent =
         visible === 0 ? "No photos match this filter." : "";
@@ -102,7 +109,8 @@ document.addEventListener("astro:page-load", () => {
 
   // The pills (desktop) and the menu (phones) are two views of one choice;
   // both are kept current so crossing the breakpoint never shows a stale one.
-  function setActive(value: string) {
+  // The choice is mirrored in the URL fragment so any view can be linked to.
+  function setActive(value: string, { updateUrl = true, scroll = true } = {}) {
     active = value;
     let activeBtn: HTMLElement | undefined;
     filterBtns.forEach((b) => {
@@ -122,7 +130,24 @@ document.addEventListener("astro:page-load", () => {
       }
     });
     applyFilter();
-    settle(activeBtn);
+    if (updateUrl) {
+      // replaceState, not a new entry: Back should leave the gallery, not
+      // replay every filter that was tapped.
+      const hash = galleryHash(value);
+      history.replaceState(
+        history.state,
+        "",
+        location.pathname + location.search + (hash ? `#${hash}` : ""),
+      );
+    }
+    if (scroll) settle(activeBtn);
+  }
+
+  // The filter a fragment names, if it is one this page actually offers.
+  function filterFromHash(): string | undefined {
+    const hash = decodeURIComponent(location.hash.slice(1));
+    if (!hash) return "all";
+    return [...filterBtns].find((b) => b.dataset.hash === hash)?.dataset.filter;
   }
 
   function setMenuOpen(open: boolean) {
@@ -134,6 +159,13 @@ document.addEventListener("astro:page-load", () => {
     btn.addEventListener("click", () => {
       setActive(btn.dataset.filter ?? "all");
       setMenuOpen(false);
+    });
+  });
+
+  sectionLinks.forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      setActive(link.dataset.filter ?? "all");
     });
   });
 
@@ -155,6 +187,18 @@ document.addEventListener("astro:page-load", () => {
       setMenuOpen(false);
       menuToggle?.focus();
     },
+    sig,
+  );
+
+  // Arriving by link (/gallery#ceremony): open on that filter, from the top.
+  const initial = filterFromHash();
+  if (initial && initial !== "all") {
+    setActive(initial, { updateUrl: false, scroll: false });
+  }
+  // Fragment edited by hand, or back/forward between two of them.
+  window.addEventListener(
+    "hashchange",
+    () => setActive(filterFromHash() ?? "all", { updateUrl: false }),
     sig,
   );
 });
