@@ -172,216 +172,247 @@ const {
 </div>
 
 <script is:inline>
-  const items = Array.from(
-    document.querySelectorAll(".gallery-item:not(.gallery-item--pad)"),
-  );
-  // The photos next/previous walks through: everything, or just the tiles the
-  // /gallery filter left showing (it marks the rest data-filtered-out). Not a
-  // visibility check — /memories hides off-page tiles but still slides through.
-  let list = items;
-  let current = 0;
+  // The router runs an inline script once and never again, so nothing here may
+  // hold on to the page it first ran on: every element lookup and listener is
+  // redone per page in initLightbox (same pattern as Navbar.astro). Capturing
+  // the tiles at the top level left the viewer walking a previous visit's
+  // photos after navigating away and back.
+  let _lbAbort = null;
 
-  // ── Share (/memories) ──────────────────────────────────────────
-  // navigator.share() needs transient user activation, and an await between
-  // the tap and the call can spend it — iOS Safari then rejects the share (see
-  // shareShot() in scripts/camera.ts). So the open photo's File is fetched when
-  // it is SHOWN, never on the tap. One blob alive at a time; shareToken drops a
-  // fetch that finishes after the guest has already swiped on.
-  const shareBtn = document.getElementById("lightbox-share");
-  const shareFeedback = document.getElementById("lightbox-share-feedback");
-  const shareText = document.getElementById("lightbox").dataset.shareText || "";
-  let shareFile = null;
-  let shareToken = 0;
+  function initLightbox() {
+    if (_lbAbort) _lbAbort.abort();
+    _lbAbort = new AbortController();
+    const sig = { signal: _lbAbort.signal };
 
-  if (shareBtn && (navigator.share || navigator.clipboard)) {
-    shareBtn.hidden = false;
-  }
+    const lb = document.getElementById("lightbox");
+    if (!lb) return;
 
-  function prepareShare(src, i) {
-    shareFile = null;
-    const t = ++shareToken;
-    if (!shareBtn || !navigator.canShare || !src || src === "null") return;
-    fetch(src)
-      .then((res) => (res.ok ? res.blob() : null))
-      .then((blob) => {
-        if (!blob || t !== shareToken) return;
-        const ext = (blob.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
-        const file = new File([blob], `memory-${i + 1}.${ext}`, {
-          type: blob.type,
-        });
-        if (navigator.canShare({ files: [file] })) shareFile = file;
-      })
-      .catch(() => {});
-  }
+    // The photos next/previous walks through, rebuilt from the live page each
+    // time the viewer opens: everything, or just the tiles the /gallery filter
+    // left showing (it marks the rest data-filtered-out). Not a visibility
+    // check — /memories hides off-page tiles but still slides through.
+    let list = [];
+    let current = 0;
 
-  function sharePhoto() {
-    const url = `${location.origin}/memories`;
-    // No await before share(): see the note above.
-    const shared = shareFile
-      ? navigator.share({ files: [shareFile], text: shareText || undefined })
-      : navigator.share
-        ? navigator.share({ title: document.title, text: shareText, url })
-        : null;
-    if (shared) {
-      // AbortError when they back out of the sheet — nothing to report.
-      shared.catch(() => {});
-      return;
+    // ── Share (/memories) ──────────────────────────────────────────
+    // navigator.share() needs transient user activation, and an await between
+    // the tap and the call can spend it — iOS Safari then rejects the share (see
+    // shareShot() in scripts/camera.ts). So the open photo's File is fetched when
+    // it is SHOWN, never on the tap. One blob alive at a time; shareToken drops a
+    // fetch that finishes after the guest has already swiped on.
+    const shareBtn = document.getElementById("lightbox-share");
+    const shareFeedback = document.getElementById("lightbox-share-feedback");
+    const shareText = lb.dataset.shareText || "";
+    let shareFile = null;
+    let shareToken = 0;
+
+    if (shareBtn && (navigator.share || navigator.clipboard)) {
+      shareBtn.hidden = false;
     }
-    navigator.clipboard
-      ?.writeText(shareText ? `${shareText} — ${url}` : url)
-      .then(() => {
-        if (!shareFeedback) return;
-        shareFeedback.textContent = "Link copied";
-        setTimeout(() => (shareFeedback.textContent = ""), 3000);
-      })
-      .catch(() => {});
-  }
-  shareBtn?.addEventListener("click", sharePhoto);
 
-  function openLightbox(btn) {
-    list = items.filter((el) => !el.hasAttribute("data-filtered-out"));
-    current = Math.max(0, list.indexOf(btn));
-    showPhoto(current);
-    document.getElementById("lightbox").classList.add("open");
-    document.body.style.overflow = "hidden";
-  }
+    function prepareShare(src, i) {
+      shareFile = null;
+      const t = ++shareToken;
+      if (!shareBtn || !navigator.canShare || !src || src === "null") return;
+      fetch(src)
+        .then((res) => (res.ok ? res.blob() : null))
+        .then((blob) => {
+          if (!blob || t !== shareToken) return;
+          const ext = (blob.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+          const file = new File([blob], `memory-${i + 1}.${ext}`, {
+            type: blob.type,
+          });
+          if (navigator.canShare({ files: [file] })) shareFile = file;
+        })
+        .catch(() => {});
+    }
 
-  function closeLightbox() {
-    document.getElementById("lightbox").classList.remove("open");
-    document.body.style.overflow = "";
-    // Don't keep a full-size photo in memory after the viewer closes.
-    shareFile = null;
-    shareToken++;
-  }
+    function sharePhoto() {
+      const url = `${location.origin}/memories`;
+      // No await before share(): see the note above.
+      const shared = shareFile
+        ? navigator.share({ files: [shareFile], text: shareText || undefined })
+        : navigator.share
+          ? navigator.share({ title: document.title, text: shareText, url })
+          : null;
+      if (shared) {
+        // AbortError when they back out of the sheet — nothing to report.
+        shared.catch(() => {});
+        return;
+      }
+      navigator.clipboard
+        ?.writeText(shareText ? `${shareText} — ${url}` : url)
+        .then(() => {
+          if (!shareFeedback) return;
+          shareFeedback.textContent = "Link copied";
+          setTimeout(() => (shareFeedback.textContent = ""), 3000);
+        })
+        .catch(() => {});
+    }
+    shareBtn?.addEventListener("click", sharePhoto, sig);
 
-  function showPhoto(i) {
-    const btn = list[i];
-    const src = btn.dataset.src;
-    const img = document.getElementById("lightbox-img");
-    const loader = document.getElementById("lightbox-loader");
-    const ph = document.getElementById("lightbox-placeholder");
-    const title = document.getElementById("lightbox-title");
-    const desc = document.getElementById("lightbox-desc");
-    const date = document.getElementById("lightbox-date");
-    const author = document.getElementById("lightbox-author");
-    const ctr = document.getElementById("lightbox-counter");
-    const dlBtn = document.getElementById("lightbox-download");
+    function openLightbox(btn) {
+      list = Array.from(
+        document.querySelectorAll(".gallery-item:not(.gallery-item--pad)"),
+      ).filter((el) => !el.hasAttribute("data-filtered-out"));
+      current = Math.max(0, list.indexOf(btn));
+      showPhoto(current);
+      lb.classList.add("open");
+      document.body.style.overflow = "hidden";
+    }
 
-    if (src && src !== "null") {
-      img.classList.remove("revealed");
-      if (loader) loader.classList.remove("hidden");
-      img.alt = btn.dataset.title ?? "";
-      img.style.display = "block";
-      ph.style.display = "none";
-      // If revisiting a cached image, reveal immediately — otherwise wait for load
-      if (
-        img.getAttribute("src") === src &&
-        img.complete &&
-        img.naturalWidth > 0
-      ) {
-        img.classList.add("revealed");
-        if (loader) loader.classList.add("hidden");
+    function closeLightbox() {
+      lb.classList.remove("open");
+      document.body.style.overflow = "";
+      // Don't keep a full-size photo in memory after the viewer closes.
+      shareFile = null;
+      shareToken++;
+    }
+
+    function showPhoto(i) {
+      const btn = list[i];
+      const src = btn.dataset.src;
+      const img = document.getElementById("lightbox-img");
+      const loader = document.getElementById("lightbox-loader");
+      const ph = document.getElementById("lightbox-placeholder");
+      const title = document.getElementById("lightbox-title");
+      const desc = document.getElementById("lightbox-desc");
+      const date = document.getElementById("lightbox-date");
+      const author = document.getElementById("lightbox-author");
+      const ctr = document.getElementById("lightbox-counter");
+      const dlBtn = document.getElementById("lightbox-download");
+
+      if (src && src !== "null") {
+        img.classList.remove("revealed");
+        if (loader) loader.classList.remove("hidden");
+        img.alt = btn.dataset.title ?? "";
+        img.style.display = "block";
+        ph.style.display = "none";
+        // If revisiting a cached image, reveal immediately — otherwise wait for load
+        if (
+          img.getAttribute("src") === src &&
+          img.complete &&
+          img.naturalWidth > 0
+        ) {
+          img.classList.add("revealed");
+          if (loader) loader.classList.add("hidden");
+        } else {
+          img.addEventListener(
+            "load",
+            () => {
+              img.classList.add("revealed");
+              if (loader) loader.classList.add("hidden");
+            },
+            { once: true },
+          );
+          img.addEventListener(
+            "error",
+            () => {
+              if (loader) loader.classList.add("hidden");
+            },
+            { once: true },
+          );
+          img.src = src;
+        }
+        if (dlBtn) {
+          dlBtn.href = src + (src.includes("?") ? "&" : "?") + "download";
+          dlBtn.style.display = "inline-flex";
+        }
+        prepareShare(src, i);
       } else {
-        img.addEventListener(
-          "load",
-          () => {
-            img.classList.add("revealed");
-            if (loader) loader.classList.add("hidden");
-          },
-          { once: true },
-        );
-        img.addEventListener(
-          "error",
-          () => {
-            if (loader) loader.classList.add("hidden");
-          },
-          { once: true },
-        );
-        img.src = src;
+        img.classList.remove("revealed");
+        img.style.display = "none";
+        ph.style.display = "flex";
+        if (loader) loader.classList.add("hidden");
+        if (dlBtn) dlBtn.style.display = "none";
+        prepareShare(null, i);
       }
-      if (dlBtn) {
-        dlBtn.href = src + (src.includes("?") ? "&" : "?") + "download";
-        dlBtn.style.display = "inline-flex";
-      }
-      prepareShare(src, i);
-    } else {
-      img.classList.remove("revealed");
-      img.style.display = "none";
-      ph.style.display = "flex";
-      if (loader) loader.classList.add("hidden");
-      if (dlBtn) dlBtn.style.display = "none";
-      prepareShare(null, i);
+
+      title.textContent =
+        btn.dataset.title && btn.dataset.title !== "null"
+          ? btn.dataset.title
+          : "";
+      desc.textContent =
+        btn.dataset.desc && btn.dataset.desc !== "null" ? btn.dataset.desc : "";
+      if (author)
+        author.textContent =
+          btn.dataset.author && btn.dataset.author !== "null"
+            ? `Photo by ${btn.dataset.author}`
+            : "";
+      if (date)
+        date.textContent =
+          btn.dataset.date && btn.dataset.date !== "null"
+            ? btn.dataset.date
+            : "";
+      ctr.textContent = `${i + 1} / ${list.length}`;
+      const ctrMob = document.getElementById("lightbox-counter-mob");
+      if (ctrMob) ctrMob.textContent = ctr.textContent;
     }
 
-    title.textContent =
-      btn.dataset.title && btn.dataset.title !== "null"
-        ? btn.dataset.title
-        : "";
-    desc.textContent =
-      btn.dataset.desc && btn.dataset.desc !== "null" ? btn.dataset.desc : "";
-    if (author)
-      author.textContent =
-        btn.dataset.author && btn.dataset.author !== "null"
-          ? `Photo by ${btn.dataset.author}`
-          : "";
-    if (date)
-      date.textContent =
-        btn.dataset.date && btn.dataset.date !== "null" ? btn.dataset.date : "";
-    ctr.textContent = `${i + 1} / ${list.length}`;
-    const ctrMob = document.getElementById("lightbox-counter-mob");
-    if (ctrMob) ctrMob.textContent = ctr.textContent;
+    function prevPhoto() {
+      current = (current - 1 + list.length) % list.length;
+      showPhoto(current);
+    }
+
+    function nextPhoto() {
+      current = (current + 1) % list.length;
+      showPhoto(current);
+    }
+
+    // Keyboard nav
+    document.addEventListener(
+      "keydown",
+      (e) => {
+        if (!lb.classList.contains("open")) return;
+        if (e.key === "ArrowLeft") prevPhoto();
+        if (e.key === "ArrowRight") nextPhoto();
+        if (e.key === "Escape") closeLightbox();
+      },
+      sig,
+    );
+
+    // Click outside to close
+    lb.addEventListener(
+      "click",
+      (e) => {
+        if (e.target === lb) closeLightbox();
+      },
+      sig,
+    );
+
+    // Swipe navigation (mobile)
+    let _touchStartX = 0;
+    lb.addEventListener(
+      "touchstart",
+      (e) => {
+        _touchStartX = e.touches[0].clientX;
+      },
+      { passive: true, ...sig },
+    );
+    lb.addEventListener(
+      "touchend",
+      (e) => {
+        if (!lb.classList.contains("open")) return;
+        const delta = e.changedTouches[0].clientX - _touchStartX;
+        if (Math.abs(delta) > 50) delta < 0 ? nextPhoto() : prevPhoto();
+      },
+      sig,
+    );
+
+    // Download protection
+    if (lb.dataset.allowDownload !== "true") {
+      const lbImg = document.getElementById("lightbox-img");
+      lbImg.addEventListener("contextmenu", (e) => e.preventDefault(), sig);
+      lbImg.addEventListener("dragstart", (e) => e.preventDefault(), sig);
+    }
+
+    window.openLightbox = openLightbox;
+    window.closeLightbox = closeLightbox;
+    window.prevPhoto = prevPhoto;
+    window.nextPhoto = nextPhoto;
   }
 
-  function prevPhoto() {
-    current = (current - 1 + list.length) % list.length;
-    showPhoto(current);
-  }
-
-  function nextPhoto() {
-    current = (current + 1) % list.length;
-    showPhoto(current);
-  }
-
-  // Keyboard nav
-  document.addEventListener("keydown", (e) => {
-    if (!document.getElementById("lightbox").classList.contains("open")) return;
-    if (e.key === "ArrowLeft") prevPhoto();
-    if (e.key === "ArrowRight") nextPhoto();
-    if (e.key === "Escape") closeLightbox();
-  });
-
-  // Click outside to close
-  document.getElementById("lightbox").addEventListener("click", (e) => {
-    if (e.target === document.getElementById("lightbox")) closeLightbox();
-  });
-
-  // Swipe navigation (mobile)
-  let _touchStartX = 0;
-  const lb = document.getElementById("lightbox");
-  lb.addEventListener(
-    "touchstart",
-    (e) => {
-      _touchStartX = e.touches[0].clientX;
-    },
-    { passive: true },
-  );
-  lb.addEventListener("touchend", (e) => {
-    if (!lb.classList.contains("open")) return;
-    const delta = e.changedTouches[0].clientX - _touchStartX;
-    if (Math.abs(delta) > 50) delta < 0 ? nextPhoto() : prevPhoto();
-  });
-
-  // Download protection
-  if (document.getElementById("lightbox").dataset.allowDownload !== "true") {
-    const lbImg = document.getElementById("lightbox-img");
-    lbImg.addEventListener("contextmenu", (e) => e.preventDefault());
-    lbImg.addEventListener("dragstart", (e) => e.preventDefault());
-  }
-
-  window.openLightbox = openLightbox;
-  window.closeLightbox = closeLightbox;
-  window.prevPhoto = prevPhoto;
-  window.nextPhoto = nextPhoto;
+  document.addEventListener("astro:page-load", initLightbox);
 </script>
 
 <style>
