@@ -42,6 +42,8 @@ document.addEventListener("astro:page-load", () => {
         active === "all" ||
         (active === "bw" ? item.dataset.bw === "true" : cat === active);
       item.style.display = show ? "" : "none";
+      // Read by the lightbox so next/previous stays within this filter.
+      item.toggleAttribute("data-filtered-out", !show);
       if (show) {
         visible++;
         visibleByCategory.set(cat, (visibleByCategory.get(cat) ?? 0) + 1);

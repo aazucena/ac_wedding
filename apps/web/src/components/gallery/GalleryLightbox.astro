@@ -175,6 +175,10 @@ const {
   const items = Array.from(
     document.querySelectorAll(".gallery-item:not(.gallery-item--pad)"),
   );
+  // The photos next/previous walks through: everything, or just the tiles the
+  // /gallery filter left showing (it marks the rest data-filtered-out). Not a
+  // visibility check — /memories hides off-page tiles but still slides through.
+  let list = items;
   let current = 0;
 
   // ── Share (/memories) ──────────────────────────────────────────
@@ -235,7 +239,8 @@ const {
   shareBtn?.addEventListener("click", sharePhoto);
 
   function openLightbox(btn) {
-    current = parseInt(btn.dataset.index);
+    list = items.filter((el) => !el.hasAttribute("data-filtered-out"));
+    current = Math.max(0, list.indexOf(btn));
     showPhoto(current);
     document.getElementById("lightbox").classList.add("open");
     document.body.style.overflow = "hidden";
@@ -250,7 +255,7 @@ const {
   }
 
   function showPhoto(i) {
-    const btn = items[i];
+    const btn = list[i];
     const src = btn.dataset.src;
     const img = document.getElementById("lightbox-img");
     const loader = document.getElementById("lightbox-loader");
@@ -322,18 +327,18 @@ const {
     if (date)
       date.textContent =
         btn.dataset.date && btn.dataset.date !== "null" ? btn.dataset.date : "";
-    ctr.textContent = `${i + 1} / ${items.length}`;
+    ctr.textContent = `${i + 1} / ${list.length}`;
     const ctrMob = document.getElementById("lightbox-counter-mob");
     if (ctrMob) ctrMob.textContent = ctr.textContent;
   }
 
   function prevPhoto() {
-    current = (current - 1 + items.length) % items.length;
+    current = (current - 1 + list.length) % list.length;
     showPhoto(current);
   }
 
   function nextPhoto() {
-    current = (current + 1) % items.length;
+    current = (current + 1) % list.length;
     showPhoto(current);
   }
 
