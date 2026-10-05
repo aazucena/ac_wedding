@@ -15,10 +15,25 @@ interface GalleryItem {
 }
 interface Props {
   items: GalleryItem[];
+  /** When given, a heading is drawn wherever the category changes. Items must
+   *  already be grouped by category. */
+  categoryLabels?: Record<string, string>;
 }
-const { items } = Astro.props;
+const { items, categoryLabels } = Astro.props;
 const allowDownload = PUBLIC_DOWNLOAD_GALLERY_IMAGES ?? false;
-const padCount = (3 - (items.length % 3)) % 3;
+const sectioned = !!categoryLabels;
+// Pads square off a single grid; sections end wherever their photos end.
+const padCount = sectioned ? 0 : (3 - (items.length % 3)) % 3;
+
+const counts = new Map<string, number>();
+for (const { category } of items) {
+  counts.set(category ?? "", (counts.get(category ?? "") ?? 0) + 1);
+}
+const startsSection = (i: number) =>
+  sectioned &&
+  (i === 0 || (items[i]?.category ?? "") !== (items[i - 1]?.category ?? ""));
+const photoCount = (n: number) => `${n} ${n === 1 ? "photo" : "photos"}`;
+const bwCount = items.filter((p) => p.bw).length;
 ---
 
 <div
@@ -28,43 +43,55 @@ const padCount = (3 - (items.length % 3)) % 3;
 >
   {
     items.map((photo, i) => (
-      <button
-        class="gallery-item"
-        data-index={i}
-        data-src={photo.image ? assetUrl(photo.image) : null}
-        data-title={photo.title}
-        data-desc={photo.description}
-        data-category={photo.category ?? ""}
-        data-bw={photo.bw ? "true" : "false"}
-        onclick="openLightbox(this)"
-        aria-label={photo.title ?? `Photo ${i + 1}`}
-      >
-        {photo.image ? (
-          <>
-            <img
-              src={assetUrl(photo.image, {
-                width: 600,
-                height: 600,
-                fit: "cover",
-              })}
-              alt={photo.title ?? `Photo ${i + 1}`}
-              loading="lazy"
-              decoding="async"
-              class="gallery-img"
-            />
-            <div class="gallery-loader" aria-hidden="true">
-              <img src={logoSrc.src} alt="" class="gallery-loader-logo" />
-            </div>
-          </>
-        ) : (
-          <div class="gallery-placeholder">
-            <span class="gallery-placeholder-icon">📷</span>
-          </div>
+      <>
+        {startsSection(i) && (
+          <h2 class="gallery-section" data-category={photo.category ?? ""}>
+            <span class="gallery-section-name">
+              {categoryLabels?.[photo.category ?? ""] ?? "More"}
+            </span>
+            <span class="gallery-section-count">
+              {photoCount(counts.get(photo.category ?? "") ?? 0)}
+            </span>
+          </h2>
         )}
-        <div class="gallery-overlay">
-          {photo.title && <p class="gallery-item-title">{photo.title}</p>}
-        </div>
-      </button>
+        <button
+          class="gallery-item"
+          data-index={i}
+          data-src={photo.image ? assetUrl(photo.image) : null}
+          data-title={photo.title}
+          data-desc={photo.description}
+          data-category={photo.category ?? ""}
+          data-bw={photo.bw ? "true" : "false"}
+          onclick="openLightbox(this)"
+          aria-label={photo.title ?? `Photo ${i + 1}`}
+        >
+          {photo.image ? (
+            <>
+              <img
+                src={assetUrl(photo.image, {
+                  width: 600,
+                  height: 600,
+                  fit: "cover",
+                })}
+                alt={photo.title ?? `Photo ${i + 1}`}
+                loading="lazy"
+                decoding="async"
+                class="gallery-img"
+              />
+              <div class="gallery-loader" aria-hidden="true">
+                <img src={logoSrc.src} alt="" class="gallery-loader-logo" />
+              </div>
+            </>
+          ) : (
+            <div class="gallery-placeholder">
+              <span class="gallery-placeholder-icon">📷</span>
+            </div>
+          )}
+          <div class="gallery-overlay">
+            {photo.title && <p class="gallery-item-title">{photo.title}</p>}
+          </div>
+        </button>
+      </>
     ))
   }
   {
@@ -76,6 +103,19 @@ const padCount = (3 - (items.length % 3)) % 3;
       </div>
     ))
   }
+  {
+    /* Shown only by the B&W filter, which cuts across the category sections. */
+    sectioned && bwCount > 0 && (
+      <h2
+        class="gallery-section gallery-section--bw"
+        data-category="bw"
+        style="display:none"
+      >
+        <span class="gallery-section-name">Black &amp; White</span>
+        <span class="gallery-section-count">{photoCount(bwCount)}</span>
+      </h2>
+    )
+  }
 </div>
 
 <style>
@@ -86,6 +126,48 @@ const padCount = (3 - (items.length % 3)) % 3;
     width: 100%;
     opacity: 0;
     animation: fadeUp 0.8s 0.2s ease forwards;
+    /* Clear the pinned filter bar (and the navbar above it) when scrolled to. */
+    scroll-margin-top: 140px;
+  }
+
+  /* Category heading — a full-width row inside the same grid as the tiles. */
+  .gallery-section {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 28px 0 4px;
+  }
+  .gallery-section:first-child {
+    margin-top: 0;
+  }
+  /* Last in the markup so the rule above still finds the first category. */
+  .gallery-section--bw {
+    order: -1;
+    margin-top: 0;
+  }
+  .gallery-section::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    align-self: center;
+    background: var(--border);
+  }
+  .gallery-section-name {
+    font-family: var(--fd);
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.1;
+    color: var(--dark);
+  }
+  .gallery-section-count {
+    font-family: var(--fb);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
   }
 
   .gallery-item {

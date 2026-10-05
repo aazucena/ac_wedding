@@ -27,25 +27,24 @@ const placeholders = Array.from({ length: 9 }, (_, i) => ({
   sort: i,
 }));
 
-const items =
-  photos.length > 0 ? photos : import.meta.env.DEV ? placeholders : [];
 const _photo =
   typeof settings.photographer === "object"
     ? (settings.photographer as Vendors)
     : null;
 
+// Order of the day — drives both the filter buttons and the page sections.
 const CATEGORY_ORDER = [
   "engagement",
-  "details",
   "preparation",
+  "details",
   "bridesmaids",
   "groomsmen",
   "ceremony",
   "group_photos",
-  "reception",
+  "family_formals",
   "portraits",
   "candids",
-  "family_formals",
+  "reception",
 ];
 const CATEGORY_LABELS: Record<string, string> = {
   engagement: "Engagement",
@@ -64,7 +63,36 @@ const CATEGORY_LABELS: Record<string, string> = {
 const categoriesInUse = new Set(photos.map((p) => p.category).filter(Boolean));
 const activeCategories = CATEGORY_ORDER.filter((c) => categoriesInUse.has(c));
 const hasBW = photos.some((p) => p.bw);
+const bwCount = photos.filter((p) => p.bw).length;
+const categoryCount = (category: string) =>
+  photos.filter((p) => p.category === category).length;
+const menuOptions = [
+  { value: "all", label: "All", count: photos.length },
+  ...activeCategories.map((cat) => ({
+    value: cat,
+    label: CATEGORY_LABELS[cat],
+    count: categoryCount(cat),
+  })),
+  ...(hasBW ? [{ value: "bw", label: "Black & White", count: bwCount }] : []),
+];
 const showFilter = activeCategories.length > 1 || hasBW;
+
+// With 2+ categories the grid is split into headed sections, so group the
+// photos by category here (stable — each keeps its Directus sort order) rather
+// than trusting `sort` to keep a category together. Uncategorised go last.
+const sectioned = activeCategories.length > 1;
+const categoryRank = (category?: string | null) => {
+  const rank = CATEGORY_ORDER.indexOf(category ?? "");
+  return rank < 0 ? CATEGORY_ORDER.length : rank;
+};
+const grouped = sectioned
+  ? [...photos].sort(
+      (a, b) => categoryRank(a.category) - categoryRank(b.category),
+    )
+  : photos;
+
+const items =
+  photos.length > 0 ? grouped : import.meta.env.DEV ? placeholders : [];
 ---
 
 <Layout
@@ -89,31 +117,81 @@ const showFilter = activeCategories.length > 1 || hasBW;
           role="group"
           aria-label="Filter photos"
         >
-          <button class="gallery-filter-btn active" data-filter="all">
+          <button
+            class="gallery-filter-btn active"
+            data-filter="all"
+            aria-pressed="true"
+          >
             All
           </button>
           {activeCategories.map((cat) => (
-            <button class="gallery-filter-btn" data-filter={cat}>
+            <button
+              class="gallery-filter-btn"
+              data-filter={cat}
+              aria-pressed="false"
+            >
               {CATEGORY_LABELS[cat]}
             </button>
           ))}
           {hasBW && (
-            <>
-              <span class="gallery-filter-sep" aria-hidden="true" />
-              <button
-                class="gallery-filter-bw"
-                id="gallery-filter-bw"
-                aria-pressed="false"
-              >
-                B&amp;W
-              </button>
-            </>
+            <button
+              class="gallery-filter-btn"
+              data-filter="bw"
+              aria-pressed="false"
+            >
+              Black &amp; White
+            </button>
           )}
+          {/* Phones: the pills collapse into this one menu (gallery.css). It
+              borrows the navbar dropdown's look rather than a native select. */}
+          <div class="gallery-filter-menu" id="gallery-filter-menu">
+            <button
+              class="gallery-filter-toggle"
+              id="gallery-filter-toggle"
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-controls="gallery-filter-list"
+            >
+              <span id="gallery-filter-current">All</span>
+              <span
+                class="gallery-filter-count"
+                id="gallery-filter-current-count"
+              >
+                {photos.length}
+              </span>
+              <span class="gallery-filter-chevron" aria-hidden="true" />
+            </button>
+            <div
+              class="gallery-filter-list"
+              id="gallery-filter-list"
+              role="listbox"
+              aria-label="Filter photos by category"
+            >
+              {menuOptions.map((option, i) => (
+                <button
+                  class:list={["gallery-filter-option", { active: i === 0 }]}
+                  role="option"
+                  aria-selected={i === 0 ? "true" : "false"}
+                  data-filter={option.value}
+                >
+                  <span>{option.label}</span>
+                  <span class="gallery-filter-count">{option.count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )
     }
 
-    {items.length > 0 && <GalleryGrid items={items} />}
+    {
+      items.length > 0 && (
+        <GalleryGrid
+          items={items}
+          categoryLabels={sectioned ? CATEGORY_LABELS : undefined}
+        />
+      )
+    }
 
     <p
       class="gallery-filter-empty"
